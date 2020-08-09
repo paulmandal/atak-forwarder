@@ -6,12 +6,16 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.paulmandal.atak.gotenna.mesh.services.UdpListenerService;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements UdpListenerService.MessageListener {
+    private TextView mOutput;
     UdpListenerService mService;
     boolean mBound = false;
 
@@ -19,6 +23,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mOutput = findViewById(R.id.text_output);
+
+        findViewById(R.id.button_clear).setOnClickListener((View v) -> {
+            mOutput.setText("");
+        });
     }
 
     @Override
@@ -47,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
             UdpListenerService.LocalBinder binder = (UdpListenerService.LocalBinder) service;
             mService = binder.getService();
             mBound = true;
+
+            mService.addListener(MainActivity.this);
         }
 
         @Override
@@ -54,4 +66,12 @@ public class MainActivity extends AppCompatActivity {
             mBound = false;
         }
     };
+
+    @Override
+    public void onMessage(String senderIp, String message) {
+        Log.d("UDPDBG", "onMessage, ip: " + senderIp + ", msg: " + message);
+        String existing = mOutput.getText().toString();
+        final String output = existing + "\nUDP unicast from " + senderIp + ", message: " + message + ", len: " + message.length() + "\n";
+        runOnUiThread(() -> mOutput.setText(output));
+    }
 }

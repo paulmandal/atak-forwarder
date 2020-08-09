@@ -12,6 +12,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class UdpListenerService extends Service {
+
+    public interface MessageListener {
+        void onMessage(String senderIp, String message);
+    }
+
     private final IBinder binder = new LocalBinder();
 //    private MulticastSocket mMulticastSocket;
 //    private Thread mUdpMulticastListenerThread;
@@ -19,6 +24,8 @@ public class UdpListenerService extends Service {
     private DatagramSocket mUnicastSocket;
     private Thread mUdpUnicastListenerThread;
     private boolean mShouldRestartListener;
+
+    private MessageListener mListener;
 
     /**
      * Class used for the client Binder.  Because we know this service always
@@ -53,6 +60,37 @@ public class UdpListenerService extends Service {
         mUnicastSocket.close();
     }
 
+    /**
+     * API
+     */
+
+    public void addListener(MessageListener listener) {
+        mListener = listener;
+    }
+
+    public void removeListener() {
+        mListener = null;
+    }
+
+    /**
+     * Internal
+     */
+
+    private void notifyListener(DatagramPacket packet) {
+        if (mListener == null) {
+            return;
+        }
+
+        Log.d("UDPDBG", "Waiting for UDP unicast");
+
+        String senderIp = packet.getAddress().getHostAddress();
+        String message = new String(packet.getData()).trim();
+
+        Log.d("UDPDBG", "Got UDP unicast from " + senderIp + ", message: " + message);
+
+        mListener.onMessage(senderIp, message);
+    }
+
     private void listenForUdpUnicastAsync() {
         Thread udpListenerThread = new Thread(() -> {
             try {
@@ -81,12 +119,7 @@ public class UdpListenerService extends Service {
         while (true) {
             DatagramPacket recv = new DatagramPacket(buf, buf.length);
             s.receive(recv);
-            Log.d("UDPDBG", "Waiting for UDP unicast");
-
-            String senderIP = recv.getAddress().getHostAddress();
-            String message = new String(recv.getData()).trim();
-
-            Log.d("UDPDBG", "Got UDP unicast from " + senderIP + ", message: " + message);
+            notifyListener(recv);
         }
     }
 

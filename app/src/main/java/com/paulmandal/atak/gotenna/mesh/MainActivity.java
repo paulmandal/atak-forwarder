@@ -1,5 +1,6 @@
 package com.paulmandal.atak.gotenna.mesh;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,11 +13,21 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.paulmandal.atak.gotenna.mesh.services.UdpListenerService;
+import com.gotenna.sdk.GoTenna;
+import com.gotenna.sdk.connection.BluetoothAdapterManager;
+import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
+import com.paulmandal.atak.gotenna.mesh.services.ForwardingService;
+import com.paulmandal.atak.gotenna.mesh.utils.PermissionUtil;
 
-public class MainActivity extends AppCompatActivity implements UdpListenerService.MessageListener {
+public class MainActivity extends AppCompatActivity implements ForwardingService.MessageListener {
+    private static final String GOTENNA_SDK_TOKEN = "";
+
+    private static final int ENABLE_BLUETOOTH_PERMISSION_REQUEST_CODE = 1003;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 54321;
+    private static final int SCAN_TIMEOUT_MILLISECONDS = 30000;
+
     private TextView mOutput;
-    UdpListenerService mService;
+    ForwardingService mService;
     boolean mBound = false;
 
     @Override
@@ -34,10 +45,52 @@ public class MainActivity extends AppCompatActivity implements UdpListenerServic
     @Override
     protected void onStart() {
         super.onStart();
+        // Check perms
+        if (!PermissionUtil.hasLocationPermission(this)) {
+            PermissionUtil.requestLocationPermission(this, LOCATION_PERMISSION_REQUEST_CODE);
+//            return;
+        }
+//        UserDataStore userDateStore = UserDataStore.getInstance();
+
+        try {
+            GoTenna.setApplicationToken(getApplicationContext(), GOTENNA_SDK_TOKEN);
+        } catch (GTInvalidAppTokenException e) {
+            e.printStackTrace();
+        }
+
+        checkBluetooth();
+    }
+
+    private void checkBluetooth() {
+        BluetoothAdapterManager bluetoothAdapterManager = BluetoothAdapterManager.getInstance();
+        BluetoothAdapterManager.BluetoothStatus bluetoothStatus = bluetoothAdapterManager.getBluetoothStatus();
+
+        switch (bluetoothStatus) {
+            case SUPPORTED_AND_ENABLED:
+                bindAndStartService();
+                break;
+            case SUPPORTED_NOT_ENABLED:
+                BluetoothAdapterManager.showRequestBluetoothPermissionDialog(this, ENABLE_BLUETOOTH_PERMISSION_REQUEST_CODE);
+                break;
+            case NOT_SUPPORTED:
+                // TODO: handle this case
+                break;
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ENABLE_BLUETOOTH_PERMISSION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            checkBluetooth();
+        }
+    }
+
+    private void bindAndStartService() {
         // Bind to LocalService
-        Intent intent = new Intent(this, UdpListenerService.class);
-        startService(intent);
+        Intent intent = new Intent(this, ForwardingService.class);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        startService(intent);
     }
 
     @Override
@@ -54,7 +107,7 @@ public class MainActivity extends AppCompatActivity implements UdpListenerServic
         public void onServiceConnected(ComponentName className,
                                        IBinder service) {
             // We've bound to LocalService, cast the IBinder and get LocalService instance
-            UdpListenerService.LocalBinder binder = (UdpListenerService.LocalBinder) service;
+            ForwardingService.ForwardingServiceBinder binder = (ForwardingService.ForwardingServiceBinder) service;
             mService = binder.getService();
             mBound = true;
 

@@ -1,34 +1,74 @@
 package com.paulmandal.atak.gotenna.mesh;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.gotenna.sdk.GoTenna;
-import com.gotenna.sdk.connection.BluetoothAdapterManager;
-import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
+import com.paulmandal.atak.gotenna.mesh.helpers.GoTennaHelper;
 import com.paulmandal.atak.gotenna.mesh.services.ForwardingService;
-import com.paulmandal.atak.gotenna.mesh.utils.PermissionUtil;
 
-public class MainActivity extends AppCompatActivity implements ForwardingService.MessageListener {
-    private static final String GOTENNA_SDK_TOKEN = "";
+public class MainActivity extends AppCompatActivity implements GoTennaHelper.Listener, ForwardingService.MessageListener {
+    /**
+     * Basic configuration
+     */
+    public static final String GOTENNA_SDK_TOKEN = "";
 
-    private static final int ENABLE_BLUETOOTH_PERMISSION_REQUEST_CODE = 1003;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 54321;
-    private static final int SCAN_TIMEOUT_MILLISECONDS = 30000;
+    /**
+     * You will need one primary and one secondary device to test this, when building for the secondary device set this to false
+     *
+     * Basically this sets the GIDs
+     */
+    private static final boolean PRIMARY_DEVICE = true;
 
-    private TextView mOutput;
+    /**
+     * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)
+     */
+    public static final int MAX_MESSAGE_LENGTH = 192;
+    public static final int MESSAGE_CHUNK_LENGTH = 192;
+    public static final int DELAY_BETWEEN_MESSAGES_MS = 10000;
+
+    /**
+     * IMPORTANT this is used to set the GoTenna frequencies, please adjust to your approx lat/lon
+     */
+    public static final double LATITUDE = 40.619373;
+    public static final double LONGITUDE = -74.102977;
+
+    /**
+     * Test GIDs
+     */
+    public static final long GOTENNA_LOCAL_GID = PRIMARY_DEVICE ? 123456789 : 987654321;
+    public static final long GOTENNA_REMOTE_GID = PRIMARY_DEVICE ? 987654321 : 123456789;
+
+    /**
+     * IP and port to listen for outbound messages on, should match what you have configured in ATAK
+     * under Settings / Network Connections / Network Connections / Manage Outputs
+     */
+    public static final int OUTBOUND_MESSAGE_PORT = 31337;
+
+    /**
+     * IP and port to retransmit inbound messages to, this should work with the defaults in ATAK
+     * Settings / Network Connections / Network Connections / Manage Inputs / 0.0.0.0:4242:udp
+     */
+    public static final int INBOUND_MESSAGE_DEST_PORT = 4242;
+
+    /**
+     * This can be anything > 1024 and < 65535
+     */
+    public static final int INBOUND_MESSAGE_SRC_PORT = 17233;
+
+    GoTennaHelper mGotennaHelper;
+
     ForwardingService mService;
     boolean mBound = false;
+
+    private TextView mOutput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,81 +77,58 @@ public class MainActivity extends AppCompatActivity implements ForwardingService
 
         mOutput = findViewById(R.id.text_output);
 
-        findViewById(R.id.button_clear).setOnClickListener((View v) -> {
-            mOutput.setText("");
+        findViewById(R.id.button_clear).setOnClickListener((View v) -> mOutput.setText(""));
+
+        findViewById(R.id.button_exit).setOnClickListener((View v) -> {
+            Intent intent = new Intent(this, ForwardingService.class);
+            unbindService(mConnection);
+            stopService(intent);
         });
     }
 
     @Override
     protected void onStart() {
         super.onStart();
-        // Check perms
-        if (!PermissionUtil.hasLocationPermission(this)) {
-            PermissionUtil.requestLocationPermission(this, LOCATION_PERMISSION_REQUEST_CODE);
-//            return;
-        }
-//        UserDataStore userDateStore = UserDataStore.getInstance();
 
-        try {
-            GoTenna.setApplicationToken(getApplicationContext(), GOTENNA_SDK_TOKEN);
-        } catch (GTInvalidAppTokenException e) {
-            e.printStackTrace();
-        }
-
-        checkBluetooth();
+        mGotennaHelper = new GoTennaHelper(this, this);
+        mGotennaHelper.checkPermissionsAndSetupSdk();
     }
 
-    private void checkBluetooth() {
-        BluetoothAdapterManager bluetoothAdapterManager = BluetoothAdapterManager.getInstance();
-        BluetoothAdapterManager.BluetoothStatus bluetoothStatus = bluetoothAdapterManager.getBluetoothStatus();
-
-        switch (bluetoothStatus) {
-            case SUPPORTED_AND_ENABLED:
-                bindAndStartService();
-                break;
-            case SUPPORTED_NOT_ENABLED:
-                BluetoothAdapterManager.showRequestBluetoothPermissionDialog(this, ENABLE_BLUETOOTH_PERMISSION_REQUEST_CODE);
-                break;
-            case NOT_SUPPORTED:
-                // TODO: handle this case
-                break;
-        }
-    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ENABLE_BLUETOOTH_PERMISSION_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            checkBluetooth();
-        }
+        mGotennaHelper.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onGoTennaSetupComplete() {
+        bindAndStartService();
     }
 
     private void bindAndStartService() {
         // Bind to LocalService
         Intent intent = new Intent(this, ForwardingService.class);
-        bindService(intent, connection, Context.BIND_AUTO_CREATE);
+        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
         startService(intent);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(connection);
+        unbindService(mConnection);
         mBound = false;
     }
 
     /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection connection = new ServiceConnection() {
-
+    private ServiceConnection mConnection = new ServiceConnection() {
         @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
+        public void onServiceConnected(ComponentName className, IBinder service) {
             ForwardingService.ForwardingServiceBinder binder = (ForwardingService.ForwardingServiceBinder) service;
             mService = binder.getService();
-            mBound = true;
 
             mService.addListener(MainActivity.this);
+            mBound = true;
         }
 
         @Override
@@ -121,10 +138,18 @@ public class MainActivity extends AppCompatActivity implements ForwardingService
     };
 
     @Override
-    public void onMessage(String senderIp, String message) {
-        Log.d("UDPDBG", "onMessage, ip: " + senderIp + ", msg: " + message);
+    public void onOutboundMessage(String message) {
+        appendLogging("OUT: " + message);
+    }
+
+    @Override
+    public void onInboundMessage(String message) {
+        appendLogging("IN: " + message);
+    }
+
+    public void appendLogging(String message) {
         String existing = mOutput.getText().toString();
-        final String output = existing + "\nUDP unicast from " + senderIp + ", message: " + message + ", len: " + message.length() + "\n";
+        final String output = existing + "\n" + message + "\n";
         runOnUiThread(() -> mOutput.setText(output));
     }
 }

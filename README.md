@@ -26,6 +26,7 @@ Make sure Loopback Output is checked
 
 * Copy the GoTenna Public SDK into the `gotenna-public-sdk/` folder as `gotenna-public-sdk.aar`
 * Edit `MainActivity.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
+* Set `LATITUDE` and `LONGITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
 * Set `PRIMARY_DEVICE` to `true` and build the application onto your first device
 * Set `PRIMARY_DEVICE` to `false` and build the application onto your secondary device
 * Open ATAK on each device

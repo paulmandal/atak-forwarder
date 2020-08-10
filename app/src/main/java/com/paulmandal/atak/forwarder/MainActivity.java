@@ -22,6 +22,12 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
     public static final String GOTENNA_SDK_TOKEN = ;
 
     /**
+     * IMPORTANT this is used to set the GoTenna frequencies, please adjust to your approx lat/lon
+     */
+    public static final double LATITUDE = ; //40.619373
+    public static final double LONGITUDE = ; //-74.102977
+
+    /**
      * You will need one primary and one secondary device to test this, when building for the secondary device set this to false
      *
      * Basically this sets the GIDs
@@ -34,12 +40,6 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
     public static final int MAX_MESSAGE_LENGTH = 192;
     public static final int MESSAGE_CHUNK_LENGTH = 192;
     public static final int DELAY_BETWEEN_MESSAGES_MS = 10000;
-
-    /**
-     * IMPORTANT this is used to set the GoTenna frequencies, please adjust to your approx lat/lon
-     */
-    public static final double LATITUDE = 40.619373;
-    public static final double LONGITUDE = -74.102977;
 
     /**
      * Test GIDs

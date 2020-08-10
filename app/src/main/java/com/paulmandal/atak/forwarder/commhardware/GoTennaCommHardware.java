@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh.commhardware;
+package com.paulmandal.atak.forwarder.commhardware;
 
 import android.location.Location;
 import android.util.Log;
@@ -19,8 +19,8 @@ import com.gotenna.sdk.data.messages.GTGroupCreationMessageData;
 import com.gotenna.sdk.data.messages.GTMessageData;
 import com.gotenna.sdk.data.messages.GTTextOnlyMessageData;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
-import com.paulmandal.atak.gotenna.mesh.MainActivity;
-import com.paulmandal.atak.gotenna.mesh.interfaces.CommHardware;
+import com.paulmandal.atak.forwarder.MainActivity;
+import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh;
+package com.paulmandal.atak.forwarder;
 
 import android.content.Context;
 
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
     public void useAppContext() {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        assertEquals("com.paulmandal.atak.gotenna.mesh", appContext.getPackageName());
+        assertEquals("com.paulmandal.atak.forwarder", appContext.getPackageName());
     }
 }

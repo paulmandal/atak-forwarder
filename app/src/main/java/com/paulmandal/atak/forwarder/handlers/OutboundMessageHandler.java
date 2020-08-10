@@ -1,9 +1,9 @@
-package com.paulmandal.atak.gotenna.mesh.handlers;
+package com.paulmandal.atak.forwarder.handlers;
 
 import android.util.Log;
 
-import com.paulmandal.atak.gotenna.mesh.MainActivity;
-import com.paulmandal.atak.gotenna.mesh.interfaces.CommHardware;
+import com.paulmandal.atak.forwarder.MainActivity;
+import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

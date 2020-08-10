@@ -5,7 +5,7 @@ android {
     buildToolsVersion "29.0.3"
 
     defaultConfig {
-        applicationId "com.paulmandal.atak.gotenna.mesh"
+        applicationId "com.paulmandal.atak.forwarder"
         minSdkVersion 19
         targetSdkVersion 29
         versionCode 1

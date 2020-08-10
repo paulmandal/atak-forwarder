@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh.helpers;
+package com.paulmandal.atak.forwarder.helpers;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -7,8 +7,8 @@ import android.util.Log;
 import com.gotenna.sdk.GoTenna;
 import com.gotenna.sdk.connection.BluetoothAdapterManager;
 import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
-import com.paulmandal.atak.gotenna.mesh.MainActivity;
-import com.paulmandal.atak.gotenna.mesh.utils.PermissionUtil;
+import com.paulmandal.atak.forwarder.MainActivity;
+import com.paulmandal.atak.forwarder.utils.PermissionUtil;
 
 /**
  * Checks permissions to ensure GoTenna can be used and sets up the GoTenna SDK

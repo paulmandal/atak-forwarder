@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh.interfaces;
+package com.paulmandal.atak.forwarder.interfaces;
 
 public interface CommHardware {
     interface Listener {

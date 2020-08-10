@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh;
+package com.paulmandal.atak.forwarder;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,8 +12,8 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
-import com.paulmandal.atak.gotenna.mesh.helpers.GoTennaHelper;
-import com.paulmandal.atak.gotenna.mesh.services.ForwardingService;
+import com.paulmandal.atak.forwarder.helpers.GoTennaHelper;
+import com.paulmandal.atak.forwarder.services.ForwardingService;
 
 public class MainActivity extends AppCompatActivity implements GoTennaHelper.Listener, ForwardingService.MessageListener {
     /**
@@ -26,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
      *
      * Basically this sets the GIDs
      */
-    private static final boolean PRIMARY_DEVICE = false;
+    private static final boolean PRIMARY_DEVICE = true;
 
     /**
      * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)

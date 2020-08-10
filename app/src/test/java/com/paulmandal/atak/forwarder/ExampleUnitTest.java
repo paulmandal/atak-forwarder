@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh;
+package com.paulmandal.atak.forwarder;
 
 import org.junit.Test;
 

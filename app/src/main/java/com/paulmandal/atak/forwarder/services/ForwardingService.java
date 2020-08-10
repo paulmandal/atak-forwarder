@@ -1,4 +1,4 @@
-package com.paulmandal.atak.gotenna.mesh.services;
+package com.paulmandal.atak.forwarder.services;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -13,11 +13,11 @@ import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
-import com.paulmandal.atak.gotenna.mesh.MainActivity;
-import com.paulmandal.atak.gotenna.mesh.R;
-import com.paulmandal.atak.gotenna.mesh.commhardware.GoTennaCommHardware;
-import com.paulmandal.atak.gotenna.mesh.handlers.InboundMessageHandler;
-import com.paulmandal.atak.gotenna.mesh.handlers.OutboundMessageHandler;
+import com.paulmandal.atak.forwarder.MainActivity;
+import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.commhardware.GoTennaCommHardware;
+import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
+import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 
 /**
  * Listens to

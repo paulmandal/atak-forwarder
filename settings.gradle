@@ -1,3 +1,3 @@
 include ':gotenna-public-sdk'
 include ':app'
-rootProject.name = "ATAK GoTenna Mesh"
+rootProject.name = "ATAK Forwarder"

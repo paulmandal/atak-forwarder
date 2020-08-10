@@ -1,6 +1,6 @@
-# ATAK + GoTenna Mesh
+# ATAK Packet Forwarder 
 
-An application/service for forwarding ATAK UDP packets via GoTenna Mesh.
+An application/service for forwarding ATAK UDP packets via a hardware layer. Currently supports GoTenna Mesh.
 
 # Setup
 

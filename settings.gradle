@@ -1,0 +1,3 @@
+include ':gotenna-public-sdk'
+include ':app'
+rootProject.name = "ATAK Forwarder"

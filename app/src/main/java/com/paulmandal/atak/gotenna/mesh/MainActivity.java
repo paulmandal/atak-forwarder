@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
     /**
      * Basic configuration
      */
-    public static final String GOTENNA_SDK_TOKEN = "";
+    public static final String GOTENNA_SDK_TOKEN = ;
 
     /**
      * You will need one primary and one secondary device to test this, when building for the secondary device set this to false

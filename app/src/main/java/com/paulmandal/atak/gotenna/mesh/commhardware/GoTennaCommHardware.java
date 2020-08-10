@@ -77,13 +77,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
             messages.add("1/1!" + message);
         }
 
-        // TODO: remove debugging later
-        Log.d(TAG, "broke message: " + message);
-        Log.d(TAG, "into: ");
-        for (String msg : messages) {
-            Log.d(TAG, "    " + msg);
-        }
-
         sendMessagesAsync(messages);
     }
 

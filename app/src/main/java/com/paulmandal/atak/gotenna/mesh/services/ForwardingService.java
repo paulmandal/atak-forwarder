@@ -1,11 +1,20 @@
 package com.paulmandal.atak.gotenna.mesh.services;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+
+import com.paulmandal.atak.gotenna.mesh.MainActivity;
+import com.paulmandal.atak.gotenna.mesh.R;
 import com.paulmandal.atak.gotenna.mesh.commhardware.GoTennaCommHardware;
 import com.paulmandal.atak.gotenna.mesh.handlers.InboundMessageHandler;
 import com.paulmandal.atak.gotenna.mesh.handlers.OutboundMessageHandler;
@@ -16,10 +25,13 @@ import com.paulmandal.atak.gotenna.mesh.handlers.OutboundMessageHandler;
 public class ForwardingService extends Service implements OutboundMessageHandler.Listener, InboundMessageHandler.Listener {
     public interface MessageListener {
         void onOutboundMessage(String message);
+
         void onInboundMessage(String message);
     }
 
     private static final String TAG = "ATAKDBG." + ForwardingService.class.getSimpleName();
+
+    public static final String CHANNEL_ID = "AtakForwarderServiceChannel";
 
     private final IBinder binder = new ForwardingServiceBinder();
 
@@ -58,6 +70,15 @@ public class ForwardingService extends Service implements OutboundMessageHandler
         mInboundMessageHandler = new InboundMessageHandler(goTennaCommHardware);
         mInboundMessageHandler.addListener(this);
 
+        createNotificationChannel();
+        Intent notificationIntent = new Intent(this, MainActivity.class);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Forwarding ATAK <-> GoTenna Mesh")
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentIntent(pendingIntent)
+                .build();
+        startForeground(1, notification);
 
         return START_STICKY;
     }
@@ -86,6 +107,18 @@ public class ForwardingService extends Service implements OutboundMessageHandler
     public void onMessageSent(String message) {
         if (mListener != null) {
             mListener.onOutboundMessage(message);
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel serviceChannel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Foreground Service Channel",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            manager.createNotificationChannel(serviceChannel);
         }
     }
 }

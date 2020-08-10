@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.paulmandal.atak.gotenna.mesh.helpers.GoTennaHelper;
 import com.paulmandal.atak.gotenna.mesh.services.ForwardingService;
@@ -25,7 +26,7 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
      *
      * Basically this sets the GIDs
      */
-    private static final boolean PRIMARY_DEVICE = true;
+    private static final boolean PRIMARY_DEVICE = false;
 
     /**
      * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)
@@ -83,6 +84,7 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
             Intent intent = new Intent(this, ForwardingService.class);
             unbindService(mConnection);
             stopService(intent);
+            finish();
         });
     }
 
@@ -110,13 +112,17 @@ public class MainActivity extends AppCompatActivity implements GoTennaHelper.Lis
         // Bind to LocalService
         Intent intent = new Intent(this, ForwardingService.class);
         bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-        startService(intent);
+        ContextCompat.startForegroundService(this, intent);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        unbindService(mConnection);
+        try {
+            unbindService(mConnection);
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+        }
         mBound = false;
     }
 

@@ -23,7 +23,7 @@ public class Config {
      * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)
      */
     public static final int MESSAGE_CHUNK_LENGTH = 192;
-    public static final int DELAY_BETWEEN_MESSAGES_MS = 10000;
+    public static final int DELAY_BETWEEN_MESSAGES_MS = 12500;
 
     /**
      * Test GIDs

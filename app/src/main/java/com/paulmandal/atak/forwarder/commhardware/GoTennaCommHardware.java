@@ -34,7 +34,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     private static final double LATITUDE = Config.LATITUDE;
     private static final double LONGITUDE = Config.LONGITUDE;
 
-    private static final int MAX_MESSAGE_LENGTH = Config.MAX_MESSAGE_LENGTH;
+//    private static final int MAX_MESSAGE_LENGTH = Config.MAX_MESSAGE_LENGTH;
     private static final int MESSAGE_CHUNK_LENGTH = Config.MESSAGE_CHUNK_LENGTH;
     private static final int DELAY_BETWEEN_MESSAGES_MS = Config.DELAY_BETWEEN_MESSAGES_MS;
 
@@ -43,7 +43,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
 
     private boolean mConnected = false;
     private boolean mPendingMessage = false;
-    private Thread mThread;
+    private boolean mDestroyed = false;
 
     private List<Listener> mListeners = new CopyOnWriteArrayList<>();
 
@@ -58,7 +58,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     public void destroy() {
         mGtCommandCenter.setMessageListener(null);
         mGtConnectionManager.disconnect();
-        mThread.stop();
+        mDestroyed = true;
     }
 
     @Override
@@ -90,10 +90,8 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
             int length = end - start;
 
             messages[i] = new byte[length + 1];
-            messages[i][0] = (byte) (i << 4 | chunks - 1);
+            messages[i][0] = (byte) (i << 4 | chunks);
 
-            Log.d(TAG, "  message: " + (i + 1) + " / " + chunks);
-            Log.d(TAG, "  marker bytez: " + String.format("%8s", Integer.toBinaryString(messages[i][0])));
             for (int idx = 1, j = start; j < end; j++, idx++) {
                 messages[i][idx] = message[j];
             }
@@ -114,7 +112,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
 
     private void sendMessagesAsync(byte[][] messages) {
         mPendingMessage = true;
-        mThread = new Thread(() -> {
+        new Thread(() -> {
             Log.d(TAG, "  sending message async");
             for (int i = 0 ; i < messages.length ; i++) {
                 byte[] message = messages[i];
@@ -131,10 +129,13 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                if (mDestroyed) {
+                    break;
+                }
             }
             mPendingMessage = false;
-        });
-        mThread.start();
+        }).start();
     }
 
     /**
@@ -189,11 +190,8 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     }
 
     private void handleMessageChunk(byte[] messageChunk) {
-        Log.d(TAG, "handleMessageChunk byte: " + Integer.toBinaryString(messageChunk[0]));
         int messageIndex = messageChunk[0] >> 4 & 0x0f;
         int messageCount = messageChunk[0] & 0x0f;
-
-        Log.d(TAG, "messageIndex: " + messageIndex + ", messageCount: " + messageCount);
 
         byte[] chunk = new byte[messageChunk.length - 1];
         for (int idx = 0, i = 1 ; i < messageChunk.length ; i++, idx++)
@@ -206,7 +204,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     private void handleMessageChunk(int messageIndex, int messageCount, byte[] messageChunk) {
         mIncomingMessages.add(new MessageChunk(messageIndex, messageCount, messageChunk));
 
-        if (messageIndex == messageCount) {
+        if (messageIndex == messageCount - 1) {
             // Message complete!
             byte[][] messagePieces = new byte[messageCount][];
             int totalLength = 0;
@@ -215,7 +213,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                 totalLength = totalLength + messagePiece.chunk.length;
             }
 
-            Log.d(TAG, "handleMessageChunk, total length: " + totalLength);
             byte[] message = new byte[totalLength];
             for (int idx = 0, i = 0 ; i < messagePieces.length ; i++) {
                 for (int j = 0 ; j < messagePieces[i].length ; j++, idx++) {

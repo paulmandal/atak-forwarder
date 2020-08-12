@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<plugin>
+    <extension
+        type="transapps.maps.plugin.lifecycle.Lifecycle"
+        impl="com.paulmandal.atak.forwarder.plugin.ForwarderLifecycle"
+        singleton="true" />
+</plugin>

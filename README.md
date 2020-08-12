@@ -1,35 +1,25 @@
 # ATAK Packet Forwarder 
 
-An application/service for forwarding ATAK UDP packets via a hardware layer. Currently supports GoTenna Mesh.
+An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports GoTenna Mesh.
 
 # Setup
 
-First you will need to set up your ATAK to send its mesh broadcasts to your localhost so that this application/service can receive and forward the messages, to do that:
+To use this plugin you will need to build your own copy of ATAK-CIV, to do that first:
 
-Go to Settings
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/instructions-step-0.png "Go to Settings")
-
-Go to Network Connections
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/instructions-step-1.png "Go to Network Connections")
-
-Go to Network Connections
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/instructions-step-2.png "Go to Network Connections")
-
-Go to Manage Outputs
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/instructions-step-3.png "Go to Manage Outputs")
-
-Add a Loopback Output
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/instructions-step-4.png "Add a Loopback Output")
-
-Make sure Loopback Output is checked
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/instructions-step-5.png "Make sure Loopback Output is checked")
-
-* Copy the GoTenna Public SDK into the `gotenna-public-sdk/` folder as `gotenna-public-sdk.aar`
-* Edit `MainActivity.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
-* Set `LATITUDE` and `LONGITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
-* Set `PRIMARY_DEVICE` to `true` and build the application onto your first device
-* Set `PRIMARY_DEVICE` to `false` and build the application onto your secondary device
-* Open ATAK on each device
+* clone the ATAK-CIV repo somewhere: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV
+* clone this repo into the same parent directory that you cloned the DoD's ATAK repo to (i.e. not into the `AndroidTacticalAssaultKit-CIV` directory)
+* get the GoTenna SDK: https://github.com/gotenna/PublicSDK
+* get the ATAK-CIV SDK: http://7n7.us/civtak4sdk
+* follow the instructions for building ATAK in the ATAK repo's BULIDING.md file, load the application onto your devices using the `installCivDebug` Gradle task
+ * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
+* copy the GoTenna Public SDK into the `libs/` directory as `gotenna-public-sdk.aar`
+* copy the ATAK SDK into the `libs/` directory as `main.jar`
+* open this project in Android Studio
+ * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
+ * Set `LATITUDE` and `LONGITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
+ * Set `PRIMARY_DEVICE` to `true` and build the application onto your first device
+ * Set `PRIMARY_DEVICE` to `false` and build the application onto your secondary device
+ * Open ATAK on each device
 
 It will take quite a while for the first messages to be transmitted. During my testing I only tested in one direction -- having both devices transmit might take too much bandwidth for the GoTenna Mesh.
 

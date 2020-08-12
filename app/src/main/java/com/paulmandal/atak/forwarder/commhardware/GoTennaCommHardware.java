@@ -19,7 +19,7 @@ import com.gotenna.sdk.data.messages.GTGroupCreationMessageData;
 import com.gotenna.sdk.data.messages.GTMessageData;
 import com.gotenna.sdk.data.messages.GTTextOnlyMessageData;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
-import com.paulmandal.atak.forwarder.MainActivity;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 
 import java.util.ArrayList;
@@ -29,20 +29,21 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener {
     private static final String TAG = "ATAKDBG." + GoTennaCommHardware.class.getSimpleName();
 
-    private static final long GOTENNA_LOCAL_GID = MainActivity.GOTENNA_LOCAL_GID;
-    private static final long GOTENNA_REMOTE_GID = MainActivity.GOTENNA_REMOTE_GID;
-    private static final double LATITUDE = MainActivity.LATITUDE;
-    private static final double LONGITUDE = MainActivity.LONGITUDE;
+    private static final long GOTENNA_LOCAL_GID = Config.GOTENNA_LOCAL_GID;
+    private static final long GOTENNA_REMOTE_GID = Config.GOTENNA_REMOTE_GID;
+    private static final double LATITUDE = Config.LATITUDE;
+    private static final double LONGITUDE = Config.LONGITUDE;
 
-    private static final int MAX_MESSAGE_LENGTH = MainActivity.MAX_MESSAGE_LENGTH;
-    private static final int MESSAGE_CHUNK_LENGTH = MainActivity.MESSAGE_CHUNK_LENGTH;
-    private static final int DELAY_BETWEEN_MESSAGES_MS = MainActivity.DELAY_BETWEEN_MESSAGES_MS;
+    private static final int MAX_MESSAGE_LENGTH = Config.MAX_MESSAGE_LENGTH;
+    private static final int MESSAGE_CHUNK_LENGTH = Config.MESSAGE_CHUNK_LENGTH;
+    private static final int DELAY_BETWEEN_MESSAGES_MS = Config.DELAY_BETWEEN_MESSAGES_MS;
 
     private GTConnectionManager mGtConnectionManager;
     private GTCommandCenter mGtCommandCenter;
 
     private boolean mConnected = false;
     private boolean mPendingMessage = false;
+    private Thread mThread;
 
     private List<Listener> mListeners = new CopyOnWriteArrayList<>();
 
@@ -54,7 +55,14 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     }
 
     @Override
-    public void sendMessage(String message) {
+    public void destroy() {
+        mGtCommandCenter.setMessageListener(null);
+        mGtConnectionManager.disconnect();
+        mThread.stop();
+    }
+
+    @Override
+    public void sendMessage(byte[] message) {
         if (!mConnected) {
             Log.d(TAG, "sendMessage: not connected yet");
             return;
@@ -66,15 +74,29 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         }
 
         // Check message length and break up if necessary
-        List<String> messages = new ArrayList<>();
-        if (message.length() > MAX_MESSAGE_LENGTH) {
-            int chunks = (int)Math.ceil((double)message.length() / (double) MESSAGE_CHUNK_LENGTH);
-            for (int i = 0; i < chunks; i++) {
-                String submessage = i + "/" + (chunks - 1) + "!" + message.substring(i * MESSAGE_CHUNK_LENGTH, Math.min((i + 1) * MESSAGE_CHUNK_LENGTH, message.length()));
-                messages.add(submessage);
+        int chunks = (int)Math.ceil((double)message.length / (double) MESSAGE_CHUNK_LENGTH);
+
+        if (chunks > 15) {
+            Log.e(TAG, "Cannot break message into more than 15 pieces since we only have 1 byte for the header");
+            return;
+        }
+
+        Log.d(TAG, "Message length: " + message.length + " chunks: " + chunks);
+
+        byte[][] messages = new byte[chunks][];
+        for (int i = 0; i < chunks; i++) {
+            int start = i * MESSAGE_CHUNK_LENGTH;
+            int end = Math.min((i + 1) * MESSAGE_CHUNK_LENGTH, message.length);
+            int length = end - start;
+
+            messages[i] = new byte[length + 1];
+            messages[i][0] = (byte) (i << 4 | chunks - 1);
+
+            Log.d(TAG, "  message: " + (i + 1) + " / " + chunks);
+            Log.d(TAG, "  marker bytez: " + String.format("%8s", Integer.toBinaryString(messages[i][0])));
+            for (int idx = 1, j = start; j < end; j++, idx++) {
+                messages[i][idx] = message[j];
             }
-        } else {
-            messages.add("1/1!" + message);
         }
 
         sendMessagesAsync(messages);
@@ -90,17 +112,18 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         mListeners.remove(listener);
     }
 
-    private void sendMessagesAsync(List<String> messages) {
+    private void sendMessagesAsync(byte[][] messages) {
         mPendingMessage = true;
-        new Thread(() -> {
+        mThread = new Thread(() -> {
             Log.d(TAG, "  sending message async");
-            for (String msg : messages) {
+            for (int i = 0 ; i < messages.length ; i++) {
+                byte[] message = messages[i];
                 // Transmit to GoTenna
-                Log.d(TAG, "    sending chunk to: " + GOTENNA_REMOTE_GID + ", " + msg);
-                mGtCommandCenter.sendMessage(msg.getBytes(),
+                Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to: " + GOTENNA_REMOTE_GID + ", " + new String(message));
+                mGtCommandCenter.sendMessage(message,
                         GOTENNA_REMOTE_GID,
-                        (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "  sendMessage response: " + gtSendMessageResponse.toString()),
-                        (GTError gtError) -> Log.d(TAG, "  sendMessage error: " + gtError.toString()),
+                        (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
+                        (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
                         true);
 
                 try {
@@ -110,7 +133,8 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                 }
             }
             mPendingMessage = false;
-        }).start();
+        });
+        mThread.start();
     }
 
     /**
@@ -137,13 +161,12 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     /**
      * GoTenna Message Handling
      */
-
     private List<MessageChunk> mIncomingMessages = new ArrayList<>();
 
     @Override
     public void onIncomingMessage(GTMessageData messageData) {
-        String messageChunk = new String(messageData.getDataToProcess());
-        Log.d(TAG, "onIncomingMessage(GTMessageData messageData), msg: " + messageChunk);
+        byte[] messageChunk = messageData.getDataToProcess();
+        Log.d(TAG, "onIncomingMessage(GTMessageData messageData), msg: " + new String(messageChunk));
 
         handleMessageChunk(messageChunk);
     }
@@ -157,7 +180,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
             // Somebody sent us a message, try to parse it
             GTTextOnlyMessageData gtTextOnlyMessageData = (GTTextOnlyMessageData) gtBaseMessageData;
             String messageChunk = gtTextOnlyMessageData.getText();
-            handleMessageChunk(messageChunk);
+            handleMessageChunk(messageChunk.getBytes());
         } else if (gtBaseMessageData instanceof GTGroupCreationMessageData) {
             // Somebody invited us to a group!
             GTGroupCreationMessageData gtGroupCreationMessageData = (GTGroupCreationMessageData) gtBaseMessageData;
@@ -165,38 +188,45 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         }
     }
 
-    private void handleMessageChunk(String messageChunk) {
-        String[] messageHeaderSplit = messageChunk.split("!");
-        String[] messageHeaderValues = messageHeaderSplit[0].split("/");
-        int messageIndex = Integer.parseInt(messageHeaderValues[0]);
-        int messageCount = Integer.parseInt(messageHeaderValues[1]);
-        String chunk = messageHeaderSplit[1];
+    private void handleMessageChunk(byte[] messageChunk) {
+        Log.d(TAG, "handleMessageChunk byte: " + Integer.toBinaryString(messageChunk[0]));
+        int messageIndex = messageChunk[0] >> 4 & 0x0f;
+        int messageCount = messageChunk[0] & 0x0f;
 
+        Log.d(TAG, "messageIndex: " + messageIndex + ", messageCount: " + messageCount);
+
+        byte[] chunk = new byte[messageChunk.length - 1];
+        for (int idx = 0, i = 1 ; i < messageChunk.length ; i++, idx++)
+        {
+            chunk[idx] = messageChunk[i];
+        }
         handleMessageChunk(messageIndex, messageCount, chunk);
     }
 
-    private void handleMessageChunk(int messageIndex, int messageCount, String messageChunk) {
+    private void handleMessageChunk(int messageIndex, int messageCount, byte[] messageChunk) {
         mIncomingMessages.add(new MessageChunk(messageIndex, messageCount, messageChunk));
 
         if (messageIndex == messageCount) {
             // Message complete!
-            String[] messagePieces = new String[messageCount + 1];
+            byte[][] messagePieces = new byte[messageCount][];
+            int totalLength = 0;
             for (MessageChunk messagePiece : mIncomingMessages) {
                 messagePieces[messagePiece.index] = messagePiece.chunk;
+                totalLength = totalLength + messagePiece.chunk.length;
             }
 
-            StringBuilder messageBuilder = new StringBuilder();
-
-            for (String messagePiece : messagePieces) {
-                messageBuilder.append(messagePiece);
+            Log.d(TAG, "handleMessageChunk, total length: " + totalLength);
+            byte[] message = new byte[totalLength];
+            for (int idx = 0, i = 0 ; i < messagePieces.length ; i++) {
+                for (int j = 0 ; j < messagePieces[i].length ; j++, idx++) {
+                    message[idx] = messagePieces[i][j];
+                }
             }
-
-            mIncomingMessages = new ArrayList<>();
-            notifyListeners(messageBuilder.toString());
+            notifyListeners(message);
         }
     }
 
-    private void notifyListeners(String message) {
+    private void notifyListeners(byte[] message) {
         for (Listener listener : mListeners) {
             listener.onMessageReceived(message);
         }
@@ -264,9 +294,9 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     private static class MessageChunk {
         public int index;
         public int count;
-        public String chunk;
+        public byte[] chunk;
 
-        public MessageChunk(int index, int count, String chunk) {
+        public MessageChunk(int index, int count, byte[] chunk) {
             this.index = index;
             this.count = count;
             this.chunk = chunk;

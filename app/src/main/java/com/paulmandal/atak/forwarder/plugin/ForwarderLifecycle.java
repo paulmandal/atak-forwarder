@@ -42,9 +42,9 @@ public class ForwarderLifecycle implements Lifecycle {
     @Override
     public void onStart() {
         Log.d(TAG, "onStart()");
-        mCommHardware = CommHardwareFactory.getCommHardware();
-        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler();
-        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler();
+        mCommHardware = CommHardwareFactory.getCommHardware(mActivity);
+        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mActivity);
+        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mActivity);
     }
 
     @Override

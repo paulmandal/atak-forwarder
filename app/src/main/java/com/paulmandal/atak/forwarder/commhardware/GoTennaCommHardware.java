@@ -223,8 +223,10 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
 
             byte[] message = new byte[totalLength];
             for (int idx = 0, i = 0 ; i < messagePieces.length ; i++) {
-                for (int j = 0 ; j < messagePieces[i].length ; j++, idx++) {
-                    message[idx] = messagePieces[i][j];
+                if (messagePieces[i] != null) {
+                    for (int j = 0; j < messagePieces[i].length; j++, idx++) {
+                        message[idx] = messagePieces[i][j];
+                    }
                 }
             }
             notifyListeners(message);

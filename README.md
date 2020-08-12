@@ -6,12 +6,13 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 To use this plugin you will need to build your own copy of ATAK-CIV, to do that first:
 
-* clone the ATAK-CIV repo somewhere: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV
+* clone the ATAK-CIV repo: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV
 * clone this repo into the same parent directory that you cloned the DoD's ATAK repo to (i.e. not into the `AndroidTacticalAssaultKit-CIV` directory)
 * get the GoTenna SDK: https://github.com/gotenna/PublicSDK
 * get the ATAK-CIV SDK: http://7n7.us/civtak4sdk
 * follow the instructions for building ATAK in the ATAK repo's BULIDING.md file, load the application onto your devices using the `installCivDebug` Gradle task
  * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
+ * Note: instructions on getting this to work with `installCivRelease` will happen in the next few days, the key is to add your signing fingerprint to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 * copy the GoTenna Public SDK into the `libs/` directory as `gotenna-public-sdk.aar`
 * copy the ATAK SDK into the `libs/` directory as `main.jar`
 * open this project in Android Studio
@@ -21,7 +22,7 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
  * Set `PRIMARY_DEVICE` to `false` and build the application onto your secondary device
  * Open ATAK on each device
 
-It will take quite a while for the first messages to be transmitted. During my testing I only tested in one direction -- having both devices transmit might take too much bandwidth for the GoTenna Mesh.
+It will take quite a while for the first messages to be transmitted. It is easy to miss messages if there are many markers on the map. When a CoT message gets sent we break it up into 200 byte chunks and then send each chunk with a 10 second gap between them, any other CoT messages during that time will be ignored.
 
 # Contributing
 

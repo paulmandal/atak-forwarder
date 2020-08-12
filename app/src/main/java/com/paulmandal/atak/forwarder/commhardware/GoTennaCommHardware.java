@@ -1,10 +1,12 @@
 package com.paulmandal.atak.forwarder.commhardware;
 
+import android.content.Context;
 import android.location.Location;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.gotenna.sdk.GoTenna;
 import com.gotenna.sdk.connection.GTConnectionError;
 import com.gotenna.sdk.connection.GTConnectionManager;
 import com.gotenna.sdk.connection.GTConnectionState;
@@ -18,6 +20,7 @@ import com.gotenna.sdk.data.messages.GTBaseMessageData;
 import com.gotenna.sdk.data.messages.GTGroupCreationMessageData;
 import com.gotenna.sdk.data.messages.GTMessageData;
 import com.gotenna.sdk.data.messages.GTTextOnlyMessageData;
+import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.interfaces.CommHardware;
@@ -34,7 +37,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     private static final double LATITUDE = Config.LATITUDE;
     private static final double LONGITUDE = Config.LONGITUDE;
 
-//    private static final int MAX_MESSAGE_LENGTH = Config.MAX_MESSAGE_LENGTH;
     private static final int MESSAGE_CHUNK_LENGTH = Config.MESSAGE_CHUNK_LENGTH;
     private static final int DELAY_BETWEEN_MESSAGES_MS = Config.DELAY_BETWEEN_MESSAGES_MS;
 
@@ -48,7 +50,13 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     private List<Listener> mListeners = new CopyOnWriteArrayList<>();
 
     @Override
-    public void init() {
+    public void init(Context context) {
+        try {
+            GoTenna.setApplicationToken(context, Config.GOTENNA_SDK_TOKEN);
+        } catch (GTInvalidAppTokenException e) {
+            e.printStackTrace();
+        }
+
         mGtConnectionManager = GTConnectionManager.getInstance();
         mGtCommandCenter = GTCommandCenter.getInstance();
         scanForGotenna(GTDeviceType.MESH);

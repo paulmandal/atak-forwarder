@@ -39,7 +39,7 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
     }
 
     @Override
-    public void onUserDiscoveryBroadcast(String callsign, long gId, String atakUid) {
+    public void onUserDiscoveryBroadcastReceived(String callsign, long gId, String atakUid) {
         Log.d(TAG, "onUserDiscoveryBroadcast: " + callsign);
         // Check for user
         boolean found = false;

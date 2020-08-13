@@ -17,6 +17,7 @@ public class Config {
      */
     public static final int MESSAGE_CHUNK_LENGTH = 192;
     public static final int DELAY_BETWEEN_MESSAGES_MS = 12500;
+    public static final int DELAY_BETWEEN_DISCOVERY_BROADCASTS_MS = 1000;
 
     /**
      * IP and port to retransmit inbound messages to, this should work with the defaults in ATAK

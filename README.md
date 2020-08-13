@@ -38,6 +38,7 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
 * open this project in Android Studio
  * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
  * Set `FALLBACK_LATITUDE` and `FALLBACK_LATITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
+ * Turn the frequency that your ATAK sends out updates down to ~90 seconds or more for best results
  * Open ATAK on each device
 
 It will take quite a while for the first messages to be transmitted. It is easy to miss messages if there are many markers on the map. When a CoT message gets sent we break it up into 200 byte chunks and then send each chunk with a 10 second gap between them, any other CoT messages during that time will be ignored.

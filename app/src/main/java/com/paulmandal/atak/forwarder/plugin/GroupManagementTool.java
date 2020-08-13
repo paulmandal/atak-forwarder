@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ViewGroup;
 
 import com.atakmap.android.ipc.AtakBroadcast;
@@ -62,9 +61,6 @@ public class GroupManagementTool extends Tool implements ToolDescriptor {
             toolCallback.onToolDeactivated(this);
         }
         // Intent to launch the dropdown or tool
-
-        //viewGroup.setVisibility(ViewGroup.INVISIBLE);
-        Log.d("ATAKDBG", "  onActivate");
         Intent i = new Intent(GroupManagementDropDownReceiver.SHOW_PLUGIN);
         AtakBroadcast.getInstance().sendBroadcast(i);
     }

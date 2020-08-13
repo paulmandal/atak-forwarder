@@ -4,4 +4,10 @@
         type="transapps.maps.plugin.lifecycle.Lifecycle"
         impl="com.paulmandal.atak.forwarder.plugin.ForwarderLifecycle"
         singleton="true" />
+
+    <extension
+        type="transapps.maps.plugin.tool.ToolDescriptor"
+        impl="com.paulmandal.atak.forwarder.plugin.GroupManagementTool"
+        singleton="true" />
+
 </plugin>

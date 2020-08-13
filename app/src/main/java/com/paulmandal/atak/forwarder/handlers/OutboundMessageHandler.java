@@ -63,6 +63,6 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         }
 
         Log.d(TAG, "processCotEvent(): length: " + cotString.length() + ", EXI length: " + exiBytes.length + ", to UIDs: " + Arrays.toString(toUIDs));
-        mCommHardware.sendMessage(exiBytes);
+        mCommHardware.sendMessage(exiBytes, toUIDs);
     }
 }

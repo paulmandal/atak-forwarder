@@ -2,6 +2,30 @@
 
 An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports GoTenna Mesh.
 
+![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/plugin-integration.png "Plugin Integration")
+<br>
+![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/group-management.png "Group Management")
+<br>
+![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/screenshots/direct-messaging.png "Direct Messaging")
+
+# Features
+
+* Peer discovery
+* In-app group management
+* Broadcast messages are sent to the group
+* Direct messages to other users
+* Abstracted communication for adapting to other physical layers
+
+# To Do
+
+* Persist a group once you join
+* Repeated message filtering (e.g. stationary PLI updates, Markers set to Auto-Send)
+* Message queuing for chat messages
+* Better link / bandwidth management
+* Reduced payload size
+* Lat/Lon for GoTenna frequency configuration from live source instead of `Config.java`
+* Better error handling
+
 # Setup
 
 To use this plugin you will need to build your own copy of ATAK-CIV, to do that first:
@@ -17,9 +41,8 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
 * copy the ATAK SDK into the `libs/` directory as `main.jar`
 * open this project in Android Studio
  * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
- * Set `LATITUDE` and `LONGITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
- * Set `PRIMARY_DEVICE` to `true` and build the application onto your first device
- * Set `PRIMARY_DEVICE` to `false` and build the application onto your secondary device
+ * Set `FALLBACK_LATITUDE` and `FALLBACK_LATITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
+ * Turn the frequency that your ATAK sends out updates down to ~90 seconds or more for best results
  * Open ATAK on each device
 
 It will take quite a while for the first messages to be transmitted. It is easy to miss messages if there are many markers on the map. When a CoT message gets sent we break it up into 200 byte chunks and then send each chunk with a 10 second gap between them, any other CoT messages during that time will be ignored.

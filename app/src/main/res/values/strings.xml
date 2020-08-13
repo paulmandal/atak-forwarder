@@ -2,4 +2,12 @@
 <resources>
     <string name="app_name">ATAK Forwarder</string>
     <string name="app_desc">Forwards CoT messages to/from ATAK via a hardware layer</string>
+
+    <string name="group_id">Group Id</string>
+    <string name="create_group">Create Group</string>
+    <string name="broadcast_discovery">Broadcast Discovery</string>
+    <string name="add_to_group">Add to Group</string>
+
+    <string name="group_in_text">In</string>
+    <string name="group_out_text">Out</string>
 </resources>

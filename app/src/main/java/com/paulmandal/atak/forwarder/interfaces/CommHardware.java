@@ -2,14 +2,21 @@ package com.paulmandal.atak.forwarder.interfaces;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
+import java.util.List;
+
 public interface CommHardware {
     interface Listener {
         void onMessageReceived(byte[] message);
     }
 
-    void init(Context context);
+    void init(@NonNull Context context, @NonNull String callsign, long gId, String atakUid);
     void destroy();
-    void sendMessage(byte[] message);
+    void broadcastDiscoveryMessage();
+    void createGroup(List<Long> memberGids);
+    void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids);
+    void sendMessage(byte[] message, String[] toUIDs);
     void addListener(Listener listener);
     void removeListener(Listener listener);
 }

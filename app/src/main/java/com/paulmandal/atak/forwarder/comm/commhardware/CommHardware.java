@@ -60,6 +60,7 @@ public abstract class CommHardware {
     public abstract void broadcastDiscoveryMessage();
     public abstract void createGroup(List<Long> memberGids);
     public abstract void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids);
+    public abstract void connect();
     public abstract void forgetDevice();
 
     @CallSuper

@@ -4,6 +4,8 @@ package com.paulmandal.atak.forwarder.plugin;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
@@ -63,9 +65,10 @@ public class ForwarderLifecycle implements Lifecycle {
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
         MessageQueue messageQueue = new MessageQueue(cotComparer);
         CotProtobufConverter cotProtobufConverter = new CotProtobufConverter();
+        Handler handler = new Handler(Looper.getMainLooper());
 
         mGroupTracker = new GroupTracker(mActivity, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, mGroupTracker, mGroupTracker, messageQueue);
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, handler, mGroupTracker, mGroupTracker, messageQueue);
         mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(messageQueue, cotMessageCache, cotProtobufConverter);
 

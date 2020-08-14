@@ -67,6 +67,8 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
 
     long mGroupId;
 
+    private boolean mScanning = false;
+
     private Thread mQuotaWorkerThread;
 
     public GoTennaCommHardware(Handler handler,
@@ -150,6 +152,13 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     }
 
     @Override
+    public void connect() {
+        if (!isConnected() && !mScanning) {
+            scanForGotenna(GTDeviceType.MESH);
+        }
+    }
+
+    @Override
     public void forgetDevice() {
         mGtConnectionManager.disconnect();
         mGtConnectionManager.clearConnectedGotennaAddress();
@@ -171,6 +180,9 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         switch (connectionState) {
             case CONNECTED:
                 onGoTennaConnected();
+                break;
+            case CONNECTING:
+                mHandler.removeCallbacks(mScanTimeoutRunnable);
                 break;
             case SCANNING:
             case DISCONNECTED:
@@ -297,12 +309,14 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
      */
     private Runnable mScanTimeoutRunnable = () -> {
         mGtConnectionManager.disconnect();
+        mScanning = false;
         if (getScanListener() != null) {
             getScanListener().onScanTimeout();
         }
     };
 
     private void scanForGotenna(GTDeviceType deviceType) {
+        mScanning = true;
         if (getScanListener() != null) {
             getScanListener().onScanStarted();
         }
@@ -315,6 +329,8 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     }
 
     private void onGoTennaConnected() {
+        mScanning = false;
+        mHandler.removeCallbacks(mScanTimeoutRunnable);
         Log.d(TAG, "onGoTennaConnected");
         if (getScanListener() != null) {
             getScanListener().onDeviceConnected();

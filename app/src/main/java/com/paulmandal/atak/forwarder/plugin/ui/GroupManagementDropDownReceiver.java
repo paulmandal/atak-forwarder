@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -51,6 +52,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     private TextView mMessageQueueLengthTextView;
     private ListView mGroupMembersListView;
     private Button mCreateGroupButton;
+    private Button mScanOrUnpair;
     private TextView mConnectionStatusTextView;
 
     public GroupManagementDropDownReceiver(final MapView mapView,
@@ -73,6 +75,20 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         // developers to look at this Inflator
         mTemplateView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
 
+        // Set up tabs
+        TabHost tabs = (TabHost) mTemplateView.findViewById(R.id.tab_host);
+        tabs.setup();
+        TabHost.TabSpec spec = tabs.newTabSpec("tab_settings");
+        spec.setContent(R.id.tab_settings);
+        spec.setIndicator("Settings");
+        tabs.addTab(spec);
+        spec = tabs.newTabSpec("tab_advanced");
+        spec.setContent(R.id.tab_advanced);
+        spec.setIndicator("Advanced");
+        tabs.addTab(spec);
+
+        // Set up the rest of the UI
+
         mGroupIdTextView = (TextView) mTemplateView.findViewById(R.id.textview_group_id);
         mMessageQueueLengthTextView = (TextView)mTemplateView.findViewById(R.id.textview_message_queue_length);
         mCreateGroupButton = (Button) mTemplateView.findViewById(R.id.button_create_group);
@@ -85,7 +101,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         Button clearMessageCache = (Button) mTemplateView.findViewById(R.id.button_clear_message_cache);
         Button clearMessageQueue = (Button) mTemplateView.findViewById(R.id.button_clear_message_queue);
         Button setCachePurgeTime = (Button) mTemplateView.findViewById(R.id.button_set_message_purge_time_ms);
-        Button unpair = (Button) mTemplateView.findViewById(R.id.button_unpair);
+        mScanOrUnpair = (Button) mTemplateView.findViewById(R.id.button_scan_or_unpair);
 
         EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_purge_time_mins);
 
@@ -98,17 +114,25 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         });
 
         clearData.setOnClickListener((View v) -> {
+            Toast.makeText(mPluginContext, "Clearing all plugin data", Toast.LENGTH_LONG).show();
             mGroupTracker.clearData();
             mCotMessageCache.clearData();
             mMessageQueue.clearData();
             updateUi();
         });
 
-        clearMessageCache.setOnClickListener((View v) -> mCotMessageCache.clearData());
+        clearMessageCache.setOnClickListener((View v) -> {
+            Toast.makeText(mPluginContext, "Clearing duplicate message cache", Toast.LENGTH_SHORT).show();
+            mCotMessageCache.clearData();
+        });
 
-        clearMessageQueue.setOnClickListener((View v) -> mMessageQueue.clearData());
+        clearMessageQueue.setOnClickListener((View v) -> {
+            Toast.makeText(mPluginContext, "Clearing outgoing message queue", Toast.LENGTH_SHORT).show();
+            mMessageQueue.clearData();
+        });
 
         setCachePurgeTime.setOnClickListener((View v) -> {
+            Toast.makeText(mPluginContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
             String cachePurgeTimeMinsStr = cachePurgeTimeMins.getText().toString();
             if (cachePurgeTimeMinsStr.equals("")) {
                 return;
@@ -117,9 +141,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             mCotMessageCache.setCachePurgeTimeMs(cachePurgeTimeMs);
         });
 
-        unpair.setOnClickListener((View v) -> {
-            commHardware.forgetDevice();
-        });
+        mScanOrUnpair.setOnClickListener(mScanClickListener);
 
         mGroupTracker.setUpdateListener(this);
         messageQueue.setListener(this);
@@ -214,6 +236,10 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         updateUi();
     }
 
+    private View.OnClickListener mScanClickListener = (View v) -> mCommHardware.connect();
+
+    private View.OnClickListener mUnpairClickListener = (View v) -> mCommHardware.forgetDevice();
+
     private void updateUi() {
         setEditModeAndUiForGroup();
         setupListView();
@@ -250,23 +276,30 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     public void onScanStarted() {
         Toast.makeText(mPluginContext, "Scanning for comm device", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_scanning);
+        mScanOrUnpair.setOnClickListener(null);
     }
 
     @Override
     public void onScanTimeout() {
         Toast.makeText(mPluginContext, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_timeout);
+        mScanOrUnpair.setOnClickListener(mScanClickListener);
+        mScanOrUnpair.setText(R.string.scan);
     }
 
     @Override
     public void onDeviceConnected() {
         Toast.makeText(mPluginContext, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_connected);
+        mScanOrUnpair.setOnClickListener(mUnpairClickListener);
+        mScanOrUnpair.setText(R.string.unpair);
     }
 
     @Override
     public void onDeviceDisconnected() {
         Toast.makeText(mPluginContext, "Comm device disconnected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
+        mScanOrUnpair.setOnClickListener(mScanClickListener);
+        mScanOrUnpair.setText(R.string.scan);
     }
 }

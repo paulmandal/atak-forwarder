@@ -13,6 +13,11 @@ public class Config {
     public static final double FALLBACK_LONGITUDE = ; // -74.102977
 
     /**
+     * GoTennna Stuff
+     */
+    public static final int SCAN_TIMEOUT_MS = 30000;
+
+    /**
      * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)
      */
     public static final int MESSAGE_CHUNK_LENGTH = 192;

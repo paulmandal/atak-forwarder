@@ -1,21 +1,23 @@
 package com.paulmandal.atak.forwarder.factories;
 
 import com.atakmap.comms.CommsMapComponent;
+import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
-import com.paulmandal.atak.forwarder.interfaces.CommHardware;
-import com.siemens.ct.exi.core.EXIFactory;
-import com.siemens.ct.exi.core.helpers.DefaultEXIFactory;
 
 public class MessageHandlerFactory {
-    public static InboundMessageHandler getInboundMessageHandler(CommHardware commHardware) {
-        EXIFactory exiFactory = DefaultEXIFactory.newInstance();
-        return new InboundMessageHandler(commHardware, exiFactory);
+    public static InboundMessageHandler getInboundMessageHandler(CommHardware commHardware,
+                                                                 CotProtobufConverter cotProtobufConverter) {
+        return new InboundMessageHandler(commHardware, cotProtobufConverter);
     }
 
-    public static OutboundMessageHandler getOutboundMessageHandler(CommHardware commHardware) {
+    public static OutboundMessageHandler getOutboundMessageHandler(MessageQueue messageQueue,
+                                                                   CotMessageCache cotMessageCache,
+                                                                   CotProtobufConverter cotProtobufConverter) {
         CommsMapComponent commsMapComponent = CommsMapComponent.getInstance();
-        EXIFactory exiFactory = DefaultEXIFactory.newInstance();
-        return new OutboundMessageHandler(commsMapComponent, commHardware, exiFactory);
+        return new OutboundMessageHandler(commsMapComponent, messageQueue, cotMessageCache, cotProtobufConverter);
     }
 }

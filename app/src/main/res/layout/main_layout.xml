@@ -13,21 +13,55 @@
         android:text="@string/group_id" />
 
     <TextView
-        android:id="@+id/group_id"
+        android:id="@+id/textview_group_id"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_toEndOf="@id/label_group_id"
         android:padding="8dp" />
 
+    <TextView
+        android:id="@+id/label_message_queue_length"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@id/textview_message_queue_length"
+        android:padding="8dp"
+        android:text="@string/message_queue_length" />
+
+    <TextView
+        android:id="@+id/textview_message_queue_length"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:padding="8dp" />
+
     <ListView
         android:id="@+id/listview_group_members"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_create_group"
+        android:layout_above="@id/button_clear_message_cache"
         android:layout_below="@id/label_group_id"
         android:layout_alignParentStart="true"
         android:padding="8dp" />
+
+    <EditText
+        android:id="@+id/edittext_purge_time_mins"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listview_group_members"
+        android:layout_alignParentStart="true"
+        android:padding="8dp" />
+
+    <Button
+        android:id="@+id/button_set_message_purge_time_ms"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/listview_group_members"
+        android:layout_toEndOf="@id/edittext_purge_time_mins"
+        android:padding="8dp"
+        android:text="@string/set_message_cache_purge_time_mins" />
 
     <Button
         android:id="@+id/button_create_group"
@@ -39,11 +73,30 @@
         android:text="@string/create_group" />
 
     <Button
+        android:id="@+id/button_clear_message_cache"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/button_clear_data"
+        android:layout_alignParentEnd="true"
+        android:padding="8dp"
+        android:text="@string/clear_message_cache" />
+
+    <Button
+        android:id="@+id/button_clear_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/button_broadcast_discovery"
+        android:layout_alignParentEnd="true"
+        android:padding="8dp"
+        android:text="@string/clear_data" />
+
+    <Button
         android:id="@+id/button_broadcast_discovery"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
         android:padding="8dp"
         android:text="@string/broadcast_discovery" />
 </RelativeLayout>

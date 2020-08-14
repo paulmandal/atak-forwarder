@@ -3,10 +3,16 @@
     <string name="app_name">ATAK Forwarder</string>
     <string name="app_desc">Forwards CoT messages to/from ATAK via a hardware layer</string>
 
+    <string name="shared_prefs_filename">atak-forwarder</string>
+
     <string name="group_id">Group Id</string>
+    <string name="message_queue_length">MsgQ Len</string>
     <string name="create_group">Create Group</string>
     <string name="broadcast_discovery">Broadcast Discovery</string>
+    <string name="set_message_cache_purge_time_mins">Set MsgQ Purge Ms</string>
     <string name="add_to_group">Add to Group</string>
+    <string name="clear_data">Clear Data</string>
+    <string name="clear_message_cache">Clear Msg Cache</string>
 
     <string name="group_in_text">In</string>
     <string name="group_out_text">Out</string>

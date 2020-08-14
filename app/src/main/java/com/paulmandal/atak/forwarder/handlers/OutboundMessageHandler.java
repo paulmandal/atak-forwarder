@@ -4,35 +4,40 @@ import android.util.Log;
 
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.interfaces.CommHardware;
-import com.siemens.ct.exi.core.EXIFactory;
-import com.siemens.ct.exi.core.exceptions.EXIException;
-import com.siemens.ct.exi.main.api.sax.EXIResult;
+import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
 
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
+import org.xmlunit.builder.Input;
+import org.xmlunit.diff.Comparison;
+import org.xmlunit.diff.ComparisonResult;
+import org.xmlunit.diff.DOMDifferenceEngine;
+import org.xmlunit.diff.DifferenceEngine;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Arrays;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import javax.xml.transform.Source;
 
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor {
     private static final String TAG = "ATAKDBG." + OutboundMessageHandler.class.getSimpleName();
 
-    private CommsMapComponent mCommsMapComponent;
-    private CommHardware mCommHardware;
-    private EXIFactory mExiFactory;
+    /**
+     * Do not cache/filter these message types
+     */
+    private static final String MSG_TYPE_SELF_PLI = "a-f-G-U-C";
+    private static final String MSG_TYPE_CHAT = "b-t-f";
 
-    public OutboundMessageHandler(CommsMapComponent commsMapComponent, CommHardware commHardware, EXIFactory exiFactory) {
+    private CommsMapComponent mCommsMapComponent;
+    private MessageQueue mMessageQueue;
+    private CotMessageCache mCotMessageCache;
+    private CotProtobufConverter mCotProtobufConverter;
+
+    public OutboundMessageHandler(CommsMapComponent commsMapComponent,
+                                  MessageQueue messageQueue,
+                                  CotMessageCache cotMessageCache,
+                                  CotProtobufConverter cotProtobufConverter) {
         mCommsMapComponent = commsMapComponent;
-        mCommHardware = commHardware;
-        mExiFactory = exiFactory;
+        mMessageQueue = messageQueue;
+        mCotMessageCache = cotMessageCache;
+        mCotProtobufConverter = cotProtobufConverter;
 
         commsMapComponent.registerPreSendProcessor(this);
     }
@@ -43,26 +48,47 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
     @Override
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
-        // TODO: handle toUIDs here
-        String cotString = cotEvent.toString();
-        byte[] exiBytes;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-             ByteArrayInputStream bais = new ByteArrayInputStream(cotString.getBytes())) {
-            EXIResult exiResult = new EXIResult(mExiFactory);
-            exiResult.setOutputStream(baos);
-            SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-            SAXParser newSAXParser = saxParserFactory.newSAXParser();
-            XMLReader xmlReader = newSAXParser.getXMLReader();
-            xmlReader.setContentHandler(exiResult.getHandler());
-            InputSource inputSource = new InputSource(bais);
-            xmlReader.parse(inputSource);
-            exiBytes = baos.toByteArray();
-        } catch (IOException | EXIException | SAXException | ParserConfigurationException e) {
-            e.printStackTrace();
-            return;
+        String eventType = cotEvent.getType();
+        if (!eventType.equals(MSG_TYPE_SELF_PLI)
+            && !eventType.equals(MSG_TYPE_CHAT)) {
+            if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
+                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this
+                return;
+            }
+            mCotMessageCache.cacheEvent(cotEvent);
         }
 
-        Log.d(TAG, "processCotEvent(): length: " + cotString.length() + ", EXI length: " + exiBytes.length + ", to UIDs: " + Arrays.toString(toUIDs));
-        mCommHardware.sendMessage(exiBytes, toUIDs);
+        byte[] cotProtobuf =  mCotProtobufConverter.cotEventToByteArray(cotEvent);
+        boolean overwriteSimilar = eventType.equals(MSG_TYPE_SELF_PLI) || !eventType.equals(MSG_TYPE_CHAT);
+        mMessageQueue.queueMessage(cotEvent, cotProtobuf, toUIDs, determineMessagePriority(cotEvent), MessageQueue.QueuedMessage.XMIT_TYPE_NORMAL, overwriteSimilar);
+
+        // TODO: remove this validation when we're satisfied that this works well
+        try {
+            String protoBufString = mCotProtobufConverter.cotEventFromProtoBuf(cotProtobuf).toString();
+            String cotString = cotEvent.toString();
+            Log.d(TAG, "o: " + cotString);
+            Log.d(TAG, "p: " + protoBufString);
+            Source original = Input.fromString(cotString).build();
+            Source protobuffed = Input.fromString(protoBufString).build();
+            DifferenceEngine diff = new DOMDifferenceEngine();
+            diff.addDifferenceListener((Comparison comparison, ComparisonResult outcome) -> {
+                Log.d(TAG, "  found difference b/t original CotEvent and protobuf(CotEvent):" + comparison);
+            });
+            diff.compare(original, protobuffed);
+            Log.d(TAG, "Compare finished");
+        } catch(UnsupportedOperationException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int determineMessagePriority(CotEvent cotEvent) {
+        switch (cotEvent.getType()) {
+            case MSG_TYPE_SELF_PLI:
+                return MessageQueue.PRIORITY_LOW;
+            case MSG_TYPE_CHAT:
+                return MessageQueue.PRIORITY_HIGH;
+            default:
+                return MessageQueue.PRIORITY_MEDIUM;
+        }
     }
 }

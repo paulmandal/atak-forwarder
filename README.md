@@ -18,7 +18,9 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 # To Do
 
-* Persist a group once you join
+* Persist a group once you join, persist user info for the group
+* Improve peer discovery -- when peers receive a user broadcast they should send a reply to let them know they exist too
+* Proper disconnect of GoTenna device when closing
 * Repeated message filtering (e.g. stationary PLI updates, Markers set to Auto-Send)
 * Message queuing for chat messages
 * Better link / bandwidth management
@@ -35,15 +37,16 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
 * get the GoTenna SDK: https://github.com/gotenna/PublicSDK
 * get the ATAK-CIV SDK: http://7n7.us/civtak4sdk
 * follow the instructions for building ATAK in the ATAK repo's BULIDING.md file, load the application onto your devices using the `installCivDebug` Gradle task
- * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
- * Note: instructions on getting this to work with `installCivRelease` will happen in the next few days, the key is to add your signing fingerprint to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
+    * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
+    * Note: instructions on getting this to work with `installCivRelease` will happen in the next few days, the key is to add your signing fingerprint to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 * copy the GoTenna Public SDK into the `libs/` directory as `gotenna-public-sdk.aar`
 * copy the ATAK SDK into the `libs/` directory as `main.jar`
 * open this project in Android Studio
- * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
- * Set `FALLBACK_LATITUDE` and `FALLBACK_LATITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
- * Turn the frequency that your ATAK sends out updates down to ~90 seconds or more for best results
- * Open ATAK on each device
+    * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
+    * Set `FALLBACK_LATITUDE` and `FALLBACK_LATITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
+    * Open ATAK, go to Settings -> My Callsign -> More -> Reporting Preferences and set:
+    * Dynamic Reporting Rate Stationary (Unreliable) to 120
+    * Minimum and Maximum (Unreliable) to 60
 
 It will take quite a while for the first messages to be transmitted. It is easy to miss messages if there are many markers on the map. When a CoT message gets sent we break it up into 200 byte chunks and then send each chunk with a 10 second gap between them, any other CoT messages during that time will be ignored.
 

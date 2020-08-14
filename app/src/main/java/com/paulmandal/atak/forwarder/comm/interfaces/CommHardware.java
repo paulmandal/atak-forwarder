@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.interfaces;
+package com.paulmandal.atak.forwarder.comm.interfaces;
 
 import android.content.Context;
 
@@ -16,7 +16,6 @@ public interface CommHardware {
     void broadcastDiscoveryMessage();
     void createGroup(List<Long> memberGids);
     void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids);
-    void sendMessage(byte[] message, String[] toUIDs);
     void addListener(Listener listener);
     void removeListener(Listener listener);
 }

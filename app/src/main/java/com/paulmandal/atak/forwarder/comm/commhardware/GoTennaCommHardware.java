@@ -1,7 +1,9 @@
-package com.paulmandal.atak.forwarder.commhardware;
+package com.paulmandal.atak.forwarder.comm.commhardware;
+
 
 import android.content.Context;
 import android.location.Location;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -25,9 +27,10 @@ import com.gotenna.sdk.exceptions.GTDataMissingException;
 import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +50,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
 
     private static final int MESSAGE_CHUNK_LENGTH = Config.MESSAGE_CHUNK_LENGTH;
     private static final int DELAY_BETWEEN_MESSAGES_MS = Config.DELAY_BETWEEN_MESSAGES_MS;
-    private static final int DELAY_BETWEEN_DISCOVERY_BROADCASTS_MS = Config.DELAY_BETWEEN_DISCOVERY_BROADCASTS_MS;
+    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES;
 
     private static final String BCAST_MARKER = "ATAKBCAST";
 
@@ -60,16 +63,21 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     long mGroupId;
 
     private boolean mConnected = false;
-    private boolean mPendingMessage = false;
     private boolean mDestroyed = false;
 
     private List<Listener> mListeners = new CopyOnWriteArrayList<>();
     private GroupListener mGroupListener;
     private GroupTracker mGroupTracker;
+    private MessageQueue mMessageQueue;
 
-    public GoTennaCommHardware(GroupListener userListener, GroupTracker groupTracker) {
+    private Thread mMessageWorkerThread;
+
+    public GoTennaCommHardware(GroupListener userListener,
+                               GroupTracker groupTracker,
+                               MessageQueue messageQueue) {
         mGroupListener = userListener;
         mGroupTracker = groupTracker;
+        mMessageQueue = messageQueue;
     }
 
     @Override
@@ -100,6 +108,11 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     @Override
     public void broadcastDiscoveryMessage() {
         broadcastDiscoveryMessage(false);
+    }
+
+    private void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
+        String broadcastData = BCAST_MARKER + "," + mGid + "," + mAtakUid + "," + mCallsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        mMessageQueue.queueMessage(null, broadcastData.getBytes(), null, MessageQueue.PRIORITY_HIGHEST, MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST, false);
     }
 
     @Override
@@ -144,45 +157,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     }
 
     @Override
-    public void sendMessage(byte[] message, String[] toUIDs) {
-        if (!mConnected) {
-            Log.d(TAG, "sendMessage: not connected yet");
-            return;
-        }
-
-        if (mPendingMessage) {
-            Log.d(TAG, "sendMessage: already sending message");
-            return;
-        }
-
-        // Check message length and break up if necessary
-        int chunks = (int) Math.ceil((double) message.length / (double) MESSAGE_CHUNK_LENGTH);
-
-        if (chunks > 15) {
-            Log.e(TAG, "Cannot break message into more than 15 pieces since we only have 1 byte for the header");
-            return;
-        }
-
-        Log.d(TAG, "Message length: " + message.length + " chunks: " + chunks);
-
-        byte[][] messages = new byte[chunks][];
-        for (int i = 0; i < chunks; i++) {
-            int start = i * MESSAGE_CHUNK_LENGTH;
-            int end = Math.min((i + 1) * MESSAGE_CHUNK_LENGTH, message.length);
-            int length = end - start;
-
-            messages[i] = new byte[length + 1];
-            messages[i][0] = (byte) (i << 4 | chunks);
-
-            for (int idx = 1, j = start; j < end; j++, idx++) {
-                messages[i][idx] = message[j];
-            }
-        }
-
-        sendMessagesAsync(messages, toUIDs);
-    }
-
-    @Override
     public void addListener(Listener listener) {
         mListeners.add(listener);
     }
@@ -190,19 +164,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     @Override
     public void removeListener(Listener listener) {
         mListeners.remove(listener);
-    }
-
-    private void sendMessagesAsync(byte[][] messages, String[] toUIDs) {
-        mPendingMessage = true;
-        new Thread(() -> {
-            Log.d(TAG, "  sending message async");
-            if (toUIDs == null) {
-                sendMessagesToGroup(messages);
-            } else {
-                sendMessagesToUsers(messages, toUIDs);
-            }
-            mPendingMessage = false;
-        }).start();
     }
 
     /**
@@ -275,6 +236,11 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         long gId = Long.parseLong(messageSplit[0]);
         String atakUid = messageSplit[1];
         String callsign = messageSplit[2];
+        boolean initialDiscoveryMessage = messageSplit[3].equals("1");
+
+        if (initialDiscoveryMessage) {
+            broadcastDiscoveryMessage(false);
+        }
         mGroupListener.onUserDiscoveryBroadcastReceived(callsign, gId, atakUid);
     }
 
@@ -318,54 +284,9 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     }
 
     private void notifyListeners(byte[] message) {
+        Log.d("BASE64", "Incoming message: " + Base64.encodeToString(message, Base64.DEFAULT));
         for (Listener listener : mListeners) {
             listener.onMessageReceived(message);
-        }
-    }
-
-    private void sendMessagesToGroup(byte[][] messages) {
-        GroupInfo groupInfo = mGroupTracker.getGroup();
-        if (groupInfo == null) {
-            Log.d(TAG, "  Tried to broadcast message without group, returning");
-            return;
-        }
-        for (int i = 0; i < messages.length; i++) {
-            byte[] message = messages[i];
-            long groupId = groupInfo.groupId;
-
-            Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
-            mGtCommandCenter.sendMessage(message,
-                    groupId,
-                    (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
-                    (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
-                    true);
-        }
-        sleepForMessageDelay(messages.length);
-    }
-
-    private void sendMessagesToUsers(byte[][] messages, String[] toUIDs) {
-        for (String uId : toUIDs) {
-            for (int i = 0; i < messages.length; i++) {
-                byte[] message = messages[i];
-                long gId = mGroupTracker.getGidForUid(uId);
-
-                if (gId == GroupTracker.USER_NOT_FOUND) {
-                    continue;
-                }
-                // Send message to individual
-                Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to individual: " + gId + ", " + new String(message));
-
-                mGtCommandCenter.sendMessage(message,
-                        gId,
-                        (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
-                        (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
-                        true);
-
-                if (mDestroyed) {
-                    return;
-                }
-            }
-            sleepForMessageDelay(messages.length);
         }
     }
 
@@ -415,8 +336,9 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                                         Log.d(TAG, " Error setting GoTenna ID");
                                         mConnected = false;
                                     });
-                            broadcastDiscoveryMessage(true);
                             mConnected = true;
+                            broadcastDiscoveryMessage(true);
+                            startWorkerThread();
                         } else {
                             Log.d(TAG, "Error setting GID");
                         }
@@ -425,36 +347,150 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         }).execute();
     }
 
-    private void broadcastDiscoveryMessage(boolean retry) {
-        // Broadcast our existence to the group
-        String broadcastData = BCAST_MARKER + "," + mGid + "," + mAtakUid + "," + mCallsign;
-        mGtCommandCenter.sendBroadcastMessage(broadcastData.getBytes(),
-                (GTSendMessageResponse gtSendMessageResponse) -> {
-                    Log.d(TAG, "    Sent callsign/gid: " + gtSendMessageResponse);
-                },
-                (GTError gtError) -> {
-                    Log.d(TAG, "    Error sending initial broadcast: " + gtError);
-                    new Thread(() -> {
-                        try {
-                            Thread.sleep(DELAY_BETWEEN_DISCOVERY_BROADCASTS_MS);
-                            if (retry) {
-                                broadcastDiscoveryMessage(retry);
-                            }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-                    }).start();
-                });
+    private void startWorkerThread() {
+        mMessageWorkerThread = new Thread(() -> {
+            while (!mDestroyed) {
+                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
+
+                while (!mConnected) {
+                    sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
+                }
+
+                MessageQueue.QueuedMessage queuedMessage = mMessageQueue.popHighestPriorityMessage();
+                if (queuedMessage != null) {
+                    Log.d(TAG, "got msg type: " + queuedMessage.xmitType);
+                    if (queuedMessage.xmitType == MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST) {
+                        broadcastMessage(queuedMessage.message);
+                    } else {
+                        sendMessage(queuedMessage.message, queuedMessage.toUIDs);
+                    }
+                }
+            }
+        });
+        mMessageWorkerThread.start();
     }
 
+    public void broadcastMessage(byte[] message) {
+        mGtCommandCenter.sendBroadcastMessage(message,
+                (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "    Sent callsign/gid: " + gtSendMessageResponse),
+                (GTError gtError) -> Log.d(TAG, "    Error sending initial broadcast: " + gtError));
+
+    }
+
+    public void sendMessage(byte[] message, String[] toUIDs) {
+        // Check message length and break up if necessary
+        int chunks = (int) Math.ceil((double) message.length / (double) MESSAGE_CHUNK_LENGTH);
+
+        if (chunks > 15) {
+            Log.e(TAG, "Cannot break message into more than 15 pieces since we only have 1 byte for the header");
+            return;
+        }
+
+        Log.d(TAG, "Message length: " + message.length + " chunks: " + chunks);
+        Log.d("BASE64", "Message: " + Base64.encodeToString(message, Base64.DEFAULT));
+
+        byte[][] messages = new byte[chunks][];
+        for (int i = 0; i < chunks; i++) {
+            int start = i * MESSAGE_CHUNK_LENGTH;
+            int end = Math.min((i + 1) * MESSAGE_CHUNK_LENGTH, message.length);
+            int length = end - start;
+
+            messages[i] = new byte[length + 1];
+            messages[i][0] = (byte) (i << 4 | chunks);
+
+            for (int idx = 1, j = start; j < end; j++, idx++) {
+                messages[i][idx] = message[j];
+            }
+        }
+
+        if (toUIDs == null) {
+            sendMessagesToGroup(messages);
+        } else {
+            sendMessagesToUsers(messages, toUIDs);
+        }
+    }
+
+    private void sendMessagesToGroup(byte[][] messages) {
+        GroupInfo groupInfo = mGroupTracker.getGroup();
+        if (groupInfo == null) {
+            Log.d(TAG, "  Tried to broadcast message without group, returning");
+            return;
+        }
+
+        for (int i = 0; i < messages.length; i++) {
+            byte[] message = messages[i];
+            long groupId = groupInfo.groupId;
+
+            Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
+            mGtCommandCenter.sendMessage(message,
+                    groupId,
+                    (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
+                    (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
+                    true);
+
+
+            if (i > 0 && i % 4 == 0) {
+                sleepForMessageDelay(i + 1);
+            }
+        }
+
+        if (messages.length > 4) {
+            sleepForMessageDelay(messages.length % 4);
+        }
+    }
+
+    private void sendMessagesToUsers(byte[][] messages, String[] toUIDs) {
+        for (String uId : toUIDs) {
+            for (int i = 0; i < messages.length; i++) {
+                byte[] message = messages[i];
+                long gId = mGroupTracker.getGidForUid(uId);
+
+                if (gId == GroupTracker.USER_NOT_FOUND) {
+                    continue;
+                }
+                // Send message to individual
+                Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to individual: " + gId + ", " + new String(message));
+
+                mGtCommandCenter.sendMessage(message,
+                        gId,
+                        (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
+                        (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
+                        true);
+
+                if (i > 0 && i % 4 == 0) {
+                    sleepForMessageDelay(i + 1);
+                }
+
+                if (mDestroyed) {
+                    return;
+                }
+            }
+
+            if (messages.length > 4) {
+                sleepForMessageDelay(messages.length % 4);
+            }
+        }
+    }
+
+
+    /**
+     * Utils
+     */
     private void sleepForMessageDelay(int messageCount) {
+        sleepForDelay(DELAY_BETWEEN_MESSAGES_MS * messageCount);
+    }
+
+    private void sleepForDelay(int delayMs) {
         try {
-            Thread.sleep(DELAY_BETWEEN_MESSAGES_MS * messageCount);
+            Thread.sleep(delayMs);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Class Defs
+     */
     private static class MessageChunk {
         public int index;
         public int count;

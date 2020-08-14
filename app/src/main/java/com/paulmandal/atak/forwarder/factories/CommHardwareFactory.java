@@ -3,17 +3,22 @@ package com.paulmandal.atak.forwarder.factories;
 import android.app.Activity;
 
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.commhardware.GoTennaCommHardware;
+import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.commhardware.GoTennaCommHardware;
+import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 
 public class CommHardwareFactory {
-    public static CommHardware createAndInitCommHardware(Activity activity, MapView mapView, GoTennaCommHardware.GroupListener groupListener, GroupTracker groupTracker) {
+    public static CommHardware createAndInitCommHardware(Activity activity,
+                                                         MapView mapView,
+                                                         GoTennaCommHardware.GroupListener groupListener,
+                                                         GroupTracker groupTracker,
+                                                         MessageQueue messageQueue) {
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
         long gId = longHashFromString(atakUid);
 
-        CommHardware commHardware = new GoTennaCommHardware(groupListener, groupTracker);
+        CommHardware commHardware = new GoTennaCommHardware(groupListener, groupTracker, messageQueue);
         commHardware.init(activity, callsign, gId, atakUid);
         return commHardware;
     }

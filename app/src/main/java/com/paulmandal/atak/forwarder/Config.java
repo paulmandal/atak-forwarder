@@ -17,7 +17,12 @@ public class Config {
      */
     public static final int MESSAGE_CHUNK_LENGTH = 192;
     public static final int DELAY_BETWEEN_MESSAGES_MS = 12500;
-    public static final int DELAY_BETWEEN_DISCOVERY_BROADCASTS_MS = 1000;
+    public static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = 2000;
+
+    /**
+     * How long messages live in the cache CotMessageCache (preventing them being resent)
+     */
+    public static final int DEFAULT_CACHE_PURGE_TIME_MS = 600000;
 
     /**
      * IP and port to retransmit inbound messages to, this should work with the defaults in ATAK

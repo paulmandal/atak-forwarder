@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageQueue {
+    private static final String TAG = "ATAKDBG." + MessageQueue.class.getSimpleName();
+
     public interface Listener {
         void onMessageQueueSizeChanged(int size);
     }

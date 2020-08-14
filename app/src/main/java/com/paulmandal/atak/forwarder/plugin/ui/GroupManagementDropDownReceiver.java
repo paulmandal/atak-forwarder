@@ -92,6 +92,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             mGroupTracker.clearData();
             mCotMessageCache.clearData();
             mMessageQueue.clearData();
+            updateUi();
         });
 
         clearMessageCache.setOnClickListener((View v) -> mCotMessageCache.clearData());

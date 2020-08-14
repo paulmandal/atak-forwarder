@@ -3,7 +3,6 @@ package com.paulmandal.atak.forwarder.comm.commhardware;
 
 import android.content.Context;
 import android.location.Location;
-import android.util.Base64;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -271,6 +270,8 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                 totalLength = totalLength + messagePiece.chunk.length;
             }
 
+            mIncomingMessages.clear();
+
             byte[] message = new byte[totalLength];
             for (int idx = 0, i = 0; i < messagePieces.length; i++) {
                 if (messagePieces[i] != null) {
@@ -284,7 +285,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     }
 
     private void notifyListeners(byte[] message) {
-        Log.d("BASE64", "Incoming message: " + Base64.encodeToString(message, Base64.DEFAULT));
         for (Listener listener : mListeners) {
             listener.onMessageReceived(message);
         }
@@ -387,7 +387,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         }
 
         Log.d(TAG, "Message length: " + message.length + " chunks: " + chunks);
-        Log.d("BASE64", "Message: " + Base64.encodeToString(message, Base64.DEFAULT));
 
         byte[][] messages = new byte[chunks][];
         for (int i = 0; i < chunks; i++) {

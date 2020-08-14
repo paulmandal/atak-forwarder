@@ -5,7 +5,7 @@ import android.app.Activity;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.comm.MessageQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.GoTennaCommHardware;
-import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
 public class CommHardwareFactory {

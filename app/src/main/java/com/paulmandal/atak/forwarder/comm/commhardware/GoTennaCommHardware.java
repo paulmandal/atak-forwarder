@@ -3,6 +3,7 @@ package com.paulmandal.atak.forwarder.comm.commhardware;
 
 import android.content.Context;
 import android.location.Location;
+import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -27,7 +28,6 @@ import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.MessageQueue;
-import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
@@ -35,97 +35,80 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 
-public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener {
+public class GoTennaCommHardware extends CommHardware implements GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener {
     private static final String TAG = "ATAKDBG." + GoTennaCommHardware.class.getSimpleName();
 
     public interface GroupListener {
         void onUserDiscoveryBroadcastReceived(String callsign, long gId, String atakUid);
-
         void onGroupCreated(long groupId, List<Long> memberGids);
     }
 
     private static final double FALLBACK_LATITUDE = Config.FALLBACK_LATITUDE;
     private static final double FALLBACK_LONGITUDE = Config.FALLBACK_LONGITUDE;
 
+    private static final int SCAN_TIMEOUT_MS = Config.SCAN_TIMEOUT_MS;
+
     private static final int MESSAGE_CHUNK_LENGTH = Config.MESSAGE_CHUNK_LENGTH;
     private static final int QUOTA_REFRESH_TIME_MS = Config.QUOTA_REFRESH_TIME_MS;
     private static final int MESSAGES_PER_MINUTE = Config.MESSAGES_PER_MINUTE;
-    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES;
+
+    private static final int DELAY_BETWEEN_MSGS_MS = 5000; // TODO: move this to Config
 
     private static final String BCAST_MARKER = "ATAKBCAST";
+
+    private Handler mHandler;
+    private GroupListener mGroupListener;
+    private GroupTracker mGroupTracker;
 
     private GTConnectionManager mGtConnectionManager;
     private GTCommandCenter mGtCommandCenter;
     int mUsedMessageQuota = 0;
 
-    private String mCallsign;
-    private long mGid;
-    private String mAtakUid;
     long mGroupId;
 
-    private boolean mConnected = false;
-    private boolean mDestroyed = false;
-
-    private List<Listener> mListeners = new CopyOnWriteArrayList<>();
-    private GroupListener mGroupListener;
-    private GroupTracker mGroupTracker;
-    private MessageQueue mMessageQueue;
-
-    private Thread mMessageWorkerThread;
     private Thread mQuotaWorkerThread;
 
-    public GoTennaCommHardware(GroupListener userListener,
+    public GoTennaCommHardware(Handler handler,
+                               GroupListener userListener,
                                GroupTracker groupTracker,
                                MessageQueue messageQueue) {
+        super(messageQueue, groupTracker);
+        mHandler = handler;
         mGroupListener = userListener;
         mGroupTracker = groupTracker;
-        mMessageQueue = messageQueue;
     }
 
     @Override
     public void init(@NonNull Context context, @NonNull String callsign, long gId, String atakUid) {
+        super.init(context, callsign, gId, atakUid);
         try {
             GoTenna.setApplicationToken(context, Config.GOTENNA_SDK_TOKEN);
         } catch (GTInvalidAppTokenException e) {
             e.printStackTrace();
         }
-
-        mCallsign = callsign;
-        mGid = gId;
-        mAtakUid = atakUid;
-
         mGtConnectionManager = GTConnectionManager.getInstance();
         mGtCommandCenter = GTCommandCenter.getInstance();
+
+        mGtCommandCenter.setMessageListener(this);
+        mGtConnectionManager.addGtConnectionListener(this);
 
         scanForGotenna(GTDeviceType.MESH);
     }
 
-    @Override
-    public void destroy() {
-        mGtCommandCenter.setMessageListener(null);
-        mGtConnectionManager.disconnect();
-        mDestroyed = true;
-    }
 
     @Override
     public void broadcastDiscoveryMessage() {
         broadcastDiscoveryMessage(false);
     }
 
-    private void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = BCAST_MARKER + "," + mGid + "," + mAtakUid + "," + mCallsign + "," + (initialDiscoveryMessage ? 1 : 0);
-        mMessageQueue.queueMessage(null, broadcastData.getBytes(), null, MessageQueue.PRIORITY_HIGHEST, MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST, false);
-    }
-
     @Override
     public void createGroup(List<Long> memberGids) {
-        if (!mConnected) {
+        if (!isConnected()) {
             Log.d(TAG, "createGroup: not connected yet");
             return;
         }
-        memberGids.add(mGid);
+        memberGids.add(getSelfInto().gId);
 
         Log.d(TAG, "  sending group creation request, member gids: " + memberGids);
         try {
@@ -135,6 +118,8 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                         mGroupListener.onGroupCreated(mGroupId, memberGids);
                     },
                     (GTError gtError, long l) -> Log.d(TAG, "    error creating group: " + gtError));
+
+            sleepForDelay(DELAY_BETWEEN_MSGS_MS);
             maybeSleepUntilQuotaRefresh();
         } catch (GTDataMissingException e) {
             e.printStackTrace();
@@ -143,18 +128,20 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
 
     @Override
     public void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids) {
-        if (!mConnected) {
+        if (!isConnected()) {
             Log.d(TAG, "addToGroup: not connected yet");
             return;
         }
 
-        allMemberGids.add(mGid);
+        allMemberGids.add(getSelfInto().gId);
         long groupId = mGroupTracker.getGroup().groupId;
         for (long newMemberGid : newMemberGids) {
             try {
                 mGtCommandCenter.sendIndividualGroupInvite(groupId, allMemberGids, newMemberGid,
                         (GTResponse gtResponse, long l) -> Log.d(TAG, "  Success adding user to group: " + gtResponse),
                         (GTError gtError, long l) -> Log.d(TAG, "  Error inviting user to group: " + gtError));
+
+                sleepForDelay(DELAY_BETWEEN_MSGS_MS);
                 maybeSleepUntilQuotaRefresh();
             } catch (GTDataMissingException e) {
                 e.printStackTrace();
@@ -163,13 +150,16 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
     }
 
     @Override
-    public void addListener(Listener listener) {
-        mListeners.add(listener);
+    public void forgetDevice() {
+        mGtConnectionManager.disconnect();
+        mGtConnectionManager.clearConnectedGotennaAddress();
     }
 
     @Override
-    public void removeListener(Listener listener) {
-        mListeners.remove(listener);
+    public void destroy() {
+        super.destroy();
+        mGtCommandCenter.setMessageListener(null);
+        mGtConnectionManager.disconnect();
     }
 
     /**
@@ -182,9 +172,14 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
             case CONNECTED:
                 onGoTennaConnected();
                 break;
+            case SCANNING:
+            case DISCONNECTED:
+                setConnected(false);
+                if (getScanListener() != null) {
+                    getScanListener().onDeviceDisconnected();
+                }
             default:
-                // TODO: start scanning when DISCONNECTED after previous connection?
-                mConnected = false;
+                setConnected(false);
                 break;
         }
     }
@@ -292,27 +287,28 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                         }
                     }
                 }
-                notifyListeners(message);
+                notifyMessageListeners(message);
             }
-        }
-    }
-
-    private void notifyListeners(byte[] message) {
-        for (Listener listener : mListeners) {
-            listener.onMessageReceived(message);
         }
     }
 
     /**
      * GoTenna Connection Stuff
      */
+    private Runnable mScanTimeoutRunnable = () -> {
+        mGtConnectionManager.disconnect();
+        if (getScanListener() != null) {
+            getScanListener().onScanTimeout();
+        }
+    };
 
     private void scanForGotenna(GTDeviceType deviceType) {
+        if (getScanListener() != null) {
+            getScanListener().onScanStarted();
+        }
         try {
-            mGtCommandCenter.setMessageListener(this);
-            mGtConnectionManager.addGtConnectionListener(this);
-            mGtConnectionManager.clearConnectedGotennaAddress();
             mGtConnectionManager.scanAndConnect(deviceType);
+            mHandler.postDelayed(mScanTimeoutRunnable, SCAN_TIMEOUT_MS);
         } catch (UnsupportedOperationException e) {
             e.printStackTrace();
         }
@@ -320,7 +316,10 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
 
     private void onGoTennaConnected() {
         Log.d(TAG, "onGoTennaConnected");
-        GTDeviceType deviceType = GTConnectionManager.getInstance().getDeviceType();
+        if (getScanListener() != null) {
+            getScanListener().onDeviceConnected();
+        }
+        GTDeviceType deviceType = mGtConnectionManager.getDeviceType();
 
         switch (deviceType) {
             case MESH:
@@ -343,13 +342,13 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
             mGtCommandCenter.sendSetGeoRegion(place,
                     (GTResponse response) -> {
                         if (response.getResponseCode() == GTResponse.GTCommandResponseCode.POSITIVE) {
-                            Log.d(TAG, "Setting GoTenna GID: " + mGid);
-                            mGtCommandCenter.setGoTennaGID(mGid, mCallsign,
+                            Log.d(TAG, "Setting GoTenna GID: " + getSelfInto().gId);
+                            mGtCommandCenter.setGoTennaGID(getSelfInto().gId, getSelfInto().callsign,
                                     (GTError gtError) -> {
                                         Log.d(TAG, " Error setting GoTenna ID");
-                                        mConnected = false;
+                                        setConnected(false);
                                     });
-                            mConnected = true;
+                            setConnected(true);
                             broadcastDiscoveryMessage(true);
                             startWorkerThreads();
                         } else {
@@ -360,30 +359,15 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         }).execute();
     }
 
-    private void startWorkerThreads() {
-        mMessageWorkerThread = new Thread(() -> {
-            while (!mDestroyed) {
-                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
+    /**
+     * Message handling
+     */
+    @Override
+    protected void startWorkerThreads() {
 
-                while (!mConnected) {
-                    sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
-                }
-
-                MessageQueue.QueuedMessage queuedMessage = mMessageQueue.popHighestPriorityMessage();
-                if (queuedMessage != null) {
-                    Log.d(TAG, "got msg type: " + queuedMessage.xmitType);
-                    if (queuedMessage.xmitType == MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST) {
-                        broadcastMessage(queuedMessage.message);
-                    } else {
-                        sendMessage(queuedMessage.message, queuedMessage.toUIDs);
-                    }
-                }
-            }
-        });
-        mMessageWorkerThread.start();
 
         mQuotaWorkerThread = new Thread(() -> {
-            while (!mDestroyed) {
+            while (!isDestroyed()) {
                 mUsedMessageQuota = 0;
                 sleepForDelay(QUOTA_REFRESH_TIME_MS);
             }
@@ -391,14 +375,18 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         mQuotaWorkerThread.start();
     }
 
-    public void broadcastMessage(byte[] message) {
+    @Override
+    protected void broadcastMessage(byte[] message) {
         mGtCommandCenter.sendBroadcastMessage(message,
                 (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "    Sent callsign/gid: " + gtSendMessageResponse),
                 (GTError gtError) -> Log.d(TAG, "    Error sending initial broadcast: " + gtError));
+
+        sleepForDelay(DELAY_BETWEEN_MSGS_MS);
         maybeSleepUntilQuotaRefresh();
     }
 
-    public void sendMessage(byte[] message, String[] toUIDs) {
+    @Override
+    protected void sendMessage(byte[] message, String[] toUIDs) {
         // Check message length and break up if necessary
         int chunks = (int) Math.ceil((double) message.length / (double) MESSAGE_CHUNK_LENGTH);
 
@@ -448,6 +436,7 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                     (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
                     true);
 
+            sleepForDelay(DELAY_BETWEEN_MSGS_MS);
             maybeSleepUntilQuotaRefresh();
         }
     }
@@ -470,15 +459,23 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
                         (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
                         true);
 
+                sleepForDelay(DELAY_BETWEEN_MSGS_MS);
                 maybeSleepUntilQuotaRefresh();
 
-                if (mDestroyed) {
+                if (isDestroyed()) {
                     return;
                 }
             }
         }
     }
 
+    /**
+     * Peer discovery
+     */
+    private void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
+        String broadcastData = BCAST_MARKER + "," + getSelfInto().gId + "," + getSelfInto().atakUid + "," + getSelfInto().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        queueMessage(null, broadcastData.getBytes(), null, MessageQueue.PRIORITY_HIGHEST, MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST, false);
+    }
 
     /**
      * Utils
@@ -487,14 +484,6 @@ public class GoTennaCommHardware implements CommHardware, GTConnectionManager.GT
         mUsedMessageQuota++;
         if (mUsedMessageQuota == MESSAGES_PER_MINUTE) {
             sleepForDelay(QUOTA_REFRESH_TIME_MS);
-        }
-    }
-
-    private void sleepForDelay(int delayMs) {
-        try {
-            Thread.sleep(delayMs);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 

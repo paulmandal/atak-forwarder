@@ -10,7 +10,7 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.MessageQueue;
-import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
@@ -56,6 +56,7 @@ public class ForwarderLifecycle implements Lifecycle {
         mActivity = activity;
         mMapView = (MapView)transappsMapView.getView();
 
+        // TODO: this is kinda a mess, move to a Factory and clean this up
         CotComparer cotComparer = new CotComparer();
         JsonHelper jsonHelper = new JsonHelper();
         StateStorage stateStorage = new StateStorage(mActivity, jsonHelper);

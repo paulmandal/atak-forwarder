@@ -18,15 +18,19 @@ import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.MessageQueue;
-import com.paulmandal.atak.forwarder.comm.interfaces.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
-public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener, GroupTracker.UpdateListener, MessageQueue.Listener {
+public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener,
+        GroupTracker.UpdateListener,
+        MessageQueue.Listener,
+        CommHardware.ScanListener {
     public static final String TAG = "ATAKDBG." + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
@@ -47,6 +51,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     private TextView mMessageQueueLengthTextView;
     private ListView mGroupMembersListView;
     private Button mCreateGroupButton;
+    private TextView mConnectionStatusTextView;
 
     public GroupManagementDropDownReceiver(final MapView mapView,
                                            final Context context,
@@ -73,15 +78,19 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         mCreateGroupButton = (Button) mTemplateView.findViewById(R.id.button_create_group);
         mGroupMembersListView = (ListView) mTemplateView.findViewById(R.id.listview_group_members);
 
+        mConnectionStatusTextView = (TextView) mTemplateView.findViewById(R.id.textview_connection_status);
+
         Button clearData = (Button) mTemplateView.findViewById(R.id.button_clear_data);
         Button broadcastDiscovery = (Button) mTemplateView.findViewById(R.id.button_broadcast_discovery);
         Button clearMessageCache = (Button) mTemplateView.findViewById(R.id.button_clear_message_cache);
+        Button clearMessageQueue = (Button) mTemplateView.findViewById(R.id.button_clear_message_queue);
         Button setCachePurgeTime = (Button) mTemplateView.findViewById(R.id.button_set_message_purge_time_ms);
+        Button unpair = (Button) mTemplateView.findViewById(R.id.button_unpair);
 
         EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_purge_time_mins);
 
-        mMessageQueueLengthTextView.setText("" + messageQueue.getQueueSize());
-        cachePurgeTimeMins.setText("" + (mCotMessageCache.getCachePurgeTimeMs() / 60000));
+        mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", messageQueue.getQueueSize()));
+        cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getCachePurgeTimeMs() / 60000));
 
         broadcastDiscovery.setOnClickListener((View v) -> {
             Toast.makeText(mPluginContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
@@ -97,6 +106,8 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         clearMessageCache.setOnClickListener((View v) -> mCotMessageCache.clearData());
 
+        clearMessageQueue.setOnClickListener((View v) -> mMessageQueue.clearData());
+
         setCachePurgeTime.setOnClickListener((View v) -> {
             String cachePurgeTimeMinsStr = cachePurgeTimeMins.getText().toString();
             if (cachePurgeTimeMinsStr.equals("")) {
@@ -106,8 +117,13 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             mCotMessageCache.setCachePurgeTimeMs(cachePurgeTimeMs);
         });
 
+        unpair.setOnClickListener((View v) -> {
+            commHardware.forgetDevice();
+        });
+
         mGroupTracker.setUpdateListener(this);
         messageQueue.setListener(this);
+        commHardware.setScanListener(this);
     }
 
     public void disposeImpl() {
@@ -206,7 +222,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     private void setEditModeAndUiForGroup() {
         GroupInfo groupInfo = mGroupTracker.getGroup();
         if (groupInfo != null) {
-            mGroupIdTextView.setText(Long.toString(groupInfo.groupId));
+            mGroupIdTextView.setText(String.format(Locale.getDefault(), "%d", groupInfo.groupId));
             mCreateGroupButton.setText(R.string.add_to_group);
             mEditMode = EditMode.ADD_USERS;
         } else {
@@ -227,6 +243,30 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onMessageQueueSizeChanged(int size) {
-        mActivity.runOnUiThread(() -> mMessageQueueLengthTextView.setText("" + size));
+        mActivity.runOnUiThread(() -> mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", size)));
+    }
+
+    @Override
+    public void onScanStarted() {
+        Toast.makeText(mPluginContext, "Scanning for comm device", Toast.LENGTH_SHORT).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_scanning);
+    }
+
+    @Override
+    public void onScanTimeout() {
+        Toast.makeText(mPluginContext, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_timeout);
+    }
+
+    @Override
+    public void onDeviceConnected() {
+        Toast.makeText(mPluginContext, "Comm device connected", Toast.LENGTH_SHORT).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_connected);
+    }
+
+    @Override
+    public void onDeviceDisconnected() {
+        Toast.makeText(mPluginContext, "Comm device disconnected", Toast.LENGTH_SHORT).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
     }
 }

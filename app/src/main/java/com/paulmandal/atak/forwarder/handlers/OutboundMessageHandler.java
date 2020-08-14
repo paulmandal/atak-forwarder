@@ -84,7 +84,6 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private int determineMessagePriority(CotEvent cotEvent) {
         switch (cotEvent.getType()) {
             case MSG_TYPE_SELF_PLI:
-                return MessageQueue.PRIORITY_LOW;
             case MSG_TYPE_CHAT:
                 return MessageQueue.PRIORITY_HIGH;
             default:

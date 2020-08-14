@@ -8,12 +8,20 @@
     <string name="group_id">Group Id</string>
     <string name="message_queue_length">MsgQ Len</string>
     <string name="create_group">Create Group</string>
-    <string name="broadcast_discovery">Broadcast Discovery</string>
-    <string name="set_message_cache_purge_time_mins">Set MsgQ Purge Ms</string>
     <string name="add_to_group">Add to Group</string>
-    <string name="clear_data">Clear Data</string>
-    <string name="clear_message_cache">Clear Msg Cache</string>
+    <string name="broadcast_discovery">Broadcast Discovery</string>
+
+    <string name="connection_status_scanning">Scanning</string>
+    <string name="connection_status_connected">Connected</string>
+    <string name="connection_status_disconnected">Disconnected</string>
+    <string name="connection_status_timeout">Timeout</string>
 
     <string name="group_in_text">In</string>
     <string name="group_out_text">Out</string>
+
+    <string name="set_message_cache_purge_time_mins">Set MsgQ Purge Ms</string>
+    <string name="clear_data">Clear Data</string>
+    <string name="clear_message_queue">Clear MsgQ</string>
+    <string name="clear_message_cache">Clear Msg Cache</string>
+    <string name="unpair">Unpair</string>
 </resources>

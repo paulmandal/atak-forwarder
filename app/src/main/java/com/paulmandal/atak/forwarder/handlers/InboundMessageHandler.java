@@ -29,7 +29,7 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
 
     @Override
     public void onMessageReceived(byte[] message) {
-        new Thread(() -> {
+        Thread messageConversionAndDispatchThread = new Thread(() -> {
             CotEvent cotEvent = mCotProtobufConverter.cotEventFromProtoBuf(message);
             if (cotEvent == null) {
                 Log.e(TAG, "Error in onMessageReceived, cotEvent did not parse");
@@ -48,6 +48,8 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
                 e.printStackTrace();
                 Log.e(TAG, "IOException while trying to send message to UDP");
             }
-        }).start();
+        });
+        messageConversionAndDispatchThread.setName("InboundMessageHandler.onMessageReceived");
+        messageConversionAndDispatchThread.start();
     }
 }

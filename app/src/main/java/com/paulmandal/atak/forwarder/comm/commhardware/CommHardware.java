@@ -122,6 +122,7 @@ public abstract class CommHardware {
                 }
             }
         });
+        mMessageWorkerThread.setName("CommHardware.MessageWorker");
         mMessageWorkerThread.start();
     }
 

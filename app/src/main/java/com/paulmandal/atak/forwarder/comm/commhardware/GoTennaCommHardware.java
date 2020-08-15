@@ -387,6 +387,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
                 sleepForDelay(QUOTA_REFRESH_TIME_MS);
             }
         });
+        mQuotaWorkerThread.setName("GoTennaCommHardware.QuotaWorker");
         mQuotaWorkerThread.start();
     }
 

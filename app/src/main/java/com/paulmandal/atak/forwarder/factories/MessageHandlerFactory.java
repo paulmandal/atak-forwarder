@@ -14,10 +14,11 @@ public class MessageHandlerFactory {
         return new InboundMessageHandler(commHardware, cotProtobufConverter);
     }
 
-    public static OutboundMessageHandler getOutboundMessageHandler(MessageQueue messageQueue,
+    public static OutboundMessageHandler getOutboundMessageHandler(CommHardware commHardware,
+                                                                   MessageQueue messageQueue,
                                                                    CotMessageCache cotMessageCache,
                                                                    CotProtobufConverter cotProtobufConverter) {
         CommsMapComponent commsMapComponent = CommsMapComponent.getInstance();
-        return new OutboundMessageHandler(commsMapComponent, messageQueue, cotMessageCache, cotProtobufConverter);
+        return new OutboundMessageHandler(commsMapComponent, commHardware, messageQueue, cotMessageCache, cotProtobufConverter);
     }
 }

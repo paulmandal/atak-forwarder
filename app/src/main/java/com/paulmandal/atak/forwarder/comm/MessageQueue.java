@@ -53,11 +53,19 @@ public class MessageQueue {
     }
 
     @Nullable
-    public QueuedMessage popHighestPriorityMessage() {
+    public QueuedMessage popHighestPriorityMessage(boolean readyForGroupMessages) {
         QueuedMessage highestPriorityMessage = null;
         int messageQueueSize = 0;
         synchronized (mQueuedMessages) {
             for (QueuedMessage queuedMessage : mQueuedMessages) {
+
+                if ((queuedMessage.toUIDs == null
+                        && !readyForGroupMessages
+                        && queuedMessage.xmitType != QueuedMessage.XMIT_TYPE_BROADCAST)) {
+                    // Ignore group messages for now
+                    continue;
+                }
+
                 if (highestPriorityMessage == null
                         || queuedMessage.priority > highestPriorityMessage.priority
                         || (queuedMessage.priority == highestPriorityMessage.priority

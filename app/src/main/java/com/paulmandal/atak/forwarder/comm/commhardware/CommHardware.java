@@ -68,6 +68,14 @@ public abstract class CommHardware {
         mDestroyed = true;
     }
 
+    public boolean isConnected() {
+        return mConnected;
+    }
+
+    public boolean isInGroup() {
+        return mGroupTracker.getGroup() != null;
+    }
+
     /**
      * Listener Management
      */
@@ -94,6 +102,7 @@ public abstract class CommHardware {
     /**
      * Internal API
      */
+    @CallSuper
     protected void startWorkerThreads() {
         mMessageWorkerThread = new Thread(() -> {
             while (!mDestroyed) {
@@ -103,7 +112,7 @@ public abstract class CommHardware {
                     sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
                 }
 
-                MessageQueue.QueuedMessage queuedMessage = mMessageQueue.popHighestPriorityMessage();
+                MessageQueue.QueuedMessage queuedMessage = mMessageQueue.popHighestPriorityMessage(mGroupTracker.getGroup() != null);
                 if (queuedMessage != null) {
                     if (queuedMessage.xmitType == MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST) {
                         broadcastMessage(queuedMessage.message);
@@ -118,10 +127,6 @@ public abstract class CommHardware {
 
     protected boolean isDestroyed() {
         return mDestroyed;
-    }
-
-    protected boolean isConnected() {
-        return mConnected;
     }
 
     protected void setConnected(boolean isConnected) {

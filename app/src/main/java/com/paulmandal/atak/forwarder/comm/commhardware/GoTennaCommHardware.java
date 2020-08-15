@@ -65,8 +65,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     private GTCommandCenter mGtCommandCenter;
     int mUsedMessageQuota = 0;
 
-    long mGroupId;
-
     private boolean mScanning = false;
 
     private Thread mQuotaWorkerThread;
@@ -104,6 +102,8 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         broadcastDiscoveryMessage(false);
     }
 
+    long mGroupId_DoNotUse;
+
     @Override
     public void createGroup(List<Long> memberGids) {
         if (!isConnected()) {
@@ -114,10 +114,10 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
 
         Log.d(TAG, "  sending group creation request, member gids: " + memberGids);
         try {
-            mGroupId = mGtCommandCenter.createGroupWithGIDs(memberGids,
+            mGroupId_DoNotUse = mGtCommandCenter.createGroupWithGIDs(memberGids,
                     (GTResponse gtResponse, long l) -> {
                         Log.d(TAG, "    created group: " + gtResponse);
-                        mGroupListener.onGroupCreated(mGroupId, memberGids);
+                        mGroupListener.onGroupCreated(mGroupId_DoNotUse, memberGids);
                     },
                     (GTError gtError, long l) -> Log.d(TAG, "    error creating group: " + gtError));
 
@@ -380,8 +380,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
      */
     @Override
     protected void startWorkerThreads() {
-
-
+        super.startWorkerThreads();
         mQuotaWorkerThread = new Thread(() -> {
             while (!isDestroyed()) {
                 mUsedMessageQuota = 0;

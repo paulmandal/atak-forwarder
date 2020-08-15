@@ -6,6 +6,7 @@ import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
 
 import org.xmlunit.builder.Input;
@@ -26,15 +27,18 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private static final String MSG_TYPE_CHAT = "b-t-f";
 
     private CommsMapComponent mCommsMapComponent;
+    private CommHardware mCommHardware;
     private MessageQueue mMessageQueue;
     private CotMessageCache mCotMessageCache;
     private CotProtobufConverter mCotProtobufConverter;
 
     public OutboundMessageHandler(CommsMapComponent commsMapComponent,
+                                  CommHardware commHardware,
                                   MessageQueue messageQueue,
                                   CotMessageCache cotMessageCache,
                                   CotProtobufConverter cotProtobufConverter) {
         mCommsMapComponent = commsMapComponent;
+        mCommHardware = commHardware;
         mMessageQueue = messageQueue;
         mCotMessageCache = cotMessageCache;
         mCotProtobufConverter = cotProtobufConverter;
@@ -49,7 +53,9 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     @Override
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
         String eventType = cotEvent.getType();
-        if (!eventType.equals(MSG_TYPE_SELF_PLI)
+        if (mCommHardware.isConnected()
+            && (toUIDs != null || mCommHardware.isInGroup())
+            && !eventType.equals(MSG_TYPE_SELF_PLI)
             && !eventType.equals(MSG_TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
                 Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this
@@ -83,7 +89,6 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
     private int determineMessagePriority(CotEvent cotEvent) {
         switch (cotEvent.getType()) {
-            case MSG_TYPE_SELF_PLI:
             case MSG_TYPE_CHAT:
                 return MessageQueue.PRIORITY_HIGH;
             default:

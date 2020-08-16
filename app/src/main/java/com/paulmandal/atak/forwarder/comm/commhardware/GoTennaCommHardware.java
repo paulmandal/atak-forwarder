@@ -193,9 +193,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             case SCANNING:
             case DISCONNECTED:
                 setConnected(false);
-                if (getScanListener() != null) {
-                    getScanListener().onDeviceDisconnected();
-                }
+                notifyScanListenersOnDeviceDisconnected();
             default:
                 setConnected(false);
                 break;
@@ -317,16 +315,12 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     private Runnable mScanTimeoutRunnable = () -> {
         mGtConnectionManager.disconnect();
         mScanning = false;
-        if (getScanListener() != null) {
-            getScanListener().onScanTimeout();
-        }
+        notifyScanListenersOnScanTimeout();
     };
 
     private void scanForGotenna(GTDeviceType deviceType) {
         mScanning = true;
-        if (getScanListener() != null) {
-            getScanListener().onScanStarted();
-        }
+        notifyScanListenersOnScanStarted();
         try {
             mGtConnectionManager.scanAndConnect(deviceType);
             mHandler.postDelayed(mScanTimeoutRunnable, SCAN_TIMEOUT_MS);
@@ -339,9 +333,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         mScanning = false;
         mHandler.removeCallbacks(mScanTimeoutRunnable);
         Log.d(TAG, "onGoTennaConnected");
-        if (getScanListener() != null) {
-            getScanListener().onDeviceConnected();
-        }
+        notifyScanListenersOnDeviceConnected();
         GTDeviceType deviceType = mGtConnectionManager.getDeviceType();
 
         switch (deviceType) {
@@ -546,6 +538,10 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         } else {
             mMessageSuccessPrefix = "      sendMessage response: ";
             mMessageErrorPrefix = "      sendMessage error: ";
+            if (message == null) {
+                Log.e(TAG, " null message in sendMessageSegment!");
+                new Exception().printStackTrace();
+            }
             mGtCommandCenter.sendMessage(message, targetId, mGtSendCommandResponseListener, mGtErrorListener, true);
         }
 
@@ -572,6 +568,33 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         maybeSleepUntilQuotaRefresh();
 
         return messageSentSuccessfully;
+    }
+
+    /**
+     * Notifiers for connection events
+     */
+    private void notifyScanListenersOnDeviceDisconnected() {
+        for (ScanListener listener : getScanListeners()) {
+            listener.onDeviceDisconnected();
+        }
+    }
+
+    private void notifyScanListenersOnDeviceConnected() {
+        for (ScanListener listener : getScanListeners()) {
+            listener.onDeviceConnected();
+        }
+    }
+
+    private void notifyScanListenersOnScanStarted() {
+        for (ScanListener listener : getScanListeners()) {
+            listener.onScanStarted();
+        }
+    }
+
+    private void notifyScanListenersOnScanTimeout() {
+        for (ScanListener listener : getScanListeners()) {
+            listener.onScanTimeout();
+        }
     }
 
     /**

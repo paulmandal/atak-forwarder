@@ -33,7 +33,7 @@ public abstract class CommHardware {
     private MessageQueue mMessageQueue;
     private GroupTracker mGroupTracker;
 
-    private CommHardware.ScanListener mScanListener;
+    private List<CommHardware.ScanListener> mScanListeners = new CopyOnWriteArrayList<>();
     private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private Thread mMessageWorkerThread;
@@ -87,16 +87,20 @@ public abstract class CommHardware {
         mMessageListeners.remove(listener);
     }
 
-    public void setScanListener(ScanListener listener) {
-        mScanListener = listener;
+    public void addScanListener(ScanListener listener) {
+        mScanListeners.add(listener);
+    }
+
+    public void removeScanListener(ScanListener listener) {
+        mScanListeners.remove(listener);
     }
 
     protected final List<MessageListener> getMessageListeners() {
         return mMessageListeners;
     }
 
-    protected final ScanListener getScanListener() {
-        return mScanListener;
+    protected final List<ScanListener> getScanListeners() {
+        return mScanListeners;
     }
 
     /**

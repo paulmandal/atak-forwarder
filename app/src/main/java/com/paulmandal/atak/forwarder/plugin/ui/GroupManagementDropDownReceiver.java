@@ -55,6 +55,8 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     private Button mScanOrUnpair;
     private TextView mConnectionStatusTextView;
 
+    private boolean mIsDropDownOpen;
+
     public GroupManagementDropDownReceiver(final MapView mapView,
                                            final Context context,
                                            final Activity activity,
@@ -109,12 +111,12 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getCachePurgeTimeMs() / 60000));
 
         broadcastDiscovery.setOnClickListener((View v) -> {
-            Toast.makeText(mPluginContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mActivity, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
             commHardware.broadcastDiscoveryMessage();
         });
 
         clearData.setOnClickListener((View v) -> {
-            Toast.makeText(mPluginContext, "Clearing all plugin data", Toast.LENGTH_LONG).show();
+            Toast.makeText(mActivity, "Clearing all plugin data", Toast.LENGTH_LONG).show();
             mGroupTracker.clearData();
             mCotMessageCache.clearData();
             mMessageQueue.clearData();
@@ -122,17 +124,17 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         });
 
         clearMessageCache.setOnClickListener((View v) -> {
-            Toast.makeText(mPluginContext, "Clearing duplicate message cache", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mActivity, "Clearing duplicate message cache", Toast.LENGTH_SHORT).show();
             mCotMessageCache.clearData();
         });
 
         clearMessageQueue.setOnClickListener((View v) -> {
-            Toast.makeText(mPluginContext, "Clearing outgoing message queue", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mActivity, "Clearing outgoing message queue", Toast.LENGTH_SHORT).show();
             mMessageQueue.clearData();
         });
 
         setCachePurgeTime.setOnClickListener((View v) -> {
-            Toast.makeText(mPluginContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mActivity, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
             String cachePurgeTimeMinsStr = cachePurgeTimeMins.getText().toString();
             if (cachePurgeTimeMinsStr.equals("")) {
                 return;
@@ -145,7 +147,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         mGroupTracker.setUpdateListener(this);
         messageQueue.setListener(this);
-        commHardware.setScanListener(this);
+        commHardware.addScanListener(this);
     }
 
     public void disposeImpl() {
@@ -185,7 +187,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
                         }
                     }
 
-                    Toast.makeText(mPluginContext, "Adding users to group: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, "Adding users to group: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
                     mCommHardware.addToGroup(gIdsForGroup, newGidsForGroup);
                 } else {
                     StringBuilder usernamesForOutput = new StringBuilder();
@@ -200,11 +202,11 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
                             first = false;
                         }
                     }
-                    Toast.makeText(mPluginContext, "Creating group with users: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(mActivity, "Creating group with users: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
                     mCommHardware.createGroup(gIdsForGroup);
                 }
             });
-            showDropDown(mTemplateView, HALF_WIDTH, FULL_HEIGHT, FULL_WIDTH, HALF_HEIGHT, false);
+            showDropDown(mTemplateView, HALF_WIDTH, FULL_HEIGHT, FULL_WIDTH, HALF_HEIGHT, false, this);
         }
     }
 
@@ -214,6 +216,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onDropDownVisible(boolean v) {
+        mIsDropDownOpen = true;
     }
 
     @Override
@@ -222,18 +225,23 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onDropDownClose() {
+        mIsDropDownOpen = false;
     }
 
     @Override
     public void onUsersUpdated() {
-        Toast.makeText(mPluginContext, "User list updated", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mActivity, "User list updated", Toast.LENGTH_SHORT).show();
         updateUi();
     }
 
     @Override
     public void onGroupUpdated() {
-        Toast.makeText(mPluginContext, "Group membership updated", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mActivity, "Group membership updated", Toast.LENGTH_SHORT).show();
         updateUi();
+    }
+
+    public boolean isDropDownOpen() {
+        return mIsDropDownOpen;
     }
 
     private View.OnClickListener mScanClickListener = (View v) -> mCommHardware.connect();
@@ -274,14 +282,14 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onScanStarted() {
-        Toast.makeText(mPluginContext, "Scanning for comm device", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mActivity, "Scanning for comm device", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_scanning);
         mScanOrUnpair.setOnClickListener(null);
     }
 
     @Override
     public void onScanTimeout() {
-        Toast.makeText(mPluginContext, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
+        Toast.makeText(mActivity, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_timeout);
         mScanOrUnpair.setOnClickListener(mScanClickListener);
         mScanOrUnpair.setText(R.string.scan);
@@ -289,7 +297,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onDeviceConnected() {
-        Toast.makeText(mPluginContext, "Comm device connected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mActivity, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_connected);
         mScanOrUnpair.setOnClickListener(mUnpairClickListener);
         mScanOrUnpair.setText(R.string.unpair);
@@ -297,7 +305,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onDeviceDisconnected() {
-        Toast.makeText(mPluginContext, "Comm device disconnected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mActivity, "Comm device disconnected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
         mScanOrUnpair.setOnClickListener(mScanClickListener);
         mScanOrUnpair.setText(R.string.scan);

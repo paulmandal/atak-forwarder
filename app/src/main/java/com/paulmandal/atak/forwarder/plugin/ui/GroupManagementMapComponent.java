@@ -7,39 +7,53 @@ import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 
-public class GroupManagementMapComponent extends DropDownMapComponent {
+public class GroupManagementMapComponent extends DropDownMapComponent  {
     private static final String TAG = "ATAKDBG." + GroupManagementMapComponent.class.getSimpleName();
 
     private Context mPluginContext;
     private GroupManagementDropDownReceiver mDropDownReceiver;
+    private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
     private GroupTracker mGroupTracker;
     private CommHardware mCommHardware;
+    private CotMessageCache mCotMessageCache;
+    private CommandQueue mCommandQueue;
 
-    public GroupManagementMapComponent(GroupTracker groupTracker, CommHardware commHardware) {
+
+    public GroupManagementMapComponent(GroupTracker groupTracker,
+                                       CommHardware commHardware,
+                                       CotMessageCache cotMessageCache,
+                                       CommandQueue commandQueue) {
         mGroupTracker = groupTracker;
         mCommHardware = commHardware;
+        mCotMessageCache = cotMessageCache;
+        mCommandQueue = commandQueue;
     }
 
     public void onCreate(final Context context, Intent intent,
-                         final MapView view) {
+                         final MapView mapView) {
 
         context.setTheme(R.style.ATAKPluginTheme);
-        super.onCreate(context, intent, view);
+        super.onCreate(context, intent, mapView);
         mPluginContext = context;
 
-        mDropDownReceiver = new GroupManagementDropDownReceiver(view, context, mGroupTracker, mCommHardware);
+        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), mGroupTracker, mCommHardware, mCotMessageCache, mCommandQueue);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);
         registerDropDownReceiver(mDropDownReceiver, ddFilter);
+
+        mForwarderMarkerIconWidget = new ForwarderMarkerIconWidget(mapView, mDropDownReceiver, mCommHardware);
     }
 
     @Override
     protected void onDestroyImpl(Context context, MapView view) {
         super.onDestroyImpl(context, view);
+        mForwarderMarkerIconWidget.onDestroy();
     }
 }

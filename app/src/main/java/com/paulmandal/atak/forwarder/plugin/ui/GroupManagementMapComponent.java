@@ -1,13 +1,13 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
-import com.atakmap.android.widgets.MarkerIconWidget;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.MessageQueue;
@@ -19,22 +19,18 @@ public class GroupManagementMapComponent extends DropDownMapComponent  {
 
     private Context mPluginContext;
     private GroupManagementDropDownReceiver mDropDownReceiver;
-    private MarkerIconWidget mMarkerIconWidget;
+    private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
-    private Activity mActivity;
     private GroupTracker mGroupTracker;
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
     private MessageQueue mMessageQueue;
 
-    private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
-    public GroupManagementMapComponent(Activity activity,
-                                       GroupTracker groupTracker,
+    public GroupManagementMapComponent(GroupTracker groupTracker,
                                        CommHardware commHardware,
                                        CotMessageCache cotMessageCache,
                                        MessageQueue messageQueue) {
-        mActivity = activity;
         mGroupTracker = groupTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
@@ -48,7 +44,8 @@ public class GroupManagementMapComponent extends DropDownMapComponent  {
         super.onCreate(context, intent, mapView);
         mPluginContext = context;
 
-        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mActivity, mGroupTracker, mCommHardware, mCotMessageCache, mMessageQueue);
+        Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), uiThreadHandler, mGroupTracker, mCommHardware, mCotMessageCache, mMessageQueue);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);

@@ -114,11 +114,7 @@ public abstract class CommHardware {
 
                 MessageQueue.QueuedMessage queuedMessage = mMessageQueue.popHighestPriorityMessage(mGroupTracker.getGroup() != null);
                 if (queuedMessage != null) {
-                    if (queuedMessage.xmitType == MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST) {
-                        broadcastMessage(queuedMessage.message);
-                    } else {
-                        sendMessage(queuedMessage.message, queuedMessage.toUIDs);
-                    }
+                    sendMessage(queuedMessage);
                 }
             }
         });
@@ -162,6 +158,5 @@ public abstract class CommHardware {
     /**
      * For subclasses to implement
      */
-    protected abstract void broadcastMessage(byte[] message);
-    protected abstract void sendMessage(byte[] message, String[] toUIDs);
+    protected abstract void sendMessage(MessageQueue.QueuedMessage queuedMessage);
 }

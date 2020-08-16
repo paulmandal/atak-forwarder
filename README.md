@@ -15,16 +15,12 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * Broadcast messages are sent to the group
 * Direct messages to other users
 * Abstracted communication for adapting to other physical layers
+* Efficient comm. using protobufs
+* Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
+* Message queue with priority (chat = pli > markers)
 
 # To Do
 
-* Persist a group once you join, persist user info for the group
-* Improve peer discovery -- when peers receive a user broadcast they should send a reply to let them know they exist too
-* Proper disconnect of GoTenna device when closing
-* Repeated message filtering (e.g. stationary PLI updates, Markers set to Auto-Send)
-* Message queuing for chat messages
-* Better link / bandwidth management
-* Reduced payload size
 * Lat/Lon for GoTenna frequency configuration from live source instead of `Config.java`
 * Better error handling
 
@@ -48,7 +44,7 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
     * Dynamic Reporting Rate Stationary (Unreliable) to 120
     * Minimum and Maximum (Unreliable) to 60
 
-It will take quite a while for the first messages to be transmitted. It is easy to miss messages if there are many markers on the map. When a CoT message gets sent we break it up into 200 byte chunks and then send each chunk with a 10 second gap between them, any other CoT messages during that time will be ignored.
+It will take a while for the first messages to be transmitted. It is easy to miss messages if there are many markers on the map. When a CoT message gets sent we break it up into 200 byte chunks and then send each chunk with a 10 second gap between them, any other CoT messages during that time will be ignored.
 
 # Contributing
 

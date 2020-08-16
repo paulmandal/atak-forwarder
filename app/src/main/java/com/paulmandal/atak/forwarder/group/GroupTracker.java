@@ -1,6 +1,6 @@
 package com.paulmandal.atak.forwarder.group;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -18,7 +18,7 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
 
     public static final long USER_NOT_FOUND = -1;
 
-    private Context mPluginContext;
+    private Activity mActivity;
     private StateStorage mStateStorage;
 
     private List<UserInfo> mUserInfoList;
@@ -26,8 +26,8 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
 
     private UpdateListener mUpdateListener;
 
-    public GroupTracker(Context context, StateStorage stateStorage, @Nullable List<UserInfo> userInfoList, @Nullable GroupInfo groupInfo) {
-        mPluginContext = context;
+    public GroupTracker(Activity activity, StateStorage stateStorage, @Nullable List<UserInfo> userInfoList, @Nullable GroupInfo groupInfo) {
+        mActivity = activity;
         mStateStorage = stateStorage;
 
         if (userInfoList == null) {
@@ -66,7 +66,7 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
         }
 
         storeState();
-        Toast.makeText(mPluginContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
+        Toast.makeText(mActivity, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
     }
 
     @Override

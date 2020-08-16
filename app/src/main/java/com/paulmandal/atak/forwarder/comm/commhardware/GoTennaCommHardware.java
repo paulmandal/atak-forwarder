@@ -4,6 +4,7 @@ package com.paulmandal.atak.forwarder.comm.commhardware;
 import android.content.Context;
 import android.location.Location;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -15,7 +16,9 @@ import com.gotenna.sdk.connection.GTConnectionState;
 import com.gotenna.sdk.data.GTCommandCenter;
 import com.gotenna.sdk.data.GTDeviceType;
 import com.gotenna.sdk.data.GTError;
+import com.gotenna.sdk.data.GTErrorListener;
 import com.gotenna.sdk.data.GTResponse;
+import com.gotenna.sdk.data.GTSendCommandResponseListener;
 import com.gotenna.sdk.data.GTSendMessageResponse;
 import com.gotenna.sdk.data.Place;
 import com.gotenna.sdk.data.groups.GroupMemberInfo;
@@ -35,6 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 
 public class GoTennaCommHardware extends CommHardware implements GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener {
     private static final String TAG = "ATAKDBG." + GoTennaCommHardware.class.getSimpleName();
@@ -43,6 +47,8 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         void onUserDiscoveryBroadcastReceived(String callsign, long gId, String atakUid);
         void onGroupCreated(long groupId, List<Long> memberGids);
     }
+
+    private static final long BROADCAST_MESSAGE = -1;
 
     private static final double FALLBACK_LATITUDE = Config.FALLBACK_LATITUDE;
     private static final double FALLBACK_LONGITUDE = Config.FALLBACK_LONGITUDE;
@@ -66,8 +72,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     int mUsedMessageQuota = 0;
 
     private boolean mScanning = false;
-
-    private Thread mQuotaWorkerThread;
 
     public GoTennaCommHardware(Handler handler,
                                GroupListener userListener,
@@ -114,6 +118,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
 
         Log.d(TAG, "  sending group creation request, member gids: " + memberGids);
         try {
+            // TODO: error handling
             mGroupId_DoNotUse = mGtCommandCenter.createGroupWithGIDs(memberGids,
                     (GTResponse gtResponse, long l) -> {
                         Log.d(TAG, "    created group: " + gtResponse);
@@ -139,6 +144,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         long groupId = mGroupTracker.getGroup().groupId;
         for (long newMemberGid : newMemberGids) {
             try {
+                // TODO: error handling
                 mGtCommandCenter.sendIndividualGroupInvite(groupId, allMemberGids, newMemberGid,
                         (GTResponse gtResponse, long l) -> Log.d(TAG, "  Success adding user to group: " + gtResponse),
                         (GTError gtError, long l) -> Log.d(TAG, "  Error inviting user to group: " + gtError));
@@ -223,6 +229,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     @Override
     public void onIncomingMessage(GTBaseMessageData gtBaseMessageData) {
         Log.e(TAG, "onIncomingMessage(GTBaseMessageData gtBaseMessageData) actually fired! Keep this code");
+        Log.e(TAG, "gtMessageData type: " + gtBaseMessageData.getClass().getSimpleName());
         if (gtBaseMessageData instanceof GTTextOnlyMessageData) {
             // TODO: remove this? we don't use it
             GTTextOnlyMessageData gtTextOnlyMessageData = (GTTextOnlyMessageData) gtBaseMessageData;
@@ -378,31 +385,26 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     /**
      * Message handling
      */
+
     @Override
-    protected void startWorkerThreads() {
-        super.startWorkerThreads();
-        mQuotaWorkerThread = new Thread(() -> {
-            while (!isDestroyed()) {
-                mUsedMessageQuota = 0;
-                sleepForDelay(QUOTA_REFRESH_TIME_MS);
-            }
-        });
-        mQuotaWorkerThread.setName("GoTennaCommHardware.QuotaWorker");
-        mQuotaWorkerThread.start();
+    protected void sendMessage(MessageQueue.QueuedMessage queuedMessage) {
+        if (queuedMessage.xmitType == MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST) {
+            broadcastMessage(queuedMessage);
+        } else {
+            sendMessageToUserOrGroup(queuedMessage);
+        }
     }
 
-    @Override
-    protected void broadcastMessage(byte[] message) {
-        mGtCommandCenter.sendBroadcastMessage(message,
-                (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "    Sent callsign/gid: " + gtSendMessageResponse),
-                (GTError gtError) -> Log.d(TAG, "    Error sending initial broadcast: " + gtError));
-
-        sleepForDelay(DELAY_BETWEEN_MSGS_MS);
-        maybeSleepUntilQuotaRefresh();
+    protected void broadcastMessage(MessageQueue.QueuedMessage queuedMessage) {
+        if (!sendMessageSegment(queuedMessage.message, BROADCAST_MESSAGE)) {
+            // Send this message back to the queue
+            queueMessage(queuedMessage.cotEvent, queuedMessage.message, queuedMessage.toUIDs, queuedMessage.priority, queuedMessage.xmitType, false);
+        }
     }
 
-    @Override
-    protected void sendMessage(byte[] message, String[] toUIDs) {
+    protected void sendMessageToUserOrGroup(MessageQueue.QueuedMessage queuedMessage) {
+        byte[] message = queuedMessage.message;
+        String[] toUIDs = queuedMessage.toUIDs;
         // Check message length and break up if necessary
         int chunks = (int) Math.ceil((double) message.length / (double) MESSAGE_CHUNK_LENGTH);
 
@@ -446,14 +448,14 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             long groupId = groupInfo.groupId;
 
             Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
-            mGtCommandCenter.sendMessage(message,
-                    groupId,
-                    (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
-                    (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
-                    true);
 
-            sleepForDelay(DELAY_BETWEEN_MSGS_MS);
-            maybeSleepUntilQuotaRefresh();
+            if (!sendMessageSegment(message, groupId)) {
+                i--;
+            }
+
+            if (isDestroyed()) {
+                return;
+            }
         }
     }
 
@@ -469,14 +471,9 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
                 // Send message to individual
                 Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to individual: " + gId + ", " + new String(message));
 
-                mGtCommandCenter.sendMessage(message,
-                        gId,
-                        (GTSendMessageResponse gtSendMessageResponse) -> Log.d(TAG, "      sendMessage response: " + gtSendMessageResponse.toString()),
-                        (GTError gtError) -> Log.d(TAG, "      sendMessage error: " + gtError.toString()),
-                        true);
-
-                sleepForDelay(DELAY_BETWEEN_MSGS_MS);
-                maybeSleepUntilQuotaRefresh();
+                if (!sendMessageSegment(message, gId)) {
+                    i--;
+                }
 
                 if (isDestroyed()) {
                     return;
@@ -494,12 +491,105 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     }
 
     /**
+     * Pending Message / Retry Stuff
+     */
+    // TODO: refactor this into its own class
+    private CountDownLatch mPendingMessageCountdownLatch;
+    private String mMessageSuccessPrefix;
+    private String mMessageErrorPrefix;
+
+    @Nullable
+    private GTResponse mLastSentMessageResponse;
+
+    @Nullable
+    private GTError mLastSentMessageError;
+
+    private GTSendCommandResponseListener mGtSendCommandResponseListener = (GTSendMessageResponse gtSendMessageResponse) -> {
+        Log.d(TAG, mMessageSuccessPrefix + gtSendMessageResponse);
+        handleMessageResponse(gtSendMessageResponse);
+    };
+
+    private GTErrorListener mGtErrorListener =  (GTError gtError) -> {
+        Log.d(TAG, mMessageErrorPrefix + gtError);
+        handleMessageResponse(gtError);
+    };
+
+    private void prepareToSendMessage() {
+        mPendingMessageCountdownLatch = new CountDownLatch(1);
+        mLastSentMessageResponse = null;
+        mLastSentMessageError = null;
+    }
+
+    private void handleMessageResponse(GTResponse gtSendMessageResponse) {
+        handleMessageResponse(gtSendMessageResponse, null);
+    }
+
+    private void handleMessageResponse(GTError gtError) {
+        handleMessageResponse(null, gtError);
+    }
+
+    private void handleMessageResponse(@Nullable GTResponse gtSendMessageResponse, @Nullable GTError gtError) {
+        mLastSentMessageResponse = gtSendMessageResponse;
+        mLastSentMessageError = gtError;
+        mPendingMessageCountdownLatch.countDown();
+    }
+
+    private boolean sendMessageSegment(byte[] message, long targetId) {
+        boolean messageSentSuccessfully = true;
+
+        prepareToSendMessage();
+
+        if (targetId == BROADCAST_MESSAGE) {
+            mMessageErrorPrefix =  "    Error sending initial broadcast: ";
+            mMessageSuccessPrefix = "    Sent callsign/gid: ";
+            mGtCommandCenter.sendBroadcastMessage(message, mGtSendCommandResponseListener, mGtErrorListener);
+        } else {
+            mMessageSuccessPrefix = "      sendMessage response: ";
+            mMessageErrorPrefix = "      sendMessage error: ";
+            mGtCommandCenter.sendMessage(message, targetId, mGtSendCommandResponseListener, mGtErrorListener, true);
+        }
+
+        awaitPendingMessageCountDownLatch();
+
+        if (mLastSentMessageResponse == null || mLastSentMessageResponse.getResponseCode() != GTResponse.GTCommandResponseCode.POSITIVE) {
+            // TODO: check what the response is more fully, in some cases we do not want to retry
+            Log.d(TAG, "sendMessageSegment failure, resending");
+            Log.d(TAG, "    lastSentMessage responseCode: " + (mLastSentMessageResponse == null ? "null" : mLastSentMessageResponse.getResponseCode()));
+            Log.d(TAG, "    lastSentMessage error: " + (mLastSentMessageError == null ? "null" : mLastSentMessageError));
+
+            if (mLastSentMessageError != null && mLastSentMessageError.getCode() == GTError.DATA_RATE_LIMIT_EXCEEDED) {
+                mUsedMessageQuota = MESSAGES_PER_MINUTE - 1;
+            }
+
+            if (mLastSentMessageResponse != null && mLastSentMessageResponse.getResponseCode() == GTResponse.GTCommandResponseCode.NEGATIVE) {
+                sleepForDelay(DELAY_BETWEEN_MSGS_MS);
+                // TODO: find out what can cause this to happen so we know what to do to remedy it
+            }
+
+            messageSentSuccessfully = false;
+        }
+
+        maybeSleepUntilQuotaRefresh();
+
+        return messageSentSuccessfully;
+    }
+
+    /**
      * Utils
      */
     private void maybeSleepUntilQuotaRefresh() {
         mUsedMessageQuota++;
         if (mUsedMessageQuota == MESSAGES_PER_MINUTE) {
             sleepForDelay(QUOTA_REFRESH_TIME_MS);
+            mUsedMessageQuota = 0;
+        }
+    }
+
+    private void awaitPendingMessageCountDownLatch() {
+        try {
+            mPendingMessageCountdownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 

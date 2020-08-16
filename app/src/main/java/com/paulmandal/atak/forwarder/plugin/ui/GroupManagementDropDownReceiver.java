@@ -31,7 +31,7 @@ import java.util.Locale;
 public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener,
         GroupTracker.UpdateListener,
         MessageQueue.Listener,
-        CommHardware.ScanListener {
+        CommHardware.ConnectionStateListener {
     public static final String TAG = "ATAKDBG." + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
@@ -151,7 +151,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         mGroupTracker.setUpdateListener(this);
         messageQueue.setListener(this);
-        commHardware.addScanListener(this);
+        commHardware.addConnectionStateListener(this);
     }
 
     public void disposeImpl() {
@@ -285,30 +285,44 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     }
 
     @Override
-    public void onScanStarted() {
+    public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
+        switch (connectionState) {
+            case SCANNING:
+                handleScanStarted();
+                break;
+            case TIMEOUT:
+                handleScanTimeout();
+                break;
+            case CONNECTED:
+                handleDeviceConnected();
+                break;
+            case DISCONNECTED:
+                handleDeviceDisconnected();
+                break;
+        }
+    }
+
+    public void handleScanStarted() {
         Toast.makeText(mAtakContext, "Scanning for comm device", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_scanning);
         mScanOrUnpair.setOnClickListener(null);
     }
 
-    @Override
-    public void onScanTimeout() {
+    public void handleScanTimeout() {
         Toast.makeText(mAtakContext, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_timeout);
         mScanOrUnpair.setOnClickListener(mScanClickListener);
         mScanOrUnpair.setText(R.string.scan);
     }
 
-    @Override
-    public void onDeviceConnected() {
+    public void handleDeviceConnected() {
         Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_connected);
         mScanOrUnpair.setOnClickListener(mUnpairClickListener);
         mScanOrUnpair.setText(R.string.unpair);
     }
 
-    @Override
-    public void onDeviceDisconnected() {
+    public void handleDeviceDisconnected() {
         Toast.makeText(mAtakContext, "Comm device disconnected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
         mScanOrUnpair.setOnClickListener(mScanClickListener);

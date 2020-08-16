@@ -72,7 +72,7 @@ public class ForwarderLifecycle implements Lifecycle {
         mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, messageQueue, cotMessageCache, cotProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(activity, mGroupTracker, mCommHardware, cotMessageCache, messageQueue));
+        mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware, cotMessageCache, messageQueue));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

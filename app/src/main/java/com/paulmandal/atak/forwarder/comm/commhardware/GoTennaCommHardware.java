@@ -193,7 +193,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             case SCANNING:
             case DISCONNECTED:
                 setConnected(false);
-                notifyScanListenersOnDeviceDisconnected();
+                notifyConnectionStateListeners(ConnectionState.DISCONNECTED);
             default:
                 setConnected(false);
                 break;
@@ -315,12 +315,12 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     private Runnable mScanTimeoutRunnable = () -> {
         mGtConnectionManager.disconnect();
         mScanning = false;
-        notifyScanListenersOnScanTimeout();
+        notifyConnectionStateListeners(ConnectionState.TIMEOUT);
     };
 
     private void scanForGotenna(GTDeviceType deviceType) {
         mScanning = true;
-        notifyScanListenersOnScanStarted();
+        notifyConnectionStateListeners(ConnectionState.SCANNING);
         try {
             mGtConnectionManager.scanAndConnect(deviceType);
             mHandler.postDelayed(mScanTimeoutRunnable, SCAN_TIMEOUT_MS);
@@ -333,7 +333,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         mScanning = false;
         mHandler.removeCallbacks(mScanTimeoutRunnable);
         Log.d(TAG, "onGoTennaConnected");
-        notifyScanListenersOnDeviceConnected();
+        notifyConnectionStateListeners(ConnectionState.CONNECTED);
         GTDeviceType deviceType = mGtConnectionManager.getDeviceType();
 
         switch (deviceType) {
@@ -558,8 +558,9 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             }
 
             if (mLastSentMessageResponse != null && mLastSentMessageResponse.getResponseCode() == GTResponse.GTCommandResponseCode.NEGATIVE) {
-                sleepForDelay(DELAY_BETWEEN_MSGS_MS);
                 // TODO: find out what can cause this to happen so we know what to do to remedy it
+                Log.d(TAG, "Got ResponseCode NEGATIVE");
+                sleepForDelay(DELAY_BETWEEN_MSGS_MS);
             }
 
             messageSentSuccessfully = false;
@@ -573,29 +574,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     /**
      * Notifiers for connection events
      */
-    private void notifyScanListenersOnDeviceDisconnected() {
-        for (ScanListener listener : getScanListeners()) {
-            listener.onDeviceDisconnected();
-        }
-    }
 
-    private void notifyScanListenersOnDeviceConnected() {
-        for (ScanListener listener : getScanListeners()) {
-            listener.onDeviceConnected();
-        }
-    }
-
-    private void notifyScanListenersOnScanStarted() {
-        for (ScanListener listener : getScanListeners()) {
-            listener.onScanStarted();
-        }
-    }
-
-    private void notifyScanListenersOnScanTimeout() {
-        for (ScanListener listener : getScanListeners()) {
-            listener.onScanTimeout();
-        }
-    }
 
     /**
      * Utils

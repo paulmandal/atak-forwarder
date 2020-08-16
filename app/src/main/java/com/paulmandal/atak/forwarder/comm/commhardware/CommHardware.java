@@ -19,21 +19,25 @@ public abstract class CommHardware {
 
     private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES;
 
+    public enum ConnectionState {
+        SCANNING,
+        TIMEOUT,
+        DISCONNECTED,
+        CONNECTED
+    }
+
     public interface MessageListener {
         void onMessageReceived(byte[] message);
     }
 
-    public interface ScanListener {
-        void onScanStarted();
-        void onScanTimeout();
-        void onDeviceConnected();
-        void onDeviceDisconnected();
+    public interface ConnectionStateListener {
+        void onConnectionStateChanged(ConnectionState connectionState);
     }
 
     private MessageQueue mMessageQueue;
     private GroupTracker mGroupTracker;
 
-    private List<CommHardware.ScanListener> mScanListeners = new CopyOnWriteArrayList<>();
+    private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
     private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private Thread mMessageWorkerThread;
@@ -87,20 +91,12 @@ public abstract class CommHardware {
         mMessageListeners.remove(listener);
     }
 
-    public void addScanListener(ScanListener listener) {
-        mScanListeners.add(listener);
+    public void addConnectionStateListener(ConnectionStateListener listener) {
+        mConnectionStateListeners.add(listener);
     }
 
-    public void removeScanListener(ScanListener listener) {
-        mScanListeners.remove(listener);
-    }
-
-    protected final List<MessageListener> getMessageListeners() {
-        return mMessageListeners;
-    }
-
-    protected final List<ScanListener> getScanListeners() {
-        return mScanListeners;
+    public void removeConnectionStateListener(ConnectionStateListener listener) {
+        mConnectionStateListeners.remove(listener);
     }
 
     /**
@@ -145,6 +141,12 @@ public abstract class CommHardware {
     protected void notifyMessageListeners(byte[] message) {
         for (MessageListener listener : mMessageListeners) {
             listener.onMessageReceived(message);
+        }
+    }
+
+    protected void notifyConnectionStateListeners(ConnectionState connectionState) {
+        for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
+            connectionStateListener.onConnectionStateChanged(connectionState);
         }
     }
 

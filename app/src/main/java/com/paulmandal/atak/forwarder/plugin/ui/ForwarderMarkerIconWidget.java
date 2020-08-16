@@ -15,7 +15,7 @@ import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 
-public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommHardware.ScanListener, MapWidget.OnClickListener  {
+public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommHardware.ConnectionStateListener, MapWidget.OnClickListener  {
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
@@ -28,7 +28,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
         mGroupManagementDropDownReceiver = groupManagementDropDownReceiver;
         mMapView = mapView;
 
-        commHardware.addScanListener(this);
+        commHardware.addConnectionStateListener(this);
 
         setName("Forwarder Status");
         addOnClickListener(this);
@@ -54,23 +54,17 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
     }
 
     @Override
-    public void onScanStarted() {
-        updateIcon(false);
-    }
-
-    @Override
-    public void onScanTimeout() {
-        updateIcon(false);
-    }
-
-    @Override
-    public void onDeviceConnected() {
-        updateIcon(true);
-    }
-
-    @Override
-    public void onDeviceDisconnected() {
-        updateIcon(false);
+    public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
+        switch (connectionState) {
+            case SCANNING:
+            case TIMEOUT:
+            case DISCONNECTED:
+                updateIcon(false);
+                break;
+            case CONNECTED:
+                updateIcon(true);
+                break;
+        }
     }
 
     public void onDestroy() {

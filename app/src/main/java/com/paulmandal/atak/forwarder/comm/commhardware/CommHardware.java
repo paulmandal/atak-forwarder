@@ -2,13 +2,19 @@ package com.paulmandal.atak.forwarder.comm.commhardware;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 
-import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
+import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
@@ -17,6 +23,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class CommHardware {
     private static final String TAG = "ATAKDBG." + CommHardware.class.getSimpleName();
+
+    protected static final String BCAST_MARKER = "ATAKBCAST";
 
     private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES;
 
@@ -37,7 +45,8 @@ public abstract class CommHardware {
 
     private Handler mHandler;
 
-    private MessageQueue mMessageQueue;
+    private final CommandQueue mCommandQueue;
+    private QueuedCommandFactory mQueuedCommandFactory;
     private GroupTracker mGroupTracker;
 
     private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
@@ -51,10 +60,12 @@ public abstract class CommHardware {
     private UserInfo mSelfInfo;
 
     public CommHardware(Handler uiThreadHandler,
-                        MessageQueue messageQueue,
+                        CommandQueue commandQueue,
+                        QueuedCommandFactory queuedCommandFactory,
                         GroupTracker groupTracker) {
         mHandler = uiThreadHandler;
-        mMessageQueue = messageQueue;
+        mCommandQueue = commandQueue;
+        mQueuedCommandFactory = queuedCommandFactory;
         mGroupTracker = groupTracker;
     }
 
@@ -66,11 +77,50 @@ public abstract class CommHardware {
         mSelfInfo = new UserInfo(callsign, gId, atakUid, mGroupTracker.getGroup() != null);
     }
 
-    public abstract void broadcastDiscoveryMessage();
-    public abstract void createGroup(List<Long> memberGids);
-    public abstract void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids);
-    public abstract void connect();
-    public abstract void forgetDevice();
+    public void broadcastDiscoveryMessage() {
+        broadcastDiscoveryMessage(false);
+    }
+
+    public void createGroup(List<Long> memberGids) {
+        if (!mConnected) {
+            Log.d(TAG, "createGroup: not connected yet");
+            return;
+        }
+
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createCreateGroupCommand(memberGids));
+    }
+
+    public void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids) {
+        if (!mConnected) {
+            Log.d(TAG, "addToGroup: not connected yet");
+            return;
+        }
+
+        if (mGroupTracker.getGroup() == null) {
+            Log.d(TAG, "addToGroup: not in a group yet");
+            return;
+        }
+
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createAddToGroupCommand(mGroupTracker.getGroup().groupId, allMemberGids, newMemberGids));
+    }
+
+    public void connect() {
+        if (mConnected) {
+            Log.d(TAG, "connect: already connected");
+            return;
+        }
+
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
+    }
+
+    public void forgetDevice() {
+        if (!mConnected) {
+            Log.d(TAG, "forgetDevice: already disconnected");
+            return;
+        }
+
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createDisconnectFromCommDeviceCommand());
+    }
 
     @CallSuper
     public void destroy() {
@@ -117,9 +167,32 @@ public abstract class CommHardware {
                     sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
                 }
 
-                MessageQueue.QueuedMessage queuedMessage = mMessageQueue.popHighestPriorityMessage(mGroupTracker.getGroup() != null);
-                if (queuedMessage != null) {
-                    sendMessage(queuedMessage);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mGroupTracker.getGroup() != null);
+
+                if (queuedCommand == null) {
+                    continue;
+                }
+
+                switch (queuedCommand.commandType) {
+                    case SCAN_FOR_COMM_DEVICE:
+                        handleScanForCommDevice();
+                        break;
+                    case DISCONNECT_FROM_COMM_DEVICE:
+                        handleDisconnectFromCommDevice();
+                        break;
+                    case BROADCAST_DISCOVERY_MSG:
+                        handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
+                        break;
+                    case CREATE_GROUP:
+                        handleCreateGroup((CreateGroupCommand) queuedCommand);
+                        break;
+                    case ADD_TO_GROUP:
+                        handleAddToGroup((AddToGroupCommand) queuedCommand);
+                        break;
+                    case SEND_TO_GROUP:
+                    case SEND_TO_INDIVIDUAL:
+                        handleSendMessage((SendMessageCommand) queuedCommand);
+                        break;
                 }
             }
         });
@@ -135,12 +208,17 @@ public abstract class CommHardware {
         mConnected = isConnected;
     }
 
-    protected UserInfo getSelfInto() {
+    protected UserInfo getSelfInfo() {
         return mSelfInfo;
     }
 
-    protected void queueMessage(CotEvent cotEvent, byte[] message, String[] toUIDs, int priority, int xmitType, boolean overwriteSimilar) {
-        mMessageQueue.queueMessage(cotEvent, message, toUIDs, priority, xmitType, overwriteSimilar);
+    protected void queueCommand(QueuedCommand queuedCommand) {
+        mCommandQueue.queueCommand(queuedCommand);
+    }
+
+    protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
+        String broadcastData = BCAST_MARKER + "," + getSelfInfo().gId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 
     protected void notifyMessageListeners(byte[] message) {
@@ -154,7 +232,6 @@ public abstract class CommHardware {
             mHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
         }
     }
-
     /**
      * Utils
      */
@@ -169,5 +246,10 @@ public abstract class CommHardware {
     /**
      * For subclasses to implement
      */
-    protected abstract void sendMessage(MessageQueue.QueuedMessage queuedMessage);
+    protected abstract void handleScanForCommDevice();
+    protected abstract void handleDisconnectFromCommDevice();
+    protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
+    protected abstract void handleCreateGroup(CreateGroupCommand createGroupCommand);
+    protected abstract void handleAddToGroup(AddToGroupCommand addToGroupCommand);
+    protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
 }

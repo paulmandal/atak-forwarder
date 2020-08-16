@@ -30,7 +30,12 @@ import com.gotenna.sdk.exceptions.GTDataMissingException;
 import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
+import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
@@ -61,8 +66,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
 
     private static final int DELAY_BETWEEN_MSGS_MS = 5000; // TODO: move this to Config
 
-    private static final String BCAST_MARKER = "ATAKBCAST";
-
     private Handler mHandler;
     private GroupListener mGroupListener;
     private GroupTracker mGroupTracker;
@@ -76,8 +79,9 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     public GoTennaCommHardware(Handler handler,
                                GroupListener userListener,
                                GroupTracker groupTracker,
-                               MessageQueue messageQueue) {
-        super(handler, messageQueue, groupTracker);
+                               CommandQueue commandQueue,
+                               QueuedCommandFactory queuedCommandFactory) {
+        super(handler, commandQueue, queuedCommandFactory, groupTracker);
         mHandler = handler;
         mGroupListener = userListener;
         mGroupTracker = groupTracker;
@@ -100,29 +104,40 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         scanForGotenna(GTDeviceType.MESH);
     }
 
+    @Override
+    protected void handleScanForCommDevice() {
+        if (!isConnected() && !mScanning) {
+            scanForGotenna(GTDeviceType.MESH);
+        }
+    }
 
     @Override
-    public void broadcastDiscoveryMessage() {
-        broadcastDiscoveryMessage(false);
+    protected void handleDisconnectFromCommDevice() {
+        mGtConnectionManager.disconnect();
+        mGtConnectionManager.clearConnectedGotennaAddress();
+    }
+
+    @Override
+    protected void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
+        if (!sendMessageSegment(broadcastDiscoveryCommand.discoveryMessage, BROADCAST_MESSAGE)) {
+            // Send this message back to the queue
+            queueCommand(broadcastDiscoveryCommand);
+        }
     }
 
     long mGroupId_DoNotUse;
 
     @Override
-    public void createGroup(List<Long> memberGids) {
-        if (!isConnected()) {
-            Log.d(TAG, "createGroup: not connected yet");
-            return;
-        }
-        memberGids.add(getSelfInto().gId);
+    protected void handleCreateGroup(CreateGroupCommand createGroupCommand) {
+        createGroupCommand.memberGids.add(getSelfInfo().gId);
 
-        Log.d(TAG, "  sending group creation request, member gids: " + memberGids);
+        Log.d(TAG, "  sending group creation request, member gids: " + createGroupCommand.memberGids);
         try {
             // TODO: error handling
-            mGroupId_DoNotUse = mGtCommandCenter.createGroupWithGIDs(memberGids,
+            mGroupId_DoNotUse = mGtCommandCenter.createGroupWithGIDs(createGroupCommand.memberGids,
                     (GTResponse gtResponse, long l) -> {
                         Log.d(TAG, "    created group: " + gtResponse);
-                        mGroupListener.onGroupCreated(mGroupId_DoNotUse, memberGids);
+                        mGroupListener.onGroupCreated(mGroupId_DoNotUse, createGroupCommand.memberGids);
                     },
                     (GTError gtError, long l) -> Log.d(TAG, "    error creating group: " + gtError));
 
@@ -134,18 +149,13 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     }
 
     @Override
-    public void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids) {
-        if (!isConnected()) {
-            Log.d(TAG, "addToGroup: not connected yet");
-            return;
-        }
-
-        allMemberGids.add(getSelfInto().gId);
+    protected void handleAddToGroup(AddToGroupCommand addToGroupCommand) {
+        addToGroupCommand.allMemberGids.add(getSelfInfo().gId);
         long groupId = mGroupTracker.getGroup().groupId;
-        for (long newMemberGid : newMemberGids) {
+        for (long newMemberGid : addToGroupCommand.newMemberGids) {
             try {
                 // TODO: error handling
-                mGtCommandCenter.sendIndividualGroupInvite(groupId, allMemberGids, newMemberGid,
+                mGtCommandCenter.sendIndividualGroupInvite(groupId, addToGroupCommand.allMemberGids, newMemberGid,
                         (GTResponse gtResponse, long l) -> Log.d(TAG, "  Success adding user to group: " + gtResponse),
                         (GTError gtError, long l) -> Log.d(TAG, "  Error inviting user to group: " + gtError));
 
@@ -158,16 +168,8 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     }
 
     @Override
-    public void connect() {
-        if (!isConnected() && !mScanning) {
-            scanForGotenna(GTDeviceType.MESH);
-        }
-    }
-
-    @Override
-    public void forgetDevice() {
-        mGtConnectionManager.disconnect();
-        mGtConnectionManager.clearConnectedGotennaAddress();
+    protected void handleSendMessage(SendMessageCommand sendMessageCommand) {
+            sendMessageToUserOrGroup(sendMessageCommand);
     }
 
     @Override
@@ -357,8 +359,8 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             mGtCommandCenter.sendSetGeoRegion(place,
                     (GTResponse response) -> {
                         if (response.getResponseCode() == GTResponse.GTCommandResponseCode.POSITIVE) {
-                            Log.d(TAG, "Setting GoTenna GID: " + getSelfInto().gId);
-                            mGtCommandCenter.setGoTennaGID(getSelfInto().gId, getSelfInto().callsign,
+                            Log.d(TAG, "Setting GoTenna GID: " + getSelfInfo().gId);
+                            mGtCommandCenter.setGoTennaGID(getSelfInfo().gId, getSelfInfo().callsign,
                                     (GTError gtError) -> {
                                         Log.d(TAG, " Error setting GoTenna ID");
                                         setConnected(false);
@@ -378,25 +380,9 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
      * Message handling
      */
 
-    @Override
-    protected void sendMessage(MessageQueue.QueuedMessage queuedMessage) {
-        if (queuedMessage.xmitType == MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST) {
-            broadcastMessage(queuedMessage);
-        } else {
-            sendMessageToUserOrGroup(queuedMessage);
-        }
-    }
-
-    protected void broadcastMessage(MessageQueue.QueuedMessage queuedMessage) {
-        if (!sendMessageSegment(queuedMessage.message, BROADCAST_MESSAGE)) {
-            // Send this message back to the queue
-            queueMessage(queuedMessage.cotEvent, queuedMessage.message, queuedMessage.toUIDs, queuedMessage.priority, queuedMessage.xmitType, false);
-        }
-    }
-
-    protected void sendMessageToUserOrGroup(MessageQueue.QueuedMessage queuedMessage) {
-        byte[] message = queuedMessage.message;
-        String[] toUIDs = queuedMessage.toUIDs;
+    protected void sendMessageToUserOrGroup(SendMessageCommand sendMessageCommand) {
+        byte[] message = sendMessageCommand.message;
+        String[] toUIDs = sendMessageCommand.toUIDs;
         // Check message length and break up if necessary
         int chunks = (int) Math.ceil((double) message.length / (double) MESSAGE_CHUNK_LENGTH);
 
@@ -472,14 +458,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
                 }
             }
         }
-    }
-
-    /**
-     * Peer discovery
-     */
-    private void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = BCAST_MARKER + "," + getSelfInto().gId + "," + getSelfInto().atakUid + "," + getSelfInto().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
-        queueMessage(null, broadcastData.getBytes(), null, MessageQueue.PRIORITY_HIGHEST, MessageQueue.QueuedMessage.XMIT_TYPE_BROADCAST, false);
     }
 
     /**

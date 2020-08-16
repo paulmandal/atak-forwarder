@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.os.Handler;
 
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.GoTennaCommHardware;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
 public class CommHardwareFactory {
@@ -15,12 +16,13 @@ public class CommHardwareFactory {
                                                          Handler handler,
                                                          GoTennaCommHardware.GroupListener groupListener,
                                                          GroupTracker groupTracker,
-                                                         MessageQueue messageQueue) {
+                                                         CommandQueue commandQueue,
+                                                         QueuedCommandFactory queuedCommandFactory) {
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
         long gId = longHashFromString(atakUid);
 
-        CommHardware commHardware = new GoTennaCommHardware(handler, groupListener, groupTracker, messageQueue);
+        CommHardware commHardware = new GoTennaCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory);
         commHardware.init(activity, callsign, gId, atakUid);
         return commHardware;
     }

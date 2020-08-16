@@ -11,9 +11,10 @@ import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
@@ -64,15 +65,16 @@ public class ForwarderLifecycle implements Lifecycle {
         JsonHelper jsonHelper = new JsonHelper();
         StateStorage stateStorage = new StateStorage(mActivity, jsonHelper);
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
-        MessageQueue messageQueue = new MessageQueue(uiThreadHandler, cotComparer);
+        CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
+        QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
         CotProtobufConverter cotProtobufConverter = new CotProtobufConverter();
 
         mGroupTracker = new GroupTracker(mActivity, uiThreadHandler, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, uiThreadHandler, mGroupTracker, mGroupTracker, messageQueue);
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, uiThreadHandler, mGroupTracker, mGroupTracker, commandQueue, queuedCommandFactory);
         mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
-        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, messageQueue, cotMessageCache, cotProtobufConverter);
+        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware, cotMessageCache, messageQueue));
+        mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware, cotMessageCache, commandQueue));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

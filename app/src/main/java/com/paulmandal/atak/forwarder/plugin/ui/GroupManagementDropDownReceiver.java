@@ -17,7 +17,7 @@ import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
@@ -29,7 +29,7 @@ import java.util.Locale;
 
 public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener,
         GroupTracker.UpdateListener,
-        MessageQueue.Listener,
+        CommandQueue.Listener,
         CommHardware.ConnectionStateListener {
     public static final String TAG = "ATAKDBG." + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
@@ -40,7 +40,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     private GroupTracker mGroupTracker;
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
-    private MessageQueue mMessageQueue;
+    private CommandQueue mCommandQueue;
 
     private final View mTemplateView;
     private EditMode mEditMode;
@@ -63,14 +63,14 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
                                            final GroupTracker groupTracker,
                                            final CommHardware commHardware,
                                            final CotMessageCache cotMessageCache,
-                                           final MessageQueue messageQueue) {
+                                           final CommandQueue commandQueue) {
         super(mapView);
         mPluginContext = context;
         mAtakContext = atakContext;
         mGroupTracker = groupTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
-        mMessageQueue = messageQueue;
+        mCommandQueue = commandQueue;
 
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
         // In this case, using it is not necessary - but I am putting it here to remind
@@ -107,7 +107,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_purge_time_mins);
 
-        mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", messageQueue.getQueueSize()));
+        mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", commandQueue.getQueueSize()));
         cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getCachePurgeTimeMs() / 60000));
 
         broadcastDiscovery.setOnClickListener((View v) -> {
@@ -119,7 +119,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             Toast.makeText(mAtakContext, "Clearing all plugin data", Toast.LENGTH_LONG).show();
             mGroupTracker.clearData();
             mCotMessageCache.clearData();
-            mMessageQueue.clearData();
+            mCommandQueue.clearData();
             updateUi();
         });
 
@@ -130,7 +130,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         clearMessageQueue.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Clearing outgoing message queue", Toast.LENGTH_SHORT).show();
-            mMessageQueue.clearData();
+            mCommandQueue.clearData();
         });
 
         setCachePurgeTime.setOnClickListener((View v) -> {
@@ -146,7 +146,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         mScanOrUnpair.setOnClickListener(mScanClickListener);
 
         mGroupTracker.setUpdateListener(this);
-        messageQueue.setListener(this);
+        commandQueue.setListener(this);
         commHardware.addConnectionStateListener(this);
     }
 

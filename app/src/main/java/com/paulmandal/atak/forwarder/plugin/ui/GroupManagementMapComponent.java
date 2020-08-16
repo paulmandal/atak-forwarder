@@ -8,7 +8,7 @@ import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
@@ -22,17 +22,17 @@ public class GroupManagementMapComponent extends DropDownMapComponent  {
     private GroupTracker mGroupTracker;
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
-    private MessageQueue mMessageQueue;
+    private CommandQueue mCommandQueue;
 
 
     public GroupManagementMapComponent(GroupTracker groupTracker,
                                        CommHardware commHardware,
                                        CotMessageCache cotMessageCache,
-                                       MessageQueue messageQueue) {
+                                       CommandQueue commandQueue) {
         mGroupTracker = groupTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
-        mMessageQueue = messageQueue;
+        mCommandQueue = commandQueue;
     }
 
     public void onCreate(final Context context, Intent intent,
@@ -42,7 +42,7 @@ public class GroupManagementMapComponent extends DropDownMapComponent  {
         super.onCreate(context, intent, mapView);
         mPluginContext = context;
 
-        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), mGroupTracker, mCommHardware, mCotMessageCache, mMessageQueue);
+        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), mGroupTracker, mCommHardware, mCotMessageCache, mCommandQueue);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);

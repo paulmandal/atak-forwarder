@@ -5,9 +5,11 @@ import android.util.Log;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.MessageQueue;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 
 import org.xmlunit.builder.Input;
 import org.xmlunit.diff.Comparison;
@@ -28,18 +30,21 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
     private CommsMapComponent mCommsMapComponent;
     private CommHardware mCommHardware;
-    private MessageQueue mMessageQueue;
+    private CommandQueue mCommandQueue;
+    private QueuedCommandFactory mQueuedCommandFactory;
     private CotMessageCache mCotMessageCache;
     private CotProtobufConverter mCotProtobufConverter;
 
     public OutboundMessageHandler(CommsMapComponent commsMapComponent,
                                   CommHardware commHardware,
-                                  MessageQueue messageQueue,
+                                  CommandQueue commandQueue,
+                                  QueuedCommandFactory queuedCommandFactory,
                                   CotMessageCache cotMessageCache,
                                   CotProtobufConverter cotProtobufConverter) {
         mCommsMapComponent = commsMapComponent;
         mCommHardware = commHardware;
-        mMessageQueue = messageQueue;
+        mCommandQueue = commandQueue;
+        mQueuedCommandFactory = queuedCommandFactory;
         mCotMessageCache = cotMessageCache;
         mCotProtobufConverter = cotProtobufConverter;
 
@@ -66,7 +71,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
         byte[] cotProtobuf =  mCotProtobufConverter.cotEventToByteArray(cotEvent);
         boolean overwriteSimilar = eventType.equals(MSG_TYPE_SELF_PLI) || !eventType.equals(MSG_TYPE_CHAT);
-        mMessageQueue.queueMessage(cotEvent, cotProtobuf, toUIDs, determineMessagePriority(cotEvent), MessageQueue.QueuedMessage.XMIT_TYPE_NORMAL, overwriteSimilar);
+        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), true);
 
         // TODO: remove this validation when we're satisfied that this works well
         try {
@@ -90,9 +95,11 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private int determineMessagePriority(CotEvent cotEvent) {
         switch (cotEvent.getType()) {
             case MSG_TYPE_CHAT:
-                return MessageQueue.PRIORITY_HIGH;
+                return QueuedCommand.PRIORITY_MEDIUM;
+            case MSG_TYPE_SELF_PLI: // TODO: remove this!
+                return QueuedCommand.PRIORITY_LOW;
             default:
-                return MessageQueue.PRIORITY_MEDIUM;
+                return QueuedCommand.PRIORITY_LOWEST;
         }
     }
 }

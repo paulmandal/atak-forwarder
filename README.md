@@ -8,7 +8,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 <br>
 ![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/direct-messaging.png "Direct Messaging")
 <br>
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/plugin-menu.png "Plugin Menu")
+![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/transmit-map-markers.png "Transmit Map Markers")
 
 # Features
 
@@ -24,6 +24,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 # To Do
 
 * Get this working with Release builds of ATAK
+* Message IDs and receipt confirmation
 * Figure out why some messages fail to parse (1/8 msgs)
 * Modify CotComparar.areCotPointsEqual() to allow for some configurable imprecision in comparison so that PLI msgs don't pile up
 * Lat/Lon for GoTenna frequency configuration from live source instead of `Config.java`

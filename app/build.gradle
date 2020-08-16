@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.protobuf'
 
 def PLUGIN_VERSION = "1.0"
 def ATAK_VERSION = "4.0.0"
@@ -31,8 +32,17 @@ android {
             setProperty("archivesBaseName", "ATAK-Plugin-" + rootProject.name + "-" + PLUGIN_VERSION + "-" + getVersionName() + "-" + ATAK_VERSION)
             defaultConfig.versionCode = getVersionCode()
             defaultConfig.versionName = PLUGIN_VERSION + " (" + getVersionName() + ") - [" + ATAK_VERSION + "]"
-        }
 
+            proto {
+                srcDir 'src/main/protobuf'
+                srcDir 'src/main/protocolbuffers'
+            }
+        }
+        test {
+            proto {
+                srcDir 'src/test/protocolbuffers'
+            }
+        }
         // Move the tests to tests/java, tests/res, etc...
         //instrumentTest.setRoot('tests')
 
@@ -146,11 +156,38 @@ def getVersionCode() {
     return revision
 }
 
+sourceSets {
+    main.java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/javalite"
+}
+
 dependencies {
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
-    implementation 'com.siemens.ct.exi:exificient:1.0.4'
+    implementation 'com.google.protobuf:protobuf-lite:3.0.1'
+
+    implementation 'org.xmlunit:xmlunit-core:2.7.0' // TODO: remove this once protobuf is stable
 
     implementation fileTree(dir: '../libs/gotenna-public-sdk.aar', include: '*.aar')
     compileOnly fileTree(dir: '../libs/main.jar', include: '*.jar')
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.7.0'
+    }
+    plugins {
+        javalite {
+            artifact = 'com.google.protobuf:protoc-gen-javalite:3.0.0'
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                remove java
+            }
+            task.plugins {
+                javalite {}
+            }
+        }
+    }
 }

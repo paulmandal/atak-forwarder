@@ -4,16 +4,25 @@ package com.paulmandal.atak.forwarder.plugin;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
+import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
+import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.persistence.JsonHelper;
+import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
-import com.paulmandal.atak.forwarder.interfaces.CommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 
 import java.util.Collection;
@@ -50,12 +59,22 @@ public class ForwarderLifecycle implements Lifecycle {
         mActivity = activity;
         mMapView = (MapView)transappsMapView.getView();
 
-        mGroupTracker = new GroupTracker(mActivity);
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, mGroupTracker, mGroupTracker);
-        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware);
-        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware);
+        // TODO: this is kinda a mess, move to a Factory and clean this up
+        Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+        CotComparer cotComparer = new CotComparer();
+        JsonHelper jsonHelper = new JsonHelper();
+        StateStorage stateStorage = new StateStorage(mActivity, jsonHelper);
+        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
+        CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
+        QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
+        CotProtobufConverter cotProtobufConverter = new CotProtobufConverter();
 
-        mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware));
+        mGroupTracker = new GroupTracker(mActivity, uiThreadHandler, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, uiThreadHandler, mGroupTracker, mGroupTracker, commandQueue, queuedCommandFactory);
+        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
+        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotProtobufConverter);
+
+        mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware, cotMessageCache, commandQueue));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

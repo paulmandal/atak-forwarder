@@ -196,6 +196,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             case DISCONNECTED:
                 setConnected(false);
                 notifyConnectionStateListeners(ConnectionState.DISCONNECTED);
+                break;
             default:
                 setConnected(false);
                 break;
@@ -334,7 +335,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     private void onGoTennaConnected() {
         mScanning = false;
         mHandler.removeCallbacks(mScanTimeoutRunnable);
-        Log.d(TAG, "onGoTennaConnected");
         notifyConnectionStateListeners(ConnectionState.CONNECTED);
         GTDeviceType deviceType = mGtConnectionManager.getDeviceType();
 
@@ -366,8 +366,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
                                         setConnected(false);
                                     });
                             setConnected(true);
-                            broadcastDiscoveryMessage(true);
-                            startWorkerThreads();
+                            broadcastDiscoveryMessage(true); // TODO: maybe don't send this every time we reconnect to the device?
                         } else {
                             Log.d(TAG, "Error setting GID");
                         }
@@ -379,7 +378,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     /**
      * Message handling
      */
-
     protected void sendMessageToUserOrGroup(SendMessageCommand sendMessageCommand) {
         byte[] message = sendMessageCommand.message;
         String[] toUIDs = sendMessageCommand.toUIDs;
@@ -587,5 +585,4 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             this.chunk = chunk;
         }
     }
-
 }

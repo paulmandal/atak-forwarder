@@ -25,8 +25,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     /**
      * Do not cache/filter these message types
      */
-    private static final String MSG_TYPE_SELF_PLI = "a-f-G-U-C";
-    private static final String MSG_TYPE_CHAT = "b-t-f";
+    public static final String MSG_TYPE_SELF_PLI = "a-f-G-U-C";
+    public static final String MSG_TYPE_CHAT = "b-t-f";
 
     private CommsMapComponent mCommsMapComponent;
     private CommHardware mCommHardware;
@@ -71,7 +71,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
         byte[] cotProtobuf =  mCotProtobufConverter.cotEventToByteArray(cotEvent);
         boolean overwriteSimilar = eventType.equals(MSG_TYPE_SELF_PLI) || !eventType.equals(MSG_TYPE_CHAT);
-        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), true);
+        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), overwriteSimilar);
 
         // TODO: remove this validation when we're satisfied that this works well
         try {
@@ -96,10 +96,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         switch (cotEvent.getType()) {
             case MSG_TYPE_CHAT:
                 return QueuedCommand.PRIORITY_MEDIUM;
-            case MSG_TYPE_SELF_PLI: // TODO: remove this!
-                return QueuedCommand.PRIORITY_LOW;
             default:
-                return QueuedCommand.PRIORITY_LOWEST;
+                return QueuedCommand.PRIORITY_LOW;
         }
     }
 }

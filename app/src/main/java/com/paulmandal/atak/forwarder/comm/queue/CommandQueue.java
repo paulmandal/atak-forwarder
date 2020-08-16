@@ -9,6 +9,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
+import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +43,19 @@ public class CommandQueue {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
                 if (commandToQueue.commandType == queuedCommand.commandType) {
                     // Do not create duplicates for broadcasting discovery, and connect/disconnect from device
+                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG
+                            || commandToQueue.commandType == CommandType.DISCONNECT_FROM_COMM_DEVICE
+                            || commandToQueue.commandType == CommandType.SCAN_FOR_COMM_DEVICE) {
+                        return;
+                    }
+
                     if (commandToQueue.commandType == CommandType.CREATE_GROUP) {
                         CreateGroupCommand queuedCommandAsCreateGroup = (CreateGroupCommand)queuedCommand;
                         CreateGroupCommand commandToQueueAsCreateGroup = (CreateGroupCommand)commandToQueue;
 
                         // Overwrite just in case anything changed
                         queuedCommandAsCreateGroup.memberGids = commandToQueueAsCreateGroup.memberGids;
+                        return;
                     }
 
                     if (commandToQueue.commandType == CommandType.ADD_TO_GROUP) {
@@ -58,9 +66,12 @@ public class CommandQueue {
                         queuedCommandAsAddToGroup.groupId = commandToQueueAsAddToGroup.groupId;
                         queuedCommandAsAddToGroup.allMemberGids = commandToQueueAsAddToGroup.allMemberGids;
                         queuedCommandAsAddToGroup.newMemberGids = commandToQueueAsAddToGroup.newMemberGids;
+                        return;
                     }
                 }
             }
+
+            mQueuedCommands.add(commandToQueue);
         }
     }
 
@@ -72,6 +83,7 @@ public class CommandQueue {
                     if (queuedCommand instanceof SendMessageCommand) {
                         SendMessageCommand queuedSendMessageCommand = (SendMessageCommand)queuedCommand;
                         if (mCotComparer.areCotEventsEqual(sendMessageCommand.cotEvent, queuedSendMessageCommand.cotEvent)
+                                || queuedSendMessageCommand.cotEvent.getType().equals(OutboundMessageHandler.MSG_TYPE_SELF_PLI)
                                 && mCotComparer.areUidsEqual(sendMessageCommand.toUIDs, queuedSendMessageCommand.toUIDs)) {
                             queuedSendMessageCommand.takeStateFrom(sendMessageCommand);
                             return;
@@ -88,14 +100,22 @@ public class CommandQueue {
     }
 
     @Nullable
-    public QueuedCommand popHighestPriorityCommand(boolean isInGroup) {
+    public QueuedCommand popHighestPriorityCommand(boolean isConnected, boolean isInGroup) {
         QueuedCommand highestPriorityCommand = null;
         int messageQueueSize = 0;
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 
-                if ((queuedCommand.commandType == CommandType.SEND_TO_GROUP
-                        && !isInGroup)) {
+                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
+                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
+                        || queuedCommand.commandType == CommandType.SEND_TO_GROUP
+                        || queuedCommand.commandType == CommandType.ADD_TO_GROUP
+                        || queuedCommand.commandType == CommandType.CREATE_GROUP)) {
+                    // Ignore commands that require connectivity
+                    continue;
+                }
+
+                if (!isInGroup && queuedCommand.commandType == CommandType.SEND_TO_GROUP) {
                     // Ignore group messages for now
                     continue;
                 }

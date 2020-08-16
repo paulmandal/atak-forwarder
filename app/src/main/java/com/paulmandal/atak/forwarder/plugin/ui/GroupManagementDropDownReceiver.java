@@ -246,7 +246,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     private View.OnClickListener mScanClickListener = (View v) -> mCommHardware.connect();
 
-    private View.OnClickListener mUnpairClickListener = (View v) -> mCommHardware.forgetDevice();
+    private View.OnClickListener mUnpairClickListener = (View v) -> mCommHardware.disconnect();
 
     private void updateUi() {
         setEditModeAndUiForGroup();

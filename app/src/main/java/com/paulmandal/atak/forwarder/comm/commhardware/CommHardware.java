@@ -67,6 +67,8 @@ public abstract class CommHardware {
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mGroupTracker = groupTracker;
+
+        startWorkerThreads();
     }
 
     /**
@@ -113,7 +115,7 @@ public abstract class CommHardware {
         mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
     }
 
-    public void forgetDevice() {
+    public void disconnect() {
         if (!mConnected) {
             Log.d(TAG, "forgetDevice: already disconnected");
             return;
@@ -163,11 +165,7 @@ public abstract class CommHardware {
             while (!mDestroyed) {
                 sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
 
-                while (!mConnected) {
-                    sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
-                }
-
-                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mGroupTracker.getGroup() != null);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnected, mGroupTracker.getGroup() != null);
 
                 if (queuedCommand == null) {
                     continue;

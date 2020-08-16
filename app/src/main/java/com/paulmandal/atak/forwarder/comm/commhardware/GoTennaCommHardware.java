@@ -77,7 +77,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
                                GroupListener userListener,
                                GroupTracker groupTracker,
                                MessageQueue messageQueue) {
-        super(messageQueue, groupTracker);
+        super(handler, messageQueue, groupTracker);
         mHandler = handler;
         mGroupListener = userListener;
         mGroupTracker = groupTracker;

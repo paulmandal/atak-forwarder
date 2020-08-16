@@ -3,7 +3,6 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -37,7 +36,6 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     private final Context mPluginContext;
     private final Context mAtakContext;
-    private final Handler mHandler;
 
     private GroupTracker mGroupTracker;
     private CommHardware mCommHardware;
@@ -62,7 +60,6 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     public GroupManagementDropDownReceiver(final MapView mapView,
                                            final Context context,
                                            final Context atakContext,
-                                           final Handler uiThreadHandler,
                                            final GroupTracker groupTracker,
                                            final CommHardware commHardware,
                                            final CotMessageCache cotMessageCache,
@@ -70,7 +67,6 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         super(mapView);
         mPluginContext = context;
         mAtakContext = atakContext;
-        mHandler = uiThreadHandler;
         mGroupTracker = groupTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
@@ -281,7 +277,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     @Override
     public void onMessageQueueSizeChanged(int size) {
-        mHandler.post(() -> mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", size)));
+        mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", size));
     }
 
     @Override

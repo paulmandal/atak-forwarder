@@ -59,16 +59,16 @@ public class ForwarderLifecycle implements Lifecycle {
         mMapView = (MapView)transappsMapView.getView();
 
         // TODO: this is kinda a mess, move to a Factory and clean this up
+        Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
         JsonHelper jsonHelper = new JsonHelper();
         StateStorage stateStorage = new StateStorage(mActivity, jsonHelper);
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
-        MessageQueue messageQueue = new MessageQueue(cotComparer);
+        MessageQueue messageQueue = new MessageQueue(uiThreadHandler, cotComparer);
         CotProtobufConverter cotProtobufConverter = new CotProtobufConverter();
-        Handler handler = new Handler(Looper.getMainLooper());
 
-        mGroupTracker = new GroupTracker(mActivity, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, handler, mGroupTracker, mGroupTracker, messageQueue);
+        mGroupTracker = new GroupTracker(mActivity, uiThreadHandler, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, uiThreadHandler, mGroupTracker, mGroupTracker, messageQueue);
         mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, messageQueue, cotMessageCache, cotProtobufConverter);
 

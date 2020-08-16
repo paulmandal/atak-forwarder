@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
 import android.content.Context;
+import android.os.Handler;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
@@ -34,6 +35,8 @@ public abstract class CommHardware {
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
+    private Handler mHandler;
+
     private MessageQueue mMessageQueue;
     private GroupTracker mGroupTracker;
 
@@ -47,8 +50,10 @@ public abstract class CommHardware {
 
     private UserInfo mSelfInfo;
 
-    public CommHardware(MessageQueue messageQueue,
+    public CommHardware(Handler uiThreadHandler,
+                        MessageQueue messageQueue,
                         GroupTracker groupTracker) {
+        mHandler = uiThreadHandler;
         mMessageQueue = messageQueue;
         mGroupTracker = groupTracker;
     }
@@ -140,13 +145,13 @@ public abstract class CommHardware {
 
     protected void notifyMessageListeners(byte[] message) {
         for (MessageListener listener : mMessageListeners) {
-            listener.onMessageReceived(message);
+            mHandler.post(() -> listener.onMessageReceived(message));
         }
     }
 
     protected void notifyConnectionStateListeners(ConnectionState connectionState) {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
-            connectionStateListener.onConnectionStateChanged(connectionState);
+            mHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
         }
     }
 

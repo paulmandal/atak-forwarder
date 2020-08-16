@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.group;
 
 import android.content.Context;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
@@ -19,6 +20,8 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
     public static final long USER_NOT_FOUND = -1;
 
     private Context mAtakContext;
+    private Handler mHandler;
+
     private StateStorage mStateStorage;
 
     private List<UserInfo> mUserInfoList;
@@ -26,8 +29,13 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
 
     private UpdateListener mUpdateListener;
 
-    public GroupTracker(Context atakContext, StateStorage stateStorage, @Nullable List<UserInfo> userInfoList, @Nullable GroupInfo groupInfo) {
+    public GroupTracker(Context atakContext,
+                        Handler uiThreadHandler,
+                        StateStorage stateStorage,
+                        @Nullable List<UserInfo> userInfoList,
+                        @Nullable GroupInfo groupInfo) {
         mAtakContext = atakContext;
+        mHandler = uiThreadHandler;
         mStateStorage = stateStorage;
 
         if (userInfoList == null) {
@@ -62,7 +70,7 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
         }
 
         if (mUpdateListener != null) {
-            mUpdateListener.onUsersUpdated();
+            mHandler.post(() -> mUpdateListener.onUsersUpdated());
         }
 
         storeState();
@@ -84,7 +92,7 @@ public class GroupTracker implements GoTennaCommHardware.GroupListener {
         }
 
         if (mUpdateListener != null) {
-            mUpdateListener.onGroupUpdated();
+            mHandler.post(() -> mUpdateListener.onGroupUpdated());
         }
 
         storeState();

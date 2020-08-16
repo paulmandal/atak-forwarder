@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.comm;
 
+import android.os.Handler;
 import android.support.annotation.Nullable;
 
 import com.atakmap.coremap.cot.event.CotEvent;
@@ -20,12 +21,15 @@ public class MessageQueue {
     public static final int PRIORITY_HIGH = 2;
     public static final int PRIORITY_HIGHEST = 3;
 
+    private Handler mHandler;
+
     private CotComparer mCotComparer;
 
     private final List<QueuedMessage> mQueuedMessages;
     private Listener mListener;
 
-    public MessageQueue(CotComparer cotComparer) {
+    public MessageQueue(Handler uiThreadHandler, CotComparer cotComparer) {
+        mHandler = uiThreadHandler;
         mCotComparer = cotComparer;
         mQueuedMessages =  new ArrayList<>();
     }
@@ -104,7 +108,7 @@ public class MessageQueue {
 
     private void notifyListener(int messageQueueSize) {
         if (mListener != null) {
-            mListener.onMessageQueueSizeChanged(messageQueueSize);
+            mHandler.post(() -> mListener.onMessageQueueSizeChanged(messageQueueSize));
         }
     }
 

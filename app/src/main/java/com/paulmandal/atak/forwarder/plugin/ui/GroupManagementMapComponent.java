@@ -2,8 +2,6 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.Looper;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
@@ -44,8 +42,7 @@ public class GroupManagementMapComponent extends DropDownMapComponent  {
         super.onCreate(context, intent, mapView);
         mPluginContext = context;
 
-        Handler uiThreadHandler = new Handler(Looper.getMainLooper());
-        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), uiThreadHandler, mGroupTracker, mCommHardware, mCotMessageCache, mMessageQueue);
+        mDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), mGroupTracker, mCommHardware, mCotMessageCache, mMessageQueue);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);

@@ -5,19 +5,11 @@ import android.util.Log;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-
-import org.xmlunit.builder.Input;
-import org.xmlunit.diff.Comparison;
-import org.xmlunit.diff.ComparisonResult;
-import org.xmlunit.diff.DOMDifferenceEngine;
-import org.xmlunit.diff.DifferenceEngine;
-
-import javax.xml.transform.Source;
 
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor {
     private static final String TAG = "ATAKDBG." + OutboundMessageHandler.class.getSimpleName();
@@ -72,24 +64,6 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         byte[] cotProtobuf =  mCotProtobufConverter.cotEventToByteArray(cotEvent);
         boolean overwriteSimilar = eventType.equals(MSG_TYPE_SELF_PLI) || !eventType.equals(MSG_TYPE_CHAT);
         mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), overwriteSimilar);
-
-        // TODO: remove this validation when we're satisfied that this works well
-        try {
-            String protoBufString = mCotProtobufConverter.cotEventFromProtoBuf(cotProtobuf).toString();
-            String cotString = cotEvent.toString();
-            Log.d(TAG, "o: " + cotString);
-            Log.d(TAG, "p: " + protoBufString);
-            Source original = Input.fromString(cotString).build();
-            Source protobuffed = Input.fromString(protoBufString).build();
-            DifferenceEngine diff = new DOMDifferenceEngine();
-            diff.addDifferenceListener((Comparison comparison, ComparisonResult outcome) -> {
-                Log.d(TAG, "  found difference b/t original CotEvent and protobuf(CotEvent):" + comparison);
-            });
-            diff.compare(original, protobuffed);
-            Log.d(TAG, "Compare finished");
-        } catch(UnsupportedOperationException e) {
-            e.printStackTrace();
-        }
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {

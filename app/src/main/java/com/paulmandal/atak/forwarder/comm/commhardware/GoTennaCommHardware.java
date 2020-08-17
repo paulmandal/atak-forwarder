@@ -548,11 +548,6 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     }
 
     /**
-     * Notifiers for connection events
-     */
-
-
-    /**
      * Utils
      */
     private void maybeSleepUntilQuotaRefresh() {

@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -10,14 +12,17 @@ import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
-import com.paulmandal.atak.forwarder.protobufs.CotEventMinimalProtos;
-import com.paulmandal.atak.forwarder.protobufs.Minimalcontact;
-import com.paulmandal.atak.forwarder.protobufs.Minimaldetail;
-import com.paulmandal.atak.forwarder.protobufs.Minimalgroup;
-import com.paulmandal.atak.forwarder.protobufs.Minimallink;
-import com.paulmandal.atak.forwarder.protobufs.Minimalremarks;
-import com.paulmandal.atak.forwarder.protobufs.Minimaltakv;
-import com.paulmandal.atak.forwarder.protobufs.Minimaltrack;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufChat;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufChatGroup;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufDetail;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufGroup;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufLink;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufRemarks;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufServerDestination;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufTakv;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufTrack;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -25,6 +30,7 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.ParseException;
+import java.util.List;
 
 public class MinimalCotProtobufConverter {
     private static final String TAG = "ATAKDBG." + MinimalCotProtobufConverter.class.getSimpleName();
@@ -47,6 +53,9 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_REMARKS = "remarks";
     private static final String KEY_LINK = "link";
     private static final String KEY_USER_ICON = "usericon";
+    private static final String KEY_CHAT = "__chat";
+    private static final String KEY_CHAT_GROUP = "chatgrp";
+    private static final String KEY_SERVER_DESTINATION = "__serverdestination";
 
     // Contact
     private static final String KEY_CALLSIGN = "callsign";
@@ -89,6 +98,21 @@ public class MinimalCotProtobufConverter {
 
     // Color
     private static final String KEY_ARGB = "argb";
+
+    // Chat
+    private static final String KEY_PARENT = "parent";
+    private static final String KEY_GROUP_OWNER = "groupOwner";
+    private static final String KEY_CHATROOM = "chatroom";
+    private static final String KEY_ID = "id";
+    private static final String KEY_SENDER_CALLSIGN = "senderCallsign";
+
+    // Remarks
+    private static final String KEY_SOURCE = "source";
+    private static final String KEY_TO = "to";
+    private static final String KEY_TIME = "time";
+
+    // Server Destination
+    private static final String KEY_DESTINATIONS = "destinations";
 
     /**
      * Special Values
@@ -137,7 +161,7 @@ public class MinimalCotProtobufConverter {
     }
 
     public byte[] toByteArray(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
-        CotEventMinimalProtos.MinimalCotEvent cotEventProtobuf = toCotEventProtobuf(cotEvent);
+        ProtobufCotEvent.MinimalCotEvent cotEventProtobuf = toCotEventProtobuf(cotEvent);
         return cotEventProtobuf.toByteArray();
     }
 
@@ -145,7 +169,7 @@ public class MinimalCotProtobufConverter {
         CotEvent cotEvent = null;
 
         try {
-            CotEventMinimalProtos.MinimalCotEvent protoCotEvent = CotEventMinimalProtos.MinimalCotEvent.parseFrom(cotProtobuf);
+            ProtobufCotEvent.MinimalCotEvent protoCotEvent = ProtobufCotEvent.MinimalCotEvent.parseFrom(cotProtobuf);
 
             CustomBytesFields customBytesFields = unpackCustomBytes(protoCotEvent.getCustomBytes());
             CustomBytesExtFields customBytesExtFields = unpackCustomBytesExt(protoCotEvent.getCustomBytesExt());
@@ -168,8 +192,8 @@ public class MinimalCotProtobufConverter {
     /**
      * toByteArray
      */
-    private CotEventMinimalProtos.MinimalCotEvent toCotEventProtobuf(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
-        CotEventMinimalProtos.MinimalCotEvent.Builder builder = CotEventMinimalProtos.MinimalCotEvent.newBuilder();
+    private ProtobufCotEvent.MinimalCotEvent toCotEventProtobuf(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
+        ProtobufCotEvent.MinimalCotEvent.Builder builder = ProtobufCotEvent.MinimalCotEvent.newBuilder();
 
         if (cotEvent.getUID() != null) {
             builder.setUid(cotEvent.getUID());
@@ -227,8 +251,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimaldetail.MinimalDetail toDetail(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimaldetail.MinimalDetail.Builder builder = Minimaldetail.MinimalDetail.newBuilder();
+    private ProtobufDetail.MinimalDetail toDetail(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufDetail.MinimalDetail.Builder builder = ProtobufDetail.MinimalDetail.newBuilder();
 
         if (cotDetail.getElementName().equals(KEY_DETAIL)) { // TODO: do we need this check?
             for (CotDetail innerDetail : cotDetail.getChildren()) {
@@ -250,6 +274,12 @@ public class MinimalCotProtobufConverter {
                         break;
                     case KEY_LINK:
                         builder.setLink(toLink(innerDetail));
+                        break;
+                    case KEY_CHAT:
+                        builder.setChat(toChat(innerDetail));
+                        break;
+                    case KEY_SERVER_DESTINATION:
+                        builder.setServerDestination(toServerDestination(innerDetail));
                         break;
                     case KEY_USER_ICON:
                         builder.setIconSetPath(innerDetail.getAttribute(KEY_ICON_SET_PATH));
@@ -277,8 +307,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimalcontact.MinimalContact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimalcontact.MinimalContact.Builder builder = Minimalcontact.MinimalContact.newBuilder();
+    private ProtobufContact.MinimalContact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufContact.MinimalContact.Builder builder = ProtobufContact.MinimalContact.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -302,8 +332,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimalgroup.MinimalGroup toGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimalgroup.MinimalGroup.Builder builder = Minimalgroup.MinimalGroup.newBuilder();
+    private ProtobufGroup.MinimalGroup toGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufGroup.MinimalGroup.Builder builder = ProtobufGroup.MinimalGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -320,8 +350,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimaltakv.MinimalTakv toTakv(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimaltakv.MinimalTakv.Builder builder = Minimaltakv.MinimalTakv.newBuilder();
+    private ProtobufTakv.MinimalTakv toTakv(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufTakv.MinimalTakv.Builder builder = ProtobufTakv.MinimalTakv.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -344,8 +374,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimaltrack.MinimalTrack toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimaltrack.MinimalTrack.Builder builder = Minimaltrack.MinimalTrack.newBuilder();
+    private ProtobufTrack.MinimalTrack toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufTrack.MinimalTrack.Builder builder = ProtobufTrack.MinimalTrack.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -362,8 +392,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimalremarks.MinimalRemarks toRemarks(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimalremarks.MinimalRemarks.Builder builder = Minimalremarks.MinimalRemarks.newBuilder();
+    private ProtobufRemarks.MinimalRemarks toRemarks(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufRemarks.MinimalRemarks.Builder builder = ProtobufRemarks.MinimalRemarks.newBuilder();
         String remarks = cotDetail.getInnerText();
         if (remarks != null) {
             builder.setRemarks(remarks);
@@ -371,6 +401,21 @@ public class MinimalCotProtobufConverter {
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
+                case KEY_SOURCE:
+                    builder.setSource(attribute.getValue());
+                    break;
+                case KEY_TO:
+                    builder.setTo(attribute.getValue());
+                    break;
+                case KEY_TIME:
+                    try {
+                        long time = CoordinatedTime.fromCot(attribute.getValue()).getMilliseconds();
+                        long sinceStartOfYear = (time - mStartOfYearMs) / 1000;
+                        builder.setTime((int)sinceStartOfYear);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: remarks." + attribute.getName());
             }
@@ -378,8 +423,8 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimallink.MinimalLink toLink(CotDetail cotDetail) throws UnknownDetailFieldException {
-        Minimallink.MinimalLink.Builder builder = Minimallink.MinimalLink.newBuilder();
+    private ProtobufLink.MinimalLink toLink(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufLink.MinimalLink.Builder builder = ProtobufLink.MinimalLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -406,6 +451,78 @@ public class MinimalCotProtobufConverter {
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: link." + attribute.getName());
+            }
+        }
+        return builder.build();
+    }
+
+    private ProtobufChat.MinimalChat toChat(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufChat.MinimalChat.Builder builder = ProtobufChat.MinimalChat.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_PARENT:
+                    builder.setParent(attribute.getValue());
+                    break;
+                case KEY_GROUP_OWNER:
+                    builder.setGroupOwner(1 << 1 | (attribute.getValue().equals(VALUE_TRUE) ? 1 : 0));
+                    break;
+                case KEY_CHATROOM:
+                    builder.setChatroom(attribute.getValue());
+                    break;
+                case KEY_ID:
+                    builder.setId(attribute.getValue());
+                    break;
+                case KEY_SENDER_CALLSIGN:
+                    builder.setSenderCallsign(attribute.getValue());
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: chat." + attribute.getName());
+            }
+        }
+
+        ProtobufChatGroup.MinimalChatGroup chatGroup = toChatGroup(cotDetail);
+        if (chatGroup != null) {
+            builder.setChatGroup(chatGroup);
+        }
+        return builder.build();
+    }
+
+    private ProtobufServerDestination.MinimalServerDestination toServerDestination(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufServerDestination.MinimalServerDestination.Builder builder = ProtobufServerDestination.MinimalServerDestination.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_DESTINATIONS:
+                    builder.setDestinations(attribute.getValue());
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: color." + attribute.getName());
+            }
+        }
+        return builder.build();
+    }
+
+    private ProtobufChatGroup.MinimalChatGroup toChatGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufChatGroup.MinimalChatGroup.Builder builder = ProtobufChatGroup.MinimalChatGroup.newBuilder();
+        List<CotDetail> children = cotDetail.getChildren();
+        for (CotDetail childDetail : children) {
+            switch (childDetail.getElementName()) {
+                case KEY_CHAT_GROUP:
+                    CotAttribute[] attributes = childDetail.getAttributes();
+                    for (CotAttribute attribute : attributes) {
+                        String attributeName = attribute.getName();
+                        if (attributeName.equals(KEY_ID)) {
+                            builder.setId(attribute.getValue());
+                        } else if (attributeName.startsWith(KEY_UID)) {
+                            builder.addUid(attribute.getValue());
+                        } else {
+                            throw new UnknownDetailFieldException("Don't know how to handle child attribute: chat." + childDetail.getElementName() + "." + attributeName);
+                        }
+                    }
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle child field: chat." + childDetail.getElementName());
             }
         }
         return builder.build();
@@ -534,11 +651,11 @@ public class MinimalCotProtobufConverter {
      * toCotEvent
      */
 
-    private CotDetail cotDetailFromProtoDetail(Minimaldetail.MinimalDetail detail, CotEvent cotEvent, CustomBytesExtFields customBytesExtFields) {
+    private CotDetail cotDetailFromProtoDetail(ProtobufDetail.MinimalDetail detail, CotEvent cotEvent, CustomBytesExtFields customBytesExtFields) {
         CotDetail cotDetail = new CotDetail();
 
-        Minimaltakv.MinimalTakv takv = detail.getTakv();
-        if (takv != null && takv != Minimaltakv.MinimalTakv.getDefaultInstance()) {
+        ProtobufTakv.MinimalTakv takv = detail.getTakv();
+        if (takv != null && takv != ProtobufTakv.MinimalTakv.getDefaultInstance()) {
             CotDetail takvDetail = new CotDetail(KEY_TAKV);
 
             takvDetail.setAttribute(KEY_OS, Integer.toString(takv.getOs()));
@@ -554,8 +671,8 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(takvDetail);
         }
 
-        Minimalcontact.MinimalContact contact = detail.getContact();
-        if (contact != null && contact != Minimalcontact.MinimalContact.getDefaultInstance()) {
+        ProtobufContact.MinimalContact contact = detail.getContact();
+        if (contact != null && contact != ProtobufContact.MinimalContact.getDefaultInstance()) {
             CotDetail contactDetail = new CotDetail(KEY_CONTACT);
 
             if (!isNullOrEmpty(contact.getCallsign())) {
@@ -590,8 +707,8 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(precisionLocationDetail);
         }
 
-        Minimalgroup.MinimalGroup group = detail.getGroup();
-        if (group != null && group != Minimalgroup.MinimalGroup.getDefaultInstance()) {
+        ProtobufGroup.MinimalGroup group = detail.getGroup();
+        if (group != null && group != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
             CotDetail groupDetail = new CotDetail(KEY_GROUP);
 
             if (!isNullOrEmpty(group.getName())) {
@@ -617,8 +734,8 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(statusDetail);
         }
 
-        Minimaltrack.MinimalTrack track = detail.getTrack();
-        if (track != null && track != Minimaltrack.MinimalTrack.getDefaultInstance()) {
+        ProtobufTrack.MinimalTrack track = detail.getTrack();
+        if (track != null && track != ProtobufTrack.MinimalTrack.getDefaultInstance()) {
             CotDetail trackDetail = new CotDetail(KEY_TRACK);
 
             if (track.getCourse() != 0.0) {
@@ -630,19 +747,31 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(trackDetail);
         }
 
-        Minimalremarks.MinimalRemarks remarks = detail.getRemarks();
-        if (remarks != null && remarks != Minimalremarks.MinimalRemarks.getDefaultInstance()) {
+        ProtobufRemarks.MinimalRemarks remarks = detail.getRemarks();
+        if (remarks != null && remarks != ProtobufRemarks.MinimalRemarks.getDefaultInstance()) {
             CotDetail remarksDetail = new CotDetail(KEY_REMARKS);
 
             if (!isNullOrEmpty(remarks.getRemarks())) {
                 remarksDetail.setInnerText(remarks.getRemarks());
             }
+            if (!isNullOrEmpty(remarks.getSource())) {
+                remarksDetail.setAttribute(KEY_SOURCE, remarks.getSource());
+            }
+            if (!isNullOrEmpty(remarks.getTo())) {
+                remarksDetail.setAttribute(KEY_TO, remarks.getTo());
+            }
+            long timeOffset = remarks.getTime();
+            if (timeOffset > 0) {
+                long timeMs = mStartOfYearMs + (timeOffset * 1000);
+                CoordinatedTime time = new CoordinatedTime(timeMs);
+                remarksDetail.setAttribute(KEY_TIME, time.toString());
+            }
 
             cotDetail.addChild(remarksDetail);
         }
 
-        Minimallink.MinimalLink link = detail.getLink();
-        if (link != null && link != Minimallink.MinimalLink.getDefaultInstance()) {
+        ProtobufLink.MinimalLink link = detail.getLink();
+        if (link != null && link != ProtobufLink.MinimalLink.getDefaultInstance()) {
             CotDetail linkDetail = new CotDetail(KEY_LINK);
 
             if (!isNullOrEmpty(link.getUid())) {
@@ -665,6 +794,47 @@ public class MinimalCotProtobufConverter {
             }
 
             cotDetail.addChild(linkDetail);
+        }
+
+        ProtobufChat.MinimalChat chat = detail.getChat();
+        if (chat != null && chat != ProtobufChat.MinimalChat.getDefaultInstance()) {
+            CotDetail chatDetail = new CotDetail(KEY_CHAT);
+
+            if (!isNullOrEmpty(chat.getParent())) {
+                chatDetail.setAttribute(KEY_PARENT, chat.getParent());
+            }
+            if (chat.getGroupOwner() > 0) {
+                Log.d(TAG, "parsing GroupOwner: " + chat.getGroupOwner());
+                Log.d(TAG, "value w/o marker bit: " + (chat.getGroupOwner() & createBitMask(1)));
+                chatDetail.setAttribute(KEY_GROUP_OWNER, Boolean.toString((chat.getGroupOwner() & createBitMask(1)) == 1));
+            }
+            if (!isNullOrEmpty(chat.getChatroom())) {
+                chatDetail.setAttribute(KEY_CHATROOM, chat.getChatroom());
+            }
+            if (!isNullOrEmpty(chat.getId())) {
+                chatDetail.setAttribute(KEY_ID, chat.getId());
+            }
+            if (!isNullOrEmpty(chat.getSenderCallsign())) {
+                chatDetail.setAttribute(KEY_SENDER_CALLSIGN, chat.getSenderCallsign());
+            }
+
+            ProtobufChatGroup.MinimalChatGroup chatGroup = chat.getChatGroup();
+            if (chatGroup != null && chatGroup != ProtobufChatGroup.MinimalChatGroup.getDefaultInstance()) {
+                CotDetail chatGroupDetail = new CotDetail(KEY_CHAT_GROUP);
+
+                if (!isNullOrEmpty(chatGroup.getId())) {
+                    chatGroupDetail.setAttribute(KEY_ID, chatGroup.getId());
+                }
+                List<String> uidList = chatGroup.getUidList();
+                for (int i = 0 ; i < uidList.size() ; i++) {
+                    String uid = uidList.get(i);
+                    chatGroupDetail.setAttribute(KEY_UID + i, uid);
+                }
+
+                chatDetail.addChild(chatGroupDetail);
+            }
+
+            cotDetail.addChild(chatDetail);
         }
 
         String iconSetPath = detail.getIconSetPath();

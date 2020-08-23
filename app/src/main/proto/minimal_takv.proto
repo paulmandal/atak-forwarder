@@ -4,6 +4,8 @@ option optimize_for = LITE_RUNTIME;
 
 package com.paulmandal.atak.forwarder.protobufs;
 
+option java_outer_classname = "ProtobufTakv";
+
 message MinimalTakv {
   int32 os = 1;
   string version = 2;

@@ -61,7 +61,7 @@ public class StateStorage {
 
     public int getPliCachePurgeTimeMs() {
         SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
-        return sharedPref.getInt(KEY_PLI_CACHE_PURGE_TIME, DEFAULT_CACHE_PURGE_TIME_MS);
+        return sharedPref.getInt(KEY_PLI_CACHE_PURGE_TIME, DEFAULT_PLI_CACHE_PURGE_TIME_MS);
     }
 
     public void storeDefaultCachePurgeTime(int shapeCachePurgeTimeMs) {

@@ -20,7 +20,7 @@
     <string name="group_out_text">Out</string>
 
     <string name="set_msg_block_ttl_mins">Repeat Msg Block TTL (mins)</string>
-    <string name="set_pli_block_ttl_ms">PLI max. freq. (ms)</string>
+    <string name="set_pli_block_ttl_s">PLI max. freq. (s)</string>
     <string name="clear_data">Clear Data</string>
     <string name="clear_message_queue">Clear MsgQ</string>
     <string name="clear_message_cache">Clear Msg Cache</string>

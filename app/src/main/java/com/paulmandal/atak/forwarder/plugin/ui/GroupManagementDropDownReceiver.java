@@ -107,11 +107,11 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         mScanOrUnpair = (Button) mTemplateView.findViewById(R.id.button_scan_or_unpair);
 
         EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_default_purge_time_mins);
-        EditText pliPurgeTimeMs = (EditText) mTemplateView.findViewById(R.id.edittext_pli_purge_time_ms);
+        EditText pliPurgeTimeS = (EditText) mTemplateView.findViewById(R.id.edittext_pli_purge_time_s);
 
         mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", commandQueue.getQueueSize()));
         cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
-        pliPurgeTimeMs.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs()));
+        pliPurgeTimeS.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs() / 1000));
 
         broadcastDiscovery.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
@@ -147,13 +147,13 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         });
 
         setPliCachePurgeTime.setOnClickListener((View v) -> {
-            String pliPurgeTimeMsStr = pliPurgeTimeMs.getText().toString();
-            if (pliPurgeTimeMsStr.equals("")) {
+            String pliPurgeTimeSStr = pliPurgeTimeS.getText().toString();
+            if (pliPurgeTimeSStr.equals("")) {
                 return;
             }
             Toast.makeText(mAtakContext, "Set PLI message cache TTL", Toast.LENGTH_SHORT).show();
-            int pliPurgeTimeMsInt = Integer.parseInt(pliPurgeTimeMsStr);
-            mCotMessageCache.setPliCachePurgeTimeMs(pliPurgeTimeMsInt);
+            int pliPurgeTimeSInt = Integer.parseInt(pliPurgeTimeSStr);
+            mCotMessageCache.setPliCachePurgeTimeMs(pliPurgeTimeSInt * 1000);
         });
 
         mScanOrUnpair.setOnClickListener(mScanClickListener);

@@ -5,9 +5,9 @@ option optimize_for = LITE_RUNTIME;
 package com.paulmandal.atak.forwarder.protobufs;
 
 option java_package = "com.paulmandal.atak.forwarder.protobufs";
-option java_outer_classname = "CotEventMinimalProtos";
+option java_outer_classname = "ProtobufCotEvent";
 
-import "minimaldetail.proto";
+import "minimal_detail.proto";
 
 message MinimalCotEvent {
   string uid = 1;

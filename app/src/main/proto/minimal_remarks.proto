@@ -4,6 +4,11 @@ option optimize_for = LITE_RUNTIME;
 
 package com.paulmandal.atak.forwarder.protobufs;
 
+option java_outer_classname = "ProtobufRemarks";
+
 message MinimalRemarks {
   string remarks = 1;
+  string source = 2;
+  string to = 3;
+  uint32 time = 4;
 }

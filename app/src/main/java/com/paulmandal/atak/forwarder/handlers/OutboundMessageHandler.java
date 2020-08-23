@@ -54,7 +54,6 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         String eventType = cotEvent.getType();
         if (mCommHardware.isConnected()
             && (toUIDs != null || mCommHardware.isInGroup())
-            && !eventType.equals(TYPE_PLI)
             && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
                 Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this

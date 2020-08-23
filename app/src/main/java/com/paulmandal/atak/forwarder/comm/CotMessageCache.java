@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm;
 
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
+import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 
 import java.util.ArrayList;
@@ -12,21 +13,28 @@ public class CotMessageCache {
     private CotComparer mCotComparer;
 
     private List<CachedCotEvent> mCachedEvents;
-    private int mCachePurgeTimeMs;
+    private int mPliCachePurgeTimeMs;
+    private int mDefaultCachePurgeTimeMs;
 
-    public CotMessageCache(StateStorage stateStorage, CotComparer cotComparer, int cachePurgeTimeMs) {
+    public CotMessageCache(StateStorage stateStorage, CotComparer cotComparer, int defaultCachePurgeTimeMs, int pliCachePurgeTimeMs) {
         mStateStorage = stateStorage;
         mCotComparer = cotComparer;
 
         mCachedEvents = new ArrayList<>();
-        mCachePurgeTimeMs = cachePurgeTimeMs;
+        mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
+        mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
     }
 
     public boolean checkIfRecentlySent(CotEvent cotEvent) {
         purgeCacheOfStaleEvents();
 
+        boolean isPli = cotEvent.getType().equals(CotMessageTypes.TYPE_PLI);
+
         for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-            if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
+            if (isPli && cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                // Don't compare PLIs
+                return true;
+            } else if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
                 return true;
             }
         }
@@ -42,13 +50,18 @@ public class CotMessageCache {
         mCachedEvents.clear();
     }
 
-    public void setCachePurgeTimeMs(int cachePurgeTimeMs) {
-        mCachePurgeTimeMs = cachePurgeTimeMs;
-        mStateStorage.storeCachePurgeTime(cachePurgeTimeMs);
+    public void setDefaultCachePurgeTimeMs(int defaultCachePurgeTimeMs) {
+        mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
+        mStateStorage.storeDefaultCachePurgeTime(defaultCachePurgeTimeMs);
     }
 
-    public int getCachePurgeTimeMs() {
-        return mCachePurgeTimeMs;
+    public void setPliCachePurgeTimeMs(int pliCachePurgeTimeMs) {
+        mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
+        mStateStorage.storePliCachePurgeTime(pliCachePurgeTimeMs);
+    }
+
+    public int getDefaultCachePurgeTimeMs() {
+        return mDefaultCachePurgeTimeMs;
     }
 
     private void purgeCacheOfStaleEvents() {
@@ -57,7 +70,11 @@ public class CotMessageCache {
         List<CachedCotEvent> purgeEvents = new ArrayList<>();
 
         for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-            if (currentTime - cachedCotEvent.lastSentTime > mCachePurgeTimeMs) {
+            int purgeTime = mDefaultCachePurgeTimeMs;
+            if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                purgeTime = mPliCachePurgeTimeMs;
+            }
+            if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
                 purgeEvents.add(cachedCotEvent);
             }
         }

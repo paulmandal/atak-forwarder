@@ -75,7 +75,7 @@ public class ForwarderLifecycle implements Lifecycle {
         CotComparer cotComparer = new CotComparer();
         JsonHelper jsonHelper = new JsonHelper();
         StateStorage stateStorage = new StateStorage(mActivity, jsonHelper);
-        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
+        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
         MinimalCotProtobufConverter minimalCotProtobufConverter = new MinimalCotProtobufConverter(startOfYearMs);

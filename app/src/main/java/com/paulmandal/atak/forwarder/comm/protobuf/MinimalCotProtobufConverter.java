@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -138,12 +136,7 @@ public class MinimalCotProtobufConverter {
         mStartOfYearMs = startOfYearMs;
     }
 
-    public boolean isSupportedType(String type) {
-        Log.d(TAG, "isSupportedType: " + type + ": " + ArrayUtils.contains(MAPPING_TYPE, type));
-        return ArrayUtils.contains(MAPPING_TYPE, type);
-    }
-
-    public byte[] toByteArray(CotEvent cotEvent) {
+    public byte[] toByteArray(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
         CotEventMinimalProtos.MinimalCotEvent cotEventProtobuf = toCotEventProtobuf(cotEvent);
         return cotEventProtobuf.toByteArray();
     }
@@ -175,7 +168,7 @@ public class MinimalCotProtobufConverter {
     /**
      * toByteArray
      */
-    private CotEventMinimalProtos.MinimalCotEvent toCotEventProtobuf(CotEvent cotEvent) {
+    private CotEventMinimalProtos.MinimalCotEvent toCotEventProtobuf(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
         CotEventMinimalProtos.MinimalCotEvent.Builder builder = CotEventMinimalProtos.MinimalCotEvent.newBuilder();
 
         if (cotEvent.getUID() != null) {
@@ -230,7 +223,7 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private Minimaldetail.MinimalDetail toDetail(CotDetail cotDetail) {
+    private Minimaldetail.MinimalDetail toDetail(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimaldetail.MinimalDetail.Builder builder = Minimaldetail.MinimalDetail.newBuilder();
 
         if (cotDetail.getElementName().equals(KEY_DETAIL)) { // TODO: do we need this check?
@@ -257,13 +250,15 @@ public class MinimalCotProtobufConverter {
                     case KEY_USER_ICON:
                         builder.setIconSetPath(innerDetail.getAttribute(KEY_ICON_SET_PATH));
                         break;
+                    default:
+                        throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
                 }
             }
         }
         return builder.build();
     }
 
-    private Minimalcontact.MinimalContact toContact(CotDetail cotDetail) {
+    private Minimalcontact.MinimalContact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimalcontact.MinimalContact.Builder builder = Minimalcontact.MinimalContact.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -281,12 +276,14 @@ public class MinimalCotProtobufConverter {
                         e.printStackTrace();
                     }
                     break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: contact." + attribute.getName());
             }
         }
         return builder.build();
     }
 
-    private Minimalgroup.MinimalGroup toGroup(CotDetail cotDetail) {
+    private Minimalgroup.MinimalGroup toGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimalgroup.MinimalGroup.Builder builder = Minimalgroup.MinimalGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -294,12 +291,14 @@ public class MinimalCotProtobufConverter {
                 case KEY_NAME:
                     builder.setName(attribute.getValue());
                     break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: group." + attribute.getName());
             }
         }
         return builder.build();
     }
 
-    private Minimaltakv.MinimalTakv toTakv(CotDetail cotDetail) {
+    private Minimaltakv.MinimalTakv toTakv(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimaltakv.MinimalTakv.Builder builder = Minimaltakv.MinimalTakv.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -316,12 +315,14 @@ public class MinimalCotProtobufConverter {
                 case KEY_VERSION:
                     builder.setVersion(attribute.getValue());
                     break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: takv." + attribute.getName());
             }
         }
         return builder.build();
     }
 
-    private Minimaltrack.MinimalTrack toTrack(CotDetail cotDetail) {
+    private Minimaltrack.MinimalTrack toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimaltrack.MinimalTrack.Builder builder = Minimaltrack.MinimalTrack.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -332,21 +333,30 @@ public class MinimalCotProtobufConverter {
                 case KEY_SPEED:
                     builder.setSpeed(Double.parseDouble(attribute.getValue()));
                     break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: track." + attribute.getName());
             }
         }
         return builder.build();
     }
 
-    private Minimalremarks.MinimalRemarks toRemarks(CotDetail cotDetail) {
+    private Minimalremarks.MinimalRemarks toRemarks(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimalremarks.MinimalRemarks.Builder builder = Minimalremarks.MinimalRemarks.newBuilder();
         String remarks = cotDetail.getInnerText();
         if (remarks != null) {
             builder.setRemarks(remarks);
         }
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: remarks." + attribute.getName());
+            }
+        }
         return builder.build();
     }
 
-    private Minimallink.MinimalLink toLink(CotDetail cotDetail) {
+    private Minimallink.MinimalLink toLink(CotDetail cotDetail) throws UnknownDetailFieldException {
         Minimallink.MinimalLink.Builder builder = Minimallink.MinimalLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -372,6 +382,8 @@ public class MinimalCotProtobufConverter {
                         e.printStackTrace();
                     }
                     break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: link." + attribute.getName());
             }
         }
         return builder.build();
@@ -406,7 +418,7 @@ public class MinimalCotProtobufConverter {
     private static final int CUSTOM_FIELD_BATTERY_LENGTH = 8;
     private static final int CUSTOM_FIELD_READINESS_LENGTH = 2;
 
-    private long packCustomBytes(String type, CoordinatedTime time, CoordinatedTime stale, double hae) {
+    private long packCustomBytes(String type, CoordinatedTime time, CoordinatedTime stale, double hae) throws MappingNotFoundException {
         ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
 
@@ -424,7 +436,7 @@ public class MinimalCotProtobufConverter {
         return customBytes;
     }
 
-    private int packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, Integer battery, Boolean readiness) {
+    private int packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, Integer battery, Boolean readiness) throws MappingNotFoundException {
         ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
 
@@ -620,11 +632,11 @@ public class MinimalCotProtobufConverter {
     /**
      * Utils
      */
-    private int findMappingForArray(String fieldName, Object[] array, Object objectToFind) {
+    private int findMappingForArray(String fieldName, Object[] array, Object objectToFind) throws MappingNotFoundException {
         int index = ArrayUtils.indexOf(array, objectToFind);
 
         if (index == -1) {
-            throw new RuntimeException("Could not find mapping for field: " + fieldName + ", value: " + objectToFind);
+            throw new MappingNotFoundException("Could not find mapping for field: " + fieldName + ", value: " + objectToFind);
         }
         return index;
     }
@@ -639,14 +651,14 @@ public class MinimalCotProtobufConverter {
         return customBytes;
     }
 
-    private long packNonNullMappedString(long customBytes, int containerLength, String value, String fieldName, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
+    private long packNonNullMappedString(long customBytes, int containerLength, String value, String fieldName, int fieldLength, String[] mapping, ShiftTracker shiftTracker) throws MappingNotFoundException {
         int index = findMappingForArray(fieldName, mapping, value);
         customBytes |= (index & createBitMask(fieldLength)) << containerLength - shiftTracker.accumulatedShift - fieldLength;
         shiftTracker.accumulatedShift += fieldLength;
         return customBytes;
     }
 
-    private long packNullableMappedString(long customBytes, int containerLength, String value, String fieldName, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
+    private long packNullableMappedString(long customBytes, int containerLength, String value, String fieldName, int fieldLength, String[] mapping, ShiftTracker shiftTracker) throws MappingNotFoundException {
         if (value != null) {
             return packNonNullMappedString(customBytes, containerLength, value, fieldName, fieldLength, mapping, shiftTracker);
         }
@@ -770,5 +782,17 @@ public class MinimalCotProtobufConverter {
 
     private static class ShiftTracker {
         public int accumulatedShift = 0;
+    }
+
+    public static class UnknownDetailFieldException extends Exception {
+        public UnknownDetailFieldException(String message) {
+            super(message);
+        }
+    }
+
+    public static class MappingNotFoundException extends Exception {
+        public MappingNotFoundException(String message) {
+            super(message);
+        }
     }
 }

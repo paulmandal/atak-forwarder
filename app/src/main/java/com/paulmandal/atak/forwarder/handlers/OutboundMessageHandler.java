@@ -64,18 +64,26 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         }
 
         byte[] cotProtobuf;
-        if (mMinimalCotProtobufConverter.isSupportedType(eventType)) {
+        boolean marshalledAsMinimal = false;
+        try {
             cotProtobuf = mMinimalCotProtobufConverter.toByteArray(cotEvent);
-        } else {
+            marshalledAsMinimal = true;
+        } catch (MinimalCotProtobufConverter.MappingNotFoundException | MinimalCotProtobufConverter.UnknownDetailFieldException e) {
+            Log.e(TAG, e.getMessage());
             cotProtobuf = mCotProtobufConverter.toByteArray(cotEvent);
         }
         boolean overwriteSimilar = eventType.equals(TYPE_PLI) || !eventType.equals(TYPE_CHAT);
         mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), overwriteSimilar);
 
         // TODO: remove this debugging
-        if (mMinimalCotProtobufConverter.isSupportedType(eventType)) {
+        if (marshalledAsMinimal) {
             byte[] cotProtobufOriginal = mCotProtobufConverter.toByteArray(cotEvent);
-            byte[] minimalProtobuf = mMinimalCotProtobufConverter.toByteArray(cotEvent);
+            byte[] minimalProtobuf = new byte[1];
+            try {
+                 minimalProtobuf = mMinimalCotProtobufConverter.toByteArray(cotEvent);
+            } catch (MinimalCotProtobufConverter.MappingNotFoundException | MinimalCotProtobufConverter.UnknownDetailFieldException e) {
+                Log.e(TAG, e.getMessage());
+            }
             Log.d(TAG, "largess protobuf len: " + cotProtobufOriginal.length);
             Log.d(TAG, "minimal protobuf len: " + minimalProtobuf.length);
 

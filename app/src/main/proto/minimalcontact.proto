@@ -6,4 +6,5 @@ package com.paulmandal.atak.forwarder.protobufs;
 
 message MinimalContact {
   string callsign = 1;
+  fixed32 endpointAddr = 2;
 }

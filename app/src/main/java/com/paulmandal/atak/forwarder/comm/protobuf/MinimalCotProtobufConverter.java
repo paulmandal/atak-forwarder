@@ -20,6 +20,9 @@ import com.paulmandal.atak.forwarder.protobufs.Minimaltrack;
 
 import org.apache.commons.lang.ArrayUtils;
 
+import java.math.BigInteger;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.text.ParseException;
 
 public class MinimalCotProtobufConverter {
@@ -78,7 +81,12 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_RELATION = "relation";
     private static final String KEY_PRODUCTION_TIME = "production_time";
 
+    /**
+     * Special Values
+     */
     private static final String VALUE_TRUE = "true";
+    private static final String FAKE_ENDPOINT_ADDRESS = "10.254.254.254:4242:tcp";
+    private static final String DEFAULT_CHAT_PORT_AND_PROTO = ":4242:tcp";
 
     /**
      * Mappings
@@ -153,7 +161,7 @@ public class MinimalCotProtobufConverter {
             cotEvent.setStart(customBytesFields.time);
             cotEvent.setStale(customBytesFields.stale);
             cotEvent.setHow(customBytesExtFields.how);
-            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), customBytesExtFields));
+            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), customBytesFields, customBytesExtFields));
             cotEvent.setPoint(new CotPoint(protoCotEvent.getLat(), protoCotEvent.getLon(), customBytesFields.hae, protoCotEvent.getCe(), protoCotEvent.getLe()));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
@@ -259,6 +267,16 @@ public class MinimalCotProtobufConverter {
             switch (attribute.getName()) {
                 case KEY_CALLSIGN:
                     builder.setCallsign(attribute.getValue());
+                    break;
+                case KEY_ENDPOINT:
+                    try {
+                        String[] connectionStrSplit = attribute.getValue().split(":");
+                        byte[] endpointAddrAsBytes = InetAddress.getByName(connectionStrSplit[0]).getAddress();
+                        int endpointAddr = new BigInteger(endpointAddrAsBytes).intValue();
+                        builder.setEndpointAddr(endpointAddr);
+                    } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                    }
                     break;
             }
         }
@@ -462,7 +480,7 @@ public class MinimalCotProtobufConverter {
      * toCotEvent
      */
 
-    private CotDetail cotDetailFromProtoDetail(Minimaldetail.MinimalDetail detail, CustomBytesExtFields customBytesExtFields) {
+    private CotDetail cotDetailFromProtoDetail(Minimaldetail.MinimalDetail detail, CustomBytesFields customBytesFields, CustomBytesExtFields customBytesExtFields) {
         CotDetail cotDetail = new CotDetail();
 
         Minimaltakv.MinimalTakv takv = detail.getTakv();
@@ -488,6 +506,18 @@ public class MinimalCotProtobufConverter {
 
             if (!isNullOrEmpty(contact.getCallsign())) {
                 contactDetail.setAttribute(KEY_CALLSIGN, contact.getCallsign());
+            }
+            if (contact.getEndpointAddr() != 0) {
+                try {
+                    byte[] endpointAddrAsBytes = BigInteger.valueOf(contact.getEndpointAddr()).toByteArray();
+                    String ipAddress = InetAddress.getByAddress(endpointAddrAsBytes).getHostAddress();
+                    contactDetail.setAttribute(KEY_ENDPOINT, ipAddress + DEFAULT_CHAT_PORT_AND_PROTO);
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+            } else if (customBytesFields.type.equals(CotMessageTypes.TYPE_PLI)) {
+                // PLI from a device that doesn't have an IP address, fake it
+                contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
             }
 
             cotDetail.addChild(contactDetail);

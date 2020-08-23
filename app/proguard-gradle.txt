@@ -57,6 +57,10 @@
 -keep class com.gotenna.** { *; }
 -keep class org.spongycastle.** { *; }
 
+
 -dontwarn sun.misc.Unsafe
 -dontwarn javax.**
 -dontwarn com.amazonaws.**
+
+# TODO: remove this when we remove XMLUnit
+-dontwarn java.beans.**

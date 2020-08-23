@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+message MinimalTrack {
+  double course = 1;
+  double speed = 2;
+}

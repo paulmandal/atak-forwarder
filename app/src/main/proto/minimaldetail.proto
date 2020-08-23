@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+import "minimalcontact.proto";
+import "minimaltakv.proto";
+import "minimalgroup.proto";
+import "minimaltrack.proto";
+
+message MinimalDetail {
+  MinimalContact contact = 1;
+  MinimalTakv takv = 2;
+  MinimalGroup group = 3;
+  MinimalTrack track = 4;
+}

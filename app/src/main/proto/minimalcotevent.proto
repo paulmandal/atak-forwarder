@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_package = "com.paulmandal.atak.forwarder.protobufs";
+option java_outer_classname = "CotEventMinimalProtos";
+
+import "minimaldetail.proto";
+
+message MinimalCotEvent {
+  string uid = 1;  // event.uid
+
+  double lat = 2;
+  double lon = 3;
+  int32 ce = 4;
+  int32 le = 5;
+
+  fixed64 customBytes = 6;
+  fixed32 customBytesExt = 7;
+
+  MinimalDetail detail = 8;
+}

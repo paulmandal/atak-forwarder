@@ -2,6 +2,9 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
@@ -404,76 +407,35 @@ public class MinimalCotProtobufConverter {
     private static final int CUSTOM_FIELD_READINESS_LENGTH = 2;
 
     private long packCustomBytes(String type, CoordinatedTime time, CoordinatedTime stale, double hae) {
+        ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
-        int accumlatedShift = 0;
 
         int typeAsInt = findMappingForArray("type", MAPPING_TYPE, type);
-        customBytes |= ((long)typeAsInt & createBitMask(CUSTOM_FIELD_TYPE_LENGTH)) << LONG_INT_LENGTH - CUSTOM_FIELD_TYPE_LENGTH;
-        accumlatedShift += CUSTOM_FIELD_TYPE_LENGTH;
+        customBytes = packBits(customBytes, LONG_INT_LENGTH, typeAsInt, CUSTOM_FIELD_TYPE_LENGTH, shiftTracker);
 
         long timeSinceStartOfYear = (time.getMilliseconds() - mStartOfYearMs) / 1000L;
-        customBytes |= (timeSinceStartOfYear & createBitMask(CUSTOM_FIELD_TIME_LENGTH)) << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_TIME_LENGTH;
-        accumlatedShift += CUSTOM_FIELD_TIME_LENGTH;
+        customBytes = packBits(customBytes, LONG_INT_LENGTH, timeSinceStartOfYear, CUSTOM_FIELD_TIME_LENGTH, shiftTracker);
 
         long timeUntilStale = (stale.getMilliseconds() - time.getMilliseconds()) / 1000L;
-        customBytes |= (timeUntilStale & createBitMask(CUSTOM_FIELD_STALE_LENGTH)) << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_STALE_LENGTH;
-        accumlatedShift += CUSTOM_FIELD_STALE_LENGTH;
+        customBytes = packBits(customBytes, LONG_INT_LENGTH, timeUntilStale, CUSTOM_FIELD_STALE_LENGTH, shiftTracker);
 
-        customBytes |= ((long)hae & createBitMask(CUSTOM_FIELD_HAE_LENGTH)) << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_HAE_LENGTH;
-        accumlatedShift += CUSTOM_FIELD_HAE_LENGTH;
+        customBytes = packBits(customBytes, LONG_INT_LENGTH, (long)hae, CUSTOM_FIELD_HAE_LENGTH, shiftTracker);
 
         return customBytes;
     }
 
     private int packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, Integer battery, Boolean readiness) {
-        int customBytes = 0;
-        int accumulatedShift = 0;
+        ShiftTracker shiftTracker = new ShiftTracker();
+        long customBytes = 0;
 
-        int howAsInt = findMappingForArray("how", MAPPING_HOW, how);
-        customBytes |= (howAsInt & createBitMask(CUSTOM_FIELD_HOW_LENGTH)) << INT_LENGTH - CUSTOM_FIELD_HOW_LENGTH;
-        accumulatedShift += CUSTOM_FIELD_HOW_LENGTH;
+        customBytes = packNonNullMappedString(customBytes, INT_LENGTH, how, "how", CUSTOM_FIELD_HOW_LENGTH, MAPPING_HOW, shiftTracker);
+        customBytes = packNullableMappedString(customBytes, INT_LENGTH, geoPointSrc, "geopointsrc", CUSTOM_FIELD_GEOPOINTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        customBytes = packNullableMappedString(customBytes, INT_LENGTH, altSrc, "altsrc", CUSTOM_FIELD_ALTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        customBytes = packNullableMappedString(customBytes, INT_LENGTH, groupRole, "role", CUSTOM_FIELD_ROLE_LENGTH, MAPPING_GROUP_ROLE, shiftTracker);
+        customBytes = packNullableInt(customBytes, INT_LENGTH, battery, CUSTOM_FIELD_BATTERY_LENGTH, shiftTracker);
+        customBytes = packNullableBoolean(customBytes, INT_LENGTH, readiness, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
 
-        if (geoPointSrc != null) {
-            int geoPointSrcAsInt = findMappingForArray("geopointsrc", MAPPING_ALTSRC_AND_GEOPOINTSRC, geoPointSrc);
-            customBytes |= (geoPointSrcAsInt & createBitMask(CUSTOM_FIELD_GEOPOINTSRC_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
-        } else {
-            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
-        }
-        accumulatedShift += CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
-
-        if (altSrc != null) {
-            int altSrcAsInt = findMappingForArray("altsrc", MAPPING_ALTSRC_AND_GEOPOINTSRC, altSrc);
-            customBytes |= (altSrcAsInt & createBitMask(CUSTOM_FIELD_ALTSRC_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ALTSRC_LENGTH;
-        } else {
-            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
-        }
-        accumulatedShift += CUSTOM_FIELD_ALTSRC_LENGTH;
-
-        if (groupRole != null) {
-            int groupRoleAsInt = findMappingForArray("role", MAPPING_GROUP_ROLE, groupRole);
-            customBytes |= (groupRoleAsInt & createBitMask(CUSTOM_FIELD_ROLE_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ROLE_LENGTH;
-        } else {
-            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
-        }
-        accumulatedShift += CUSTOM_FIELD_ROLE_LENGTH;
-
-        if (battery != null) {
-            customBytes |= (battery & createBitMask(CUSTOM_FIELD_BATTERY_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_BATTERY_LENGTH;
-        } else {
-            // Mark the high bit 1 to indicate no value
-            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
-        }
-        accumulatedShift += CUSTOM_FIELD_BATTERY_LENGTH;
-
-        if (readiness != null) {
-            customBytes |= ((readiness ? 1 : 0) & createBitMask(CUSTOM_FIELD_READINESS_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_READINESS_LENGTH;
-        } else {
-            // Mark the high bit 1 to indicate no value
-            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
-        }
-        accumulatedShift += CUSTOM_FIELD_READINESS_LENGTH;
-
-        return customBytes;
+        return (int)customBytes;
     }
 
     /**
@@ -626,81 +588,33 @@ public class MinimalCotProtobufConverter {
     }
 
     private CustomBytesFields unpackCustomBytes(long customBytes) {
-        int accumulatedShift = 0;
+        ShiftTracker shiftTracker = new ShiftTracker();
 
-        int typeAsInt = (int)(customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_TYPE_LENGTH & createBitMask(CUSTOM_FIELD_TYPE_LENGTH));
-        accumulatedShift += CUSTOM_FIELD_TYPE_LENGTH;
+        int typeAsInt = (int)unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_TYPE_LENGTH, shiftTracker);
         String type = MAPPING_TYPE[typeAsInt];
 
-        long timeSinceStartOfYear = customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_TIME_LENGTH & createBitMask(CUSTOM_FIELD_TIME_LENGTH);
-        accumulatedShift += CUSTOM_FIELD_TIME_LENGTH;
-
+        long timeSinceStartOfYear = unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_TIME_LENGTH, shiftTracker);
         CoordinatedTime time = new CoordinatedTime(mStartOfYearMs + timeSinceStartOfYear * 1000);
 
-        long timeUntilStale = customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_STALE_LENGTH & createBitMask(CUSTOM_FIELD_STALE_LENGTH);
-        accumulatedShift += CUSTOM_FIELD_STALE_LENGTH;
-
+        long timeUntilStale = unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_STALE_LENGTH, shiftTracker);
         CoordinatedTime stale = new CoordinatedTime(time.getMilliseconds() + timeUntilStale * 1000);
 
-        double hae = customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_HAE_LENGTH & createBitMask(CUSTOM_FIELD_HAE_LENGTH);
+        double hae = (double)unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_HAE_LENGTH, shiftTracker);
 
         return new CustomBytesFields(type, time, stale, hae);
     }
 
     private CustomBytesExtFields unpackCustomBytesExt(int customBytesExt) {
-        int accumulatedShift = 0;
+        ShiftTracker shiftTracker = new ShiftTracker();
 
-        int howAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_HOW_LENGTH & createBitMask(CUSTOM_FIELD_HOW_LENGTH);
-        accumulatedShift += CUSTOM_FIELD_HOW_LENGTH;
-
-        String how = MAPPING_HOW[howAsInt];
-
-        boolean hasGeoPointSrc = (customBytesExt >> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
-        String geoPointSrc = null;
-        if (hasGeoPointSrc) {
-            int geoPointSrcAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_GEOPOINTSRC_LENGTH & createBitMask(CUSTOM_FIELD_GEOPOINTSRC_LENGTH);
-            geoPointSrc = MAPPING_ALTSRC_AND_GEOPOINTSRC[geoPointSrcAsInt];
-        }
-        accumulatedShift += CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
-
-        boolean hasAltSrc = (customBytesExt >> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
-        String altSrc = null;
-        if (hasAltSrc) {
-            int altSrcAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ALTSRC_LENGTH & createBitMask(CUSTOM_FIELD_ALTSRC_LENGTH);
-            altSrc = MAPPING_ALTSRC_AND_GEOPOINTSRC[altSrcAsInt];
-        }
-        accumulatedShift += CUSTOM_FIELD_ALTSRC_LENGTH;
-
-        boolean hasGroupRole = (customBytesExt >> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
-        String role = null;
-        if (hasGroupRole) {
-            int groupRoleAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ROLE_LENGTH & createBitMask(CUSTOM_FIELD_ROLE_LENGTH);
-            role = MAPPING_GROUP_ROLE[groupRoleAsInt];
-        }
-        accumulatedShift += CUSTOM_FIELD_ROLE_LENGTH;
-
-        boolean hasBattery = (customBytesExt >>> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
-        Integer battery = null;
-        if (hasBattery) {
-            battery = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_BATTERY_LENGTH & createBitMask(CUSTOM_FIELD_BATTERY_LENGTH);
-        }
-        accumulatedShift += CUSTOM_FIELD_BATTERY_LENGTH;
-
-        boolean hasReadiness = (customBytesExt >>> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
-        Boolean readiness = null;
-        if (hasReadiness) {
-            readiness = (customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_READINESS_LENGTH & createBitMask(CUSTOM_FIELD_READINESS_LENGTH)) == 1;
-        }
+        String how = unpackNonNullMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_HOW_LENGTH, MAPPING_HOW, shiftTracker);
+        String geoPointSrc = unpackNullableMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_GEOPOINTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        String altSrc = unpackNullableMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_ALTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        String role = unpackNullableMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_ROLE_LENGTH, MAPPING_GROUP_ROLE, shiftTracker);
+        Integer battery = unpackNullableInt(customBytesExt, INT_LENGTH, CUSTOM_FIELD_BATTERY_LENGTH, shiftTracker);
+        Boolean readiness = unpackNullableBoolean(customBytesExt, INT_LENGTH, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
 
         return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery, readiness);
-    }
-
-    private int createBitMask(int bits) {
-        int bitmask = bits > 0 ? 1 : 0;
-        for (int i = 1 ; i < bits ; i++) {
-            bitmask |= 1 << i;
-        }
-        return bitmask;
     }
 
     /**
@@ -719,9 +633,105 @@ public class MinimalCotProtobufConverter {
         return s == null || s.isEmpty();
     }
 
-//    private long addBits(long customBytes, long value, int fieldLength, BitsWrittenTracker tracker) {
-//
-//    }
+    private long setFieldNull(long customBytes, int containerLength, int fieldLength, ShiftTracker shiftTracker) {
+        customBytes |= 1L << containerLength - shiftTracker.accumulatedShift - 1;
+        shiftTracker.accumulatedShift += fieldLength;
+        return customBytes;
+    }
+
+    private long packNonNullMappedString(long customBytes, int containerLength, String value, String fieldName, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
+        int index = findMappingForArray(fieldName, mapping, value);
+        customBytes |= (index & createBitMask(fieldLength)) << containerLength - shiftTracker.accumulatedShift - fieldLength;
+        shiftTracker.accumulatedShift += fieldLength;
+        return customBytes;
+    }
+
+    private long packNullableMappedString(long customBytes, int containerLength, String value, String fieldName, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
+        if (value != null) {
+            return packNonNullMappedString(customBytes, containerLength, value, fieldName, fieldLength, mapping, shiftTracker);
+        }
+        return setFieldNull(customBytes, containerLength, fieldLength, shiftTracker);
+    }
+
+    private long packNullableInt(long customBytes, int containerLength, Integer value, int fieldLength, ShiftTracker shiftTracker) {
+        if (value != null) {
+            customBytes |= (value & createBitMask(fieldLength)) << containerLength - shiftTracker.accumulatedShift - fieldLength;
+            shiftTracker.accumulatedShift += fieldLength;
+            return customBytes;
+        }
+        return setFieldNull(customBytes, containerLength, fieldLength, shiftTracker);
+    }
+
+    private long packNullableBoolean(long customBytes, int containerLength, Boolean value, int fieldLength, ShiftTracker shiftTracker) {
+        if (value != null) {
+            customBytes |= ((value ? 1 : 0)) & createBitMask(fieldLength) << containerLength - shiftTracker.accumulatedShift - fieldLength;
+            shiftTracker.accumulatedShift += fieldLength;
+            return customBytes;
+        }
+        return setFieldNull(customBytes, containerLength, fieldLength, shiftTracker);
+    }
+
+    private long packBits(long customBytes, int containerLength, long value, int fieldLength, ShiftTracker shiftTracker) {
+        customBytes |= (value & createBitMask(fieldLength)) << containerLength - shiftTracker.accumulatedShift - fieldLength;
+        shiftTracker.accumulatedShift += fieldLength;
+        return customBytes;
+    }
+
+    private boolean hasNullableField(long customBytes, int containerLength, ShiftTracker shiftTracker) {
+        return (customBytes >>> containerLength - shiftTracker.accumulatedShift - 1 & createBitMask(1)) == 0;
+    }
+
+    @Nullable
+    private String unpackNullableMappedString(long customBytes, int containerLength, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
+        if (!hasNullableField(customBytes, containerLength, shiftTracker)) {
+            return null;
+        }
+
+        return unpackNonNullMappedString(customBytes, containerLength, fieldLength, mapping, shiftTracker);
+    }
+
+    @NonNull
+    private String unpackNonNullMappedString(long customBytes, int containerLength, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
+        int index = (int)(customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength));
+        shiftTracker.accumulatedShift += fieldLength;
+        return mapping[index];
+    }
+
+    @Nullable
+    private Integer unpackNullableInt(long customBytes, int containerLength, int fieldLength, ShiftTracker shiftTracker) {
+        if (!hasNullableField(customBytes, containerLength, shiftTracker)) {
+            return null;
+        }
+
+        int value = (int)(customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength));
+        shiftTracker.accumulatedShift += fieldLength;
+        return value;
+    }
+
+    @Nullable
+    private Boolean unpackNullableBoolean(long customBytes, int containerLength, int fieldLength, ShiftTracker shiftTracker) {
+        if (!hasNullableField(customBytes, containerLength, shiftTracker)) {
+            return null;
+        }
+
+        boolean value = (customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength)) == 1;
+        shiftTracker.accumulatedShift += fieldLength;
+        return value;
+    }
+
+    private long unpackBits(long customBytes, int containerLength, int fieldLength, ShiftTracker shiftTracker) {
+        long value = customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength);
+        shiftTracker.accumulatedShift += fieldLength;
+        return value;
+    }
+
+    private int createBitMask(int bits) {
+        int bitmask = bits > 0 ? 1 : 0;
+        for (int i = 1 ; i < bits ; i++) {
+            bitmask |= 1 << i;
+        }
+        return bitmask;
+    }
 
     /**
      * Data Classes
@@ -758,7 +768,7 @@ public class MinimalCotProtobufConverter {
         }
     }
 
-    private static class BitsWrittenTracker {
-        public int bitsWritten = 0;
+    private static class ShiftTracker {
+        public int accumulatedShift = 0;
     }
 }

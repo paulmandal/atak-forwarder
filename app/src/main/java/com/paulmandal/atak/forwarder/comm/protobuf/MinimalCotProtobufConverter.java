@@ -149,7 +149,14 @@ public class MinimalCotProtobufConverter {
     };
 
     private static final String[] MAPPING_GROUP_ROLE = {
-            "Team Lead"
+            "Team Member",
+            "Team Lead",
+            "HQ",
+            "Sniper",
+            "Medic",
+            "Forward Observer",
+            "RTO",
+            "K9"
     };
 
     private final long mStartOfYearMs;

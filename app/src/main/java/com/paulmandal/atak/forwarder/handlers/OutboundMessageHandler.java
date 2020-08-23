@@ -50,7 +50,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
     @Override
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
-        Log.d("ATAKDBG.processCotEvent", cotEvent.toString());
+        Log.d(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
         if (mCommHardware.isConnected()
             && (toUIDs != null || mCommHardware.isInGroup())
@@ -83,8 +83,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
             } catch (MinimalCotProtobufConverter.MappingNotFoundException | MinimalCotProtobufConverter.UnknownDetailFieldException e) {
                 Log.e(TAG, e.getMessage());
             }
-            Log.d(TAG, "largess protobuf len: " + cotProtobufOriginal.length);
-            Log.d(TAG, "minimal protobuf len: " + minimalProtobuf.length);
+            Log.d(TAG, "l protobuf len: " + cotProtobufOriginal.length);
+            Log.d(TAG, "m protobuf len: " + minimalProtobuf.length);
 
             CotEvent minimalCotEvent = mMinimalCotProtobufConverter.toCotEvent(minimalProtobuf);
 
@@ -93,8 +93,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
                 return;
             }
 
-            Log.d(TAG, "original: " + cotEvent.toString());
-            Log.d(TAG, "miinimal: " + minimalCotEvent.toString());
+            Log.d(TAG, "o: " + cotEvent.toString());
+            Log.d(TAG, "m: " + minimalCotEvent.toString());
         }
     }
 

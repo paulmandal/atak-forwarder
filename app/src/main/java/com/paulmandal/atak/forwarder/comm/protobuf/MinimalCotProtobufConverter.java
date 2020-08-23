@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
-import android.util.Log;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -804,8 +802,6 @@ public class MinimalCotProtobufConverter {
                 chatDetail.setAttribute(KEY_PARENT, chat.getParent());
             }
             if (chat.getGroupOwner() > 0) {
-                Log.d(TAG, "parsing GroupOwner: " + chat.getGroupOwner());
-                Log.d(TAG, "value w/o marker bit: " + (chat.getGroupOwner() & createBitMask(1)));
                 chatDetail.setAttribute(KEY_GROUP_OWNER, Boolean.toString((chat.getGroupOwner() & createBitMask(1)) == 1));
             }
             if (!isNullOrEmpty(chat.getChatroom())) {

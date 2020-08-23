@@ -9,10 +9,11 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
-import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class CommandQueue {
     private static final String TAG = "ATAKDBG." + CommandQueue.class.getSimpleName();
@@ -83,7 +84,7 @@ public class CommandQueue {
                     if (queuedCommand instanceof SendMessageCommand) {
                         SendMessageCommand queuedSendMessageCommand = (SendMessageCommand)queuedCommand;
                         if (mCotComparer.areCotEventsEqual(sendMessageCommand.cotEvent, queuedSendMessageCommand.cotEvent)
-                                || queuedSendMessageCommand.cotEvent.getType().equals(OutboundMessageHandler.MSG_TYPE_SELF_PLI)
+                                || queuedSendMessageCommand.cotEvent.getType().equals(TYPE_PLI)
                                 && mCotComparer.areUidsEqual(sendMessageCommand.toUIDs, queuedSendMessageCommand.toUIDs)) {
                             queuedSendMessageCommand.takeStateFrom(sendMessageCommand);
                             return;

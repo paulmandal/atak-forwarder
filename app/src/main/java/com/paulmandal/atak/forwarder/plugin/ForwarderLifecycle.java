@@ -11,6 +11,7 @@ import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.protobuf.MinimalCotProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
@@ -67,12 +68,13 @@ public class ForwarderLifecycle implements Lifecycle {
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
+        MinimalCotProtobufConverter minimalCotProtobufConverter = new MinimalCotProtobufConverter();
         CotProtobufConverter cotProtobufConverter = new CotProtobufConverter();
 
         mGroupTracker = new GroupTracker(mActivity, uiThreadHandler, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, uiThreadHandler, mGroupTracker, mGroupTracker, commandQueue, queuedCommandFactory);
-        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
-        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotProtobufConverter);
+        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, minimalCotProtobufConverter, cotProtobufConverter);
+        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, minimalCotProtobufConverter, cotProtobufConverter);
 
         mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware, cotMessageCache, commandQueue));
 

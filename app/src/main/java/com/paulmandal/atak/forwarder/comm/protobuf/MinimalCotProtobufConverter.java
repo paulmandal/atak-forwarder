@@ -39,6 +39,8 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_GROUP = "__group";
     private static final String KEY_PRECISIONLOCATION = "precisionlocation";
+    private static final String KEY_COLOR = "color";
+    private static final String KEY_ARCHIVE = "archive";
     private static final String KEY_STATUS = "status";
     private static final String KEY_TAKV = "takv";
     private static final String KEY_TRACK = "track";
@@ -82,6 +84,12 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_RELATION = "relation";
     private static final String KEY_PRODUCTION_TIME = "production_time";
 
+    // UID
+    private static final String KEY_DROID = "Droid";
+
+    // Color
+    private static final String KEY_ARGB = "argb";
+
     /**
      * Special Values
      */
@@ -92,14 +100,6 @@ public class MinimalCotProtobufConverter {
     /**
      * Mappings
      */
-    private static final String[] MAPPING_TYPE = {
-            CotMessageTypes.TYPE_PLI,
-            CotMessageTypes.TYPE_NEUTRAL_MARKER,
-            CotMessageTypes.TYPE_HOSTILE_MARKER,
-            CotMessageTypes.TYPE_FRIENDLY_MARKER,
-            CotMessageTypes.TYPE_UNKNOWN_MARKER
-    };
-
     private static final String[] MAPPING_HOW = {
             "h-e",
             "h-g-i-g-o",
@@ -152,12 +152,12 @@ public class MinimalCotProtobufConverter {
 
             cotEvent = new CotEvent();
             cotEvent.setUID(protoCotEvent.getUid());
-            cotEvent.setType(customBytesFields.type);
+            cotEvent.setType(protoCotEvent.getType());
             cotEvent.setTime(customBytesFields.time);
             cotEvent.setStart(customBytesFields.time);
             cotEvent.setStale(customBytesFields.stale);
             cotEvent.setHow(customBytesExtFields.how);
-            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), customBytesFields, customBytesExtFields));
+            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), cotEvent, customBytesExtFields));
             cotEvent.setPoint(new CotPoint(protoCotEvent.getLat(), protoCotEvent.getLon(), customBytesFields.hae, protoCotEvent.getCe(), protoCotEvent.getLe()));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
@@ -173,6 +173,10 @@ public class MinimalCotProtobufConverter {
 
         if (cotEvent.getUID() != null) {
             builder.setUid(cotEvent.getUID());
+        }
+
+        if (cotEvent.getType() != null) {
+            builder.setType(cotEvent.getType());
         }
 
         CotPoint cotPoint = cotEvent.getCotPoint();
@@ -250,6 +254,21 @@ public class MinimalCotProtobufConverter {
                     case KEY_USER_ICON:
                         builder.setIconSetPath(innerDetail.getAttribute(KEY_ICON_SET_PATH));
                         break;
+                    case KEY_COLOR:
+                        toColor(innerDetail);
+                        break;
+                    case KEY_ARCHIVE:
+                        toArchive(innerDetail);
+                        break;
+                    case KEY_STATUS:
+                        toStatus(innerDetail);
+                        break;
+                    case KEY_UID:
+                        toUid(innerDetail);
+                        break;
+                    case KEY_PRECISIONLOCATION:
+                        toPrecisionLocation(innerDetail);
+                        break;
                     default:
                         throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
                 }
@@ -290,6 +309,9 @@ public class MinimalCotProtobufConverter {
             switch (attribute.getName()) {
                 case KEY_NAME:
                     builder.setName(attribute.getValue());
+                    break;
+                case KEY_ROLE:
+                    // Do nothing, we pack this field into bits
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: group." + attribute.getName());
@@ -389,10 +411,72 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
+    private void toColor(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_ARGB:
+                    // Do nothing, we drop this field
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: color." + attribute.getName());
+            }
+        }
+    }
+    private void toArchive(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: archive." + attribute.getName());
+            }
+        }
+    }
+
+    private void toStatus(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_READINESS:
+                case KEY_BATTERY:
+                    // Do nothing, we pack these fields into bits
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: status." + attribute.getName());
+            }
+        }
+    }
+
+    private void toUid(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_DROID:
+                    // Do nothing, we drop this field
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: uid." + attribute.getName());
+            }
+        }
+    }
+
+    private void toPrecisionLocation(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_ALTSRC:
+                case KEY_GEOPOINTSRC:
+                    // Do nothing, we pack these fields into bits
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: precisionLocation." + attribute.getName());
+            }
+        }
+    }
+
     /**
      * CustomBytes Format (fixed64):
      *
-     * type   (6 bits, mapping)
      * time   (25 bits, seconds since start of year)
      * stale  (17 bits, seconds after `time`)
      * hae    (14 bits, whole meters)
@@ -406,7 +490,6 @@ public class MinimalCotProtobufConverter {
      * status.readiness (2 bits, bool, high bit marks whether we have a value)
      */
 
-    private static final int CUSTOM_FIELD_TYPE_LENGTH = 6;
     private static final int CUSTOM_FIELD_TIME_LENGTH = 25;
     private static final int CUSTOM_FIELD_STALE_LENGTH = 17;
     private static final int CUSTOM_FIELD_HAE_LENGTH = 14;
@@ -421,9 +504,6 @@ public class MinimalCotProtobufConverter {
     private long packCustomBytes(String type, CoordinatedTime time, CoordinatedTime stale, double hae) throws MappingNotFoundException {
         ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
-
-        int typeAsInt = findMappingForArray("type", MAPPING_TYPE, type);
-        customBytes = packBits(customBytes, LONG_INT_LENGTH, typeAsInt, CUSTOM_FIELD_TYPE_LENGTH, shiftTracker);
 
         long timeSinceStartOfYear = (time.getMilliseconds() - mStartOfYearMs) / 1000L;
         customBytes = packBits(customBytes, LONG_INT_LENGTH, timeSinceStartOfYear, CUSTOM_FIELD_TIME_LENGTH, shiftTracker);
@@ -454,7 +534,7 @@ public class MinimalCotProtobufConverter {
      * toCotEvent
      */
 
-    private CotDetail cotDetailFromProtoDetail(Minimaldetail.MinimalDetail detail, CustomBytesFields customBytesFields, CustomBytesExtFields customBytesExtFields) {
+    private CotDetail cotDetailFromProtoDetail(Minimaldetail.MinimalDetail detail, CotEvent cotEvent, CustomBytesExtFields customBytesExtFields) {
         CotDetail cotDetail = new CotDetail();
 
         Minimaltakv.MinimalTakv takv = detail.getTakv();
@@ -489,7 +569,7 @@ public class MinimalCotProtobufConverter {
                 } catch (UnknownHostException e) {
                     e.printStackTrace();
                 }
-            } else if (customBytesFields.type.equals(CotMessageTypes.TYPE_PLI)) {
+            } else if (cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
                 // PLI from a device that doesn't have an IP address, fake it
                 contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
             }
@@ -602,9 +682,6 @@ public class MinimalCotProtobufConverter {
     private CustomBytesFields unpackCustomBytes(long customBytes) {
         ShiftTracker shiftTracker = new ShiftTracker();
 
-        int typeAsInt = (int)unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_TYPE_LENGTH, shiftTracker);
-        String type = MAPPING_TYPE[typeAsInt];
-
         long timeSinceStartOfYear = unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_TIME_LENGTH, shiftTracker);
         CoordinatedTime time = new CoordinatedTime(mStartOfYearMs + timeSinceStartOfYear * 1000);
 
@@ -613,7 +690,7 @@ public class MinimalCotProtobufConverter {
 
         double hae = (double)unpackBits(customBytes, LONG_INT_LENGTH, CUSTOM_FIELD_HAE_LENGTH, shiftTracker);
 
-        return new CustomBytesFields(type, time, stale, hae);
+        return new CustomBytesFields(time, stale, hae);
     }
 
     private CustomBytesExtFields unpackCustomBytesExt(int customBytesExt) {
@@ -749,13 +826,11 @@ public class MinimalCotProtobufConverter {
      * Data Classes
      */
     private static class CustomBytesFields {
-        public final String type;
         public final CoordinatedTime time;
         public final CoordinatedTime stale;
         public final double hae;
 
-        public CustomBytesFields(String type, CoordinatedTime time, CoordinatedTime stale, double hae) {
-            this.type = type;
+        public CustomBytesFields(CoordinatedTime time, CoordinatedTime stale, double hae) {
             this.time = time;
             this.stale = stale;
             this.hae = hae;

@@ -111,6 +111,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", commandQueue.getQueueSize()));
         cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
+        pliPurgeTimeMs.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs()));
 
         broadcastDiscovery.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
@@ -142,7 +143,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             }
             Toast.makeText(mAtakContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
             int cachePurgeTimeMs = Integer.parseInt(cachePurgeTimeMinsStr) * 60000;
-            mCotMessageCache.setShapeCachePurgeTimeMs(cachePurgeTimeMs);
+            mCotMessageCache.setDefaultCachePurgeTimeMs(cachePurgeTimeMs);
         });
 
         setPliCachePurgeTime.setOnClickListener((View v) -> {

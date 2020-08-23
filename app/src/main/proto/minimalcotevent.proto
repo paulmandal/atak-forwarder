@@ -10,15 +10,16 @@ option java_outer_classname = "CotEventMinimalProtos";
 import "minimaldetail.proto";
 
 message MinimalCotEvent {
-  string uid = 1;  // event.uid
+  string uid = 1;
+  string type = 2;
 
-  double lat = 2;
-  double lon = 3;
-  int32 ce = 4;
-  int32 le = 5;
+  double lat = 3;
+  double lon = 4;
+  int32 ce = 5;
+  int32 le = 6;
 
-  fixed64 customBytes = 6;
-  fixed32 customBytesExt = 7;
+  fixed64 customBytes = 7;
+  fixed32 customBytesExt = 8;
 
-  MinimalDetail detail = 8;
+  MinimalDetail detail = 9;
 }

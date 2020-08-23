@@ -64,6 +64,10 @@ public class CotMessageCache {
         return mDefaultCachePurgeTimeMs;
     }
 
+    public int getPliCachePurgeTimeMs() {
+        return mPliCachePurgeTimeMs;
+    }
+
     private void purgeCacheOfStaleEvents() {
         long currentTime = System.currentTimeMillis();
 

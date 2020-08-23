@@ -12,14 +12,6 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 
-import org.xmlunit.builder.Input;
-import org.xmlunit.diff.Comparison;
-import org.xmlunit.diff.ComparisonResult;
-import org.xmlunit.diff.DOMDifferenceEngine;
-import org.xmlunit.diff.DifferenceEngine;
-
-import javax.xml.transform.Source;
-
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
@@ -96,23 +88,6 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
             Log.d(TAG, "original: " + cotEvent.toString());
             Log.d(TAG, "miinimal: " + minimalCotEvent.toString());
-
-            try {
-                String protoBufString = minimalCotEvent.toString();
-                String cotString = cotEvent.toString();
-                Log.d(TAG, "o: " + cotString);
-                Log.d(TAG, "p: " + protoBufString);
-                Source original = Input.fromString(cotString).build();
-                Source protobuffed = Input.fromString(protoBufString).build();
-                DifferenceEngine diff = new DOMDifferenceEngine();
-                diff.addDifferenceListener((Comparison comparison, ComparisonResult outcome) -> {
-                    Log.d(TAG, "  found difference b/t original CotEvent and protobuf(CotEvent):" + comparison);
-                });
-                diff.compare(original, protobuffed);
-                Log.d(TAG, "Compare finished");
-            } catch(UnsupportedOperationException e) {
-                e.printStackTrace();
-            }
         }
     }
 

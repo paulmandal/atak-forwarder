@@ -13,20 +13,17 @@ import com.paulmandal.atak.forwarder.protobufs.CotEventMinimalProtos;
 import com.paulmandal.atak.forwarder.protobufs.Minimalcontact;
 import com.paulmandal.atak.forwarder.protobufs.Minimaldetail;
 import com.paulmandal.atak.forwarder.protobufs.Minimalgroup;
+import com.paulmandal.atak.forwarder.protobufs.Minimallink;
+import com.paulmandal.atak.forwarder.protobufs.Minimalremarks;
 import com.paulmandal.atak.forwarder.protobufs.Minimaltakv;
 import com.paulmandal.atak.forwarder.protobufs.Minimaltrack;
 
 import org.apache.commons.lang.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
+import java.text.ParseException;
 
 public class MinimalCotProtobufConverter {
     private static final String TAG = "ATAKDBG." + MinimalCotProtobufConverter.class.getSimpleName();
-
-    private static final List<String> SUPPORTED_COT_TYPES = new ArrayList<>(Arrays.asList(CotMessageTypes.TYPE_PLI));
 
     private static final int LONG_INT_LENGTH = 64;
     private static final int INT_LENGTH = 32;
@@ -41,26 +38,45 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_STATUS = "status";
     private static final String KEY_TAKV = "takv";
     private static final String KEY_TRACK = "track";
+    private static final String KEY_REMARKS = "remarks";
+    private static final String KEY_LINK = "link";
+    private static final String KEY_USER_ICON = "usericon";
 
+    // Contact
     private static final String KEY_CALLSIGN = "callsign";
     private static final String KEY_ENDPOINT = "endpoint";
 
+    // Group
     private static final String KEY_NAME = "name";
     private static final String KEY_ROLE = "role";
 
+    // PrecisionLocation
     private static final String KEY_GEOPOINTSRC = "geopointsrc";
     private static final String KEY_ALTSRC = "altsrc";
 
+    // Status
     private static final String KEY_BATTERY = "battery";
     private static final String KEY_READINESS = "readiness";
 
+    // TakV
     private static final String KEY_DEVICE = "device";
     private static final String KEY_OS = "os";
     private static final String KEY_PLATFORM = "platform";
     private static final String KEY_VERSION = "version";
 
+    // Track
     private static final String KEY_COURSE = "course";
     private static final String KEY_SPEED = "speed";
+
+    // UserIcon
+    private static final String KEY_ICON_SET_PATH = "iconsetpath";
+
+    // Link
+    private static final String KEY_UID = "uid";
+    private static final String KEY_TYPE = "type";
+    private static final String KEY_PARENT_CALLSIGN = "parent_callsign";
+    private static final String KEY_RELATION = "relation";
+    private static final String KEY_PRODUCTION_TIME = "production_time";
 
     private static final String VALUE_TRUE = "true";
 
@@ -68,7 +84,11 @@ public class MinimalCotProtobufConverter {
      * Mappings
      */
     private static final String[] MAPPING_TYPE = {
-            "a-f-G-U-C"
+            CotMessageTypes.TYPE_PLI,
+            CotMessageTypes.TYPE_NEUTRAL_MARKER,
+            CotMessageTypes.TYPE_HOSTILE_MARKER,
+            CotMessageTypes.TYPE_FRIENDLY_MARKER,
+            CotMessageTypes.TYPE_UNKNOWN_MARKER
     };
 
     private static final String[] MAPPING_HOW = {
@@ -101,9 +121,15 @@ public class MinimalCotProtobufConverter {
             "Team Lead"
     };
 
+    private final long mStartOfYearMs;
+
+    public MinimalCotProtobufConverter(long startOfYearMs) {
+        mStartOfYearMs = startOfYearMs;
+    }
+
     public boolean isSupportedType(String type) {
-        Log.d(TAG, "isSupportedType: " + type + ": " + SUPPORTED_COT_TYPES.contains(type));
-        return SUPPORTED_COT_TYPES.contains(type);
+        Log.d(TAG, "isSupportedType: " + type + ": " + ArrayUtils.contains(MAPPING_TYPE, type));
+        return ArrayUtils.contains(MAPPING_TYPE, type);
     }
 
     public byte[] toByteArray(CotEvent cotEvent) {
@@ -171,13 +197,22 @@ public class MinimalCotProtobufConverter {
             groupRole = group.getAttribute(KEY_ROLE);
         }
 
-        int battery = 0;
+        Integer battery = null;
+        Boolean readiness = null;
         CotDetail status = cotEvent.getDetail().getFirstChildByName(0, KEY_STATUS);
         if (status != null) {
-            battery = Integer.parseInt(status.getAttribute(KEY_BATTERY));
+            String batteryStr = status.getAttribute(KEY_BATTERY);
+            if (batteryStr != null) {
+                battery = Integer.parseInt(batteryStr);
+            }
+
+            String readinessStr = status.getAttribute(KEY_READINESS);
+            if (readinessStr != null) {
+                readiness = Boolean.parseBoolean(readinessStr);
+            }
         }
 
-        builder.setCustomBytesExt(packCustomBytesExt(cotEvent.getHow(), geoPointSrc, altSrc, groupRole, battery));
+        builder.setCustomBytesExt(packCustomBytesExt(cotEvent.getHow(), geoPointSrc, altSrc, groupRole, battery, readiness));
 
         builder.setDetail(toDetail(cotEvent.getDetail()));
 
@@ -201,6 +236,15 @@ public class MinimalCotProtobufConverter {
                         break;
                     case KEY_TRACK:
                         builder.setTrack(toTrack(innerDetail));
+                        break;
+                    case KEY_REMARKS:
+                        builder.setRemarks(toRemarks(innerDetail));
+                        break;
+                    case KEY_LINK:
+                        builder.setLink(toLink(innerDetail));
+                        break;
+                    case KEY_USER_ICON:
+                        builder.setIconSetPath(innerDetail.getAttribute(KEY_ICON_SET_PATH));
                         break;
                 }
             }
@@ -272,6 +316,46 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
+    private Minimalremarks.MinimalRemarks toRemarks(CotDetail cotDetail) {
+        Minimalremarks.MinimalRemarks.Builder builder = Minimalremarks.MinimalRemarks.newBuilder();
+        String remarks = cotDetail.getInnerText();
+        if (remarks != null) {
+            builder.setRemarks(remarks);
+        }
+        return builder.build();
+    }
+
+    private Minimallink.MinimalLink toLink(CotDetail cotDetail) {
+        Minimallink.MinimalLink.Builder builder = Minimallink.MinimalLink.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_UID:
+                    builder.setUid(attribute.getValue());
+                    break;
+                case KEY_TYPE:
+                    builder.setType(attribute.getValue());
+                    break;
+                case KEY_PARENT_CALLSIGN:
+                    builder.setParentCallsign(attribute.getValue());
+                    break;
+                case KEY_RELATION:
+                    builder.setRelation(attribute.getValue());
+                    break;
+                case KEY_PRODUCTION_TIME:
+                    try {
+                        long productionTime = CoordinatedTime.fromCot(attribute.getValue()).getMilliseconds();
+                        long sinceStartOfYear = (productionTime - mStartOfYearMs) / 1000;
+                        builder.setProductionTime((int) sinceStartOfYear);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+            }
+        }
+        return builder.build();
+    }
+
     /**
      * CustomBytes Format (fixed64):
      *
@@ -282,11 +366,11 @@ public class MinimalCotProtobufConverter {
      *
      * CustomBytesExt Format (fixed32):
      * how              (3 bits, mapping)
-     * geopointsrc      (5 bits, mapping)
-     * altsrc           (5 bits, mapping)
-     * group.role       (4 bits, mapping)
-     * status.battery   (7 bits, int)
-     * status.readiness (1 bit, int)
+     * geopointsrc      (6 bits, mapping, high bit marks whether we have a value)
+     * altsrc           (6 bits, mapping, high bit marks whether we have a value)
+     * group.role       (5 bits, mapping, high bit marks whether we have a value)
+     * status.battery   (8 bits, int, high bit marks whether we have a value)
+     * status.readiness (2 bits, bool, high bit marks whether we have a value)
      */
 
     private static final int CUSTOM_FIELD_TYPE_LENGTH = 6;
@@ -295,66 +379,81 @@ public class MinimalCotProtobufConverter {
     private static final int CUSTOM_FIELD_HAE_LENGTH = 14;
 
     private static final int CUSTOM_FIELD_HOW_LENGTH = 3;
-    private static final int CUSTOM_FIELD_GEOPOINTSRC_LENGTH = 5;
-    private static final int CUSTOM_FIELD_ALTSRC_LENGTH = 5;
-    private static final int CUSTOM_FIELD_ROLE_LENGTH = 4;
-    private static final int CUSTOM_FIELD_BATTERY_LENGTH = 7;
-    private static final int CUSTOM_FIELD_READINESS_LENGTH = 1;
+    private static final int CUSTOM_FIELD_GEOPOINTSRC_LENGTH = 6;
+    private static final int CUSTOM_FIELD_ALTSRC_LENGTH = 6;
+    private static final int CUSTOM_FIELD_ROLE_LENGTH = 5;
+    private static final int CUSTOM_FIELD_BATTERY_LENGTH = 8;
+    private static final int CUSTOM_FIELD_READINESS_LENGTH = 2;
 
     private long packCustomBytes(String type, CoordinatedTime time, CoordinatedTime stale, double hae) {
         long customBytes = 0;
         int accumlatedShift = 0;
 
         int typeAsInt = findMappingForArray("type", MAPPING_TYPE, type);
-        customBytes |= (long)typeAsInt << LONG_INT_LENGTH - CUSTOM_FIELD_TYPE_LENGTH;
+        customBytes |= ((long)typeAsInt & createBitMask(CUSTOM_FIELD_TYPE_LENGTH)) << LONG_INT_LENGTH - CUSTOM_FIELD_TYPE_LENGTH;
         accumlatedShift += CUSTOM_FIELD_TYPE_LENGTH;
 
-        // TODO: move this to ctor so we don't have to calculate it over and over
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MONTH, 0);
-        cal.set(Calendar.DATE, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        long startOfYear = cal.getTime().getTime();
-        long timeSinceStartOfYear = (time.getMilliseconds() - startOfYear) / 1000L;
-
-        customBytes |= timeSinceStartOfYear << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_TIME_LENGTH;
+        long timeSinceStartOfYear = (time.getMilliseconds() - mStartOfYearMs) / 1000L;
+        customBytes |= (timeSinceStartOfYear & createBitMask(CUSTOM_FIELD_TIME_LENGTH)) << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_TIME_LENGTH;
         accumlatedShift += CUSTOM_FIELD_TIME_LENGTH;
 
         long timeUntilStale = (stale.getMilliseconds() - time.getMilliseconds()) / 1000L;
-        customBytes |= timeUntilStale << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_STALE_LENGTH;
+        customBytes |= (timeUntilStale & createBitMask(CUSTOM_FIELD_STALE_LENGTH)) << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_STALE_LENGTH;
         accumlatedShift += CUSTOM_FIELD_STALE_LENGTH;
 
-        customBytes |= (long)hae << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_HAE_LENGTH;
+        customBytes |= ((long)hae & createBitMask(CUSTOM_FIELD_HAE_LENGTH)) << LONG_INT_LENGTH - accumlatedShift - CUSTOM_FIELD_HAE_LENGTH;
         accumlatedShift += CUSTOM_FIELD_HAE_LENGTH;
 
         return customBytes;
     }
 
-    private int packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, int battery) {
+    private int packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, Integer battery, Boolean readiness) {
         int customBytes = 0;
         int accumulatedShift = 0;
 
         int howAsInt = findMappingForArray("how", MAPPING_HOW, how);
-        customBytes |= howAsInt << INT_LENGTH - CUSTOM_FIELD_HOW_LENGTH;
+        customBytes |= (howAsInt & createBitMask(CUSTOM_FIELD_HOW_LENGTH)) << INT_LENGTH - CUSTOM_FIELD_HOW_LENGTH;
         accumulatedShift += CUSTOM_FIELD_HOW_LENGTH;
 
-        int geoPointSrcAsInt = findMappingForArray("geopointsrc", MAPPING_ALTSRC_AND_GEOPOINTSRC, geoPointSrc);
-        customBytes |= geoPointSrcAsInt << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
+        if (geoPointSrc != null) {
+            int geoPointSrcAsInt = findMappingForArray("geopointsrc", MAPPING_ALTSRC_AND_GEOPOINTSRC, geoPointSrc);
+            customBytes |= (geoPointSrcAsInt & createBitMask(CUSTOM_FIELD_GEOPOINTSRC_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
+        } else {
+            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
+        }
         accumulatedShift += CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
 
-        int altSrcAsInt = findMappingForArray("altsrc", MAPPING_ALTSRC_AND_GEOPOINTSRC, altSrc);
-        customBytes |= altSrcAsInt << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ALTSRC_LENGTH;
+        if (altSrc != null) {
+            int altSrcAsInt = findMappingForArray("altsrc", MAPPING_ALTSRC_AND_GEOPOINTSRC, altSrc);
+            customBytes |= (altSrcAsInt & createBitMask(CUSTOM_FIELD_ALTSRC_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ALTSRC_LENGTH;
+        } else {
+            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
+        }
         accumulatedShift += CUSTOM_FIELD_ALTSRC_LENGTH;
 
-        int groupRoleAsInt = findMappingForArray("role", MAPPING_GROUP_ROLE, groupRole);
-        customBytes |= groupRoleAsInt << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ROLE_LENGTH;
+        if (groupRole != null) {
+            int groupRoleAsInt = findMappingForArray("role", MAPPING_GROUP_ROLE, groupRole);
+            customBytes |= (groupRoleAsInt & createBitMask(CUSTOM_FIELD_ROLE_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ROLE_LENGTH;
+        } else {
+            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
+        }
         accumulatedShift += CUSTOM_FIELD_ROLE_LENGTH;
 
-        customBytes |= battery << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_BATTERY_LENGTH;
+        if (battery != null) {
+            customBytes |= (battery & createBitMask(CUSTOM_FIELD_BATTERY_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_BATTERY_LENGTH;
+        } else {
+            // Mark the high bit 1 to indicate no value
+            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
+        }
         accumulatedShift += CUSTOM_FIELD_BATTERY_LENGTH;
+
+        if (readiness != null) {
+            customBytes |= ((readiness ? 1 : 0) & createBitMask(CUSTOM_FIELD_READINESS_LENGTH)) << INT_LENGTH - accumulatedShift - CUSTOM_FIELD_READINESS_LENGTH;
+        } else {
+            // Mark the high bit 1 to indicate no value
+            customBytes |= 1L << INT_LENGTH - accumulatedShift - 1;
+        }
+        accumulatedShift += CUSTOM_FIELD_READINESS_LENGTH;
 
         return customBytes;
     }
@@ -421,27 +520,76 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(groupDetail);
         }
 
-        // TODO: how to handle null for this and other fields?
-        if (customBytesExtFields.battery > 0) {
+        if (customBytesExtFields.battery != null || customBytesExtFields.readiness != null) {
             CotDetail statusDetail = new CotDetail(KEY_STATUS);
 
-            statusDetail.setAttribute(KEY_BATTERY, Integer.toString(customBytesExtFields.battery));
+            if (customBytesExtFields.battery != null) {
+                statusDetail.setAttribute(KEY_BATTERY, Integer.toString(customBytesExtFields.battery));
+            }
+            if (customBytesExtFields.readiness != null) {
+                statusDetail.setAttribute(KEY_READINESS, Boolean.toString(customBytesExtFields.readiness));
+            }
 
             cotDetail.addChild(statusDetail);
         }
 
         Minimaltrack.MinimalTrack track = detail.getTrack();
-
         if (track != null && track != Minimaltrack.MinimalTrack.getDefaultInstance()) {
             CotDetail trackDetail = new CotDetail(KEY_TRACK);
 
             if (track.getCourse() != 0.0) {
                 trackDetail.setAttribute(KEY_COURSE, Double.toString(track.getCourse()));
             }
-            if (track.getSpeed() != 0.0) {
+            if (track.getSpeed() != 0.0) { // TODO: better handling of nulls
                 trackDetail.setAttribute(KEY_SPEED, Double.toString(track.getSpeed()));
             }
             cotDetail.addChild(trackDetail);
+        }
+
+        Minimalremarks.MinimalRemarks remarks = detail.getRemarks();
+        if (remarks != null && remarks != Minimalremarks.MinimalRemarks.getDefaultInstance()) {
+            CotDetail remarksDetail = new CotDetail(KEY_REMARKS);
+
+            if (!isNullOrEmpty(remarks.getRemarks())) {
+                remarksDetail.setInnerText(remarks.getRemarks());
+            }
+
+            cotDetail.addChild(remarksDetail);
+        }
+
+        Minimallink.MinimalLink link = detail.getLink();
+        if (link != null && link != Minimallink.MinimalLink.getDefaultInstance()) {
+            CotDetail linkDetail = new CotDetail(KEY_LINK);
+
+            if (!isNullOrEmpty(link.getUid())) {
+                linkDetail.setAttribute(KEY_UID, link.getUid());
+            }
+            if (!isNullOrEmpty(link.getType())) {
+                linkDetail.setAttribute(KEY_TYPE, link.getType());
+            }
+            if (!isNullOrEmpty(link.getParentCallsign())) {
+                linkDetail.setAttribute(KEY_PARENT_CALLSIGN, link.getParentCallsign());
+            }
+            if (!isNullOrEmpty(link.getRelation())) {
+                linkDetail.setAttribute(KEY_RELATION, link.getRelation());
+            }
+            long productionTimeOffset = link.getProductionTime();
+            if (productionTimeOffset > 0) {
+                long productionTimeMs = mStartOfYearMs + (productionTimeOffset * 1000);
+                CoordinatedTime productionTime = new CoordinatedTime(productionTimeMs);
+                linkDetail.setAttribute(KEY_PRODUCTION_TIME, productionTime.toString());
+            }
+
+            cotDetail.addChild(linkDetail);
+        }
+
+        String iconSetPath = detail.getIconSetPath();
+        if (!isNullOrEmpty(iconSetPath)) {
+            CotDetail userIconDetail = new CotDetail(KEY_USER_ICON);
+
+            userIconDetail.setAttribute(KEY_ICON_SET_PATH, iconSetPath);
+
+            cotDetail.addChild(userIconDetail);
         }
 
         return cotDetail;
@@ -450,27 +598,14 @@ public class MinimalCotProtobufConverter {
     private CustomBytesFields unpackCustomBytes(long customBytes) {
         int accumulatedShift = 0;
 
-        Log.d(TAG, "unpackCustomBytes: " + Long.toBinaryString(customBytes));
-
-        Log.d(TAG, "unpackCustomBytes: " + Long.toBinaryString(customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_TYPE_LENGTH & createBitMask(CUSTOM_FIELD_TYPE_LENGTH)));
-
         int typeAsInt = (int)(customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_TYPE_LENGTH & createBitMask(CUSTOM_FIELD_TYPE_LENGTH));
-        Log.d(TAG, "typeAsInt: " + typeAsInt);
         accumulatedShift += CUSTOM_FIELD_TYPE_LENGTH;
         String type = MAPPING_TYPE[typeAsInt];
 
-        Calendar cal = Calendar.getInstance();
-        cal.set(Calendar.MONTH, 0);
-        cal.set(Calendar.DATE, 1);
-        cal.set(Calendar.HOUR_OF_DAY, 0);
-        cal.set(Calendar.MINUTE, 0);
-        cal.set(Calendar.SECOND, 0);
-        cal.set(Calendar.MILLISECOND, 0);
-        long startOfYear = cal.getTime().getTime();
         long timeSinceStartOfYear = customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_TIME_LENGTH & createBitMask(CUSTOM_FIELD_TIME_LENGTH);
         accumulatedShift += CUSTOM_FIELD_TIME_LENGTH;
 
-        CoordinatedTime time = new CoordinatedTime(startOfYear + timeSinceStartOfYear * 1000);
+        CoordinatedTime time = new CoordinatedTime(mStartOfYearMs + timeSinceStartOfYear * 1000);
 
         long timeUntilStale = customBytes >>> LONG_INT_LENGTH - accumulatedShift - CUSTOM_FIELD_STALE_LENGTH & createBitMask(CUSTOM_FIELD_STALE_LENGTH);
         accumulatedShift += CUSTOM_FIELD_STALE_LENGTH;
@@ -490,25 +625,44 @@ public class MinimalCotProtobufConverter {
 
         String how = MAPPING_HOW[howAsInt];
 
-        int geoPointSrcAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_GEOPOINTSRC_LENGTH & createBitMask(CUSTOM_FIELD_GEOPOINTSRC_LENGTH);
+        boolean hasGeoPointSrc = (customBytesExt >> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
+        String geoPointSrc = null;
+        if (hasGeoPointSrc) {
+            int geoPointSrcAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_GEOPOINTSRC_LENGTH & createBitMask(CUSTOM_FIELD_GEOPOINTSRC_LENGTH);
+            geoPointSrc = MAPPING_ALTSRC_AND_GEOPOINTSRC[geoPointSrcAsInt];
+        }
         accumulatedShift += CUSTOM_FIELD_GEOPOINTSRC_LENGTH;
 
-        String geoPointSrc = MAPPING_ALTSRC_AND_GEOPOINTSRC[geoPointSrcAsInt];
-
-        int altSrcAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ALTSRC_LENGTH & createBitMask(CUSTOM_FIELD_ALTSRC_LENGTH);
+        boolean hasAltSrc = (customBytesExt >> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
+        String altSrc = null;
+        if (hasAltSrc) {
+            int altSrcAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ALTSRC_LENGTH & createBitMask(CUSTOM_FIELD_ALTSRC_LENGTH);
+            altSrc = MAPPING_ALTSRC_AND_GEOPOINTSRC[altSrcAsInt];
+        }
         accumulatedShift += CUSTOM_FIELD_ALTSRC_LENGTH;
 
-        String altSrc = MAPPING_ALTSRC_AND_GEOPOINTSRC[altSrcAsInt];
-
-        int groupRoleAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ROLE_LENGTH & createBitMask(CUSTOM_FIELD_ROLE_LENGTH);
+        boolean hasGroupRole = (customBytesExt >> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
+        String role = null;
+        if (hasGroupRole) {
+            int groupRoleAsInt = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_ROLE_LENGTH & createBitMask(CUSTOM_FIELD_ROLE_LENGTH);
+            role = MAPPING_GROUP_ROLE[groupRoleAsInt];
+        }
         accumulatedShift += CUSTOM_FIELD_ROLE_LENGTH;
 
-        String role = MAPPING_GROUP_ROLE[groupRoleAsInt];
-
-        int battery = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_BATTERY_LENGTH & createBitMask(CUSTOM_FIELD_BATTERY_LENGTH);
+        boolean hasBattery = (customBytesExt >>> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
+        Integer battery = null;
+        if (hasBattery) {
+            battery = customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_BATTERY_LENGTH & createBitMask(CUSTOM_FIELD_BATTERY_LENGTH);
+        }
         accumulatedShift += CUSTOM_FIELD_BATTERY_LENGTH;
 
-        return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery);
+        boolean hasReadiness = (customBytesExt >>> INT_LENGTH - accumulatedShift - 1 & createBitMask(1)) == 0;
+        Boolean readiness = null;
+        if (hasReadiness) {
+            readiness = (customBytesExt >>> INT_LENGTH - accumulatedShift - CUSTOM_FIELD_READINESS_LENGTH & createBitMask(CUSTOM_FIELD_READINESS_LENGTH)) == 1;
+        }
+
+        return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery, readiness);
     }
 
     private int createBitMask(int bits) {
@@ -535,6 +689,10 @@ public class MinimalCotProtobufConverter {
         return s == null || s.isEmpty();
     }
 
+//    private long addBits(long customBytes, long value, int fieldLength, BitsWrittenTracker tracker) {
+//
+//    }
+
     /**
      * Data Classes
      */
@@ -557,14 +715,20 @@ public class MinimalCotProtobufConverter {
         public final String geoPointSrc;
         public final String altSrc;
         public final String role;
-        public final int battery;
+        public final Integer battery;
+        public final Boolean readiness;
 
-        public CustomBytesExtFields(String how, String geoPointSrc, String altSrc, String role, int battery) {
+        public CustomBytesExtFields(String how, String geoPointSrc, String altSrc, String role, Integer battery, Boolean readiness) {
             this.how = how;
             this.geoPointSrc = geoPointSrc;
             this.altSrc = altSrc;
             this.role = role;
             this.battery = battery;
+            this.readiness = readiness;
         }
+    }
+
+    private static class BitsWrittenTracker {
+        public int bitsWritten = 0;
     }
 }

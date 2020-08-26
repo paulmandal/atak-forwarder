@@ -129,6 +129,10 @@ public class MinimalCotProtobufConverter {
     private static final String VALUE_TRUE = "true";
     private static final String FAKE_ENDPOINT_ADDRESS = "10.254.254.254:4242:tcp";
     private static final String DEFAULT_CHAT_PORT_AND_PROTO = ":4242:tcp";
+    private static final String GEOCHAT_MARKER = "GeoChat";
+    private static final String CHATROOM_SUBSTITUTION_MARKER = "#c";
+    private static final String UID_SUBSTITUTION_MARKER = "#u";
+    private static final String ID_SUBSTITUTION_MARKER = "#i";
 
     /**
      * Mappings
@@ -200,13 +204,22 @@ public class MinimalCotProtobufConverter {
             CustomBytesExtFields customBytesExtFields = unpackCustomBytesExt(protoCotEvent.getCustomBytesExt());
 
             cotEvent = new CotEvent();
-            cotEvent.setUID(protoCotEvent.getUid());
+
+            String uidFromGeoChat = null;
+            String chatroomFromGeoChat = null;
+            String uid = protoCotEvent.getUid();
+            if (uid.startsWith(GEOCHAT_MARKER)) {
+                String[] geoChatSplit = uid.split("\\.");
+                uidFromGeoChat = geoChatSplit[1];
+                chatroomFromGeoChat = geoChatSplit[2];
+            }
+            cotEvent.setUID(uid);
             cotEvent.setType(protoCotEvent.getType());
             cotEvent.setTime(customBytesFields.time);
             cotEvent.setStart(customBytesFields.time);
             cotEvent.setStale(customBytesFields.stale);
             cotEvent.setHow(customBytesExtFields.how);
-            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), cotEvent, customBytesExtFields));
+            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), cotEvent, customBytesExtFields, uidFromGeoChat, chatroomFromGeoChat));
             cotEvent.setPoint(new CotPoint(protoCotEvent.getLat(), protoCotEvent.getLon(), customBytesFields.hae, protoCotEvent.getCe(), protoCotEvent.getLe()));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
@@ -220,8 +233,16 @@ public class MinimalCotProtobufConverter {
     private ProtobufCotEvent.MinimalCotEvent toCotEventProtobuf(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
         ProtobufCotEvent.MinimalCotEvent.Builder builder = ProtobufCotEvent.MinimalCotEvent.newBuilder();
 
-        if (cotEvent.getUID() != null) {
-            builder.setUid(cotEvent.getUID());
+        String uidFromGeoChat = null;
+        String chatroomFromGeoChat = null;
+        String uid = cotEvent.getUID();
+        if (uid != null) {
+            builder.setUid(uid);
+            if (uid.startsWith(GEOCHAT_MARKER)) {
+                String[] geoChatSplit = uid.split("\\.");
+                uidFromGeoChat = geoChatSplit[1];
+                chatroomFromGeoChat = geoChatSplit[2];
+            }
         }
 
         if (cotEvent.getType() != null) {
@@ -310,22 +331,22 @@ public class MinimalCotProtobufConverter {
 
         builder.setCustomBytesExt(packCustomBytesExt(cotEvent.getHow(), geoPointSrc, altSrc, groupRole, battery, readiness, labelsOn, heightUnit, heightValue));
 
-        builder.setDetail(toDetail(cotEvent.getDetail()));
+        builder.setDetail(toDetail(cotEvent.getDetail(), uidFromGeoChat, chatroomFromGeoChat));
 
         return builder.build();
     }
 
-    private ProtobufDetail.MinimalDetail toDetail(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufDetail.MinimalDetail toDetail(CotDetail cotDetail, String uidFromGeoChat, String chatroomFromGeoChat) throws UnknownDetailFieldException {
         ProtobufDetail.MinimalDetail.Builder builder = ProtobufDetail.MinimalDetail.newBuilder();
 
         if (cotDetail.getElementName().equals(KEY_DETAIL)) { // TODO: do we need this check?
             for (CotDetail innerDetail : cotDetail.getChildren()) {
                 switch (innerDetail.getElementName()) {
                     case KEY_CONTACT:
-                        builder.setContact(toContact(innerDetail));
+                        builder.setContact(toContact(innerDetail, uidFromGeoChat));
                         break;
                     case KEY_UNDERSCORED_GROUP:
-                        builder.setGroup(toGroup(innerDetail));
+                        builder.setGroup(toGroup(innerDetail, uidFromGeoChat, chatroomFromGeoChat, null));
                         break;
                     case KEY_TAKV:
                         builder.setTakv(toTakv(innerDetail));
@@ -334,16 +355,16 @@ public class MinimalCotProtobufConverter {
                         builder.setTrack(toTrack(innerDetail));
                         break;
                     case KEY_REMARKS:
-                        builder.setRemarks(toRemarks(innerDetail));
+                        builder.setRemarks(toRemarks(innerDetail, uidFromGeoChat));
                         break;
                     case KEY_LINK:
-                        builder.setLink(toLink(innerDetail));
+                        builder.setLink(toLink(innerDetail, uidFromGeoChat));
                         break;
                     case KEY_CHAT:
-                        builder.setChat(toChat(innerDetail));
+                        builder.setChat(toChat(innerDetail, uidFromGeoChat, chatroomFromGeoChat));
                         break;
                     case KEY_SERVER_DESTINATION:
-                        builder.setServerDestination(toServerDestination(innerDetail));
+                        builder.setServerDestination(toServerDestination(innerDetail, uidFromGeoChat));
                         break;
                     case KEY_LABELS_ON:
                         toLabelsOn(innerDetail);
@@ -383,7 +404,7 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufContact.MinimalContact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufContact.MinimalContact toContact(CotDetail cotDetail, String uidFromGeoChat) throws UnknownDetailFieldException {
         ProtobufContact.MinimalContact.Builder builder = ProtobufContact.MinimalContact.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -402,7 +423,12 @@ public class MinimalCotProtobufConverter {
                     }
                     break;
                 case KEY_UID:
-                    builder.setUid(attribute.getValue());
+                    String uid = attribute.getValue();
+                    if (uid.equals(uidFromGeoChat)) {
+                        builder.setUid(UID_SUBSTITUTION_MARKER);
+                    } else {
+                        builder.setUid(uid);
+                    }
                     break;
                 case KEY_NAME:
                     builder.setName(attribute.getValue());
@@ -414,19 +440,29 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufGroup.MinimalGroup toGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufGroup.MinimalGroup toGroup(CotDetail cotDetail, String uidFromGeoChat, String chatroomFromGeoChat, String idFromChat) throws UnknownDetailFieldException {
         ProtobufGroup.MinimalGroup.Builder builder = ProtobufGroup.MinimalGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_NAME:
-                    builder.setName(attribute.getValue());
+                    String name = attribute.getValue();
+                    if (name.equals(chatroomFromGeoChat)) {
+                        builder.setName(CHATROOM_SUBSTITUTION_MARKER);
+                    } else {
+                        builder.setName(name);
+                    }
                     break;
                 case KEY_ROLE:
                     // Do nothing, we pack this field into bits
                     break;
                 case KEY_UID:
-                    builder.setUid(attribute.getValue());
+                    String uid = attribute.getValue();
+                    if (uid.equals(idFromChat)) {
+                        builder.setUid(ID_SUBSTITUTION_MARKER);
+                    } else {
+                        builder.setUid(uid);
+                    }
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: group." + attribute.getName());
@@ -437,10 +473,10 @@ public class MinimalCotProtobufConverter {
         for (CotDetail child : children) {
             switch (child.getElementName()) {
                 case KEY_GROUP:
-                    builder.setGroup(toGroup(child));
+                    builder.setGroup(toGroup(child, uidFromGeoChat, chatroomFromGeoChat, idFromChat));
                     break;
                 case KEY_CONTACT:
-                    builder.addContact(toContact(child));
+                    builder.addContact(toContact(child, uidFromGeoChat));
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle child detail object: group." + child.getElementName());
@@ -491,7 +527,7 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufRemarks.MinimalRemarks toRemarks(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufRemarks.MinimalRemarks toRemarks(CotDetail cotDetail, String uidFromGeoChat) throws UnknownDetailFieldException {
         ProtobufRemarks.MinimalRemarks.Builder builder = ProtobufRemarks.MinimalRemarks.newBuilder();
         String remarks = cotDetail.getInnerText();
         if (remarks != null) {
@@ -501,7 +537,12 @@ public class MinimalCotProtobufConverter {
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_SOURCE:
-                    builder.setSource(attribute.getValue());
+                    String source = attribute.getValue();
+                    if (source.contains(uidFromGeoChat)) {
+                        builder.setSource(source.replace(uidFromGeoChat, UID_SUBSTITUTION_MARKER));
+                    } else {
+                        builder.setSource(source);
+                    }
                     break;
                 case KEY_TO:
                     builder.setTo(attribute.getValue());
@@ -522,13 +563,18 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufLink.MinimalLink toLink(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufLink.MinimalLink toLink(CotDetail cotDetail, String uidFromGeoChat) throws UnknownDetailFieldException {
         ProtobufLink.MinimalLink.Builder builder = ProtobufLink.MinimalLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_UID:
-                    builder.setUid(attribute.getValue());
+                    String uid = attribute.getValue();
+                    if (uid.equals(uidFromGeoChat)) {
+                        builder.setUid(UID_SUBSTITUTION_MARKER);
+                    } else {
+                        builder.setUid(uid);
+                    }
                     break;
                 case KEY_TYPE:
                     builder.setType(attribute.getValue());
@@ -555,8 +601,9 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufChat.MinimalChat toChat(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufChat.MinimalChat toChat(CotDetail cotDetail, String uidFromGeoChat, String chatroomFromGeoChat) throws UnknownDetailFieldException {
         ProtobufChat.MinimalChat.Builder builder = ProtobufChat.MinimalChat.newBuilder();
+        String idFromChat = null;
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -567,10 +614,17 @@ public class MinimalCotProtobufConverter {
                     builder.setGroupOwner(1 << 1 | (attribute.getValue().equals(VALUE_TRUE) ? 1 : 0));
                     break;
                 case KEY_CHATROOM:
-                    builder.setChatroom(attribute.getValue());
+                    String chatroom = attribute.getValue();
+                    if (chatroom.equals(chatroomFromGeoChat)) {
+                        builder.setChatroom(CHATROOM_SUBSTITUTION_MARKER);
+                    } else {
+                        builder.setChatroom(chatroom);
+                    }
                     break;
                 case KEY_ID:
-                    builder.setId(attribute.getValue());
+                    String id = attribute.getValue();
+                    idFromChat = id;
+                    builder.setId(id);
                     break;
                 case KEY_SENDER_CALLSIGN:
                     builder.setSenderCallsign(attribute.getValue());
@@ -584,10 +638,10 @@ public class MinimalCotProtobufConverter {
         for (CotDetail childDetail : children) {
             switch (childDetail.getElementName()) {
                 case KEY_CHAT_GROUP:
-                    builder.setChatGroup(toChatGroup(childDetail));
+                    builder.setChatGroup(toChatGroup(childDetail, uidFromGeoChat, chatroomFromGeoChat, idFromChat));
                     break;
                 case KEY_HIERARCHY:
-                    builder.setHierarchy(toHierarchy(childDetail));
+                    builder.setHierarchy(toHierarchy(childDetail, uidFromGeoChat, chatroomFromGeoChat, idFromChat));
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle child object: chat." + childDetail.getElementName());
@@ -596,13 +650,18 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufServerDestination.MinimalServerDestination toServerDestination(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufServerDestination.MinimalServerDestination toServerDestination(CotDetail cotDetail, String uidFromGeoChat) throws UnknownDetailFieldException {
         ProtobufServerDestination.MinimalServerDestination.Builder builder = ProtobufServerDestination.MinimalServerDestination.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_DESTINATIONS:
-                    builder.setDestinations(attribute.getValue());
+                    String destinations = attribute.getValue();
+                    if (destinations.contains(uidFromGeoChat)) {
+                        builder.setDestinations(destinations.replace(uidFromGeoChat, UID_SUBSTITUTION_MARKER));
+                    } else {
+                        builder.setDestinations(destinations);
+                    }
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: serverdestination." + attribute.getName());
@@ -626,17 +685,27 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufChatGroup.MinimalChatGroup toChatGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufChatGroup.MinimalChatGroup toChatGroup(CotDetail cotDetail, String uidFromGeoChat, String chatroomFromGeoChat, String idFromChat) throws UnknownDetailFieldException {
         ProtobufChatGroup.MinimalChatGroup.Builder builder = ProtobufChatGroup.MinimalChatGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_ID:
-                    builder.setId(attribute.getValue());
+                    String id = attribute.getValue();
+                    if (id.equals(idFromChat)) {
+                        builder.setId(ID_SUBSTITUTION_MARKER);
+                    } else {
+                        builder.setId(id);
+                    }
                     break;
                 default:
                     if (attribute.getName().startsWith(KEY_UID)) {
-                        builder.addUid(attribute.getValue());
+                        String uid = attribute.getValue();
+                        if (uid.equals(uidFromGeoChat)) {
+                            builder.addUid(UID_SUBSTITUTION_MARKER);
+                        } else {
+                            builder.addUid(uid);
+                        }
                         break;
                     }
                     throw new UnknownDetailFieldException("Don't know how to handle child attribute: chat.chatgrp." + attribute.getName());
@@ -645,7 +714,7 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufHierarchy.MinimalHierarchy toHierarchy(CotDetail cotDetail) throws UnknownDetailFieldException {
+    private ProtobufHierarchy.MinimalHierarchy toHierarchy(CotDetail cotDetail, String uidFromGeoChat, String chatroomFromGeoChat, String idFromChat) throws UnknownDetailFieldException {
         ProtobufHierarchy.MinimalHierarchy.Builder builder = ProtobufHierarchy.MinimalHierarchy.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -659,7 +728,7 @@ public class MinimalCotProtobufConverter {
         for (CotDetail child : children) {
             switch (child.getElementName()) {
                 case KEY_GROUP:
-                    builder.setGroup(toGroup(child));
+                    builder.setGroup(toGroup(child, uidFromGeoChat, chatroomFromGeoChat, idFromChat));
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle child object: chat.hierarchy." + child.getElementName());
@@ -839,7 +908,7 @@ public class MinimalCotProtobufConverter {
      * toCotEvent
      */
 
-    private CotDetail cotDetailFromProtoDetail(ProtobufDetail.MinimalDetail detail, CotEvent cotEvent, CustomBytesExtFields customBytesExtFields) {
+    private CotDetail cotDetailFromProtoDetail(ProtobufDetail.MinimalDetail detail, CotEvent cotEvent, CustomBytesExtFields customBytesExtFields, String uidFromGeoChat, String chatroomFromGeoChat) {
         CotDetail cotDetail = new CotDetail();
 
         ProtobufTakv.MinimalTakv takv = detail.getTakv();
@@ -861,7 +930,7 @@ public class MinimalCotProtobufConverter {
 
         ProtobufContact.MinimalContact contact = detail.getContact();
         if (contact != null && contact != ProtobufContact.MinimalContact.getDefaultInstance()) {
-            cotDetail.addChild(contactFromProtoContact(contact, cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)));
+            cotDetail.addChild(contactFromProtoContact(contact, uidFromGeoChat, cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)));
         }
 
         if (!isNullOrEmpty(customBytesExtFields.altSrc) || !isNullOrEmpty(customBytesExtFields.geoPointSrc)) {
@@ -924,8 +993,12 @@ public class MinimalCotProtobufConverter {
             if (!isNullOrEmpty(remarks.getRemarks())) {
                 remarksDetail.setInnerText(remarks.getRemarks());
             }
-            if (!isNullOrEmpty(remarks.getSource())) {
-                remarksDetail.setAttribute(KEY_SOURCE, remarks.getSource());
+            String source = remarks.getSource();
+            if (!isNullOrEmpty(source)) {
+                if (source.contains(UID_SUBSTITUTION_MARKER)) {
+                    source = source.replace(UID_SUBSTITUTION_MARKER, uidFromGeoChat);
+                }
+                remarksDetail.setAttribute(KEY_SOURCE, source);
             }
             if (!isNullOrEmpty(remarks.getTo())) {
                 remarksDetail.setAttribute(KEY_TO, remarks.getTo());
@@ -944,8 +1017,12 @@ public class MinimalCotProtobufConverter {
         if (link != null && link != ProtobufLink.MinimalLink.getDefaultInstance()) {
             CotDetail linkDetail = new CotDetail(KEY_LINK);
 
-            if (!isNullOrEmpty(link.getUid())) {
-                linkDetail.setAttribute(KEY_UID, link.getUid());
+            String uid = link.getUid();
+            if (!isNullOrEmpty(uid)) {
+                if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                    uid = uid.replace(UID_SUBSTITUTION_MARKER, uidFromGeoChat);
+                }
+                linkDetail.setAttribute(KEY_UID, uid);
             }
             if (!isNullOrEmpty(link.getType())) {
                 linkDetail.setAttribute(KEY_TYPE, link.getType());
@@ -976,11 +1053,16 @@ public class MinimalCotProtobufConverter {
             if (chat.getGroupOwner() > 0) {
                 chatDetail.setAttribute(KEY_GROUP_OWNER, Boolean.toString((chat.getGroupOwner() & createBitMask(1)) == 1));
             }
-            if (!isNullOrEmpty(chat.getChatroom())) {
-                chatDetail.setAttribute(KEY_CHATROOM, chat.getChatroom());
+            String chatroom = chat.getChatroom();
+            if (!isNullOrEmpty(chatroom)) {
+                if (chatroom.equals(CHATROOM_SUBSTITUTION_MARKER)) {
+                    chatroom = chatroom.replace(CHATROOM_SUBSTITUTION_MARKER, chatroomFromGeoChat);
+                }
+                chatDetail.setAttribute(KEY_CHATROOM, chatroom);
             }
-            if (!isNullOrEmpty(chat.getId())) {
-                chatDetail.setAttribute(KEY_ID, chat.getId());
+            String idFromChat = chat.getId();
+            if (!isNullOrEmpty(idFromChat)) {
+                chatDetail.setAttribute(KEY_ID, idFromChat);
             }
             if (!isNullOrEmpty(chat.getSenderCallsign())) {
                 chatDetail.setAttribute(KEY_SENDER_CALLSIGN, chat.getSenderCallsign());
@@ -990,12 +1072,19 @@ public class MinimalCotProtobufConverter {
             if (chatGroup != null && chatGroup != ProtobufChatGroup.MinimalChatGroup.getDefaultInstance()) {
                 CotDetail chatGroupDetail = new CotDetail(KEY_CHAT_GROUP);
 
-                if (!isNullOrEmpty(chatGroup.getId())) {
-                    chatGroupDetail.setAttribute(KEY_ID, chatGroup.getId());
+                String id = chatGroup.getId();
+                if (!isNullOrEmpty(id)) {
+                    if (id.equals(ID_SUBSTITUTION_MARKER)) {
+                        id = id.replace(ID_SUBSTITUTION_MARKER, idFromChat);
+                    }
+                    chatGroupDetail.setAttribute(KEY_ID, id);
                 }
                 List<String> uidList = chatGroup.getUidList();
                 for (int i = 0 ; i < uidList.size() ; i++) {
                     String uid = uidList.get(i);
+                    if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                        uid = uid.replace(UID_SUBSTITUTION_MARKER, uidFromGeoChat);
+                    }
                     chatGroupDetail.setAttribute(KEY_UID + i, uid);
                 }
 
@@ -1008,7 +1097,7 @@ public class MinimalCotProtobufConverter {
 
                 ProtobufGroup.MinimalGroup hierarchyGroup = hierarchy.getGroup();
                 if (hierarchyGroup != null && hierarchyGroup != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
-                    hierarchyDetail.addChild(groupFromProtoGroup(hierarchyGroup));
+                    hierarchyDetail.addChild(groupFromProtoGroup(hierarchyGroup, uidFromGeoChat, chatroomFromGeoChat, idFromChat));
                 }
 
                 chatDetail.addChild(hierarchyDetail);
@@ -1021,8 +1110,12 @@ public class MinimalCotProtobufConverter {
         if (serverDestination != null && serverDestination != ProtobufServerDestination.MinimalServerDestination.getDefaultInstance()) {
             CotDetail serverDestinationDetail = new CotDetail(KEY_SERVER_DESTINATION);
 
-            if (!isNullOrEmpty(serverDestination.getDestinations())) {
-                serverDestinationDetail.setAttribute(KEY_DESTINATIONS, serverDestination.getDestinations());
+            String destinations = serverDestination.getDestinations();
+            if (!isNullOrEmpty(destinations)) {
+                if (destinations.contains(UID_SUBSTITUTION_MARKER)) {
+                    destinations = destinations.replace(UID_SUBSTITUTION_MARKER, uidFromGeoChat);
+                }
+                serverDestinationDetail.setAttribute(KEY_DESTINATIONS, destinations);
             }
 
             cotDetail.addChild(serverDestinationDetail);
@@ -1081,35 +1174,53 @@ public class MinimalCotProtobufConverter {
         return cotDetail;
     }
 
-    private CotDetail groupFromProtoGroup(ProtobufGroup.MinimalGroup group) {
+    private CotDetail groupFromProtoGroup(ProtobufGroup.MinimalGroup group, String uidFromGeoChat, String chatroomFromGeoChat, String idFromChat) {
         CotDetail cotDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
 
-        if (!isNullOrEmpty(group.getName())) {
-            cotDetail.setAttribute(KEY_NAME, group.getName());
+        String name = group.getName();
+        if (!isNullOrEmpty(name)) {
+            if (name.equals(CHATROOM_SUBSTITUTION_MARKER)) {
+                name = name.replace(CHATROOM_SUBSTITUTION_MARKER, chatroomFromGeoChat);
+            }
+            cotDetail.setAttribute(KEY_NAME, name);
         }
-        if (!isNullOrEmpty(group.getUid())) {
-            cotDetail.setAttribute(KEY_UID, group.getUid());
+
+        String uid = group.getUid();
+        if (!isNullOrEmpty(uid)) {
+            if (uid.equals(ID_SUBSTITUTION_MARKER)) {
+                uid = uid.replace(ID_SUBSTITUTION_MARKER, idFromChat);
+            }
+            cotDetail.setAttribute(KEY_UID, uid);
         }
 
         List<ProtobufContact.MinimalContact> contacts = group.getContactList();
         for (ProtobufContact.MinimalContact contact : contacts) {
-            cotDetail.addChild(contactFromProtoContact(contact, false));
+            cotDetail.addChild(contactFromProtoContact(contact, uidFromGeoChat, false));
         }
 
         ProtobufGroup.MinimalGroup nestedGroup = group.getGroup();
         if (nestedGroup != null && nestedGroup != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
-            cotDetail.addChild(groupFromProtoGroup(nestedGroup));
+            cotDetail.addChild(groupFromProtoGroup(nestedGroup, uidFromGeoChat, chatroomFromGeoChat, idFromChat));
         }
 
         return cotDetail;
     }
 
-    private CotDetail contactFromProtoContact(ProtobufContact.MinimalContact contact, boolean isPli) {
+    private CotDetail contactFromProtoContact(ProtobufContact.MinimalContact contact, String uidFromGeoChat, boolean isPli) {
         CotDetail contactDetail = new CotDetail(KEY_CONTACT);
 
         if (!isNullOrEmpty(contact.getCallsign())) {
             contactDetail.setAttribute(KEY_CALLSIGN, contact.getCallsign());
         }
+
+        String uid = contact.getUid();
+        if (!isNullOrEmpty(uid)) {
+            if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                uid = uid.replace(UID_SUBSTITUTION_MARKER, uidFromGeoChat);
+            }
+            contactDetail.setAttribute(KEY_UID, uid);
+        }
+
         if (contact.getEndpointAddr() != 0) {
             try {
                 byte[] endpointAddrAsBytes = BigInteger.valueOf(contact.getEndpointAddr()).toByteArray();

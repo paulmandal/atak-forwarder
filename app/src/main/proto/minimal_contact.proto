@@ -8,5 +8,7 @@ option java_outer_classname = "ProtobufContact";
 
 message MinimalContact {
   string callsign = 1;
-  fixed32 endpointAddr = 2;
+  string uid = 2;
+  string name = 3;
+  fixed32 endpointAddr = 4;
 }

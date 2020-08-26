@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufGroup;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufHierarchy;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufLink;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufModel;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufRemarks;
@@ -41,7 +42,8 @@ public class MinimalCotProtobufConverter {
      */
     private static final String KEY_DETAIL = "detail";
     private static final String KEY_CONTACT = "contact";
-    private static final String KEY_GROUP = "__group";
+    private static final String KEY_UNDERSCORED_GROUP = "__group";
+    private static final String KEY_GROUP = "group";
     private static final String KEY_PRECISIONLOCATION = "precisionlocation";
     private static final String KEY_COLOR = "color";
     private static final String KEY_ARCHIVE = "archive";
@@ -53,6 +55,7 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_USER_ICON = "usericon";
     private static final String KEY_CHAT = "__chat";
     private static final String KEY_CHAT_GROUP = "chatgrp";
+    private static final String KEY_HIERARCHY = "hierarchy";
     private static final String KEY_SERVER_DESTINATION = "__serverdestination";
     private static final String KEY_MODEL = "model";
     private static final String KEY_LABELS_ON = "labels_on";
@@ -246,7 +249,7 @@ public class MinimalCotProtobufConverter {
         }
 
         String groupRole = null;
-        CotDetail group = cotEvent.getDetail().getFirstChildByName(0, KEY_GROUP);
+        CotDetail group = cotEvent.getDetail().getFirstChildByName(0, KEY_UNDERSCORED_GROUP);
         if (group != null) {
             groupRole = group.getAttribute(KEY_ROLE);
         }
@@ -321,7 +324,7 @@ public class MinimalCotProtobufConverter {
                     case KEY_CONTACT:
                         builder.setContact(toContact(innerDetail));
                         break;
-                    case KEY_GROUP:
+                    case KEY_UNDERSCORED_GROUP:
                         builder.setGroup(toGroup(innerDetail));
                         break;
                     case KEY_TAKV:
@@ -398,6 +401,12 @@ public class MinimalCotProtobufConverter {
                         e.printStackTrace();
                     }
                     break;
+                case KEY_UID:
+                    builder.setUid(attribute.getValue());
+                    break;
+                case KEY_NAME:
+                    builder.setName(attribute.getValue());
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: contact." + attribute.getName());
             }
@@ -416,8 +425,25 @@ public class MinimalCotProtobufConverter {
                 case KEY_ROLE:
                     // Do nothing, we pack this field into bits
                     break;
+                case KEY_UID:
+                    builder.setUid(attribute.getValue());
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: group." + attribute.getName());
+            }
+        }
+
+        List<CotDetail> children = cotDetail.getChildren();
+        for (CotDetail child : children) {
+            switch (child.getElementName()) {
+                case KEY_GROUP:
+                    builder.setGroup(toGroup(child));
+                    break;
+                case KEY_CONTACT:
+                    builder.addContact(toContact(child));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle child detail object: group." + child.getElementName());
             }
         }
         return builder.build();
@@ -554,9 +580,18 @@ public class MinimalCotProtobufConverter {
             }
         }
 
-        ProtobufChatGroup.MinimalChatGroup chatGroup = toChatGroup(cotDetail);
-        if (chatGroup != null) {
-            builder.setChatGroup(chatGroup);
+        List<CotDetail> children = cotDetail.getChildren();
+        for (CotDetail childDetail : children) {
+            switch (childDetail.getElementName()) {
+                case KEY_CHAT_GROUP:
+                    builder.setChatGroup(toChatGroup(childDetail));
+                    break;
+                case KEY_HIERARCHY:
+                    builder.setHierarchy(toHierarchy(childDetail));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle child object: chat." + childDetail.getElementName());
+            }
         }
         return builder.build();
     }
@@ -593,26 +628,44 @@ public class MinimalCotProtobufConverter {
 
     private ProtobufChatGroup.MinimalChatGroup toChatGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
         ProtobufChatGroup.MinimalChatGroup.Builder builder = ProtobufChatGroup.MinimalChatGroup.newBuilder();
-        List<CotDetail> children = cotDetail.getChildren();
-        for (CotDetail childDetail : children) {
-            switch (childDetail.getElementName()) {
-                case KEY_CHAT_GROUP:
-                    CotAttribute[] attributes = childDetail.getAttributes();
-                    for (CotAttribute attribute : attributes) {
-                        String attributeName = attribute.getName();
-                        if (attributeName.equals(KEY_ID)) {
-                            builder.setId(attribute.getValue());
-                        } else if (attributeName.startsWith(KEY_UID)) {
-                            builder.addUid(attribute.getValue());
-                        } else {
-                            throw new UnknownDetailFieldException("Don't know how to handle child attribute: chat." + childDetail.getElementName() + "." + attributeName);
-                        }
-                    }
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_ID:
+                    builder.setId(attribute.getValue());
                     break;
                 default:
-                    throw new UnknownDetailFieldException("Don't know how to handle child field: chat." + childDetail.getElementName());
+                    if (attribute.getName().startsWith(KEY_UID)) {
+                        builder.addUid(attribute.getValue());
+                        break;
+                    }
+                    throw new UnknownDetailFieldException("Don't know how to handle child attribute: chat.chatgrp." + attribute.getName());
             }
         }
+        return builder.build();
+    }
+
+    private ProtobufHierarchy.MinimalHierarchy toHierarchy(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufHierarchy.MinimalHierarchy.Builder builder = ProtobufHierarchy.MinimalHierarchy.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle child attribute: chat.hierarchy." + attribute.getName());
+            }
+        }
+
+        List<CotDetail> children = cotDetail.getChildren();
+        for (CotDetail child : children) {
+            switch (child.getElementName()) {
+                case KEY_GROUP:
+                    builder.setGroup(toGroup(child));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle child object: chat.hierarchy." + child.getElementName());
+            }
+        }
+
         return builder.build();
     }
 
@@ -808,25 +861,7 @@ public class MinimalCotProtobufConverter {
 
         ProtobufContact.MinimalContact contact = detail.getContact();
         if (contact != null && contact != ProtobufContact.MinimalContact.getDefaultInstance()) {
-            CotDetail contactDetail = new CotDetail(KEY_CONTACT);
-
-            if (!isNullOrEmpty(contact.getCallsign())) {
-                contactDetail.setAttribute(KEY_CALLSIGN, contact.getCallsign());
-            }
-            if (contact.getEndpointAddr() != 0) {
-                try {
-                    byte[] endpointAddrAsBytes = BigInteger.valueOf(contact.getEndpointAddr()).toByteArray();
-                    String ipAddress = InetAddress.getByAddress(endpointAddrAsBytes).getHostAddress();
-                    contactDetail.setAttribute(KEY_ENDPOINT, ipAddress + DEFAULT_CHAT_PORT_AND_PROTO);
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-            } else if (cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                // PLI from a device that doesn't have an IP address, fake it
-                contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
-            }
-
-            cotDetail.addChild(contactDetail);
+            cotDetail.addChild(contactFromProtoContact(contact, cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)));
         }
 
         if (!isNullOrEmpty(customBytesExtFields.altSrc) || !isNullOrEmpty(customBytesExtFields.geoPointSrc)) {
@@ -844,7 +879,7 @@ public class MinimalCotProtobufConverter {
 
         ProtobufGroup.MinimalGroup group = detail.getGroup();
         if (group != null && group != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
-            CotDetail groupDetail = new CotDetail(KEY_GROUP);
+            CotDetail groupDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
 
             if (!isNullOrEmpty(group.getName())) {
                 groupDetail.setAttribute(KEY_NAME, group.getName());
@@ -967,6 +1002,18 @@ public class MinimalCotProtobufConverter {
                 chatDetail.addChild(chatGroupDetail);
             }
 
+            ProtobufHierarchy.MinimalHierarchy hierarchy = chat.getHierarchy();
+            if (hierarchy != null && hierarchy != ProtobufHierarchy.MinimalHierarchy.getDefaultInstance()) {
+                CotDetail hierarchyDetail = new CotDetail(KEY_HIERARCHY);
+
+                ProtobufGroup.MinimalGroup hierarchyGroup = hierarchy.getGroup();
+                if (hierarchyGroup != null && hierarchyGroup != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
+                    hierarchyDetail.addChild(groupFromProtoGroup(hierarchyGroup));
+                }
+
+                chatDetail.addChild(hierarchyDetail);
+            }
+
             cotDetail.addChild(chatDetail);
         }
 
@@ -1032,6 +1079,51 @@ public class MinimalCotProtobufConverter {
         }
 
         return cotDetail;
+    }
+
+    private CotDetail groupFromProtoGroup(ProtobufGroup.MinimalGroup group) {
+        CotDetail cotDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
+
+        if (!isNullOrEmpty(group.getName())) {
+            cotDetail.setAttribute(KEY_NAME, group.getName());
+        }
+        if (!isNullOrEmpty(group.getUid())) {
+            cotDetail.setAttribute(KEY_UID, group.getUid());
+        }
+
+        List<ProtobufContact.MinimalContact> contacts = group.getContactList();
+        for (ProtobufContact.MinimalContact contact : contacts) {
+            cotDetail.addChild(contactFromProtoContact(contact, false));
+        }
+
+        ProtobufGroup.MinimalGroup nestedGroup = group.getGroup();
+        if (nestedGroup != null && nestedGroup != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
+            cotDetail.addChild(groupFromProtoGroup(nestedGroup));
+        }
+
+        return cotDetail;
+    }
+
+    private CotDetail contactFromProtoContact(ProtobufContact.MinimalContact contact, boolean isPli) {
+        CotDetail contactDetail = new CotDetail(KEY_CONTACT);
+
+        if (!isNullOrEmpty(contact.getCallsign())) {
+            contactDetail.setAttribute(KEY_CALLSIGN, contact.getCallsign());
+        }
+        if (contact.getEndpointAddr() != 0) {
+            try {
+                byte[] endpointAddrAsBytes = BigInteger.valueOf(contact.getEndpointAddr()).toByteArray();
+                String ipAddress = InetAddress.getByAddress(endpointAddrAsBytes).getHostAddress();
+                contactDetail.setAttribute(KEY_ENDPOINT, ipAddress + DEFAULT_CHAT_PORT_AND_PROTO);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        } else if (isPli) {
+            // PLI from a device that doesn't have an IP address, fake it
+            contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
+        }
+
+        return contactDetail;
     }
 
     private CustomBytesFields unpackCustomBytes(long customBytes) {

@@ -14,6 +14,7 @@ import "minimal_remarks.proto";
 import "minimal_link.proto";
 import "minimal_chat.proto";
 import "minimal_server_destination.proto";
+import "minimal_model.proto";
 
 message MinimalDetail {
   MinimalContact contact = 1;
@@ -24,5 +25,6 @@ message MinimalDetail {
   MinimalLink link = 6;
   MinimalChat chat = 8;
   MinimalServerDestination serverDestination = 9;
-  string iconSetPath = 10;
+  MinimalModel model = 10;
+  string iconSetPath = 11;
 }

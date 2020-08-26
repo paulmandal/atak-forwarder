@@ -17,6 +17,7 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufGroup;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufLink;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufModel;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufRemarks;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufServerDestination;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufTakv;
@@ -34,7 +35,6 @@ public class MinimalCotProtobufConverter {
     private static final String TAG = "ATAKDBG." + MinimalCotProtobufConverter.class.getSimpleName();
 
     private static final int LONG_INT_LENGTH = 64;
-    private static final int INT_LENGTH = 32;
 
     /**
      * CotDetail fields
@@ -54,6 +54,10 @@ public class MinimalCotProtobufConverter {
     private static final String KEY_CHAT = "__chat";
     private static final String KEY_CHAT_GROUP = "chatgrp";
     private static final String KEY_SERVER_DESTINATION = "__serverdestination";
+    private static final String KEY_MODEL = "model";
+    private static final String KEY_LABELS_ON = "labels_on";
+    private static final String KEY_HEIGHT_UNIT = "height_unit";
+    private static final String KEY_HEIGHT = "height";
 
     // Contact
     private static final String KEY_CALLSIGN = "callsign";
@@ -96,6 +100,7 @@ public class MinimalCotProtobufConverter {
 
     // Color
     private static final String KEY_ARGB = "argb";
+    private static final String KEY_VALUE = "value";
 
     // Chat
     private static final String KEY_PARENT = "parent";
@@ -111,6 +116,9 @@ public class MinimalCotProtobufConverter {
 
     // Server Destination
     private static final String KEY_DESTINATIONS = "destinations";
+
+    // Height
+    private static final String KEY_UNIT = "unit";
 
     /**
      * Special Values
@@ -157,6 +165,15 @@ public class MinimalCotProtobufConverter {
             "Forward Observer",
             "RTO",
             "K9"
+    };
+
+    private static final String[] MAPPING_HEIGHT_UNIT = {
+            "kilometers",
+            "meters",
+            "miles",
+            "yards",
+            "feet",
+            "nautical miles"
     };
 
     private final long mStartOfYearMs;
@@ -218,7 +235,7 @@ public class MinimalCotProtobufConverter {
         }
 
         double hae = cotPoint != null ? cotPoint.getHae() : 0;
-        builder.setCustomBytes(packCustomBytes(cotEvent.getType(), cotEvent.getTime(), cotEvent.getStale(), hae));
+        builder.setCustomBytes(packCustomBytes(cotEvent.getTime(), cotEvent.getStale(), hae));
 
         String geoPointSrc = null;
         String altSrc = null;
@@ -249,7 +266,46 @@ public class MinimalCotProtobufConverter {
             }
         }
 
-        builder.setCustomBytesExt(packCustomBytesExt(cotEvent.getHow(), geoPointSrc, altSrc, groupRole, battery, readiness));
+        Boolean labelsOn = null;
+        CotDetail labelsOnDetail = cotEvent.getDetail().getFirstChildByName(0, KEY_LABELS_ON);
+        if (labelsOnDetail != null) {
+            String valueStr = labelsOnDetail.getAttribute(KEY_VALUE);
+            if (valueStr != null) {
+                labelsOn = Boolean.parseBoolean(valueStr);
+            }
+        }
+
+        Integer heightUnit = null;
+        Integer heightValue = null;
+        CotDetail heightUnitDetail = cotEvent.getDetail().getFirstChildByName(0, KEY_HEIGHT_UNIT);
+        if (heightUnitDetail != null) {
+            String heightUnitStr = heightUnitDetail.getInnerText();
+            if (heightUnitStr != null) {
+                heightUnit = Integer.parseInt(heightUnitStr);
+            }
+        }
+
+        CotDetail heightDetail = cotEvent.getDetail().getFirstChildByName(0, KEY_HEIGHT);
+        if (heightDetail != null) {
+            String heightUnitStr = heightDetail.getAttribute(KEY_UNIT);
+            if (heightUnitStr != null) {
+                heightUnit = findMappingForArray("height.unit", MAPPING_HEIGHT_UNIT, heightUnitStr);
+            }
+
+            String heightValueInnerText = heightDetail.getInnerText();
+            if (heightValueInnerText != null) {
+                double heightValueDouble = Double.parseDouble(heightValueInnerText);
+                heightValue = (int)heightValueDouble;
+            }
+
+            String heightValueStr = heightDetail.getAttribute(KEY_VALUE);
+            if (heightValueStr != null) {
+                double heightValueDouble = Double.parseDouble(heightValueStr);
+                heightValue = (int)heightValueDouble;
+            }
+        }
+
+        builder.setCustomBytesExt(packCustomBytesExt(cotEvent.getHow(), geoPointSrc, altSrc, groupRole, battery, readiness, labelsOn, heightUnit, heightValue));
 
         builder.setDetail(toDetail(cotEvent.getDetail()));
 
@@ -285,6 +341,18 @@ public class MinimalCotProtobufConverter {
                         break;
                     case KEY_SERVER_DESTINATION:
                         builder.setServerDestination(toServerDestination(innerDetail));
+                        break;
+                    case KEY_LABELS_ON:
+                        toLabelsOn(innerDetail);
+                        break;
+                    case KEY_HEIGHT_UNIT:
+                        toHeightUnit(innerDetail);
+                        break;
+                    case KEY_HEIGHT:
+                        toHeight(innerDetail);
+                        break;
+                    case KEY_MODEL:
+                        builder.setModel(toModel(innerDetail));
                         break;
                     case KEY_USER_ICON:
                         builder.setIconSetPath(innerDetail.getAttribute(KEY_ICON_SET_PATH));
@@ -502,7 +570,22 @@ public class MinimalCotProtobufConverter {
                     builder.setDestinations(attribute.getValue());
                     break;
                 default:
-                    throw new UnknownDetailFieldException("Don't know how to handle detail field: color." + attribute.getName());
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: serverdestination." + attribute.getName());
+            }
+        }
+        return builder.build();
+    }
+
+    private ProtobufModel.MinimalModel toModel(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufModel.MinimalModel.Builder builder =  ProtobufModel.MinimalModel.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_NAME:
+                    builder.setName(attribute.getValue());
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: model." + attribute.getName());
             }
         }
         return builder.build();
@@ -537,6 +620,7 @@ public class MinimalCotProtobufConverter {
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
+                case KEY_VALUE:
                 case KEY_ARGB:
                     // Do nothing, we drop this field
                     break;
@@ -545,6 +629,43 @@ public class MinimalCotProtobufConverter {
             }
         }
     }
+    private void toLabelsOn(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_VALUE:
+                    // Do nothing, we are packing this into bits
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: labels_on." + attribute.getName());
+            }
+        }
+    }
+
+    private void toHeightUnit(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: height_unit." + attribute.getName());
+            }
+        }
+    }
+
+    private void toHeight(CotDetail cotDetail) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_UNIT:
+                case KEY_VALUE:
+                    // Do nothing, we are packing these into bits
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: height." + attribute.getName());
+            }
+        }
+    }
+
     private void toArchive(CotDetail cotDetail) throws UnknownDetailFieldException {
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -603,13 +724,16 @@ public class MinimalCotProtobufConverter {
      * stale  (17 bits, seconds after `time`)
      * hae    (14 bits, whole meters)
      *
-     * CustomBytesExt Format (fixed32):
+     * CustomBytesExt Format (fixed64):
      * how              (3 bits, mapping)
      * geopointsrc      (6 bits, mapping, high bit marks whether we have a value)
      * altsrc           (6 bits, mapping, high bit marks whether we have a value)
      * group.role       (5 bits, mapping, high bit marks whether we have a value)
      * status.battery   (8 bits, int, high bit marks whether we have a value)
      * status.readiness (2 bits, bool, high bit marks whether we have a value)
+     * labels_on.value  (2 bits, bool, high bit marks whether we have a value)
+     * height.unit      (4 bits, int, high bit marks whether we have a value)
+     * height.value     (14 bits, int, high bit marks whether we have a value)
      */
 
     private static final int CUSTOM_FIELD_TIME_LENGTH = 25;
@@ -622,8 +746,11 @@ public class MinimalCotProtobufConverter {
     private static final int CUSTOM_FIELD_ROLE_LENGTH = 5;
     private static final int CUSTOM_FIELD_BATTERY_LENGTH = 8;
     private static final int CUSTOM_FIELD_READINESS_LENGTH = 2;
+    private static final int CUSTOM_FIELD_LABELS_ON_LENGTH = 2;
+    private static final int CUSTOM_FIELD_HEIGHT_UNIT_LENGTH = 4;
+    private static final int CUSTOM_FIELD_HEIGHT_VALUE_LENGTH = 14;
 
-    private long packCustomBytes(String type, CoordinatedTime time, CoordinatedTime stale, double hae) throws MappingNotFoundException {
+    private long packCustomBytes(CoordinatedTime time, CoordinatedTime stale, double hae) throws MappingNotFoundException {
         ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
 
@@ -638,18 +765,21 @@ public class MinimalCotProtobufConverter {
         return customBytes;
     }
 
-    private int packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, Integer battery, Boolean readiness) throws MappingNotFoundException {
+    private long packCustomBytesExt(String how, String geoPointSrc, String altSrc, String groupRole, Integer battery, Boolean readiness, Boolean labelsOn, Integer heightUnit, Integer heightValue) throws MappingNotFoundException {
         ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
 
-        customBytes = packNonNullMappedString(customBytes, INT_LENGTH, how, "how", CUSTOM_FIELD_HOW_LENGTH, MAPPING_HOW, shiftTracker);
-        customBytes = packNullableMappedString(customBytes, INT_LENGTH, geoPointSrc, "geopointsrc", CUSTOM_FIELD_GEOPOINTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
-        customBytes = packNullableMappedString(customBytes, INT_LENGTH, altSrc, "altsrc", CUSTOM_FIELD_ALTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
-        customBytes = packNullableMappedString(customBytes, INT_LENGTH, groupRole, "role", CUSTOM_FIELD_ROLE_LENGTH, MAPPING_GROUP_ROLE, shiftTracker);
-        customBytes = packNullableInt(customBytes, INT_LENGTH, battery, CUSTOM_FIELD_BATTERY_LENGTH, shiftTracker);
-        customBytes = packNullableBoolean(customBytes, INT_LENGTH, readiness, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
+        customBytes = packNonNullMappedString(customBytes, LONG_INT_LENGTH, how, "how", CUSTOM_FIELD_HOW_LENGTH, MAPPING_HOW, shiftTracker);
+        customBytes = packNullableMappedString(customBytes, LONG_INT_LENGTH, geoPointSrc, "geopointsrc", CUSTOM_FIELD_GEOPOINTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        customBytes = packNullableMappedString(customBytes, LONG_INT_LENGTH, altSrc, "altsrc", CUSTOM_FIELD_ALTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        customBytes = packNullableMappedString(customBytes, LONG_INT_LENGTH, groupRole, "role", CUSTOM_FIELD_ROLE_LENGTH, MAPPING_GROUP_ROLE, shiftTracker);
+        customBytes = packNullableInt(customBytes, LONG_INT_LENGTH, battery, CUSTOM_FIELD_BATTERY_LENGTH, shiftTracker);
+        customBytes = packNullableBoolean(customBytes, LONG_INT_LENGTH, readiness, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
+        customBytes = packNullableBoolean(customBytes, LONG_INT_LENGTH, labelsOn, CUSTOM_FIELD_LABELS_ON_LENGTH, shiftTracker);
+        customBytes = packNullableInt(customBytes, LONG_INT_LENGTH, heightUnit, CUSTOM_FIELD_HEIGHT_UNIT_LENGTH, shiftTracker);
+        customBytes = packNullableInt(customBytes, LONG_INT_LENGTH, heightValue, CUSTOM_FIELD_HEIGHT_VALUE_LENGTH, shiftTracker);
 
-        return (int)customBytes;
+        return customBytes;
     }
 
     /**
@@ -840,6 +970,58 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(chatDetail);
         }
 
+        ProtobufServerDestination.MinimalServerDestination serverDestination = detail.getServerDestination();
+        if (serverDestination != null && serverDestination != ProtobufServerDestination.MinimalServerDestination.getDefaultInstance()) {
+            CotDetail serverDestinationDetail = new CotDetail(KEY_SERVER_DESTINATION);
+
+            if (!isNullOrEmpty(serverDestination.getDestinations())) {
+                serverDestinationDetail.setAttribute(KEY_DESTINATIONS, serverDestination.getDestinations());
+            }
+
+            cotDetail.addChild(serverDestinationDetail);
+        }
+
+        ProtobufModel.MinimalModel model = detail.getModel();
+        if (model != null && model != ProtobufModel.MinimalModel.getDefaultInstance()) {
+            CotDetail modelDetail = new CotDetail(KEY_MODEL);
+
+            if (!isNullOrEmpty(model.getName())) {
+                modelDetail.setAttribute(KEY_NAME, model.getName());
+            }
+
+            cotDetail.addChild(modelDetail);
+        }
+
+        if (customBytesExtFields.labelsOn != null) {
+            CotDetail labelsOnDetail = new CotDetail(KEY_LABELS_ON);
+
+            labelsOnDetail.setAttribute(KEY_VALUE, Boolean.toString(customBytesExtFields.labelsOn));
+
+            cotDetail.addChild(labelsOnDetail);
+        }
+
+        if (customBytesExtFields.heightUnit != null || customBytesExtFields.heightValue != null) {
+            CotDetail heightDetail = new CotDetail(KEY_HEIGHT);
+
+            if (customBytesExtFields.heightUnit != null) {
+                CotDetail heightUnitDetail = new CotDetail(KEY_HEIGHT_UNIT);
+
+                heightUnitDetail.setInnerText(Integer.toString(customBytesExtFields.heightUnit));
+
+                cotDetail.addChild(heightUnitDetail);
+
+                heightDetail.setAttribute(KEY_UNIT, MAPPING_HEIGHT_UNIT[customBytesExtFields.heightUnit]);
+            }
+
+            if (customBytesExtFields.heightValue != null) {
+                String heightValueStr = Float.toString(customBytesExtFields.heightValue);
+                heightDetail.setInnerText(heightValueStr);
+                heightDetail.setAttribute(KEY_VALUE, heightValueStr);
+            }
+
+            cotDetail.addChild(heightDetail);
+        }
+
         String iconSetPath = detail.getIconSetPath();
         if (!isNullOrEmpty(iconSetPath)) {
             CotDetail userIconDetail = new CotDetail(KEY_USER_ICON);
@@ -866,17 +1048,20 @@ public class MinimalCotProtobufConverter {
         return new CustomBytesFields(time, stale, hae);
     }
 
-    private CustomBytesExtFields unpackCustomBytesExt(int customBytesExt) {
+    private CustomBytesExtFields unpackCustomBytesExt(long customBytesExt) {
         ShiftTracker shiftTracker = new ShiftTracker();
 
-        String how = unpackNonNullMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_HOW_LENGTH, MAPPING_HOW, shiftTracker);
-        String geoPointSrc = unpackNullableMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_GEOPOINTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
-        String altSrc = unpackNullableMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_ALTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
-        String role = unpackNullableMappedString(customBytesExt, INT_LENGTH, CUSTOM_FIELD_ROLE_LENGTH, MAPPING_GROUP_ROLE, shiftTracker);
-        Integer battery = unpackNullableInt(customBytesExt, INT_LENGTH, CUSTOM_FIELD_BATTERY_LENGTH, shiftTracker);
-        Boolean readiness = unpackNullableBoolean(customBytesExt, INT_LENGTH, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
+        String how = unpackNonNullMappedString(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_HOW_LENGTH, MAPPING_HOW, shiftTracker);
+        String geoPointSrc = unpackNullableMappedString(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_GEOPOINTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        String altSrc = unpackNullableMappedString(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_ALTSRC_LENGTH, MAPPING_ALTSRC_AND_GEOPOINTSRC, shiftTracker);
+        String role = unpackNullableMappedString(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_ROLE_LENGTH, MAPPING_GROUP_ROLE, shiftTracker);
+        Integer battery = unpackNullableInt(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_BATTERY_LENGTH, shiftTracker);
+        Boolean readiness = unpackNullableBoolean(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
+        Boolean labelsOn = unpackNullableBoolean(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_LABELS_ON_LENGTH, shiftTracker);
+        Integer heightUnit = unpackNullableInt(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_HEIGHT_UNIT_LENGTH, shiftTracker);
+        Integer heightValue = unpackNullableInt(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_HEIGHT_VALUE_LENGTH, shiftTracker);
 
-        return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery, readiness);
+        return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery, readiness, labelsOn, heightUnit, heightValue);
     }
 
     /**
@@ -926,7 +1111,7 @@ public class MinimalCotProtobufConverter {
 
     private long packNullableBoolean(long customBytes, int containerLength, Boolean value, int fieldLength, ShiftTracker shiftTracker) {
         if (value != null) {
-            customBytes |= ((value ? 1 : 0)) & createBitMask(fieldLength) << containerLength - shiftTracker.accumulatedShift - fieldLength;
+            customBytes |= ((value ? 1 : 0)) & createBitMask(1) << containerLength - shiftTracker.accumulatedShift - fieldLength;
             shiftTracker.accumulatedShift += fieldLength;
             return customBytes;
         }
@@ -946,9 +1131,9 @@ public class MinimalCotProtobufConverter {
     @Nullable
     private String unpackNullableMappedString(long customBytes, int containerLength, int fieldLength, String[] mapping, ShiftTracker shiftTracker) {
         if (!hasNullableField(customBytes, containerLength, shiftTracker)) {
+            shiftTracker.accumulatedShift += fieldLength;
             return null;
         }
-
         return unpackNonNullMappedString(customBytes, containerLength, fieldLength, mapping, shiftTracker);
     }
 
@@ -961,22 +1146,20 @@ public class MinimalCotProtobufConverter {
 
     @Nullable
     private Integer unpackNullableInt(long customBytes, int containerLength, int fieldLength, ShiftTracker shiftTracker) {
-        if (!hasNullableField(customBytes, containerLength, shiftTracker)) {
-            return null;
+        Integer value = null;
+        if (hasNullableField(customBytes, containerLength, shiftTracker)) {
+            value = (int)(customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength));
         }
-
-        int value = (int)(customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength));
         shiftTracker.accumulatedShift += fieldLength;
         return value;
     }
 
     @Nullable
     private Boolean unpackNullableBoolean(long customBytes, int containerLength, int fieldLength, ShiftTracker shiftTracker) {
-        if (!hasNullableField(customBytes, containerLength, shiftTracker)) {
-            return null;
+        Boolean value = null;
+        if (hasNullableField(customBytes, containerLength, shiftTracker)) {
+            value = (customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength)) == 1;
         }
-
-        boolean value = (customBytes >>> containerLength - shiftTracker.accumulatedShift - fieldLength & createBitMask(fieldLength)) == 1;
         shiftTracker.accumulatedShift += fieldLength;
         return value;
     }
@@ -987,8 +1170,8 @@ public class MinimalCotProtobufConverter {
         return value;
     }
 
-    private int createBitMask(int bits) {
-        int bitmask = bits > 0 ? 1 : 0;
+    private long createBitMask(int bits) {
+        long bitmask = bits > 0 ? 1 : 0;
         for (int i = 1 ; i < bits ; i++) {
             bitmask |= 1 << i;
         }
@@ -1017,14 +1200,20 @@ public class MinimalCotProtobufConverter {
         public final String role;
         public final Integer battery;
         public final Boolean readiness;
+        public final Boolean labelsOn;
+        public final Integer heightUnit;
+        public final Integer heightValue;
 
-        public CustomBytesExtFields(String how, String geoPointSrc, String altSrc, String role, Integer battery, Boolean readiness) {
+        public CustomBytesExtFields(String how, String geoPointSrc, String altSrc, String role, Integer battery, Boolean readiness, Boolean labelsOn, Integer heightUnit, Integer heightValue) {
             this.how = how;
             this.geoPointSrc = geoPointSrc;
             this.altSrc = altSrc;
             this.role = role;
             this.battery = battery;
             this.readiness = readiness;
+            this.labelsOn = labelsOn;
+            this.heightUnit = heightUnit;
+            this.heightValue = heightValue;
         }
     }
 

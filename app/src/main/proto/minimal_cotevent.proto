@@ -19,7 +19,7 @@ message MinimalCotEvent {
   int32 le = 6;
 
   fixed64 customBytes = 7;
-  fixed32 customBytesExt = 8;
+  fixed64 customBytesExt = 8;
 
   MinimalDetail detail = 9;
 }

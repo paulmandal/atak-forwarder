@@ -17,7 +17,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * Broadcast messages are sent to the group (e.g. map markers, PLI)
 * Direct messages to other users (e.g. chat messages)
 * Efficient comm. using protobufs -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
-* Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~400 bytes, group chat ~420 bytes
+* Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~380 bytes, group chat ~400 bytes
 * Abstracted communication for adapting to other physical layers
 * Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
 * Message queue with priority (chat = pli > markers)

@@ -16,7 +16,8 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * In-app group and device management
 * Broadcast messages are sent to the group (e.g. map markers, PLI)
 * Direct messages to other users (e.g. chat messages)
-* Efficient comm. using protobufs -- can send approx 2.5 map markers per minute or 1.5 markers and one PLI per
+* Efficient comm. using protobufs -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
+* Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~380 bytes, group chat ~400 bytes
 * Abstracted communication for adapting to other physical layers
 * Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
 * Message queue with priority (chat = pli > markers)
@@ -25,6 +26,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 * Get this working with Release builds of ATAK
 * Message IDs and receipt confirmation
+* Improve chat message shrinking further
 * Figure out why some messages fail to parse (1/8 msgs)
 * Modify CotComparar.areCotPointsEqual() to allow for some configurable imprecision in comparison so that PLI msgs don't pile up
 * Lat/Lon for GoTenna frequency configuration from live source instead of `Config.java`
@@ -50,10 +52,6 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
 * open this project in Android Studio
     * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
     * Set `FALLBACK_LATITUDE` and `FALLBACK_LATITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
-    * (Optional for best performance) Open ATAK, go to Settings -> My Callsign -> More -> Reporting Preferences and set:
-    * Dynamic Reporting Rate Stationary (Unreliable) to 120
-    * Minimum and Maximum (Unreliable) to 60
-    * If you skip these steps PLI will take up most of your message bandwidth, map markers will likely take a long time to propagate
 
 # Architecture Diagram
 
@@ -63,15 +61,22 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
 
 Message handling follows a few simple rules:
 
-- Messages from ATAK that are not PLI or chat are checked against a Recently Sent cache, if a message was recently sent it was dropped. This prevents spamming of auto-send map markers.
+- Messages from ATAK that are not chat are checked against a Recently Sent cache, if a message was recently sent it was dropped. This prevents spamming of auto-send map markers.
 - Messages are then queued in a prioritized queue, with the priority: chat = pli > marker
 - If a similar message already exists in the queue (e.g. PLI) it will be overwritten with the new message, this way a queued PLI won't be sent with out of date data if newer data is available
 - This compares Lat/Lon exactly so device GPS imprecision will probably cause PLIs to get queued up, either way there should never be more than 1 PLI in the queue
 - Messages are fetched from this queue by the CommHardware class and sent
 
+- The plugin will attempt to first use a "minimal" protobuf that saves space, but if it will result in dropped fields or a failed mapping on the receiving size it will fall back to the regular protobufs
+- When values appear more than once in a payload we attempt to replace subsequent appearances with a marker/placeholder that is swapped back for the value when rebuilding the original message
+
 # Contributing
 
-GoTenna Mesh doesn't have enough bandwidth to really work for this application, just sending a single position update takes ~1 min and isn't very reliable. It definitely won't work once you start drawing a bunch of bandits on the map.
+Areas I'd especially like help are: 
 
-The hardware/communication layer is abstracted behind a `CommHardware` interface, this interface can be implemented against other hardware -- I am going to try an XBee next, but if you would like to give it a shot with something else please reach out to me and let me know how it goes.
+* reducing the message sizes without affecting features in ATAK (e.g. removing `detail.contact.endpoint` kills chat)
+* increasing resilience of this plugin, it is basically fire-and-forget (and maybe lose your message) right now
+* port this to other hardware -- i have some Meshtastic devices on the way but support for any other devices would be great
+
+The hardware/communication layer is abstracted behind a `CommHardware` interface, this interface can be implemented against other hardware -- I am going to try Meshtastic or XBees next, but if you would like to give it a shot with something else please reach out to me and let me know how it goes.
 

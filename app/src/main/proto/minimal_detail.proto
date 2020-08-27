@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufDetail";
+
+import "minimal_contact.proto";
+import "minimal_takv.proto";
+import "minimal_underscore_group.proto";
+import "minimal_track.proto";
+import "minimal_remarks.proto";
+import "minimal_link.proto";
+import "minimal_chat.proto";
+import "minimal_server_destination.proto";
+import "minimal_model.proto";
+
+message MinimalDetail {
+  MinimalContact contact = 1;
+  MinimalTakv takv = 2;
+  MinimalUnderscoreGroup group = 3;
+  MinimalTrack track = 4;
+  MinimalRemarks remarks = 5;
+  MinimalLink link = 6;
+  MinimalChat chat = 8;
+  MinimalServerDestination serverDestination = 9;
+  MinimalModel model = 10;
+  string iconSetPath = 11;
+}

@@ -95,9 +95,9 @@ android {
         }
 
         release {
-            def f = new File("$project.projectDir/../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/outputs/mapping/release/mapping.txt")
+            def f = new File("$project.projectDir/../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/outputs/mapping/release/mapping.txt")
             if (f.exists()) {
-                System.setProperty("atak.proguard.mapping", "../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/outputs/mapping/release/mapping.txt")
+                System.setProperty("atak.proguard.mapping", "../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/outputs/mapping/release/mapping.txt")
             } else {
                 println("WARNING: no mapping file exists, obfuscating just the plugin to work with the development core")
                 file("$project.projectDir/build").mkdir()
@@ -164,8 +164,6 @@ dependencies {
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
-
-    implementation 'org.xmlunit:xmlunit-core:2.7.0' // TODO: remove this once protobuf is stable
 
     implementation fileTree(dir: '../libs/gotenna-public-sdk.aar', include: '*.aar')
     compileOnly fileTree(dir: '../libs/main.jar', include: '*.jar')

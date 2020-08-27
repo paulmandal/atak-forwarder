@@ -102,13 +102,16 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         Button broadcastDiscovery = (Button) mTemplateView.findViewById(R.id.button_broadcast_discovery);
         Button clearMessageCache = (Button) mTemplateView.findViewById(R.id.button_clear_message_cache);
         Button clearMessageQueue = (Button) mTemplateView.findViewById(R.id.button_clear_message_queue);
-        Button setCachePurgeTime = (Button) mTemplateView.findViewById(R.id.button_set_message_purge_time_ms);
+        Button setDefaultCachePurgeTime = (Button) mTemplateView.findViewById(R.id.button_set_default_purge_time_ms);
+        Button setPliCachePurgeTime = (Button) mTemplateView.findViewById(R.id.button_set_pli_purge_time_ms);
         mScanOrUnpair = (Button) mTemplateView.findViewById(R.id.button_scan_or_unpair);
 
-        EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_purge_time_mins);
+        EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_default_purge_time_mins);
+        EditText pliPurgeTimeS = (EditText) mTemplateView.findViewById(R.id.edittext_pli_purge_time_s);
 
         mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", commandQueue.getQueueSize()));
-        cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getCachePurgeTimeMs() / 60000));
+        cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
+        pliPurgeTimeS.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs() / 1000));
 
         broadcastDiscovery.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
@@ -133,14 +136,24 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             mCommandQueue.clearData();
         });
 
-        setCachePurgeTime.setOnClickListener((View v) -> {
-            Toast.makeText(mAtakContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
+        setDefaultCachePurgeTime.setOnClickListener((View v) -> {
             String cachePurgeTimeMinsStr = cachePurgeTimeMins.getText().toString();
             if (cachePurgeTimeMinsStr.equals("")) {
                 return;
             }
+            Toast.makeText(mAtakContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
             int cachePurgeTimeMs = Integer.parseInt(cachePurgeTimeMinsStr) * 60000;
-            mCotMessageCache.setCachePurgeTimeMs(cachePurgeTimeMs);
+            mCotMessageCache.setDefaultCachePurgeTimeMs(cachePurgeTimeMs);
+        });
+
+        setPliCachePurgeTime.setOnClickListener((View v) -> {
+            String pliPurgeTimeSStr = pliPurgeTimeS.getText().toString();
+            if (pliPurgeTimeSStr.equals("")) {
+                return;
+            }
+            Toast.makeText(mAtakContext, "Set PLI message cache TTL", Toast.LENGTH_SHORT).show();
+            int pliPurgeTimeSInt = Integer.parseInt(pliPurgeTimeSStr);
+            mCotMessageCache.setPliCachePurgeTimeMs(pliPurgeTimeSInt * 1000);
         });
 
         mScanOrUnpair.setOnClickListener(mScanClickListener);

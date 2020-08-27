@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufChat";
+
+import "minimal_chat_group.proto";
+import "minimal_hierarchy.proto";
+
+message MinimalChat {
+  string parent = 1;
+  int32 groupOwner = 2; // TODO: use 2 bits in CustomBytesExt instead of 16 bits here
+  string chatroom = 3;
+  string id = 4;
+  string senderCallsign = 5;
+  MinimalChatGroup chatGroup = 6;
+  MinimalHierarchy hierarchy = 7;
+}

@@ -13,7 +13,6 @@
 -keepattributes *Annotation*
 -keepattributes Signature, InnerClasses
 
-
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
 }
@@ -53,3 +52,12 @@
 -keep class * implements transapps.maps.plugin.lifecycle.Lifecycle {
 }
 
+-keep class com.amazonaws.** { *; }
+-keep class com.felhr.** { *; }
+-keep class com.gotenna.** { *; }
+-keep class org.spongycastle.** { *; }
+
+
+-dontwarn sun.misc.Unsafe
+-dontwarn javax.**
+-dontwarn com.amazonaws.**

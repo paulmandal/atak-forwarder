@@ -56,13 +56,13 @@ public class CotProtobufConverter {
     private static final String KEY_SPEED = "speed";
 
 
-    public byte[] cotEventToByteArray(CotEvent cotEvent) {
+    public byte[] toByteArray(CotEvent cotEvent) {
         CotEventProtos.CotEvent cotEventProtos = cotEventProtosFromCotEvent(cotEvent);
         return cotEventProtos.toByteArray();
     }
 
     @Nullable
-    public CotEvent cotEventFromProtoBuf(byte[] cotProtobuf) {
+    public CotEvent toCotEvent(byte[] cotProtobuf) {
         CotEvent cotEvent = null;
         try {
             CotEventProtos.CotEvent protoCotEvent = CotEventProtos.CotEvent.parseFrom(cotProtobuf);

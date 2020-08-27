@@ -20,15 +20,16 @@ public class Config {
     /**
      * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)
      */
-    public static final int MESSAGE_CHUNK_LENGTH = 229;
+    public static final int MESSAGE_CHUNK_LENGTH = 220;
     public static final int QUOTA_REFRESH_TIME_MS = 60000;
     public static final int MESSAGES_PER_MINUTE = 5;
     public static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = 2000;
 
     /**
-     * How long messages live in the cache CotMessageCache (preventing them being resent)
+     * How long shape/PLI messages live in the cache CotMessageCache (preventing them being resent)
      */
     public static final int DEFAULT_CACHE_PURGE_TIME_MS = 1800000;
+    public static final int DEFAULT_PLI_CACHE_PURGE_TIME_MS = 60000;
 
     /**
      * IP and port to retransmit inbound messages to, this should work with the defaults in ATAK

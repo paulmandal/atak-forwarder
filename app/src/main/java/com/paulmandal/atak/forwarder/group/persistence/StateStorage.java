@@ -14,8 +14,10 @@ import java.util.List;
 
 public class StateStorage {
     private static final int DEFAULT_CACHE_PURGE_TIME_MS = Config.DEFAULT_CACHE_PURGE_TIME_MS;
+    private static final int DEFAULT_PLI_CACHE_PURGE_TIME_MS = Config.DEFAULT_PLI_CACHE_PURGE_TIME_MS;
 
-    private static final String KEY_CACHE_PURGE_TIME = "cachePurgeTime";
+    private static final String KEY_PLI_CACHE_PURGE_TIME = "pliCachePurgeTime";
+    private static final String KEY_DEFAULT_CACHE_PURGE_TIME = "defaultCachePurgeTime";
     private static final String KEY_USERS = "users";
     private static final String KEY_GROUP = "group";
 
@@ -52,15 +54,27 @@ public class StateStorage {
 
     }
 
-    public int getCachePurgeTimeMs() {
+    public int getDefaultCachePurgeTimeMs() {
         SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
-        return sharedPref.getInt(KEY_CACHE_PURGE_TIME, DEFAULT_CACHE_PURGE_TIME_MS);
+        return sharedPref.getInt(KEY_DEFAULT_CACHE_PURGE_TIME, DEFAULT_CACHE_PURGE_TIME_MS);
     }
 
-    public void storeCachePurgeTime(int cachePurgeTimeMs) {
+    public int getPliCachePurgeTimeMs() {
+        SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
+        return sharedPref.getInt(KEY_PLI_CACHE_PURGE_TIME, DEFAULT_PLI_CACHE_PURGE_TIME_MS);
+    }
+
+    public void storeDefaultCachePurgeTime(int shapeCachePurgeTimeMs) {
         SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putInt(KEY_CACHE_PURGE_TIME, cachePurgeTimeMs);
+        editor.putInt(KEY_DEFAULT_CACHE_PURGE_TIME, shapeCachePurgeTimeMs);
+        editor.apply();
+    }
+
+    public void storePliCachePurgeTime(int pliCachePurgeTimeMs) {
+        SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putInt(KEY_PLI_CACHE_PURGE_TIME, pliCachePurgeTimeMs);
         editor.apply();
     }
 

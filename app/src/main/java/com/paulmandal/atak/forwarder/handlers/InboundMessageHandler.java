@@ -5,8 +5,8 @@ import android.util.Log;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.MinimalCotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.FallbackCotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -19,14 +19,14 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
     private static final int INBOUND_MESSAGE_DEST_PORT = Config.INBOUND_MESSAGE_DEST_PORT;
     private static final int INBOUND_MESSAGE_SRC_PORT = Config.INBOUND_MESSAGE_SRC_PORT;
 
-    private MinimalCotProtobufConverter mMinimalCotProtobufConverter;
-    private CotProtobufConverter mCotProtobufConverter;
+    private CotEventProtobufConverter mCotEventProtobufConverter;
+    private FallbackCotEventProtobufConverter mFallbackCotEventProtobufConverter;
 
     public InboundMessageHandler(CommHardware commHardware,
-                                 MinimalCotProtobufConverter minimalCotProtobufConverter,
-                                 CotProtobufConverter cotProtobufConverter) {
-        mMinimalCotProtobufConverter = minimalCotProtobufConverter;
-        mCotProtobufConverter = cotProtobufConverter;
+                                 CotEventProtobufConverter cotEventProtobufConverter,
+                                 FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter) {
+        mCotEventProtobufConverter = cotEventProtobufConverter;
+        mFallbackCotEventProtobufConverter = fallbackCotEventProtobufConverter;
 
         commHardware.addMessageListener(this);
     }
@@ -34,10 +34,10 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
     @Override
     public void onMessageReceived(byte[] message) {
         Thread messageConversionAndDispatchThread = new Thread(() -> {
-            CotEvent cotEvent = mMinimalCotProtobufConverter.toCotEvent(message);
+            CotEvent cotEvent = mCotEventProtobufConverter.toCotEvent(message);
 
             if (cotEvent == null) {
-                cotEvent = mCotProtobufConverter.toCotEvent(message);
+                cotEvent = mFallbackCotEventProtobufConverter.toCotEvent(message);
             }
             if (cotEvent == null) {
                 Log.e(TAG, "Error in onMessageReceived, cotEvent did not parse");

@@ -6,8 +6,10 @@ import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.MinimalCotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.FallbackCotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.UnknownDetailFieldException;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -23,23 +25,23 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
     private CotMessageCache mCotMessageCache;
-    private MinimalCotProtobufConverter mMinimalCotProtobufConverter;
-    private CotProtobufConverter mCotProtobufConverter;
+    private CotEventProtobufConverter mCotEventProtobufConverter;
+    private FallbackCotEventProtobufConverter mFallbackCotEventProtobufConverter;
 
     public OutboundMessageHandler(CommsMapComponent commsMapComponent,
                                   CommHardware commHardware,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   CotMessageCache cotMessageCache,
-                                  MinimalCotProtobufConverter minimalCotProtobufConverter,
-                                  CotProtobufConverter cotProtobufConverter) {
+                                  CotEventProtobufConverter cotEventProtobufConverter,
+                                  FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter) {
         mCommsMapComponent = commsMapComponent;
         mCommHardware = commHardware;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mCotMessageCache = cotMessageCache;
-        mMinimalCotProtobufConverter = minimalCotProtobufConverter;
-        mCotProtobufConverter = cotProtobufConverter;
+        mCotEventProtobufConverter = cotEventProtobufConverter;
+        mFallbackCotEventProtobufConverter = fallbackCotEventProtobufConverter;
 
         commsMapComponent.registerPreSendProcessor(this);
     }
@@ -65,28 +67,28 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         byte[] cotProtobuf;
         boolean marshalledAsMinimal = false;
         try {
-            cotProtobuf = mMinimalCotProtobufConverter.toByteArray(cotEvent);
+            cotProtobuf = mCotEventProtobufConverter.toByteArray(cotEvent);
             marshalledAsMinimal = true;
-        } catch (MinimalCotProtobufConverter.MappingNotFoundException | MinimalCotProtobufConverter.UnknownDetailFieldException e) {
+        } catch (MappingNotFoundException | UnknownDetailFieldException e) {
             Log.e(TAG, e.getMessage());
-            cotProtobuf = mCotProtobufConverter.toByteArray(cotEvent);
+            cotProtobuf = mFallbackCotEventProtobufConverter.toByteArray(cotEvent);
         }
         boolean overwriteSimilar = eventType.equals(TYPE_PLI) || !eventType.equals(TYPE_CHAT);
         mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), overwriteSimilar);
 
         // TODO: remove this debugging
         if (marshalledAsMinimal) {
-            byte[] cotProtobufOriginal = mCotProtobufConverter.toByteArray(cotEvent);
+            byte[] cotProtobufOriginal = mFallbackCotEventProtobufConverter.toByteArray(cotEvent);
             byte[] minimalProtobuf = new byte[1];
             try {
-                 minimalProtobuf = mMinimalCotProtobufConverter.toByteArray(cotEvent);
-            } catch (MinimalCotProtobufConverter.MappingNotFoundException | MinimalCotProtobufConverter.UnknownDetailFieldException e) {
+                 minimalProtobuf = mCotEventProtobufConverter.toByteArray(cotEvent);
+            } catch (MappingNotFoundException | UnknownDetailFieldException e) {
                 Log.e(TAG, e.getMessage());
             }
             Log.d(TAG, "l protobuf len: " + cotProtobufOriginal.length);
             Log.d(TAG, "m protobuf len: " + minimalProtobuf.length);
 
-            CotEvent minimalCotEvent = mMinimalCotProtobufConverter.toCotEvent(minimalProtobuf);
+            CotEvent minimalCotEvent = mCotEventProtobufConverter.toCotEvent(minimalProtobuf);
 
             if (minimalCotEvent == null) {
                 Log.e(TAG, "cotEvent could not be parsed from protobuf for comparison!");

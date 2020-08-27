@@ -6,11 +6,11 @@ package com.paulmandal.atak.forwarder.protobufs;
 
 option java_outer_classname = "ProtobufGroup";
 
-import "minimal_contact.proto";
+import "minimal_group_contact.proto";
 
 message MinimalGroup {
   string uid = 1;
   string name = 2;
-  repeated MinimalContact contact = 3;
+  repeated MinimalGroupContact contact = 3;
   MinimalGroup group = 4;
 }

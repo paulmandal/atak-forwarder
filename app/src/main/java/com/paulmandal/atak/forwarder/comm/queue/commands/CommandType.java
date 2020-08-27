@@ -8,4 +8,5 @@ public enum CommandType {
     DISCONNECT_FROM_COMM_DEVICE,
     SEND_TO_INDIVIDUAL,
     SEND_TO_GROUP,
+    GET_BATTERY_STATUS
 }

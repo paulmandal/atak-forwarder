@@ -29,4 +29,8 @@ public class QueuedCommandFactory {
         CommandType commandType = toUIDs == null ? CommandType.SEND_TO_GROUP : CommandType.SEND_TO_INDIVIDUAL;
         return new SendMessageCommand(commandType, priority, System.currentTimeMillis(), cotEvent, message, toUIDs);
     }
+
+    public QueuedCommand createRequestBatteryStatusCommand() {
+        return new QueuedCommand(CommandType.GET_BATTERY_STATUS, QueuedCommand.PRIORITY_HIGH, System.currentTimeMillis());
+    }
 }

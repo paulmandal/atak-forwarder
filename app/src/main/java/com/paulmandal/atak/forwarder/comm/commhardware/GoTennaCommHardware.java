@@ -13,6 +13,7 @@ import com.gotenna.sdk.GoTenna;
 import com.gotenna.sdk.connection.GTConnectionError;
 import com.gotenna.sdk.connection.GTConnectionManager;
 import com.gotenna.sdk.connection.GTConnectionState;
+import com.gotenna.sdk.data.BatteryStateListener;
 import com.gotenna.sdk.data.GTCommandCenter;
 import com.gotenna.sdk.data.GTDeviceType;
 import com.gotenna.sdk.data.GTError;
@@ -29,6 +30,7 @@ import com.gotenna.sdk.data.messages.GTTextOnlyMessageData;
 import com.gotenna.sdk.exceptions.GTDataMissingException;
 import com.gotenna.sdk.exceptions.GTInvalidAppTokenException;
 import com.gotenna.sdk.georegion.PlaceFinderTask;
+import com.gotenna.sdk.responses.SystemInfoResponseData;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
@@ -45,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public class GoTennaCommHardware extends CommHardware implements GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener {
+public class GoTennaCommHardware extends CommHardware implements GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener, BatteryStateListener {
     private static final String TAG = "ATAKDBG." + GoTennaCommHardware.class.getSimpleName();
 
     public interface GroupListener {
@@ -74,16 +76,19 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
     private GTCommandCenter mGtCommandCenter;
     int mUsedMessageQuota = 0;
 
+    private Integer mBatteryChargePercentage;
+    private boolean mIsBatteryCharging = false;
+
     private boolean mScanning = false;
 
     public GoTennaCommHardware(Handler handler,
-                               GroupListener userListener,
+                               GroupListener groupListener,
                                GroupTracker groupTracker,
                                CommandQueue commandQueue,
                                QueuedCommandFactory queuedCommandFactory) {
         super(handler, commandQueue, queuedCommandFactory, groupTracker);
         mHandler = handler;
-        mGroupListener = userListener;
+        mGroupListener = groupListener;
         mGroupTracker = groupTracker;
     }
 
@@ -99,6 +104,7 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
         mGtCommandCenter = GTCommandCenter.getInstance();
 
         mGtCommandCenter.setMessageListener(this);
+        mGtCommandCenter.addBatteryStateListener(this);
         mGtConnectionManager.addGtConnectionListener(this);
 
         scanForGotenna(GTDeviceType.MESH);
@@ -169,7 +175,26 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
 
     @Override
     protected void handleSendMessage(SendMessageCommand sendMessageCommand) {
-            sendMessageToUserOrGroup(sendMessageCommand);
+        sendMessageToUserOrGroup(sendMessageCommand);
+    }
+
+    @Override
+    protected void handleGetBatteryStatus() {
+        mGtCommandCenter.sendGetSystemInfo((SystemInfoResponseData systemInfoResponseData) -> {
+                    mBatteryChargePercentage = systemInfoResponseData.getBatteryLevelAsPercentage();
+                    notifyGotBatteryInfo(mBatteryChargePercentage);
+                },
+                (GTError gtError) -> Log.d(TAG, "Error getting system info: " + gtError));
+    }
+
+    @Override
+    public boolean isBatteryCharging() {
+        return mIsBatteryCharging;
+    }
+
+    @Override
+    public Integer getBatteryChargePercentage() {
+        return mBatteryChargePercentage;
     }
 
     @Override
@@ -246,6 +271,12 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
             }
             mGroupListener.onGroupCreated(gtGroupCreationMessageData.getGroupGID(), groupMemberIds);
         }
+    }
+
+    @Override
+    public void onBatteryStateChanged(boolean isBatteryCharging) {
+        mIsBatteryCharging = isBatteryCharging;
+        notifyBatteryChargeStateChanged(isBatteryCharging);
     }
 
     private void handleBroadcast(String message) {

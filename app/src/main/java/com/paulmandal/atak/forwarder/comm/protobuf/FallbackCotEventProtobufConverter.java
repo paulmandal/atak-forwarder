@@ -26,7 +26,8 @@ import atakmap.commoncommo.protobuf.v1.StatusOuterClass;
 import atakmap.commoncommo.protobuf.v1.TakvOuterClass;
 import atakmap.commoncommo.protobuf.v1.TrackOuterClass;
 
-public class CotProtobufConverter {
+@Deprecated
+public class FallbackCotEventProtobufConverter {
     private static final String KEY_DETAIL = "detail";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_GROUP = "__group";
@@ -55,13 +56,14 @@ public class CotProtobufConverter {
     private static final String KEY_COURSE = "course";
     private static final String KEY_SPEED = "speed";
 
-
+    @Deprecated
     public byte[] toByteArray(CotEvent cotEvent) {
         CotEventProtos.CotEvent cotEventProtos = cotEventProtosFromCotEvent(cotEvent);
         return cotEventProtos.toByteArray();
     }
 
     @Nullable
+    @Deprecated
     public CotEvent toCotEvent(byte[] cotProtobuf) {
         CotEvent cotEvent = null;
         try {

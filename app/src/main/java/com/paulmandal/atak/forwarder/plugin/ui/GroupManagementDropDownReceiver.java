@@ -17,8 +17,8 @@ import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
@@ -27,12 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import eo.view.batterymeter.BatteryMeterView;
+
 public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener,
         GroupTracker.UpdateListener,
         CommandQueue.Listener,
-        CommHardware.ConnectionStateListener {
+        CommHardware.ConnectionStateListener,
+        CommHardware.BatteryInfoListener {
     public static final String TAG = "ATAKDBG." + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
+
+    private static final int BATTERY_CHECK_INTERVAL_MS = 600000;
+
+    private final MapView mMapView;
 
     private final Context mPluginContext;
     private final Context mAtakContext;
@@ -55,7 +62,12 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     private Button mScanOrUnpair;
     private TextView mConnectionStatusTextView;
 
+    private BatteryMeterView mBatteryMeterView;
+
     private boolean mIsDropDownOpen;
+
+    private final Runnable mBatteryChargeCheckRunnable;
+    private long mLastBatteryCheckTime = 0;
 
     public GroupManagementDropDownReceiver(final MapView mapView,
                                            final Context context,
@@ -65,6 +77,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
                                            final CotMessageCache cotMessageCache,
                                            final CommandQueue commandQueue) {
         super(mapView);
+        mMapView = mapView;
         mPluginContext = context;
         mAtakContext = atakContext;
         mGroupTracker = groupTracker;
@@ -113,6 +126,10 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
         pliPurgeTimeS.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs() / 1000));
 
+        mBatteryMeterView = (BatteryMeterView) mTemplateView.findViewById(R.id.battery_meter);
+        mBatteryMeterView.setChargeLevel(commHardware.getBatteryChargePercentage());
+        mBatteryMeterView.setCharging(commHardware.isBatteryCharging());
+
         broadcastDiscovery.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
             commHardware.broadcastDiscoveryMessage();
@@ -158,9 +175,22 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         mScanOrUnpair.setOnClickListener(mScanClickListener);
 
+        mBatteryChargeCheckRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (mCommHardware.isConnected()
+                        && System.currentTimeMillis() - mLastBatteryCheckTime > BATTERY_CHECK_INTERVAL_MS) {
+                    mCommHardware.requestBatteryStatus();
+                    mLastBatteryCheckTime = System.currentTimeMillis();
+                }
+                mMapView.postDelayed(this, BATTERY_CHECK_INTERVAL_MS);
+            }
+        };
+
         mGroupTracker.setUpdateListener(this);
         commandQueue.setListener(this);
         commHardware.addConnectionStateListener(this);
+        commHardware.setBatteryInfoListener(this);
     }
 
     public void disposeImpl() {
@@ -219,6 +249,9 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
                     mCommHardware.createGroup(gIdsForGroup);
                 }
             });
+
+            mMapView.post(mBatteryChargeCheckRunnable);
+
             showDropDown(mTemplateView, HALF_WIDTH, FULL_HEIGHT, FULL_WIDTH, HALF_HEIGHT, false, this);
         }
     }
@@ -228,7 +261,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     }
 
     @Override
-    public void onDropDownVisible(boolean v) {
+    public void onDropDownVisible(boolean isVisible) {
         mIsDropDownOpen = true;
     }
 
@@ -239,6 +272,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     @Override
     public void onDropDownClose() {
         mIsDropDownOpen = false;
+        mMapView.removeCallbacks(mBatteryChargeCheckRunnable);
     }
 
     @Override
@@ -336,5 +370,15 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
         mScanOrUnpair.setOnClickListener(mScanClickListener);
         mScanOrUnpair.setText(R.string.scan);
+    }
+
+    @Override
+    public void onChargeStateChanged(boolean isCharging) {
+        mBatteryMeterView.setCharging(isCharging);
+    }
+
+    @Override
+    public void onGotBatteryInfo(int percentageCharged) {
+        mBatteryMeterView.setChargeLevel(percentageCharged);
     }
 }

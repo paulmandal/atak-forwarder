@@ -17,6 +17,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * Broadcast messages are sent to the group (e.g. map markers, PLI)
 * Direct messages to other users (e.g. chat messages)
 * Efficient comm. using protobufs -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
+* Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~400 bytes, group chat ~420 bytes
 * Abstracted communication for adapting to other physical layers
 * Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
 * Message queue with priority (chat = pli > markers)
@@ -25,7 +26,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 * Get this working with Release builds of ATAK
 * Message IDs and receipt confirmation
-* Improve chat message shrinking -- lots of usage can be reduced here
+* Improve chat message shrinking further
 * Figure out why some messages fail to parse (1/8 msgs)
 * Modify CotComparar.areCotPointsEqual() to allow for some configurable imprecision in comparison so that PLI msgs don't pile up
 * Lat/Lon for GoTenna frequency configuration from live source instead of `Config.java`
@@ -67,6 +68,7 @@ Message handling follows a few simple rules:
 - Messages are fetched from this queue by the CommHardware class and sent
 
 - The plugin will attempt to first use a "minimal" protobuf that saves space, but if it will result in dropped fields or a failed mapping on the receiving size it will fall back to the regular protobufs
+- When values appear more than once in a payload we attempt to replace subsequent appearances with a marker/placeholder that is swapped back for the value when rebuilding the original message
 
 # Contributing
 

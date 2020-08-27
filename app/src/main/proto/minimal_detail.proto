@@ -8,7 +8,7 @@ option java_outer_classname = "ProtobufDetail";
 
 import "minimal_contact.proto";
 import "minimal_takv.proto";
-import "minimal_group.proto";
+import "minimal_underscore_group.proto";
 import "minimal_track.proto";
 import "minimal_remarks.proto";
 import "minimal_link.proto";
@@ -19,7 +19,7 @@ import "minimal_model.proto";
 message MinimalDetail {
   MinimalContact contact = 1;
   MinimalTakv takv = 2;
-  MinimalGroup group = 3;
+  MinimalUnderscoreGroup group = 3;
   MinimalTrack track = 4;
   MinimalRemarks remarks = 5;
   MinimalLink link = 6;

@@ -23,6 +23,7 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufRemarks;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufServerDestination;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufTakv;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufTrack;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufUnderscoreGroup;
 
 import org.apache.commons.lang.ArrayUtils;
 
@@ -356,7 +357,7 @@ public class MinimalCotProtobufConverter {
                         builder.setContact(toContact(innerDetail, subsitutionValues));
                         break;
                     case KEY_UNDERSCORED_GROUP:
-                        builder.setGroup(toGroup(innerDetail, subsitutionValues));
+                        builder.setGroup(toUnderscoreGroup(innerDetail, subsitutionValues));
                         break;
                     case KEY_TAKV:
                         builder.setTakv(toTakv(innerDetail));
@@ -455,6 +456,24 @@ public class MinimalCotProtobufConverter {
         return builder.build();
     }
 
+    private ProtobufUnderscoreGroup.MinimalUnderscoreGroup toUnderscoreGroup(CotDetail cotDetail, SubsitutionValues subsitutionValues) throws UnknownDetailFieldException {
+        ProtobufUnderscoreGroup.MinimalUnderscoreGroup.Builder builder = ProtobufUnderscoreGroup.MinimalUnderscoreGroup.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_NAME:
+                    builder.setName(attribute.getValue());
+                    break;
+                case KEY_ROLE:
+                    // Do nothing, we pack this field into bits
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: __group." + attribute.getName());
+            }
+        }
+        return builder.build();
+    }
+
     private ProtobufGroup.MinimalGroup toGroup(CotDetail cotDetail, SubsitutionValues subsitutionValues) throws UnknownDetailFieldException {
         ProtobufGroup.MinimalGroup.Builder builder = ProtobufGroup.MinimalGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
@@ -468,9 +487,6 @@ public class MinimalCotProtobufConverter {
                         name = GROUPS_SUBSTITUION_MARKER;
                     }
                     builder.setName(name);
-                    break;
-                case KEY_ROLE:
-                    // Do nothing, we pack this field into bits
                     break;
                 case KEY_UID:
                     String uid = attribute.getValue();
@@ -963,8 +979,8 @@ public class MinimalCotProtobufConverter {
             cotDetail.addChild(precisionLocationDetail);
         }
 
-        ProtobufGroup.MinimalGroup group = detail.getGroup();
-        if (group != null && group != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
+        ProtobufUnderscoreGroup.MinimalUnderscoreGroup group = detail.getGroup();
+        if (group != null && group != ProtobufUnderscoreGroup.MinimalUnderscoreGroup.getDefaultInstance()) {
             CotDetail groupDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
 
             if (!isNullOrEmpty(group.getName())) {
@@ -1199,7 +1215,7 @@ public class MinimalCotProtobufConverter {
     }
 
     private CotDetail groupFromProtoGroup(ProtobufGroup.MinimalGroup group, SubsitutionValues subsitutionValues) {
-        CotDetail cotDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
+        CotDetail cotDetail = new CotDetail(KEY_GROUP);
 
         String name = group.getName();
         if (!isNullOrEmpty(name)) {

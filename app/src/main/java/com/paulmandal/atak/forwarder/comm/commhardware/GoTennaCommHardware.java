@@ -398,6 +398,9 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
                                     });
                             setConnected(true);
                             broadcastDiscoveryMessage(true); // TODO: maybe don't send this every time we reconnect to the device?
+                            if (mBatteryChargePercentage == null) {
+                                requestBatteryStatus();
+                            }
                         } else {
                             Log.d(TAG, "Error setting GID");
                         }

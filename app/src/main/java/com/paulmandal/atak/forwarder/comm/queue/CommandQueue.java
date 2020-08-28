@@ -111,6 +111,7 @@ public class CommandQueue {
                         || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
                         || queuedCommand.commandType == CommandType.SEND_TO_GROUP
                         || queuedCommand.commandType == CommandType.ADD_TO_GROUP
+                        || queuedCommand.commandType == CommandType.GET_BATTERY_STATUS
                         || queuedCommand.commandType == CommandType.CREATE_GROUP)) {
                     // Ignore commands that require connectivity
                     continue;

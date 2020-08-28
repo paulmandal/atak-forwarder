@@ -114,7 +114,7 @@ public class ChatProtobufConverter {
                 chatDetail.setAttribute(KEY_SENDER_CALLSIGN, substitutionValues.senderCallsignFromChat);
             }
 
-            mChatGroupProtobufConverter.maybeAddChatGroup(cotDetail, chat.getChatGroup(), substitutionValues);
+            mChatGroupProtobufConverter.maybeAddChatGroup(chatDetail, chat.getChatGroup(), substitutionValues);
             mHierarchyProtobufConverter.maybeAddHierarchy(chatDetail, chat.getHierarchy(), substitutionValues);
 
             cotDetail.addChild(chatDetail);

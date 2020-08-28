@@ -28,7 +28,6 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * Message IDs and receipt confirmation
 * Improve chat message shrinking further
 * Figure out why some messages fail to parse (1/8 msgs)
-* Modify CotComparar.areCotPointsEqual() to allow for some configurable imprecision in comparison so that PLI msgs don't pile up
 * Lat/Lon for GoTenna frequency configuration from live source instead of `Config.java`
 * Retry on disconnection from comm. device
 * Smarter sending -- Map Markers get higher priority unless PLI has not gotten sent in ~5 minutes

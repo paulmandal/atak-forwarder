@@ -18,8 +18,8 @@ public class ComplexLinkProtobufConverter {
     private static final String KEY_RELATION = "relation";
     private static final String KEY_PRODUCTION_TIME = "production_time";
 
-    public ProtobufComplexLink.MinimalComplexLink toComplexLink(CotDetail cotDetail, SubstitutionValues substitutionValues, long startOfYearMs) throws UnknownDetailFieldException {
-        ProtobufComplexLink.MinimalComplexLink.Builder builder = ProtobufComplexLink.MinimalComplexLink.newBuilder();
+    public ProtobufComplexLink.ComplexLink toComplexLink(CotDetail cotDetail, SubstitutionValues substitutionValues, long startOfYearMs) throws UnknownDetailFieldException {
+        ProtobufComplexLink.ComplexLink.Builder builder = ProtobufComplexLink.ComplexLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -55,8 +55,8 @@ public class ComplexLinkProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddComplexLink(CotDetail cotDetail, ProtobufComplexLink.MinimalComplexLink link, SubstitutionValues substitutionValues, long startOfYearMs) {
-        if (link != null && link != ProtobufComplexLink.MinimalComplexLink.getDefaultInstance()) {
+    public void maybeAddComplexLink(CotDetail cotDetail, ProtobufComplexLink.ComplexLink link, SubstitutionValues substitutionValues, long startOfYearMs) {
+        if (link != null && link != ProtobufComplexLink.ComplexLink.getDefaultInstance()) {
             CotDetail linkDetail = new CotDetail(KEY_LINK);
 
             String uid = link.getUid();

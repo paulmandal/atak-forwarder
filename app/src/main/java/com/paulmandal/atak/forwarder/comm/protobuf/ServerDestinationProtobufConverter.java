@@ -11,8 +11,8 @@ public class ServerDestinationProtobufConverter {
 
     private static final String KEY_DESTINATIONS = "destinations";
 
-    public ProtobufServerDestination.MinimalServerDestination toServerDestination(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufServerDestination.MinimalServerDestination.Builder builder = ProtobufServerDestination.MinimalServerDestination.newBuilder();
+    public ProtobufServerDestination.ServerDestination toServerDestination(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufServerDestination.ServerDestination.Builder builder = ProtobufServerDestination.ServerDestination.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -30,8 +30,8 @@ public class ServerDestinationProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddServerDestination(CotDetail cotDetail, ProtobufServerDestination.MinimalServerDestination serverDestination, SubstitutionValues substitutionValues) {
-        if (serverDestination != null && serverDestination != ProtobufServerDestination.MinimalServerDestination.getDefaultInstance()) {
+    public void maybeAddServerDestination(CotDetail cotDetail, ProtobufServerDestination.ServerDestination serverDestination, SubstitutionValues substitutionValues) {
+        if (serverDestination != null && serverDestination != ProtobufServerDestination.ServerDestination.getDefaultInstance()) {
             CotDetail serverDestinationDetail = new CotDetail(KEY_SERVER_DESTINATION);
 
             String destinations = serverDestination.getDestinations();

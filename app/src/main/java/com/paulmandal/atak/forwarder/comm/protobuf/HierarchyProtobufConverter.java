@@ -16,8 +16,8 @@ public class HierarchyProtobufConverter {
         mGroupProtobufConverter = groupProtobufConverter;
     }
 
-    public ProtobufHierarchy.MinimalHierarchy toHierarchy(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufHierarchy.MinimalHierarchy.Builder builder = ProtobufHierarchy.MinimalHierarchy.newBuilder();
+    public ProtobufHierarchy.Hierarchy toHierarchy(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufHierarchy.Hierarchy.Builder builder = ProtobufHierarchy.Hierarchy.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -40,8 +40,8 @@ public class HierarchyProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddHierarchy(CotDetail cotDetail, ProtobufHierarchy.MinimalHierarchy hierarchy, SubstitutionValues substitutionValues) {
-        if (hierarchy != null && hierarchy != ProtobufHierarchy.MinimalHierarchy.getDefaultInstance()) {
+    public void maybeAddHierarchy(CotDetail cotDetail, ProtobufHierarchy.Hierarchy hierarchy, SubstitutionValues substitutionValues) {
+        if (hierarchy != null && hierarchy != ProtobufHierarchy.Hierarchy.getDefaultInstance()) {
             CotDetail hierarchyDetail = new CotDetail(KEY_HIERARCHY);
 
             mGroupProtobufConverter.maybeAddGroup(hierarchyDetail, hierarchy.getGroup(), substitutionValues);

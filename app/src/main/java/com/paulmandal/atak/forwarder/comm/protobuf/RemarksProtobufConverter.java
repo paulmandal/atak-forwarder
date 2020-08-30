@@ -16,8 +16,8 @@ public class RemarksProtobufConverter {
     private static final String KEY_TO = "to";
     private static final String KEY_TIME = "time";
 
-    public ProtobufRemarks.MinimalRemarks toRemarks(CotDetail cotDetail, SubstitutionValues substitutionValues, long startOfYearMs) throws UnknownDetailFieldException {
-        ProtobufRemarks.MinimalRemarks.Builder builder = ProtobufRemarks.MinimalRemarks.newBuilder();
+    public ProtobufRemarks.Remarks toRemarks(CotDetail cotDetail, SubstitutionValues substitutionValues, long startOfYearMs) throws UnknownDetailFieldException {
+        ProtobufRemarks.Remarks.Builder builder = ProtobufRemarks.Remarks.newBuilder();
         String remarks = cotDetail.getInnerText();
         if (remarks != null) {
             builder.setRemarks(remarks);
@@ -52,8 +52,8 @@ public class RemarksProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddRemarks(CotDetail cotDetail, ProtobufRemarks.MinimalRemarks remarks, SubstitutionValues substitutionValues, long startOfYearMs) {
-        if (remarks != null && remarks != ProtobufRemarks.MinimalRemarks.getDefaultInstance()) {
+    public void maybeAddRemarks(CotDetail cotDetail, ProtobufRemarks.Remarks remarks, SubstitutionValues substitutionValues, long startOfYearMs) {
+        if (remarks != null && remarks != ProtobufRemarks.Remarks.getDefaultInstance()) {
             CotDetail remarksDetail = new CotDetail(KEY_REMARKS);
 
             if (!StringUtils.isNullOrEmpty(remarks.getRemarks())) {

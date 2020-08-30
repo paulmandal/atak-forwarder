@@ -12,8 +12,8 @@ public class TakvProtobufConverter {
     private static final String KEY_PLATFORM = "platform";
     private static final String KEY_VERSION = "version";
 
-    public ProtobufTakv.MinimalTakv toTakv(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufTakv.MinimalTakv.Builder builder = ProtobufTakv.MinimalTakv.newBuilder();
+    public ProtobufTakv.Takv toTakv(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufTakv.Takv.Builder builder = ProtobufTakv.Takv.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -36,8 +36,8 @@ public class TakvProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddTakv(CotDetail cotDetail, ProtobufTakv.MinimalTakv takv) {
-        if (takv != null && takv != ProtobufTakv.MinimalTakv.getDefaultInstance()) {
+    public void maybeAddTakv(CotDetail cotDetail, ProtobufTakv.Takv takv) {
+        if (takv != null && takv != ProtobufTakv.Takv.getDefaultInstance()) {
             CotDetail takvDetail = new CotDetail(KEY_TAKV);
 
             takvDetail.setAttribute(KEY_OS, Integer.toString(takv.getOs()));

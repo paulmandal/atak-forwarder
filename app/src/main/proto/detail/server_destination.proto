@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufServerDestination";
+
+message ServerDestination {
+  string destinations = 1;
+}

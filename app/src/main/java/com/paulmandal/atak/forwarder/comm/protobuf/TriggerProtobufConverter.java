@@ -10,8 +10,8 @@ public class TriggerProtobufConverter {
     private static final String KEY_MODE = "mode";
     private static final String KEY_VALUE = "value";
 
-    public ProtobufTrigger.MinimalTrigger toTrigger(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufTrigger.MinimalTrigger.Builder builder = ProtobufTrigger.MinimalTrigger.newBuilder();
+    public ProtobufTrigger.Trigger toTrigger(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufTrigger.Trigger.Builder builder = ProtobufTrigger.Trigger.newBuilder();
 
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -30,8 +30,8 @@ public class TriggerProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddTrigger(CotDetail cotDetail, ProtobufTrigger.MinimalTrigger trigger) {
-        if (trigger == null || trigger == ProtobufTrigger.MinimalTrigger.getDefaultInstance()) {
+    public void maybeAddTrigger(CotDetail cotDetail, ProtobufTrigger.Trigger trigger) {
+        if (trigger == null || trigger == ProtobufTrigger.Trigger.getDefaultInstance()) {
             return;
         }
 

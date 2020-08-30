@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufTrack";
+
+message Track {
+  double course = 1;
+  double speed = 2;
+}

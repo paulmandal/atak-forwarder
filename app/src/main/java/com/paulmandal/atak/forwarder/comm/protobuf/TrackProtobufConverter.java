@@ -12,8 +12,8 @@ public class TrackProtobufConverter {
 
     private static final double NULL_MARKER = -1.0;
 
-    public ProtobufTrack.MinimalTrack toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufTrack.MinimalTrack.Builder builder = ProtobufTrack.MinimalTrack.newBuilder();
+    public ProtobufTrack.Track toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufTrack.Track.Builder builder = ProtobufTrack.Track.newBuilder();
         builder.setCourse(NULL_MARKER);
         builder.setSpeed(NULL_MARKER);
         CotAttribute[] attributes = cotDetail.getAttributes();
@@ -32,8 +32,8 @@ public class TrackProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddTrack(CotDetail cotDetail, ProtobufTrack.MinimalTrack track) {
-        if (track != null && track != ProtobufTrack.MinimalTrack.getDefaultInstance()) {
+    public void maybeAddTrack(CotDetail cotDetail, ProtobufTrack.Track track) {
+        if (track != null && track != ProtobufTrack.Track.getDefaultInstance()) {
             CotDetail trackDetail = new CotDetail(KEY_TRACK);
 
             if (track.getCourse() != NULL_MARKER) {

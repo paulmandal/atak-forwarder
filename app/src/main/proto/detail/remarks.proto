@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufRemarks";
+
+message Remarks {
+  string remarks = 1;
+  string source = 2;
+  string to = 3;
+  uint32 time = 4; // TODO: use 25 bits somewhere instead of whatever we use here
+}

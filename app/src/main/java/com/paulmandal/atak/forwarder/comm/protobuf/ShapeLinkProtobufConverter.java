@@ -13,8 +13,8 @@ public class ShapeLinkProtobufConverter {
 
     private static final double NULL_VALUE = -1.0;
 
-    public void toShapeLink(CotDetail cotDetail, ProtobufDrawnShape.MinimalDrawnShape.Builder shapeBuilder) throws UnknownDetailFieldException {
-        ProtobufShapeLink.MinimalShapeLink.Builder builder = ProtobufShapeLink.MinimalShapeLink.newBuilder();
+    public void toShapeLink(CotDetail cotDetail, ProtobufDrawnShape.DrawnShape.Builder shapeBuilder) throws UnknownDetailFieldException {
+        ProtobufShapeLink.ShapeLink.Builder builder = ProtobufShapeLink.ShapeLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
 
         builder.setLat(NULL_VALUE);
@@ -43,10 +43,10 @@ public class ShapeLinkProtobufConverter {
         shapeBuilder.addLink(builder);
     }
 
-    public void maybeAddDrawnShape(CotDetail cotDetail, ProtobufDrawnShape.MinimalDrawnShape drawnShape) {
-        if (drawnShape != null && drawnShape != ProtobufDrawnShape.MinimalDrawnShape.getDefaultInstance()
-                && drawnShape.getLinkList() != ProtobufShape.MinimalShape.getDefaultInstance().getLinkList()) {
-            for (ProtobufShapeLink.MinimalShapeLink link : drawnShape.getLinkList()) {
+    public void maybeAddDrawnShape(CotDetail cotDetail, ProtobufDrawnShape.DrawnShape drawnShape) {
+        if (drawnShape != null && drawnShape != ProtobufDrawnShape.DrawnShape.getDefaultInstance()
+                && drawnShape.getLinkList() != ProtobufShape.Shape.getDefaultInstance().getLinkList()) {
+            for (ProtobufShapeLink.ShapeLink link : drawnShape.getLinkList()) {
                 CotDetail linkDetail = new CotDetail(KEY_LINK);
 
                 String point = "";

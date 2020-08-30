@@ -51,8 +51,8 @@ public class HeightAndHeightUnitProtobufConverter {
         }
     }
 
-    public ProtobufHeight.MinimalHeight toHeight(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufHeight.MinimalHeight.Builder builder = ProtobufHeight.MinimalHeight.newBuilder();
+    public ProtobufHeight.Height toHeight(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufHeight.Height.Builder builder = ProtobufHeight.Height.newBuilder();
         builder.setHeightValue(NULL_MARKER);
 
         if (cotDetail.getInnerText() != null) {
@@ -76,8 +76,8 @@ public class HeightAndHeightUnitProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddHeightAndHeightUnit(CotDetail cotDetail, ProtobufHeight.MinimalHeight height, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.heightUnit != null || (height != null && height != ProtobufHeight.MinimalHeight.getDefaultInstance())) {
+    public void maybeAddHeightAndHeightUnit(CotDetail cotDetail, ProtobufHeight.Height height, CustomBytesExtFields customBytesExtFields) {
+        if (customBytesExtFields.heightUnit != null || (height != null && height != ProtobufHeight.Height.getDefaultInstance())) {
             CotDetail heightDetail = new CotDetail(KEY_HEIGHT);
 
             if (customBytesExtFields.heightUnit != null) {

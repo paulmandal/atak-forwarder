@@ -30,8 +30,8 @@ public class LinkAttrProtobufConverter {
         }
     }
 
-    public void toLinkAttr(CotDetail cotDetail, ProtobufRoute.MinimalRoute.Builder routeBuilder) throws UnknownDetailFieldException {
-        ProtobufLinkAttr.MinimalLinkAttr.Builder builder = ProtobufLinkAttr.MinimalLinkAttr.newBuilder();
+    public void toLinkAttr(CotDetail cotDetail, ProtobufRoute.Route.Builder routeBuilder) throws UnknownDetailFieldException {
+        ProtobufLinkAttr.LinkAttr.Builder builder = ProtobufLinkAttr.LinkAttr.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -62,13 +62,13 @@ public class LinkAttrProtobufConverter {
         routeBuilder.setLinkAttr(builder);
     }
 
-    public void maybeAddLinkAttr(CotDetail cotDetail, ProtobufRoute.MinimalRoute route, CustomBytesExtFields customBytesExtFields) {
-        if (route == null || route == ProtobufRoute.MinimalRoute.getDefaultInstance()) {
+    public void maybeAddLinkAttr(CotDetail cotDetail, ProtobufRoute.Route route, CustomBytesExtFields customBytesExtFields) {
+        if (route == null || route == ProtobufRoute.Route.getDefaultInstance()) {
             return;
         }
 
-        ProtobufLinkAttr.MinimalLinkAttr linkAttr = route.getLinkAttr();
-        if (linkAttr == null || linkAttr == ProtobufLinkAttr.MinimalLinkAttr.getDefaultInstance()) {
+        ProtobufLinkAttr.LinkAttr linkAttr = route.getLinkAttr();
+        if (linkAttr == null || linkAttr == ProtobufLinkAttr.LinkAttr.getDefaultInstance()) {
             return;
         }
 

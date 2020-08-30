@@ -42,6 +42,7 @@ android {
             proto {
                 srcDir 'src/test/protocolbuffers'
             }
+            java.srcDirs 'src/test/java'
         }
         // Move the tests to tests/java, tests/res, etc...
         //instrumentTest.setRoot('tests')
@@ -165,8 +166,16 @@ dependencies {
 
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
 
+    implementation 'eo.view:batterymeter:2.0.0'
+
     implementation fileTree(dir: '../libs/gotenna-public-sdk.aar', include: '*.aar')
     compileOnly fileTree(dir: '../libs/main.jar', include: '*.jar')
+
+    // TODO: remove these when protobufs are complete
+    implementation 'junit:junit:4.13'
+    implementation 'org.xmlunit:xmlunit-core:2.1.0'
+
+    testImplementation 'junit:junit:4.13'
 }
 
 protobuf {

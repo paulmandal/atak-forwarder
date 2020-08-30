@@ -10,11 +10,12 @@ import android.os.Looper;
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
+import com.paulmandal.atak.forwarder.HackyTests;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFactory;
 import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
@@ -60,6 +61,9 @@ public class ForwarderLifecycle implements Lifecycle {
         }
         mActivity = activity;
         mMapView = (MapView)transappsMapView.getView();
+
+        HackyTests hackyTests = new HackyTests();
+        hackyTests.runAllTests();
 
         // TODO: this is kinda a mess, move to a Factory and clean this up
 

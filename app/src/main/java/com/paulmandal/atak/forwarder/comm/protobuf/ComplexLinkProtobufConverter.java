@@ -3,13 +3,13 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
-import com.paulmandal.atak.forwarder.protobufs.ProtobufLink;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufComplexLink;
 
 import java.text.ParseException;
 
 import static com.paulmandal.atak.forwarder.comm.protobuf.SubstitutionValues.UID_SUBSTITUTION_MARKER;
 
-public class LinkProtobufConverter {
+public class ComplexLinkProtobufConverter {
     private static final String KEY_LINK = "link";
 
     private static final String KEY_UID = "uid";
@@ -18,8 +18,8 @@ public class LinkProtobufConverter {
     private static final String KEY_RELATION = "relation";
     private static final String KEY_PRODUCTION_TIME = "production_time";
 
-    public ProtobufLink.MinimalLink toLink(CotDetail cotDetail, SubstitutionValues substitutionValues, long startOfYearMs) throws UnknownDetailFieldException {
-        ProtobufLink.MinimalLink.Builder builder = ProtobufLink.MinimalLink.newBuilder();
+    public ProtobufComplexLink.MinimalComplexLink toComplexLink(CotDetail cotDetail, SubstitutionValues substitutionValues, long startOfYearMs) throws UnknownDetailFieldException {
+        ProtobufComplexLink.MinimalComplexLink.Builder builder = ProtobufComplexLink.MinimalComplexLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -49,14 +49,14 @@ public class LinkProtobufConverter {
                     }
                     break;
                 default:
-                    throw new UnknownDetailFieldException("Don't know how to handle detail field: link." + attribute.getName());
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: link[complex]." + attribute.getName());
             }
         }
         return builder.build();
     }
 
-    public void maybeAddLink(CotDetail cotDetail, ProtobufLink.MinimalLink link, SubstitutionValues substitutionValues, long startOfYearMs) {
-        if (link != null && link != ProtobufLink.MinimalLink.getDefaultInstance()) {
+    public void maybeAddComplexLink(CotDetail cotDetail, ProtobufComplexLink.MinimalComplexLink link, SubstitutionValues substitutionValues, long startOfYearMs) {
+        if (link != null && link != ProtobufComplexLink.MinimalComplexLink.getDefaultInstance()) {
             CotDetail linkDetail = new CotDetail(KEY_LINK);
 
             String uid = link.getUid();

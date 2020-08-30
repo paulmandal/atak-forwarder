@@ -20,6 +20,7 @@ import "minimal_model.proto";
 import "minimal_detail_style.proto"; // TODO: rename this?
 import "minimal_height.proto";
 import "minimal_shape.proto";
+import "minimal_drawn_shape.proto";
 import "minimal_route.proto";
 
 message MinimalDetail {
@@ -37,6 +38,7 @@ message MinimalDetail {
   MinimalHeight height = 12;
   string iconSetPath = 13;
   MinimalShape shape = 14;
-  MinimalRoute route = 15;
-  MinimalFreehandLink freehandLink = 16;
+  MinimalDrawnShape drawnShape = 15;
+  MinimalRoute route = 16;
+  MinimalFreehandLink freehandLink = 17;
 }

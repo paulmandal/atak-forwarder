@@ -164,7 +164,6 @@ public class HackyTests {
     }
 
     public void validate(String messageType, String testXml) {
-        Log.d(TAG, "validating: " + messageType);
         CotEvent cotEvent = CotEvent.parse(testXml);
 
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
@@ -217,7 +216,7 @@ public class HackyTests {
                 Log.d(TAG, messageType + " size: " + cotEventAsBytes.length + " bytes!");
             }
         } catch (UnknownDetailFieldException | MappingNotFoundException e) {
-            Log.d(TAG, "validation failed while marshalling to XML: " + e.getMessage());
+            Log.d(TAG, messageType + " validation failed while marshalling to XML: " + e.getMessage());
             Log.d(TAG, "original: " + cotEvent.toString());
             e.printStackTrace();
         }

@@ -42,7 +42,6 @@ public class XmlComparer {
                 Log.d(TAG, "messageType: " + messageType + " mismatch, o: " + lhs);
                 Log.d(TAG, "messageType: " + messageType + " mismatch, c: " + rhs);
             } else {
-                Log.d(TAG, "messageType: " + messageType + " matched!");
                 return true;
             }
         } catch (ParserConfigurationException | IOException | SAXException | UnsupportedOperationException e) {

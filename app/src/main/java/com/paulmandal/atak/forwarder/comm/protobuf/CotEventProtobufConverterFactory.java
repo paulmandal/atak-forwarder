@@ -25,7 +25,6 @@ public class CotEventProtobufConverterFactory {
                 new ChatProtobufConverter(
                         new ChatGroupProtobufConverter(),
                         new HierarchyProtobufConverter(new GroupProtobufConverter(new GroupContactProtobufConverter()))),
-                new LinkProtobufConverter(),
                 new LabelsOnProtobufConverter(),
                 new PrecisionLocationProtobufConverter(),
                 new DroppedFieldConverter(),
@@ -35,6 +34,11 @@ public class CotEventProtobufConverterFactory {
                 new DetailStyleProtobufConverter(),
                 new CeHumanInputProtobufConverter(),
                 new FreehandLinkProtobufConverter(),
+                new ChatLinkProtobufConverter(),
+                new ComplexLinkProtobufConverter(),
+                new ShapeLinkProtobufConverter(),
+                new RouteLinkProtobufConverter(),
+                new RouteLinkAttrProtobufConverter(),
                 startOfYearMs);
     }
 }

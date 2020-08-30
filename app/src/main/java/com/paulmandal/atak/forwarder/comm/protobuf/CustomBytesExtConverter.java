@@ -3,14 +3,14 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 /**
  * CustomBytesExt Format (fixed64):
  * how              (3 bits, mapping)
- * geopointsrc      (6 bits, mapping, high bit marks whether we have a value)
- * altsrc           (6 bits, mapping, high bit marks whether we have a value)
- * group.role       (5 bits, mapping, high bit marks whether we have a value)
- * status.battery   (8 bits, int, high bit marks whether we have a value)
- * status.readiness (2 bits, bool, high bit marks whether we have a value)
- * labels_on.value  (2 bits, bool, high bit marks whether we have a value)
- * height.unit      (4 bits, int, high bit marks whether we have a value)
- * height.value     (14 bits, int, high bit marks whether we have a value)
+ * geopointsrc      (6 bits, mapping, nullable)
+ * altsrc           (6 bits, mapping, nullable)
+ * group.role       (5 bits, mapping, nullable)
+ * status.battery   (8 bits, int, nullable)
+ * status.readiness (2 bits, bool, nullable)
+ * labels_on.value  (2 bits, bool, nullable)
+ * height.unit      (4 bits, int, nullable)
+ * ce_human_input   (2 bits, bool, nullable)
  */
 public class CustomBytesExtConverter {
     private static final int LONG_INT_LENGTH = 64;

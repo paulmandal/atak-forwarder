@@ -17,7 +17,7 @@ public class UnderscoreGroupProtobufConverter {
         }
     }
 
-    public ProtobufUnderscoreGroup.UnderscoreGroup toUnderscoreGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+    public ProtobufUnderscoreGroup.UnderscoreGroup toUnderscoreGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
         ProtobufUnderscoreGroup.UnderscoreGroup.Builder builder = ProtobufUnderscoreGroup.UnderscoreGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {

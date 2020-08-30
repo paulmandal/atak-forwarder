@@ -77,7 +77,7 @@ public class CommandQueue {
     }
 
     public void queueSendMessage(SendMessageCommand sendMessageCommand, boolean overwriteSimilar) {
-        int messageQueueSize = 0;
+        int messageQueueSize;
         synchronized (mQueuedCommands) {
             if (overwriteSimilar) {
                 for (QueuedCommand queuedCommand : mQueuedCommands) {
@@ -103,7 +103,7 @@ public class CommandQueue {
     @Nullable
     public QueuedCommand popHighestPriorityCommand(boolean isConnected, boolean isInGroup) {
         QueuedCommand highestPriorityCommand = null;
-        int messageQueueSize = 0;
+        int messageQueueSize;
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 

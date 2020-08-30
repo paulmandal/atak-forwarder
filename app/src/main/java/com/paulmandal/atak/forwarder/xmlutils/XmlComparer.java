@@ -59,10 +59,7 @@ public class XmlComparer {
     }
 
     boolean match(Node lhs, Node rhs, String path) {
-        // Compare attributes
-        NamedNodeMap lhsAttributes = lhs.getAttributes();
-        NamedNodeMap rhsAttributes = rhs.getAttributes();
-
+        // Compare innertext (i think?)
         String lhsNodeValue = lhs.getNodeValue();
         String rhsNodeValue = rhs.getNodeValue();
         if (lhsNodeValue != null && !lhsNodeValue.equals(rhsNodeValue)) {
@@ -70,52 +67,53 @@ public class XmlComparer {
             return false;
         }
 
-        Map<String, Node> lhsAttributeMap = new HashMap<>();
-        for (int i = 0 ; i < lhsAttributes.getLength() ; i++) {
-            Node lhsAttribute = lhsAttributes.item(i);
-            lhsAttributeMap.put(lhsAttribute.getNodeName(), lhsAttribute);
-        }
+        // Compare attributes
+        NamedNodeMap lhsAttributes = lhs.getAttributes();
+        NamedNodeMap rhsAttributes = rhs.getAttributes();
 
-        Map<String, Node> rhsAttributeMap = new HashMap<>();
-        for (int i = 0  ; i < rhsAttributes.getLength() ; i++) {
-            Node rhsAttribute = rhsAttributes.item(i);
-            rhsAttributeMap.put(rhsAttribute.getNodeName(), rhsAttribute);
-        }
+        if (lhsAttributes != null) {
 
-        for (String nodeName : lhsAttributeMap.keySet()) {
-            Node lhsNode = lhsAttributeMap.get(nodeName);
-            Node rhsNode = rhsAttributeMap.get(nodeName);
-
-            if (rhsNode == null) {
-                Log.d(TAG, "  " + path + "." + nodeName + ": missing attribute on converted obj.");
-                return false;
+            Map<String, Node> lhsAttributeMap = new HashMap<>();
+            for (int i = 0; i < lhsAttributes.getLength(); i++) {
+                Node lhsAttribute = lhsAttributes.item(i);
+                lhsAttributeMap.put(lhsAttribute.getNodeName(), lhsAttribute);
             }
 
-            String lhsValue = lhsNode.getNodeValue();
-            String rhsValue = rhsNode.getNodeValue();
-            if (!lhsValue.equals(rhsValue)) {
-                Log.d(TAG, "  " + path + "." + nodeName + ": values differ: " + lhsValue + ", rhs: " + rhsValue);
-                return false;
+            Map<String, Node> rhsAttributeMap = new HashMap<>();
+            for (int i = 0; i < rhsAttributes.getLength(); i++) {
+                Node rhsAttribute = rhsAttributes.item(i);
+                rhsAttributeMap.put(rhsAttribute.getNodeName(), rhsAttribute);
+            }
+
+            for (String nodeName : lhsAttributeMap.keySet()) {
+                Node lhsNode = lhsAttributeMap.get(nodeName);
+                Node rhsNode = rhsAttributeMap.get(nodeName);
+
+                if (rhsNode == null) {
+                    Log.d(TAG, "  " + path + "." + nodeName + ": missing attribute on converted obj.");
+                    return false;
+                }
+
+                String lhsValue = lhsNode.getNodeValue();
+                String rhsValue = rhsNode.getNodeValue();
+                if (!lhsValue.equals(rhsValue)) {
+                    Log.d(TAG, "  " + path + "." + nodeName + ": values differ: " + lhsValue + ", rhs: " + rhsValue);
+                    return false;
+                }
             }
         }
 
         // Compare children
         NodeList lhsNodeList = lhs.getChildNodes();
-        NodeList rhsNodeList = rhs.getChildNodes();
-
-        if (lhsNodeList.getLength() != rhsNodeList.getLength()) {
-            Log.d(TAG, "  " + path + ": different child node lengths");
-            return false;
-        }
-
         Map<String, Node> lhsNodesMap = new HashMap<>();
         for (int i = 0 ; i < lhsNodeList.getLength() ; i++) {
             Node lhsNode = lhsNodeList.item(i);
             lhsNodesMap.put(lhsNode.getNodeName(), lhsNode);
         }
 
+        NodeList rhsNodeList = rhs.getChildNodes();
         Map<String, Node> rhsNodesMap = new HashMap<>();
-        for (int i = 0 ; i < lhsNodeList.getLength() ; i++) {
+        for (int i = 0 ; i < rhsNodeList.getLength() ; i++) {
             Node rhsNode = rhsNodeList.item(i);
             rhsNodesMap.put(rhsNode.getNodeName(), rhsNode);
         }

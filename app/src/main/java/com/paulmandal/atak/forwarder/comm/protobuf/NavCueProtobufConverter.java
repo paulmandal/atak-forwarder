@@ -16,6 +16,8 @@ public class NavCueProtobufConverter {
 
     private static final String KEY_TRIGGER = "trigger";
 
+    private static final String ID_SUBSTITUTION_MARKER = "#i";
+
     private TriggerProtobufConverter mTriggerProtobufConverter;
 
     public NavCueProtobufConverter(TriggerProtobufConverter triggerProtobufConverter) {
@@ -31,7 +33,11 @@ public class NavCueProtobufConverter {
                     builder.setVoice(attribute.getValue());
                     break;
                 case KEY_ID:
-                    builder.setId(attribute.getValue());
+                    String id = attribute.getValue();
+                    if (substitutionValues.uidsFromRoute.contains(id)) {
+                        id = ID_SUBSTITUTION_MARKER + substitutionValues.uidsFromRoute.indexOf(id);
+                    }
+                    builder.setId(id);
                     break;
                 case KEY_TEXT:
                     // Do nothing, we use the voice field for this
@@ -66,8 +72,13 @@ public class NavCueProtobufConverter {
 
         CotDetail navCueDetail = new CotDetail(KEY_NAV_CUE);
 
-        if(!StringUtils.isNullOrEmpty(navCue.getId())) {
-            navCueDetail.setAttribute(KEY_ID, navCue.getId());
+        String id = navCue.getId();
+        if(!StringUtils.isNullOrEmpty(id)) {
+            if (id.startsWith(ID_SUBSTITUTION_MARKER)) {
+                int index = Integer.parseInt(id.replace(ID_SUBSTITUTION_MARKER, ""));
+                id = substitutionValues.uidsFromRoute.get(index);
+            }
+            navCueDetail.setAttribute(KEY_ID, id);
         }
         if(!StringUtils.isNullOrEmpty(navCue.getVoice())) {
             navCueDetail.setAttribute(KEY_VOICE, navCue.getVoice());

@@ -41,9 +41,9 @@ public class RouteProtobufConverter {
             switch (attribute.getName()) {
                 case KEY_UID:
                     String uid = attribute.getValue();
-//                    String[] uidSplit = uid.split("-");
-//                    uid = uidSplit[uidSplit.length - 1];
-//                    substitutionValues.uidsFromRoute.add(uid);
+                    String[] uidSplit = uid.split("-");
+                    uid = uidSplit[uidSplit.length - 1];
+                    substitutionValues.uidsFromRoute.add(uid);
                     builder.setUid(uid);
                     break;
                 case KEY_TYPE:

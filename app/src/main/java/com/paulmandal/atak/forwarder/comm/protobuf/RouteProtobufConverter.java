@@ -3,10 +3,14 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufRoute;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufRouteInfo;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufRouteLink;
 
-public class RouteLinkProtobufConverter {
+import java.util.List;
+
+public class RouteProtobufConverter {
     private static final String KEY_LINK = "link";
+    private static final String KEY_ROUTE_INFO = "__routeinfo";
 
     private static final String KEY_UID = "uid";
     private static final String KEY_TYPE = "type";
@@ -15,9 +19,17 @@ public class RouteLinkProtobufConverter {
     private static final String KEY_CALLSIGN = "callsign";
     private static final String KEY_REMARKS = "remarks";
 
+    private static final String KEY_NAV_CUES = "__navcues";
+
     private static final double NULL_VALUE = -1.0;
 
-    public void toRouteLink(CotDetail cotDetail, ProtobufRoute.MinimalRoute.Builder routeBuilder) throws UnknownDetailFieldException {
+    private NavCuesProtobufConverter mNavCuesProtobufConverter;
+
+    public RouteProtobufConverter(NavCuesProtobufConverter navCuesProtobufConverter) {
+        mNavCuesProtobufConverter = navCuesProtobufConverter;
+    }
+
+    public void toRouteLink(CotDetail cotDetail, ProtobufRoute.MinimalRoute.Builder routeBuilder, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
         ProtobufRouteLink.MinimalRouteLink.Builder builder = ProtobufRouteLink.MinimalRouteLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
 
@@ -28,7 +40,11 @@ public class RouteLinkProtobufConverter {
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_UID:
-                    builder.setUid(attribute.getValue());
+                    String uid = attribute.getValue();
+//                    String[] uidSplit = uid.split("-");
+//                    uid = uidSplit[uidSplit.length - 1];
+//                    substitutionValues.uidsFromRoute.add(uid);
+                    builder.setUid(uid);
                     break;
                 case KEY_TYPE:
                     builder.setType(attribute.getValue());
@@ -62,7 +78,31 @@ public class RouteLinkProtobufConverter {
         routeBuilder.addLink(builder);
     }
 
-    public void maybeAddRoute(CotDetail cotDetail, ProtobufRoute.MinimalRoute route) {
+    public void toRouteInfo(CotDetail cotDetail, ProtobufRoute.MinimalRoute.Builder routeBuilder, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufRouteInfo.MinimalRouteInfo.Builder builder = ProtobufRouteInfo.MinimalRouteInfo.newBuilder();
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: __routeinfo." + attribute.getName());
+            }
+        }
+
+        List<CotDetail> children = cotDetail.getChildren();
+        for (CotDetail child : children) {
+            switch (child.getElementName()) {
+                case KEY_NAV_CUES:
+                    builder.setNavCues(mNavCuesProtobufConverter.toNavCues(child, substitutionValues));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle child object: __routeinfo." + child.getElementName());
+            }
+        }
+
+        routeBuilder.setRouteInfo(builder);
+    }
+
+    public void maybeAddRoute(CotDetail cotDetail, ProtobufRoute.MinimalRoute route, SubstitutionValues substitutionValues) {
         if (route != null && route != ProtobufRoute.MinimalRoute.getDefaultInstance()
                 && route.getLinkList() != ProtobufRoute.MinimalRoute.getDefaultInstance().getLinkList()) {
             for (ProtobufRouteLink.MinimalRouteLink link : route.getLinkList()) {
@@ -94,11 +134,18 @@ public class RouteLinkProtobufConverter {
                 if (!StringUtils.isNullOrEmpty(link.getCallsign())) {
                     linkDetail.setAttribute(KEY_CALLSIGN, link.getCallsign());
                 }
-                if (!StringUtils.isNullOrEmpty(link.getRemarks())) {
-                    linkDetail.setAttribute(KEY_REMARKS, link.getRemarks());
-                }
+                linkDetail.setAttribute(KEY_REMARKS, link.getRemarks());
 
                 cotDetail.addChild(linkDetail);
+            }
+
+            ProtobufRouteInfo.MinimalRouteInfo routeInfo = route.getRouteInfo();
+            if (routeInfo != null && routeInfo != ProtobufRouteInfo.MinimalRouteInfo.getDefaultInstance()) {
+                CotDetail routeInfoDetail = new CotDetail(KEY_ROUTE_INFO);
+
+                mNavCuesProtobufConverter.maybeAddNavCues(routeInfoDetail, routeInfo.getNavCues(), substitutionValues);
+
+                cotDetail.addChild(routeInfoDetail);
             }
         }
     }

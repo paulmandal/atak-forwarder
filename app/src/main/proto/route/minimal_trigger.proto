@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufTrigger";
+
+message MinimalTrigger {
+  string mode = 1; // TODO: mapping
+  int32 value = 2;
+}

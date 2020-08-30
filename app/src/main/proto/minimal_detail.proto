@@ -21,7 +21,7 @@ import "minimal_detail_style.proto"; // TODO: rename this?
 import "minimal_height.proto";
 import "minimal_shape.proto";
 import "minimal_drawn_shape.proto";
-import "minimal_route.proto";
+import "route/minimal_route.proto";
 
 message MinimalDetail {
   MinimalContact contact = 1;

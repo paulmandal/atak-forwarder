@@ -37,8 +37,14 @@ public class CotEventProtobufConverterFactory {
                 new ChatLinkProtobufConverter(),
                 new ComplexLinkProtobufConverter(),
                 new ShapeLinkProtobufConverter(),
-                new RouteLinkProtobufConverter(),
-                new RouteLinkAttrProtobufConverter(),
+                new RouteProtobufConverter(
+                        new NavCuesProtobufConverter(
+                                new NavCueProtobufConverter(
+                                        new TriggerProtobufConverter()
+                                )
+                        )
+                ),
+                new LinkAttrProtobufConverter(),
                 new TogProtobufConverter(),
                 startOfYearMs);
     }

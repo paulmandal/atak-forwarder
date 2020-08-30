@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
-import android.util.Log;
-
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -42,6 +40,8 @@ public class CotEventProtobufConverter {
     private static final String KEY_HEIGHT_UNIT = "height_unit";
     private static final String KEY_CE_HUMAN_INPUT = "ce_human_input";
     private static final String KEY_HEIGHT = "height";
+    private static final String KEY_LINK_ATTR = "link_attr";
+    private static final String KEY_ROUTE_INFO = "__routeinfo";
 
     // Fields
     private static final String KEY_ICON_SET_PATH = "iconsetpath";
@@ -76,8 +76,8 @@ public class CotEventProtobufConverter {
     private final ChatLinkProtobufConverter mChatLinkProtobufConverter;
     private final ComplexLinkProtobufConverter mComplexLinkProtobufConverter;
     private final ShapeLinkProtobufConverter mShapeLinkProtobufConverter;
-    private final RouteLinkProtobufConverter mRouteLinkProtobufConverter;
-    private final RouteLinkAttrProtobufConverter mRouteLinkAttrProtobufConverter;
+    private final RouteProtobufConverter mRouteProtobufConverter;
+    private final LinkAttrProtobufConverter mLinkAttrProtobufConverter;
     private final TogProtobufConverter mTogProtobufConverter;
     private final long mStartOfYearMs;
 
@@ -102,8 +102,8 @@ public class CotEventProtobufConverter {
                                      ChatLinkProtobufConverter chatLinkProtobufConverter,
                                      ComplexLinkProtobufConverter complexLinkProtobufConverter,
                                      ShapeLinkProtobufConverter shapeLinkProtobufConverter,
-                                     RouteLinkProtobufConverter routeLinkProtobufConverter,
-                                     RouteLinkAttrProtobufConverter routeLinkAttrProtobufConverter,
+                                     RouteProtobufConverter routeProtobufConverter,
+                                     LinkAttrProtobufConverter linkAttrProtobufConverter,
                                      TogProtobufConverter togProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
@@ -127,8 +127,8 @@ public class CotEventProtobufConverter {
         mChatLinkProtobufConverter = chatLinkProtobufConverter;
         mComplexLinkProtobufConverter = complexLinkProtobufConverter;
         mShapeLinkProtobufConverter = shapeLinkProtobufConverter;
-        mRouteLinkProtobufConverter = routeLinkProtobufConverter;
-        mRouteLinkAttrProtobufConverter = routeLinkAttrProtobufConverter;
+        mRouteProtobufConverter = routeProtobufConverter;
+        mLinkAttrProtobufConverter = linkAttrProtobufConverter;
         mTogProtobufConverter = togProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
@@ -202,12 +202,13 @@ public class CotEventProtobufConverter {
         double hae = cotPoint != null ? cotPoint.getHae() : 0;
         builder.setCustomBytes(mCustomBytesConverter.packCustomBytes(cotEvent.getTime(), cotEvent.getStale(), hae, mStartOfYearMs));
 
-        CustomBytesExtFields customBytesExtFields = new CustomBytesExtFields(cotEvent.getHow(), null, null, null, null, null, null, null, null, null);
+        CustomBytesExtFields customBytesExtFields = new CustomBytesExtFields(cotEvent.getHow(), null, null, null, null, null, null, null, null, null, null,null, null,null, null,null);
 
         CotDetail cotDetail = cotEvent.getDetail();
 
         mPrecisionLocationProtobufConverter.maybeGetPrecisionLocationValues(cotDetail, customBytesExtFields);
         mUnderscoreGroupProtobufConverter.maybeGetRoleValue(cotDetail, customBytesExtFields);
+        mLinkAttrProtobufConverter.maybeGetLinkAttrValues(cotDetail, customBytesExtFields);
         mStatusProtobufConverter.maybeGetStatusValues(cotDetail, customBytesExtFields);
         mLabelsOnProtobufConverter.maybeGetLabelsOnValue(cotDetail, customBytesExtFields);
         mCeHumanInputProtobufConverter.maybeGetCeHumanInputValues(cotDetail, customBytesExtFields);
@@ -249,8 +250,8 @@ public class CotEventProtobufConverter {
                     if (innerDetail.getAttribute(KEY_PRODUCTION_TIME) != null) {
                         builder.setComplexLink(mComplexLinkProtobufConverter.toComplexLink(innerDetail, substitutionValues, mStartOfYearMs));
                     } else if (innerDetail.getAttribute(KEY_REMARKS) != null) {
-                        routeBuilder = routeBuilder != null ? routeBuilder : ProtobufRoute.MinimalRoute.newBuilder();
-                        mRouteLinkProtobufConverter.toRouteLink(innerDetail, routeBuilder);
+                        routeBuilder = maybeMakeRouteBuilder(routeBuilder);
+                        mRouteProtobufConverter.toRouteLink(innerDetail, routeBuilder, substitutionValues);
                     } else if (innerDetail.getAttribute(KEY_UID) != null) {
                         builder.setChatLink(mChatLinkProtobufConverter.toChatLink(innerDetail, substitutionValues));
                     } else if (innerDetail.getAttribute(KEY_LINE) != null) {
@@ -259,6 +260,10 @@ public class CotEventProtobufConverter {
                         drawnShapeBuilder = drawnShapeBuilder != null ? drawnShapeBuilder : ProtobufDrawnShape.MinimalDrawnShape.newBuilder();
                         mShapeLinkProtobufConverter.toShapeLink(innerDetail, drawnShapeBuilder);
                     }
+                    break;
+                case KEY_ROUTE_INFO:
+                    routeBuilder = maybeMakeRouteBuilder(routeBuilder);
+                    mRouteProtobufConverter.toRouteInfo(innerDetail, routeBuilder, substitutionValues);
                     break;
                 case KEY_CHAT:
                     builder.setChat(mChatProtobufConverter.toChat(innerDetail, substitutionValues));
@@ -315,6 +320,10 @@ public class CotEventProtobufConverter {
                 case KEY_PRECISIONLOCATION:
                     mPrecisionLocationProtobufConverter.toPrecisionLocation(innerDetail);
                     break;
+                case KEY_LINK_ATTR:
+                    routeBuilder = maybeMakeRouteBuilder(routeBuilder);
+                    mLinkAttrProtobufConverter.toLinkAttr(innerDetail, routeBuilder);
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
             }
@@ -352,7 +361,7 @@ public class CotEventProtobufConverter {
         mChatLinkProtobufConverter.maybeAddChatLink(cotDetail, detail.getChatLink(), substitutionValues);
         mComplexLinkProtobufConverter.maybeAddComplexLink(cotDetail, detail.getComplexLink(), substitutionValues, mStartOfYearMs);
         mFreehandLinkProtobufConverter.maybeAddFreehandLink(cotDetail, detail.getFreehandLink());
-        mRouteLinkProtobufConverter.maybeAddRoute(cotDetail, detail.getRoute());
+        mRouteProtobufConverter.maybeAddRoute(cotDetail, detail.getRoute(), substitutionValues);
         mShapeLinkProtobufConverter.maybeAddDrawnShape(cotDetail, detail.getDrawnShape());
         mChatProtobufConverter.maybeAddChat(cotDetail, detail.getChat(), substitutionValues);
         mServerDestinationProtobufConverter.maybeAddServerDestination(cotDetail, detail.getServerDestination(), substitutionValues);
@@ -361,6 +370,7 @@ public class CotEventProtobufConverter {
         mTogProtobufConverter.maybeAddTog(cotDetail, customBytesExtFields);
         mCeHumanInputProtobufConverter.maybeAddCeHumanInput(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeAddHeightAndHeightUnit(cotDetail, detail.getHeight(), customBytesExtFields);
+        mLinkAttrProtobufConverter.maybeAddLinkAttr(cotDetail, detail.getRoute(), customBytesExtFields);
 
         ProtobufDetailStyle.MinimalDetailStyle detailStyle = detail.getDetailStyle();
         mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detailStyle.getColor());
@@ -400,5 +410,9 @@ public class CotEventProtobufConverter {
 
     private ProtobufDetailStyle.MinimalDetailStyle.Builder maybeMakeDetailStyleBuilder(ProtobufDetailStyle.MinimalDetailStyle.Builder builder) {
         return builder != null ? builder : ProtobufDetailStyle.MinimalDetailStyle.newBuilder();
+    }
+
+    private ProtobufRoute.MinimalRoute.Builder maybeMakeRouteBuilder(ProtobufRoute.MinimalRoute.Builder builder) {
+        return builder != null ? builder : ProtobufRoute.MinimalRoute.newBuilder();
     }
 }

@@ -56,33 +56,35 @@ public class ComplexLinkProtobufConverter {
     }
 
     public void maybeAddComplexLink(CotDetail cotDetail, ProtobufComplexLink.ComplexLink link, SubstitutionValues substitutionValues, long startOfYearMs) {
-        if (link != null && link != ProtobufComplexLink.ComplexLink.getDefaultInstance()) {
-            CotDetail linkDetail = new CotDetail(KEY_LINK);
-
-            String uid = link.getUid();
-            if (!StringUtils.isNullOrEmpty(uid)) {
-                if (uid.equals(UID_SUBSTITUTION_MARKER)) {
-                    uid = substitutionValues.uidFromGeoChat;
-                }
-                linkDetail.setAttribute(KEY_UID, uid);
-            }
-            if (!StringUtils.isNullOrEmpty(link.getType())) {
-                linkDetail.setAttribute(KEY_TYPE, link.getType());
-            }
-            if (!StringUtils.isNullOrEmpty(link.getParentCallsign())) {
-                linkDetail.setAttribute(KEY_PARENT_CALLSIGN, link.getParentCallsign());
-            }
-            if (!StringUtils.isNullOrEmpty(link.getRelation())) {
-                linkDetail.setAttribute(KEY_RELATION, link.getRelation());
-            }
-            long productionTimeOffset = link.getProductionTime();
-            if (productionTimeOffset > 0) {
-                long productionTimeMs = startOfYearMs + (productionTimeOffset * 1000);
-                CoordinatedTime productionTime = new CoordinatedTime(productionTimeMs);
-                linkDetail.setAttribute(KEY_PRODUCTION_TIME, productionTime.toString());
-            }
-
-            cotDetail.addChild(linkDetail);
+        if (link == null || link == ProtobufComplexLink.ComplexLink.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail linkDetail = new CotDetail(KEY_LINK);
+
+        String uid = link.getUid();
+        if (!StringUtils.isNullOrEmpty(uid)) {
+            if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                uid = substitutionValues.uidFromGeoChat;
+            }
+            linkDetail.setAttribute(KEY_UID, uid);
+        }
+        if (!StringUtils.isNullOrEmpty(link.getType())) {
+            linkDetail.setAttribute(KEY_TYPE, link.getType());
+        }
+        if (!StringUtils.isNullOrEmpty(link.getParentCallsign())) {
+            linkDetail.setAttribute(KEY_PARENT_CALLSIGN, link.getParentCallsign());
+        }
+        if (!StringUtils.isNullOrEmpty(link.getRelation())) {
+            linkDetail.setAttribute(KEY_RELATION, link.getRelation());
+        }
+        long productionTimeOffset = link.getProductionTime();
+        if (productionTimeOffset > 0) {
+            long productionTimeMs = startOfYearMs + (productionTimeOffset * 1000);
+            CoordinatedTime productionTime = new CoordinatedTime(productionTimeMs);
+            linkDetail.setAttribute(KEY_PRODUCTION_TIME, productionTime.toString());
+        }
+
+        cotDetail.addChild(linkDetail);
     }
 }

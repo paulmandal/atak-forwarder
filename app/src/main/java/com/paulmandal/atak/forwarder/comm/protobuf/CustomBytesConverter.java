@@ -44,6 +44,4 @@ public class CustomBytesConverter {
 
         return new CustomBytesFields(time, stale, hae);
     }
-
-
 }

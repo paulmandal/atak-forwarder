@@ -33,19 +33,21 @@ public class FreehandLinkProtobufConverter {
     }
 
     public void maybeAddFreehandLink(CotDetail cotDetail, ProtobufFreehandLink.FreehandLink freehandLink) {
-        if (freehandLink != null && freehandLink != ProtobufFreehandLink.FreehandLink.getDefaultInstance()) {
-            CotDetail freehandLinkDetail = new CotDetail(KEY_LINK);
-
-            ByteString freehandLine = freehandLink.getLine();
-            if (freehandLine != ProtobufFreehandLink.FreehandLink.getDefaultInstance().getLine()) {
-                try {
-                    freehandLinkDetail.setAttribute(KEY_LINE, GzipHelper.decompress(freehandLine.toByteArray()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            cotDetail.addChild(freehandLinkDetail);
+        if (freehandLink == null || freehandLink == ProtobufFreehandLink.FreehandLink.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail freehandLinkDetail = new CotDetail(KEY_LINK);
+
+        ByteString freehandLine = freehandLink.getLine();
+        if (freehandLine != ProtobufFreehandLink.FreehandLink.getDefaultInstance().getLine()) {
+            try {
+                freehandLinkDetail.setAttribute(KEY_LINE, GzipHelper.decompress(freehandLine.toByteArray()));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        cotDetail.addChild(freehandLinkDetail);
     }
 }

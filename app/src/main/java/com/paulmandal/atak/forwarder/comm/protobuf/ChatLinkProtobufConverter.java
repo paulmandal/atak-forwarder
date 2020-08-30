@@ -39,24 +39,26 @@ public class ChatLinkProtobufConverter {
     }
 
     public void maybeAddChatLink(CotDetail cotDetail, ProtobufChatLink.ChatLink chatLink, SubstitutionValues substitutionValues) {
-        if (chatLink != null && chatLink != ProtobufChatLink.ChatLink.getDefaultInstance()) {
-            CotDetail linkDetail = new CotDetail(KEY_LINK);
-
-            String uid = chatLink.getUid();
-            if (!StringUtils.isNullOrEmpty(uid)) {
-                if (uid.equals(UID_SUBSTITUTION_MARKER)) {
-                    uid = substitutionValues.uidFromGeoChat;
-                }
-                linkDetail.setAttribute(KEY_UID, uid);
-            }
-            if (!StringUtils.isNullOrEmpty(chatLink.getType())) {
-                linkDetail.setAttribute(KEY_TYPE, chatLink.getType());
-            }
-            if (!StringUtils.isNullOrEmpty(chatLink.getRelation())) {
-                linkDetail.setAttribute(KEY_RELATION, chatLink.getRelation());
-            }
-
-            cotDetail.addChild(linkDetail);
+        if (chatLink == null || chatLink == ProtobufChatLink.ChatLink.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail linkDetail = new CotDetail(KEY_LINK);
+
+        String uid = chatLink.getUid();
+        if (!StringUtils.isNullOrEmpty(uid)) {
+            if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                uid = substitutionValues.uidFromGeoChat;
+            }
+            linkDetail.setAttribute(KEY_UID, uid);
+        }
+        if (!StringUtils.isNullOrEmpty(chatLink.getType())) {
+            linkDetail.setAttribute(KEY_TYPE, chatLink.getType());
+        }
+        if (!StringUtils.isNullOrEmpty(chatLink.getRelation())) {
+            linkDetail.setAttribute(KEY_RELATION, chatLink.getRelation());
+        }
+
+        cotDetail.addChild(linkDetail);
     }
 }

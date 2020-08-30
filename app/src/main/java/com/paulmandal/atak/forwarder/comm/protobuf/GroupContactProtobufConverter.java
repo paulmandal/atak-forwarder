@@ -42,29 +42,31 @@ public class GroupContactProtobufConverter {
     }
 
     public void maybeAddGroupContact(CotDetail cotDetail, ProtobufGroupContact.GroupContact groupContact, SubstitutionValues substitutionValues) {
-        if (groupContact != null && groupContact != ProtobufGroupContact.GroupContact.getDefaultInstance()) {
-            CotDetail contactDetail = new CotDetail(KEY_CONTACT);
-
-            String name = groupContact.getName();
-            if (!StringUtils.isNullOrEmpty(name)) {
-                if (name.equals(SENDER_CALLSIGN_SUBSTITUION_MARKER)) {
-                    name = substitutionValues.senderCallsignFromChat;
-                }
-                contactDetail.setAttribute(KEY_NAME, name);
-            }
-
-            String uid = groupContact.getUid();
-            if (!StringUtils.isNullOrEmpty(uid)) {
-                if (uid.equals(UID_SUBSTITUTION_MARKER)) {
-                    uid = substitutionValues.uidFromGeoChat;
-                } else if (uid.startsWith(UID_SUBSTITUTION_MARKER)) {
-                    int index = Integer.parseInt(uid.replace(UID_SUBSTITUTION_MARKER, ""));
-                    uid = substitutionValues.uidsFromChatGroup.get(index);
-                }
-                contactDetail.setAttribute(KEY_UID, uid);
-            }
-
-            cotDetail.addChild(contactDetail);
+        if (groupContact == null || groupContact == ProtobufGroupContact.GroupContact.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail contactDetail = new CotDetail(KEY_CONTACT);
+
+        String name = groupContact.getName();
+        if (!StringUtils.isNullOrEmpty(name)) {
+            if (name.equals(SENDER_CALLSIGN_SUBSTITUION_MARKER)) {
+                name = substitutionValues.senderCallsignFromChat;
+            }
+            contactDetail.setAttribute(KEY_NAME, name);
+        }
+
+        String uid = groupContact.getUid();
+        if (!StringUtils.isNullOrEmpty(uid)) {
+            if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                uid = substitutionValues.uidFromGeoChat;
+            } else if (uid.startsWith(UID_SUBSTITUTION_MARKER)) {
+                int index = Integer.parseInt(uid.replace(UID_SUBSTITUTION_MARKER, ""));
+                uid = substitutionValues.uidsFromChatGroup.get(index);
+            }
+            contactDetail.setAttribute(KEY_UID, uid);
+        }
+
+        cotDetail.addChild(contactDetail);
     }
 }

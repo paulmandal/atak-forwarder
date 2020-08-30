@@ -33,17 +33,18 @@ public class TrackProtobufConverter {
     }
 
     public void maybeAddTrack(CotDetail cotDetail, ProtobufTrack.Track track) {
-        if (track != null && track != ProtobufTrack.Track.getDefaultInstance()) {
-            CotDetail trackDetail = new CotDetail(KEY_TRACK);
-
-            if (track.getCourse() != NULL_MARKER) {
-                trackDetail.setAttribute(KEY_COURSE, Double.toString(track.getCourse()));
-            }
-            if (track.getSpeed() != NULL_MARKER) {
-                trackDetail.setAttribute(KEY_SPEED, Double.toString(track.getSpeed()));
-            }
-            cotDetail.addChild(trackDetail);
+        if (track == null || track == ProtobufTrack.Track.getDefaultInstance()) {
+            return;
         }
-    }
 
+        CotDetail trackDetail = new CotDetail(KEY_TRACK);
+
+        if (track.getCourse() != NULL_MARKER) {
+            trackDetail.setAttribute(KEY_COURSE, Double.toString(track.getCourse()));
+        }
+        if (track.getSpeed() != NULL_MARKER) {
+            trackDetail.setAttribute(KEY_SPEED, Double.toString(track.getSpeed()));
+        }
+        cotDetail.addChild(trackDetail);
+    }
 }

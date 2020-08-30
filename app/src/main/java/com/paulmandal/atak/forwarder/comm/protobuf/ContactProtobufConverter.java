@@ -44,27 +44,29 @@ public class ContactProtobufConverter {
     }
 
     public void maybeAddContact(CotDetail cotDetail, ProtobufContact.Contact contact, CustomBytesExtFields customBytesExtFields) {
-        if (contact != null && contact != ProtobufContact.Contact.getDefaultInstance()) {
-            CotDetail contactDetail = new CotDetail(KEY_CONTACT);
-
-            if (!StringUtils.isNullOrEmpty(contact.getCallsign())) {
-                contactDetail.setAttribute(KEY_CALLSIGN, contact.getCallsign());
-            }
-
-            if (contact.getEndpointAddr() != 0) {
-                try {
-                    byte[] endpointAddrAsBytes = BigInteger.valueOf(contact.getEndpointAddr()).toByteArray();
-                    String ipAddress = InetAddress.getByAddress(endpointAddrAsBytes).getHostAddress();
-                    contactDetail.setAttribute(KEY_ENDPOINT, ipAddress + DEFAULT_CHAT_PORT_AND_PROTO);
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
-            } else if (customBytesExtFields.how.equals(CotMessageTypes.TYPE_PLI)) {
-                // PLI without endpoint -- sent by client that doesn't have an IP address, add a fake endpoint so that GeoChat works
-                contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
-            }
-
-            cotDetail.addChild(contactDetail);
+        if (contact == null || contact == ProtobufContact.Contact.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail contactDetail = new CotDetail(KEY_CONTACT);
+
+        if (!StringUtils.isNullOrEmpty(contact.getCallsign())) {
+            contactDetail.setAttribute(KEY_CALLSIGN, contact.getCallsign());
+        }
+
+        if (contact.getEndpointAddr() != 0) {
+            try {
+                byte[] endpointAddrAsBytes = BigInteger.valueOf(contact.getEndpointAddr()).toByteArray();
+                String ipAddress = InetAddress.getByAddress(endpointAddrAsBytes).getHostAddress();
+                contactDetail.setAttribute(KEY_ENDPOINT, ipAddress + DEFAULT_CHAT_PORT_AND_PROTO);
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        } else if (customBytesExtFields.how.equals(CotMessageTypes.TYPE_PLI)) {
+            // PLI without endpoint -- sent by client that doesn't have an IP address, add a fake endpoint so that GeoChat works
+            contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
+        }
+
+        cotDetail.addChild(contactDetail);
     }
 }

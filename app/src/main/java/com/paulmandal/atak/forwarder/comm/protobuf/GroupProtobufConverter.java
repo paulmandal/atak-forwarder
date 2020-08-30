@@ -72,41 +72,43 @@ public class GroupProtobufConverter {
     }
 
     public void maybeAddGroup(CotDetail cotDetail, ProtobufGroup.Group group, SubstitutionValues substitutionValues) {
-        if (group != null && group != ProtobufGroup.Group.getDefaultInstance()) {
-            CotDetail groupDetail = new CotDetail(KEY_GROUP);
-
-            String name = group.getName();
-            if (!StringUtils.isNullOrEmpty(name)) {
-                if (name.equals(CHATROOM_SUBSTITUTION_MARKER)) {
-                    name = substitutionValues.chatroomFromGeoChat;
-                } else if (name.equals(GROUPS_SUBSTITUION_MARKER)) {
-                    name = VALUE_GROUPS;
-                }
-                groupDetail.setAttribute(KEY_NAME, name);
-            }
-
-            String uid = group.getUid();
-            if (!StringUtils.isNullOrEmpty(uid)) {
-                if (uid.equals(ID_SUBSTITUTION_MARKER)) {
-                    uid = substitutionValues.idFromChat;
-                } else if (uid.equals(USER_GROUPS_SUBSTITUTION_MARKER)) {
-                    uid = VALUE_USER_GROUPS;
-                }
-                groupDetail.setAttribute(KEY_UID, uid);
-            }
-
-
-            List<ProtobufGroupContact.GroupContact> contacts = group.getContactList();
-            for (ProtobufGroupContact.GroupContact contact : contacts) {
-                mGroupContactProtobufConverter.maybeAddGroupContact(groupDetail, contact, substitutionValues);
-            }
-
-            ProtobufGroup.Group nestedGroup = group.getGroup();
-            if (nestedGroup != null && nestedGroup != ProtobufGroup.Group.getDefaultInstance()) {
-                maybeAddGroup(groupDetail, nestedGroup, substitutionValues);
-            }
-
-            cotDetail.addChild(groupDetail);
+        if (group == null || group == ProtobufGroup.Group.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail groupDetail = new CotDetail(KEY_GROUP);
+
+        String name = group.getName();
+        if (!StringUtils.isNullOrEmpty(name)) {
+            if (name.equals(CHATROOM_SUBSTITUTION_MARKER)) {
+                name = substitutionValues.chatroomFromGeoChat;
+            } else if (name.equals(GROUPS_SUBSTITUION_MARKER)) {
+                name = VALUE_GROUPS;
+            }
+            groupDetail.setAttribute(KEY_NAME, name);
+        }
+
+        String uid = group.getUid();
+        if (!StringUtils.isNullOrEmpty(uid)) {
+            if (uid.equals(ID_SUBSTITUTION_MARKER)) {
+                uid = substitutionValues.idFromChat;
+            } else if (uid.equals(USER_GROUPS_SUBSTITUTION_MARKER)) {
+                uid = VALUE_USER_GROUPS;
+            }
+            groupDetail.setAttribute(KEY_UID, uid);
+        }
+
+
+        List<ProtobufGroupContact.GroupContact> contacts = group.getContactList();
+        for (ProtobufGroupContact.GroupContact contact : contacts) {
+            mGroupContactProtobufConverter.maybeAddGroupContact(groupDetail, contact, substitutionValues);
+        }
+
+        ProtobufGroup.Group nestedGroup = group.getGroup();
+        if (nestedGroup != null && nestedGroup != ProtobufGroup.Group.getDefaultInstance()) {
+            maybeAddGroup(groupDetail, nestedGroup, substitutionValues);
+        }
+
+        cotDetail.addChild(groupDetail);
     }
 }

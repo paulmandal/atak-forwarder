@@ -32,17 +32,19 @@ public class PrecisionLocationProtobufConverter {
     }
 
     public void maybeAddPrecisionLocation(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
-        if (!StringUtils.isNullOrEmpty(customBytesExtFields.altSrc) || !StringUtils.isNullOrEmpty(customBytesExtFields.geoPointSrc)) {
-            CotDetail precisionLocationDetail = new CotDetail(KEY_PRECISIONLOCATION);
-
-            if (!StringUtils.isNullOrEmpty(customBytesExtFields.altSrc)) {
-                precisionLocationDetail.setAttribute(KEY_ALTSRC, customBytesExtFields.altSrc);
-            }
-            if (!StringUtils.isNullOrEmpty(customBytesExtFields.geoPointSrc)) {
-                precisionLocationDetail.setAttribute(KEY_GEOPOINTSRC, customBytesExtFields.geoPointSrc);
-            }
-
-            cotDetail.addChild(precisionLocationDetail);
+        if (StringUtils.isNullOrEmpty(customBytesExtFields.altSrc) && StringUtils.isNullOrEmpty(customBytesExtFields.geoPointSrc)) {
+            return;
         }
+
+        CotDetail precisionLocationDetail = new CotDetail(KEY_PRECISIONLOCATION);
+
+        if (!StringUtils.isNullOrEmpty(customBytesExtFields.altSrc)) {
+            precisionLocationDetail.setAttribute(KEY_ALTSRC, customBytesExtFields.altSrc);
+        }
+        if (!StringUtils.isNullOrEmpty(customBytesExtFields.geoPointSrc)) {
+            precisionLocationDetail.setAttribute(KEY_GEOPOINTSRC, customBytesExtFields.geoPointSrc);
+        }
+
+        cotDetail.addChild(precisionLocationDetail);
     }
 }

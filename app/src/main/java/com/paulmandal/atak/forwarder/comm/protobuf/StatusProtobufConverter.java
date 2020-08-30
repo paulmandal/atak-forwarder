@@ -39,17 +39,19 @@ public class StatusProtobufConverter {
     }
 
     public void maybeAddStatus(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.battery != null || customBytesExtFields.readiness != null) {
-            CotDetail statusDetail = new CotDetail(KEY_STATUS);
-
-            if (customBytesExtFields.battery != null) {
-                statusDetail.setAttribute(KEY_BATTERY, Integer.toString(customBytesExtFields.battery));
-            }
-            if (customBytesExtFields.readiness != null) {
-                statusDetail.setAttribute(KEY_READINESS, Boolean.toString(customBytesExtFields.readiness));
-            }
-
-            cotDetail.addChild(statusDetail);
+        if (customBytesExtFields.battery == null && customBytesExtFields.readiness == null) {
+            return;
         }
+
+        CotDetail statusDetail = new CotDetail(KEY_STATUS);
+
+        if (customBytesExtFields.battery != null) {
+            statusDetail.setAttribute(KEY_BATTERY, Integer.toString(customBytesExtFields.battery));
+        }
+        if (customBytesExtFields.readiness != null) {
+            statusDetail.setAttribute(KEY_READINESS, Boolean.toString(customBytesExtFields.readiness));
+        }
+
+        cotDetail.addChild(statusDetail);
     }
 }

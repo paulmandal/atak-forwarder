@@ -77,27 +77,28 @@ public class HeightAndHeightUnitProtobufConverter {
     }
 
     public void maybeAddHeightAndHeightUnit(CotDetail cotDetail, ProtobufHeight.Height height, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.heightUnit != null || (height != null && height != ProtobufHeight.Height.getDefaultInstance())) {
-            CotDetail heightDetail = new CotDetail(KEY_HEIGHT);
-
-            if (customBytesExtFields.heightUnit != null) {
-                CotDetail heightUnitDetail = new CotDetail(KEY_HEIGHT_UNIT);
-
-                heightUnitDetail.setInnerText(Integer.toString(customBytesExtFields.heightUnit));
-
-                cotDetail.addChild(heightUnitDetail);
-
-                heightDetail.setAttribute(KEY_UNIT, MAPPING_HEIGHT_UNIT[customBytesExtFields.heightUnit]);
-            }
-
-            if (height.getHeightValue() != NULL_MARKER) {
-                String heightValueStr = Double.toString(height.getHeightValue());
-                heightDetail.setInnerText(heightValueStr);
-                heightDetail.setAttribute(KEY_VALUE, heightValueStr);
-            }
-
-            cotDetail.addChild(heightDetail);
+        if (customBytesExtFields.heightUnit == null && (height == null || height == ProtobufHeight.Height.getDefaultInstance())) {
+            return;
         }
-    }
 
+        CotDetail heightDetail = new CotDetail(KEY_HEIGHT);
+
+        if (customBytesExtFields.heightUnit != null) {
+            CotDetail heightUnitDetail = new CotDetail(KEY_HEIGHT_UNIT);
+
+            heightUnitDetail.setInnerText(Integer.toString(customBytesExtFields.heightUnit));
+
+            cotDetail.addChild(heightUnitDetail);
+
+            heightDetail.setAttribute(KEY_UNIT, MAPPING_HEIGHT_UNIT[customBytesExtFields.heightUnit]);
+        }
+
+        if (height.getHeightValue() != NULL_MARKER) {
+            String heightValueStr = Double.toString(height.getHeightValue());
+            heightDetail.setInnerText(heightValueStr);
+            heightDetail.setAttribute(KEY_VALUE, heightValueStr);
+        }
+
+        cotDetail.addChild(heightDetail);
+    }
 }

@@ -34,18 +34,20 @@ public class DetailStyleProtobufConverter {
     }
 
     public void maybeAddColor(CotDetail cotDetail, ProtobufColor.Color color) {
-        if (color != null && color != ProtobufColor.Color.getDefaultInstance()) {
-            CotDetail colorDetail = new CotDetail(KEY_COLOR);
-
-            if (color.getArgb() != 0) {
-                colorDetail.setAttribute(KEY_ARGB, Integer.toString(color.getArgb()));
-            }
-            if (color.getValue() != 0) {
-                colorDetail.setAttribute(KEY_VALUE, Integer.toString(color.getValue()));
-            }
-
-            cotDetail.addChild(colorDetail);
+        if (color == null || color == ProtobufColor.Color.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail colorDetail = new CotDetail(KEY_COLOR);
+
+        if (color.getArgb() != 0) {
+            colorDetail.setAttribute(KEY_ARGB, Integer.toString(color.getArgb()));
+        }
+        if (color.getValue() != 0) {
+            colorDetail.setAttribute(KEY_VALUE, Integer.toString(color.getValue()));
+        }
+
+        cotDetail.addChild(colorDetail);
     }
 
     public void toStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
@@ -62,13 +64,15 @@ public class DetailStyleProtobufConverter {
     }
 
     public void maybeAddStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle detailStyle) {
-        if (detailStyle.getStrokeColor() != 0) {
-            CotDetail strokeColorDetail = new CotDetail(KEY_STROKE_COLOR);
-
-            strokeColorDetail.setAttribute(KEY_VALUE, Integer.toString(detailStyle.getStrokeColor()));
-
-            cotDetail.addChild(strokeColorDetail);
+        if (detailStyle.getStrokeColor() == 0) {
+            return;
         }
+
+        CotDetail strokeColorDetail = new CotDetail(KEY_STROKE_COLOR);
+
+        strokeColorDetail.setAttribute(KEY_VALUE, Integer.toString(detailStyle.getStrokeColor()));
+
+        cotDetail.addChild(strokeColorDetail);
     }
 
     public void toStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
@@ -85,13 +89,15 @@ public class DetailStyleProtobufConverter {
     }
 
     public void maybeAddStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle detailStyle) {
-        if (detailStyle.getStrokeWeight() != 0) {
-            CotDetail strokeWeightDetail = new CotDetail(KEY_STROKE_WEIGHT);
-
-            strokeWeightDetail.setAttribute(KEY_VALUE, Double.toString(detailStyle.getStrokeWeight() / 100D));
-
-            cotDetail.addChild(strokeWeightDetail);
+        if (detailStyle.getStrokeWeight() == 0) {
+            return;
         }
+
+        CotDetail strokeWeightDetail = new CotDetail(KEY_STROKE_WEIGHT);
+
+        strokeWeightDetail.setAttribute(KEY_VALUE, Double.toString(detailStyle.getStrokeWeight() / 100D));
+
+        cotDetail.addChild(strokeWeightDetail);
     }
 
     public void toFillColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
@@ -108,12 +114,14 @@ public class DetailStyleProtobufConverter {
     }
 
     public void maybeAddFillColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle detailStyle) {
-        if (detailStyle.getFillColor() != 0) {
-            CotDetail fillColorDetail = new CotDetail(KEY_FILL_COLOR);
-
-            fillColorDetail.setAttribute(KEY_VALUE, Integer.toString(detailStyle.getFillColor()));
-
-            cotDetail.addChild(fillColorDetail);
+        if (detailStyle.getFillColor() == 0) {
+            return;
         }
+
+        CotDetail fillColorDetail = new CotDetail(KEY_FILL_COLOR);
+
+        fillColorDetail.setAttribute(KEY_VALUE, Integer.toString(detailStyle.getFillColor()));
+
+        cotDetail.addChild(fillColorDetail);
     }
 }

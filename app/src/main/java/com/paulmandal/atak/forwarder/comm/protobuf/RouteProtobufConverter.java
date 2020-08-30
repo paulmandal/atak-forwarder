@@ -103,50 +103,53 @@ public class RouteProtobufConverter {
     }
 
     public void maybeAddRoute(CotDetail cotDetail, ProtobufRoute.Route route, SubstitutionValues substitutionValues) {
-        if (route != null && route != ProtobufRoute.Route.getDefaultInstance()
-                && route.getLinkList() != ProtobufRoute.Route.getDefaultInstance().getLinkList()) {
-            for (ProtobufRouteLink.RouteLink link : route.getLinkList()) {
-                CotDetail linkDetail = new CotDetail(KEY_LINK);
-
-                String uid = link.getUid();
-                if (!StringUtils.isNullOrEmpty(uid)) {
-                    linkDetail.setAttribute(KEY_UID, uid);
-                }
-                if (!StringUtils.isNullOrEmpty(link.getType())) {
-                    linkDetail.setAttribute(KEY_TYPE, link.getType());
-                }
-
-                String point = "";
-                if (link.getLat() != NULL_VALUE) {
-                    point += Double.toString(link.getLat());
-                }
-                if (link.getLon() != NULL_VALUE) {
-                    point += ((point.length() > 0 ? "," : "") + link.getLon());
-                }
-                if (link.getHae() != NULL_VALUE) {
-                    point += ((point.length() > 0 ? "," : "") + link.getHae());
-                }
-                linkDetail.setAttribute(KEY_POINT, point);
-
-                if (!StringUtils.isNullOrEmpty(link.getRelation())) {
-                    linkDetail.setAttribute(KEY_RELATION, link.getRelation());
-                }
-                if (!StringUtils.isNullOrEmpty(link.getCallsign())) {
-                    linkDetail.setAttribute(KEY_CALLSIGN, link.getCallsign());
-                }
-                linkDetail.setAttribute(KEY_REMARKS, link.getRemarks());
-
-                cotDetail.addChild(linkDetail);
-            }
-
-            ProtobufRouteInfo.RouteInfo routeInfo = route.getRouteInfo();
-            if (routeInfo != null && routeInfo != ProtobufRouteInfo.RouteInfo.getDefaultInstance()) {
-                CotDetail routeInfoDetail = new CotDetail(KEY_ROUTE_INFO);
-
-                mNavCuesProtobufConverter.maybeAddNavCues(routeInfoDetail, routeInfo.getNavCues(), substitutionValues);
-
-                cotDetail.addChild(routeInfoDetail);
-            }
+        if (route == null || route == ProtobufRoute.Route.getDefaultInstance() || route.getLinkList() == ProtobufRoute.Route.getDefaultInstance().getLinkList()) {
+            return;
         }
+
+        for (ProtobufRouteLink.RouteLink link : route.getLinkList()) {
+            CotDetail linkDetail = new CotDetail(KEY_LINK);
+
+            String uid = link.getUid();
+            if (!StringUtils.isNullOrEmpty(uid)) {
+                linkDetail.setAttribute(KEY_UID, uid);
+            }
+            if (!StringUtils.isNullOrEmpty(link.getType())) {
+                linkDetail.setAttribute(KEY_TYPE, link.getType());
+            }
+
+            String point = "";
+            if (link.getLat() != NULL_VALUE) {
+                point += Double.toString(link.getLat());
+            }
+            if (link.getLon() != NULL_VALUE) {
+                point += ((point.length() > 0 ? "," : "") + link.getLon());
+            }
+            if (link.getHae() != NULL_VALUE) {
+                point += ((point.length() > 0 ? "," : "") + link.getHae());
+            }
+            linkDetail.setAttribute(KEY_POINT, point);
+
+            if (!StringUtils.isNullOrEmpty(link.getRelation())) {
+                linkDetail.setAttribute(KEY_RELATION, link.getRelation());
+            }
+            if (!StringUtils.isNullOrEmpty(link.getCallsign())) {
+                linkDetail.setAttribute(KEY_CALLSIGN, link.getCallsign());
+            }
+            linkDetail.setAttribute(KEY_REMARKS, link.getRemarks());
+
+            cotDetail.addChild(linkDetail);
+        }
+
+        ProtobufRouteInfo.RouteInfo routeInfo = route.getRouteInfo();
+        if (routeInfo == null || routeInfo == ProtobufRouteInfo.RouteInfo.getDefaultInstance()) {
+            return;
+        }
+
+        CotDetail routeInfoDetail = new CotDetail(KEY_ROUTE_INFO);
+
+        mNavCuesProtobufConverter.maybeAddNavCues(routeInfoDetail, routeInfo.getNavCues(), substitutionValues);
+
+        cotDetail.addChild(routeInfoDetail);
     }
 }

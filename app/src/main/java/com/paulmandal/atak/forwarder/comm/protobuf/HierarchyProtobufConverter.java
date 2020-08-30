@@ -41,12 +41,14 @@ public class HierarchyProtobufConverter {
     }
 
     public void maybeAddHierarchy(CotDetail cotDetail, ProtobufHierarchy.Hierarchy hierarchy, SubstitutionValues substitutionValues) {
-        if (hierarchy != null && hierarchy != ProtobufHierarchy.Hierarchy.getDefaultInstance()) {
-            CotDetail hierarchyDetail = new CotDetail(KEY_HIERARCHY);
-
-            mGroupProtobufConverter.maybeAddGroup(hierarchyDetail, hierarchy.getGroup(), substitutionValues);
-
-            cotDetail.addChild(hierarchyDetail);
+        if (hierarchy == null || hierarchy == ProtobufHierarchy.Hierarchy.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail hierarchyDetail = new CotDetail(KEY_HIERARCHY);
+
+        mGroupProtobufConverter.maybeAddGroup(hierarchyDetail, hierarchy.getGroup(), substitutionValues);
+
+        cotDetail.addChild(hierarchyDetail);
     }
 }

@@ -39,7 +39,7 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
         View view;
         if (convertView == null) {
             LayoutInflater inflator = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflator.inflate(R.layout.group_member_list_view_item, parent);
+            view = inflator.inflate(R.layout.group_member_list_view_item, parent, false);
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.callsign = (TextView) view.findViewById(R.id.textview_callsign);
             viewHolder.inOutSwitch = (Switch) view.findViewById(R.id.switch_in_out);

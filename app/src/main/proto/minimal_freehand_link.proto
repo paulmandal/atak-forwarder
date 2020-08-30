@@ -7,5 +7,5 @@ package com.paulmandal.atak.forwarder.protobufs;
 option java_outer_classname = "ProtobufFreehandLink";
 
 message MinimalFreehandLink {
-  string line = 1;
+  bytes line = 1;
 }

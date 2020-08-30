@@ -18,8 +18,8 @@ public class NavCuesProtobufConverter {
         mNavCueProtobufConverter = navCueProtobufConverter;
     }
 
-    public ProtobufNavCues.MinimalNavCues toNavCues(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufNavCues.MinimalNavCues.Builder builder = ProtobufNavCues.MinimalNavCues.newBuilder();
+    public ProtobufNavCues.NavCues toNavCues(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufNavCues.NavCues.Builder builder = ProtobufNavCues.NavCues.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -41,15 +41,15 @@ public class NavCuesProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddNavCues(CotDetail cotDetail, ProtobufNavCues.MinimalNavCues navCues, SubstitutionValues substitutionValues) {
-        if (navCues == null || navCues == ProtobufNavCues.MinimalNavCues.getDefaultInstance()) {
+    public void maybeAddNavCues(CotDetail cotDetail, ProtobufNavCues.NavCues navCues, SubstitutionValues substitutionValues) {
+        if (navCues == null || navCues == ProtobufNavCues.NavCues.getDefaultInstance()) {
             return;
         }
 
         CotDetail navCuesDetail = new CotDetail(KEY_NAV_CUES);
 
-        List<ProtobufNavCue.MinimalNavCue> navCuesList = navCues.getNavCuesList();
-        for (ProtobufNavCue.MinimalNavCue navCue : navCuesList) {
+        List<ProtobufNavCue.NavCue> navCuesList = navCues.getNavCuesList();
+        for (ProtobufNavCue.NavCue navCue : navCuesList) {
             mNavCueProtobufConverter.maybeAddNavCue(navCuesDetail, navCue, substitutionValues);
         }
 

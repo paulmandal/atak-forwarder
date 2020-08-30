@@ -17,8 +17,8 @@ public class UnderscoreGroupProtobufConverter {
         }
     }
 
-    public ProtobufUnderscoreGroup.MinimalUnderscoreGroup toUnderscoreGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufUnderscoreGroup.MinimalUnderscoreGroup.Builder builder = ProtobufUnderscoreGroup.MinimalUnderscoreGroup.newBuilder();
+    public ProtobufUnderscoreGroup.UnderscoreGroup toUnderscoreGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufUnderscoreGroup.UnderscoreGroup.Builder builder = ProtobufUnderscoreGroup.UnderscoreGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -35,8 +35,8 @@ public class UnderscoreGroupProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddUnderscoreGroup(CotDetail cotDetail, ProtobufUnderscoreGroup.MinimalUnderscoreGroup group, CustomBytesExtFields customBytesExtFields) {
-        if (group != null && group != ProtobufUnderscoreGroup.MinimalUnderscoreGroup.getDefaultInstance()) {
+    public void maybeAddUnderscoreGroup(CotDetail cotDetail, ProtobufUnderscoreGroup.UnderscoreGroup group, CustomBytesExtFields customBytesExtFields) {
+        if (group != null && group != ProtobufUnderscoreGroup.UnderscoreGroup.getDefaultInstance()) {
             CotDetail groupDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
 
             if (!StringUtils.isNullOrEmpty(group.getName())) {

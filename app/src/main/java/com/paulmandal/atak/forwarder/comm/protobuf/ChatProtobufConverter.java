@@ -32,8 +32,8 @@ public class ChatProtobufConverter {
         mHierarchyProtobufConverter = hierarchyProtobufConverter;
     }
 
-    public ProtobufChat.MinimalChat toChat(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufChat.MinimalChat.Builder builder = ProtobufChat.MinimalChat.newBuilder();
+    public ProtobufChat.Chat toChat(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufChat.Chat.Builder builder = ProtobufChat.Chat.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -84,8 +84,8 @@ public class ChatProtobufConverter {
     }
 
 
-    public void maybeAddChat(CotDetail cotDetail, ProtobufChat.MinimalChat chat, SubstitutionValues substitutionValues) {
-        if (chat != null && chat != ProtobufChat.MinimalChat.getDefaultInstance()) {
+    public void maybeAddChat(CotDetail cotDetail, ProtobufChat.Chat chat, SubstitutionValues substitutionValues) {
+        if (chat != null && chat != ProtobufChat.Chat.getDefaultInstance()) {
             CotDetail chatDetail = new CotDetail(KEY_CHAT);
 
             String parent = chat.getParent();

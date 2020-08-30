@@ -29,8 +29,8 @@ public class RouteProtobufConverter {
         mNavCuesProtobufConverter = navCuesProtobufConverter;
     }
 
-    public void toRouteLink(CotDetail cotDetail, ProtobufRoute.MinimalRoute.Builder routeBuilder, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufRouteLink.MinimalRouteLink.Builder builder = ProtobufRouteLink.MinimalRouteLink.newBuilder();
+    public void toRouteLink(CotDetail cotDetail, ProtobufRoute.Route.Builder routeBuilder, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufRouteLink.RouteLink.Builder builder = ProtobufRouteLink.RouteLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
 
         builder.setLat(NULL_VALUE);
@@ -78,8 +78,8 @@ public class RouteProtobufConverter {
         routeBuilder.addLink(builder);
     }
 
-    public void toRouteInfo(CotDetail cotDetail, ProtobufRoute.MinimalRoute.Builder routeBuilder, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufRouteInfo.MinimalRouteInfo.Builder builder = ProtobufRouteInfo.MinimalRouteInfo.newBuilder();
+    public void toRouteInfo(CotDetail cotDetail, ProtobufRoute.Route.Builder routeBuilder, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufRouteInfo.RouteInfo.Builder builder = ProtobufRouteInfo.RouteInfo.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -102,10 +102,10 @@ public class RouteProtobufConverter {
         routeBuilder.setRouteInfo(builder);
     }
 
-    public void maybeAddRoute(CotDetail cotDetail, ProtobufRoute.MinimalRoute route, SubstitutionValues substitutionValues) {
-        if (route != null && route != ProtobufRoute.MinimalRoute.getDefaultInstance()
-                && route.getLinkList() != ProtobufRoute.MinimalRoute.getDefaultInstance().getLinkList()) {
-            for (ProtobufRouteLink.MinimalRouteLink link : route.getLinkList()) {
+    public void maybeAddRoute(CotDetail cotDetail, ProtobufRoute.Route route, SubstitutionValues substitutionValues) {
+        if (route != null && route != ProtobufRoute.Route.getDefaultInstance()
+                && route.getLinkList() != ProtobufRoute.Route.getDefaultInstance().getLinkList()) {
+            for (ProtobufRouteLink.RouteLink link : route.getLinkList()) {
                 CotDetail linkDetail = new CotDetail(KEY_LINK);
 
                 String uid = link.getUid();
@@ -139,8 +139,8 @@ public class RouteProtobufConverter {
                 cotDetail.addChild(linkDetail);
             }
 
-            ProtobufRouteInfo.MinimalRouteInfo routeInfo = route.getRouteInfo();
-            if (routeInfo != null && routeInfo != ProtobufRouteInfo.MinimalRouteInfo.getDefaultInstance()) {
+            ProtobufRouteInfo.RouteInfo routeInfo = route.getRouteInfo();
+            if (routeInfo != null && routeInfo != ProtobufRouteInfo.RouteInfo.getDefaultInstance()) {
                 CotDetail routeInfoDetail = new CotDetail(KEY_ROUTE_INFO);
 
                 mNavCuesProtobufConverter.maybeAddNavCues(routeInfoDetail, routeInfo.getNavCues(), substitutionValues);

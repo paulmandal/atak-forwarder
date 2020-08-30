@@ -13,8 +13,8 @@ public class ChatLinkProtobufConverter {
     private static final String KEY_TYPE = "type";
     private static final String KEY_RELATION = "relation";
 
-    public ProtobufChatLink.MinimalChatLink toChatLink(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufChatLink.MinimalChatLink.Builder builder = ProtobufChatLink.MinimalChatLink.newBuilder();
+    public ProtobufChatLink.ChatLink toChatLink(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufChatLink.ChatLink.Builder builder = ProtobufChatLink.ChatLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -38,8 +38,8 @@ public class ChatLinkProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddChatLink(CotDetail cotDetail, ProtobufChatLink.MinimalChatLink chatLink, SubstitutionValues substitutionValues) {
-        if (chatLink != null && chatLink != ProtobufChatLink.MinimalChatLink.getDefaultInstance()) {
+    public void maybeAddChatLink(CotDetail cotDetail, ProtobufChatLink.ChatLink chatLink, SubstitutionValues substitutionValues) {
+        if (chatLink != null && chatLink != ProtobufChatLink.ChatLink.getDefaultInstance()) {
             CotDetail linkDetail = new CotDetail(KEY_LINK);
 
             String uid = chatLink.getUid();

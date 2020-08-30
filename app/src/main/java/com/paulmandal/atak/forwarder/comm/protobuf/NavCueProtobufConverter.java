@@ -24,8 +24,8 @@ public class NavCueProtobufConverter {
         mTriggerProtobufConverter = triggerProtobufConverter;
     }
 
-    public ProtobufNavCue.MinimalNavCue toNavCue(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufNavCue.MinimalNavCue.Builder builder = ProtobufNavCue.MinimalNavCue.newBuilder();
+    public ProtobufNavCue.NavCue toNavCue(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufNavCue.NavCue.Builder builder = ProtobufNavCue.NavCue.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -65,8 +65,8 @@ public class NavCueProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddNavCue(CotDetail cotDetail, ProtobufNavCue.MinimalNavCue navCue, SubstitutionValues substitutionValues) {
-        if (navCue == null || navCue == ProtobufNavCue.MinimalNavCue.getDefaultInstance()) {
+    public void maybeAddNavCue(CotDetail cotDetail, ProtobufNavCue.NavCue navCue, SubstitutionValues substitutionValues) {
+        if (navCue == null || navCue == ProtobufNavCue.NavCue.getDefaultInstance()) {
             return;
         }
 
@@ -85,8 +85,8 @@ public class NavCueProtobufConverter {
             navCueDetail.setAttribute(KEY_TEXT, navCue.getVoice());
         }
 
-        List<ProtobufTrigger.MinimalTrigger> triggers = navCue.getTriggerList();
-        for (ProtobufTrigger.MinimalTrigger trigger : triggers) {
+        List<ProtobufTrigger.Trigger> triggers = navCue.getTriggerList();
+        for (ProtobufTrigger.Trigger trigger : triggers) {
             mTriggerProtobufConverter.maybeAddTrigger(navCueDetail, trigger);
         }
 

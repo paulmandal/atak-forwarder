@@ -18,8 +18,8 @@ public class ContactProtobufConverter {
     private static final String FAKE_ENDPOINT_ADDRESS = "10.254.254.254:4242:tcp";
     private static final String DEFAULT_CHAT_PORT_AND_PROTO = ":4242:tcp";
 
-    public ProtobufContact.MinimalContact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufContact.MinimalContact.Builder builder = ProtobufContact.MinimalContact.newBuilder();
+    public ProtobufContact.Contact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufContact.Contact.Builder builder = ProtobufContact.Contact.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -43,8 +43,8 @@ public class ContactProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddContact(CotDetail cotDetail, ProtobufContact.MinimalContact contact, CustomBytesExtFields customBytesExtFields) {
-        if (contact != null && contact != ProtobufContact.MinimalContact.getDefaultInstance()) {
+    public void maybeAddContact(CotDetail cotDetail, ProtobufContact.Contact contact, CustomBytesExtFields customBytesExtFields) {
+        if (contact != null && contact != ProtobufContact.Contact.getDefaultInstance()) {
             CotDetail contactDetail = new CotDetail(KEY_CONTACT);
 
             if (!StringUtils.isNullOrEmpty(contact.getCallsign())) {

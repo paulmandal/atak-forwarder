@@ -9,8 +9,8 @@ public class ModelProtobufConverter {
 
     private static final String KEY_NAME = "name";
 
-    public ProtobufModel.MinimalModel toModel(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufModel.MinimalModel.Builder builder =  ProtobufModel.MinimalModel.newBuilder();
+    public ProtobufModel.Model toModel(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufModel.Model.Builder builder =  ProtobufModel.Model.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -24,8 +24,8 @@ public class ModelProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddModel(CotDetail cotDetail, ProtobufModel.MinimalModel model) {
-        if (model != null && model != ProtobufModel.MinimalModel.getDefaultInstance()) {
+    public void maybeAddModel(CotDetail cotDetail, ProtobufModel.Model model) {
+        if (model != null && model != ProtobufModel.Model.getDefaultInstance()) {
             CotDetail modelDetail = new CotDetail(KEY_MODEL);
 
             if (!StringUtils.isNullOrEmpty(model.getName())) {

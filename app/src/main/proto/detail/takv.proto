@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufTakv";
+
+message Takv {
+  int32 os = 1;
+  string version = 2;
+  string device = 3;
+  string platform = 4;
+}

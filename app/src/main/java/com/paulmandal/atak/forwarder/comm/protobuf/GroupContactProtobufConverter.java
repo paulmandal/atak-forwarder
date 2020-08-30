@@ -13,8 +13,8 @@ public class GroupContactProtobufConverter {
     private static final String KEY_UID = "uid";
     private static final String KEY_NAME = "name";
 
-    public ProtobufGroupContact.MinimalGroupContact toGroupContact(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufGroupContact.MinimalGroupContact.Builder builder = ProtobufGroupContact.MinimalGroupContact.newBuilder();
+    public ProtobufGroupContact.GroupContact toGroupContact(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufGroupContact.GroupContact.Builder builder = ProtobufGroupContact.GroupContact.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -41,8 +41,8 @@ public class GroupContactProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddGroupContact(CotDetail cotDetail, ProtobufGroupContact.MinimalGroupContact groupContact, SubstitutionValues substitutionValues) {
-        if (groupContact != null && groupContact != ProtobufGroupContact.MinimalGroupContact.getDefaultInstance()) {
+    public void maybeAddGroupContact(CotDetail cotDetail, ProtobufGroupContact.GroupContact groupContact, SubstitutionValues substitutionValues) {
+        if (groupContact != null && groupContact != ProtobufGroupContact.GroupContact.getDefaultInstance()) {
             CotDetail contactDetail = new CotDetail(KEY_CONTACT);
 
             String name = groupContact.getName();

@@ -27,8 +27,8 @@ public class GroupProtobufConverter {
         mGroupContactProtobufConverter = groupContactProtobufConverter;
     }
 
-    public ProtobufGroup.MinimalGroup toGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufGroup.MinimalGroup.Builder builder = ProtobufGroup.MinimalGroup.newBuilder();
+    public ProtobufGroup.Group toGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufGroup.Group.Builder builder = ProtobufGroup.Group.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -71,8 +71,8 @@ public class GroupProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddGroup(CotDetail cotDetail, ProtobufGroup.MinimalGroup group, SubstitutionValues substitutionValues) {
-        if (group != null && group != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
+    public void maybeAddGroup(CotDetail cotDetail, ProtobufGroup.Group group, SubstitutionValues substitutionValues) {
+        if (group != null && group != ProtobufGroup.Group.getDefaultInstance()) {
             CotDetail groupDetail = new CotDetail(KEY_GROUP);
 
             String name = group.getName();
@@ -96,13 +96,13 @@ public class GroupProtobufConverter {
             }
 
 
-            List<ProtobufGroupContact.MinimalGroupContact> contacts = group.getContactList();
-            for (ProtobufGroupContact.MinimalGroupContact contact : contacts) {
+            List<ProtobufGroupContact.GroupContact> contacts = group.getContactList();
+            for (ProtobufGroupContact.GroupContact contact : contacts) {
                 mGroupContactProtobufConverter.maybeAddGroupContact(groupDetail, contact, substitutionValues);
             }
 
-            ProtobufGroup.MinimalGroup nestedGroup = group.getGroup();
-            if (nestedGroup != null && nestedGroup != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
+            ProtobufGroup.Group nestedGroup = group.getGroup();
+            if (nestedGroup != null && nestedGroup != ProtobufGroup.Group.getDefaultInstance()) {
                 maybeAddGroup(groupDetail, nestedGroup, substitutionValues);
             }
 

@@ -10,7 +10,7 @@ import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.paulmandal.atak.forwarder.protobufs.CotEventProtos;
+import com.paulmandal.atak.forwarder.protobufs.LegacyCotEventProtobuf;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -18,13 +18,14 @@ import org.xmlpull.v1.XmlPullParserException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import atakmap.commoncommo.protobuf.v1.ContactOuterClass;
-import atakmap.commoncommo.protobuf.v1.DetailOuterClass;
-import atakmap.commoncommo.protobuf.v1.GroupOuterClass;
+import atakmap.commoncommo.protobuf.v1.Contact;
+import atakmap.commoncommo.protobuf.v1.Detail;
+import atakmap.commoncommo.protobuf.v1.Group;
 import atakmap.commoncommo.protobuf.v1.Precisionlocation;
-import atakmap.commoncommo.protobuf.v1.StatusOuterClass;
-import atakmap.commoncommo.protobuf.v1.TakvOuterClass;
-import atakmap.commoncommo.protobuf.v1.TrackOuterClass;
+import atakmap.commoncommo.protobuf.v1.Status;
+import atakmap.commoncommo.protobuf.v1.Takv;
+import atakmap.commoncommo.protobuf.v1.Track;
+
 
 @Deprecated
 public class FallbackCotEventProtobufConverter {
@@ -58,7 +59,7 @@ public class FallbackCotEventProtobufConverter {
 
     @Deprecated
     public byte[] toByteArray(CotEvent cotEvent) {
-        CotEventProtos.CotEvent cotEventProtos = cotEventProtosFromCotEvent(cotEvent);
+        LegacyCotEventProtobuf.LegacyCotEvent cotEventProtos = cotEventProtosFromCotEvent(cotEvent);
         return cotEventProtos.toByteArray();
     }
 
@@ -67,7 +68,7 @@ public class FallbackCotEventProtobufConverter {
     public CotEvent toCotEvent(byte[] cotProtobuf) {
         CotEvent cotEvent = null;
         try {
-            CotEventProtos.CotEvent protoCotEvent = CotEventProtos.CotEvent.parseFrom(cotProtobuf);
+            LegacyCotEventProtobuf.LegacyCotEvent protoCotEvent = LegacyCotEventProtobuf.LegacyCotEvent.parseFrom(cotProtobuf);
             cotEvent = new CotEvent();
             cotEvent.setAccess(nullForEmptyString(protoCotEvent.getAccess()));
             cotEvent.setHow(nullForEmptyString(protoCotEvent.getHow()));
@@ -86,9 +87,9 @@ public class FallbackCotEventProtobufConverter {
         return cotEvent;
     }
 
-    private CotDetail cotDetailFromProtoDetail(DetailOuterClass.Detail detail) {
+    private CotDetail cotDetailFromProtoDetail(Detail.LegacyDetail detail) {
         CotDetail cotDetail = new CotDetail();
-        TakvOuterClass.Takv takv = detail.getTakv();
+        Takv.LegacyTakv takv = detail.getTakv();
         if (takv != null
                 && (!isNullOrEmpty(takv.getDevice()) || !isNullOrEmpty(takv.getOs()) || !isNullOrEmpty(takv.getPlatform()) || !isNullOrEmpty(takv.getVersion()))) {
             CotDetail takvDetail = new CotDetail(KEY_TAKV);
@@ -108,7 +109,7 @@ public class FallbackCotEventProtobufConverter {
             cotDetail.addChild(takvDetail);
         }
 
-        ContactOuterClass.Contact contact = detail.getContact();
+        Contact.LegacyContact contact = detail.getContact();
         if (contact != null
                 && (!isNullOrEmpty(contact.getCallsign()) || !isNullOrEmpty(contact.getEndpoint()))) {
             CotDetail contactDetail = new CotDetail(KEY_CONTACT);
@@ -141,7 +142,7 @@ public class FallbackCotEventProtobufConverter {
             }
         }
 
-        Precisionlocation.PrecisionLocation precisionLocation = detail.getPrecisionLocation();
+        Precisionlocation.LegacyPrecisionLocation precisionLocation = detail.getPrecisionLocation();
         if (precisionLocation != null
                 && (!isNullOrEmpty(precisionLocation.getAltsrc()) || !isNullOrEmpty(precisionLocation.getGeopointsrc()))) {
             CotDetail precisionLocationDetail = new CotDetail(KEY_PRECISIONLOCATION);
@@ -156,7 +157,7 @@ public class FallbackCotEventProtobufConverter {
             cotDetail.addChild(precisionLocationDetail);
         }
 
-        GroupOuterClass.Group group = detail.getGroup();
+        Group.LegacyGroup group = detail.getGroup();
         if (group != null
                 && (!isNullOrEmpty(group.getName()) || !isNullOrEmpty(group.getRole()))) {
             CotDetail groupDetail = new CotDetail(KEY_GROUP);
@@ -171,7 +172,7 @@ public class FallbackCotEventProtobufConverter {
             cotDetail.addChild(groupDetail);
         }
 
-        StatusOuterClass.Status status = detail.getStatus();
+        Status.LegacyStatus status = detail.getStatus();
         if (status != null
                 && (status.getBattery() > 0 || !isNullOrEmpty(status.getReadiness()))) {
             CotDetail statusDetail = new CotDetail(KEY_STATUS);
@@ -186,7 +187,7 @@ public class FallbackCotEventProtobufConverter {
             cotDetail.addChild(statusDetail);
         }
 
-        TrackOuterClass.Track track = detail.getTrack();
+        Track.LegacyTrack track = detail.getTrack();
         if (track != null
                 && (track.getCourse() != 0.0 || track.getSpeed() != 0.0)) {
             CotDetail trackDetail = new CotDetail(KEY_TRACK);
@@ -219,8 +220,8 @@ public class FallbackCotEventProtobufConverter {
         return xmlDetail;
     }
 
-    private CotEventProtos.CotEvent cotEventProtosFromCotEvent(CotEvent cotEvent) {
-        CotEventProtos.CotEvent.Builder builder = CotEventProtos.CotEvent.newBuilder();
+    private LegacyCotEventProtobuf.LegacyCotEvent cotEventProtosFromCotEvent(CotEvent cotEvent) {
+        LegacyCotEventProtobuf.LegacyCotEvent.Builder builder = LegacyCotEventProtobuf.LegacyCotEvent.newBuilder();
 
         if (cotEvent.getAccess() != null) {
             builder.setAccess(cotEvent.getAccess());
@@ -258,8 +259,8 @@ public class FallbackCotEventProtobufConverter {
                 .build();
     }
 
-    private DetailOuterClass.Detail detailFromCotDetail(CotDetail cotDetail) {
-        DetailOuterClass.Detail.Builder builder = DetailOuterClass.Detail.newBuilder();
+    private Detail.LegacyDetail detailFromCotDetail(CotDetail cotDetail) {
+        Detail.LegacyDetail.Builder builder = Detail.LegacyDetail.newBuilder();
         StringBuilder xmlDetail = new StringBuilder();
         if (cotDetail.getElementName().equals(KEY_DETAIL)) { // TODO: do we need this check?
             for (CotDetail innerDetail : cotDetail.getChildren()) {
@@ -294,8 +295,8 @@ public class FallbackCotEventProtobufConverter {
         return builder.build();
     }
 
-    private ContactOuterClass.Contact contactFromCotDetail(CotDetail cotDetail) {
-        ContactOuterClass.Contact.Builder builder = ContactOuterClass.Contact.newBuilder();
+    private Contact.LegacyContact contactFromCotDetail(CotDetail cotDetail) {
+        Contact.LegacyContact.Builder builder = Contact.LegacyContact.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -310,8 +311,8 @@ public class FallbackCotEventProtobufConverter {
         return builder.build();
     }
 
-    private GroupOuterClass.Group groupFromCotDetail(CotDetail cotDetail) {
-        GroupOuterClass.Group.Builder builder = GroupOuterClass.Group.newBuilder();
+    private Group.LegacyGroup groupFromCotDetail(CotDetail cotDetail) {
+        Group.LegacyGroup.Builder builder = Group.LegacyGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -326,8 +327,8 @@ public class FallbackCotEventProtobufConverter {
         return builder.build();
     }
 
-    private Precisionlocation.PrecisionLocation precisionLocationFromCotDetail(CotDetail cotDetail) {
-        Precisionlocation.PrecisionLocation.Builder builder = Precisionlocation.PrecisionLocation.newBuilder();
+    private Precisionlocation.LegacyPrecisionLocation precisionLocationFromCotDetail(CotDetail cotDetail) {
+        Precisionlocation.LegacyPrecisionLocation.Builder builder = Precisionlocation.LegacyPrecisionLocation.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -342,8 +343,8 @@ public class FallbackCotEventProtobufConverter {
         return builder.build();
     }
 
-    private StatusOuterClass.Status statusFromCotDetail(CotDetail cotDetail) {
-        StatusOuterClass.Status.Builder builder = StatusOuterClass.Status.newBuilder();
+    private Status.LegacyStatus statusFromCotDetail(CotDetail cotDetail) {
+        Status.LegacyStatus.Builder builder = Status.LegacyStatus.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -358,8 +359,8 @@ public class FallbackCotEventProtobufConverter {
         return builder.build();
     }
 
-    private TakvOuterClass.Takv takvFromCotDetail(CotDetail cotDetail) {
-        TakvOuterClass.Takv.Builder builder = TakvOuterClass.Takv.newBuilder();
+    private Takv.LegacyTakv takvFromCotDetail(CotDetail cotDetail) {
+        Takv.LegacyTakv.Builder builder = Takv.LegacyTakv.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -380,8 +381,8 @@ public class FallbackCotEventProtobufConverter {
         return builder.build();
     }
 
-    private TrackOuterClass.Track trackFromCotDetail(CotDetail cotDetail) {
-        TrackOuterClass.Track.Builder builder = TrackOuterClass.Track.newBuilder();
+    private Track.LegacyTrack trackFromCotDetail(CotDetail cotDetail) {
+        Track.LegacyTrack.Builder builder = Track.LegacyTrack.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {

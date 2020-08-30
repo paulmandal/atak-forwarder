@@ -14,8 +14,8 @@ public class DetailStyleProtobufConverter {
     private static final String KEY_ARGB = "argb";
     private static final String KEY_VALUE = "value";
 
-    public void toColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
-        ProtobufColor.MinimalColor.Builder builder = ProtobufColor.MinimalColor.newBuilder();
+    public void toColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+        ProtobufColor.Color.Builder builder = ProtobufColor.Color.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -33,8 +33,8 @@ public class DetailStyleProtobufConverter {
         detailStyleBuilder.setColor(builder.build());
     }
 
-    public void maybeAddColor(CotDetail cotDetail, ProtobufColor.MinimalColor color) {
-        if (color != null && color != ProtobufColor.MinimalColor.getDefaultInstance()) {
+    public void maybeAddColor(CotDetail cotDetail, ProtobufColor.Color color) {
+        if (color != null && color != ProtobufColor.Color.getDefaultInstance()) {
             CotDetail colorDetail = new CotDetail(KEY_COLOR);
 
             if (color.getArgb() != 0) {
@@ -48,7 +48,7 @@ public class DetailStyleProtobufConverter {
         }
     }
 
-    public void toStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+    public void toStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -61,7 +61,7 @@ public class DetailStyleProtobufConverter {
         }
     }
 
-    public void maybeAddStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle detailStyle) {
+    public void maybeAddStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle detailStyle) {
         if (detailStyle.getStrokeColor() != 0) {
             CotDetail strokeColorDetail = new CotDetail(KEY_STROKE_COLOR);
 
@@ -71,7 +71,7 @@ public class DetailStyleProtobufConverter {
         }
     }
 
-    public void toStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+    public void toStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -84,7 +84,7 @@ public class DetailStyleProtobufConverter {
         }
     }
 
-    public void maybeAddStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle detailStyle) {
+    public void maybeAddStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle detailStyle) {
         if (detailStyle.getStrokeWeight() != 0) {
             CotDetail strokeWeightDetail = new CotDetail(KEY_STROKE_WEIGHT);
 
@@ -94,7 +94,7 @@ public class DetailStyleProtobufConverter {
         }
     }
 
-    public void toFillColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+    public void toFillColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -107,7 +107,7 @@ public class DetailStyleProtobufConverter {
         }
     }
 
-    public void maybeAddFillColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle detailStyle) {
+    public void maybeAddFillColor(CotDetail cotDetail, ProtobufDetailStyle.DetailStyle detailStyle) {
         if (detailStyle.getFillColor() != 0) {
             CotDetail fillColorDetail = new CotDetail(KEY_FILL_COLOR);
 

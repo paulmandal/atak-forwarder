@@ -134,7 +134,7 @@ public class CotEventProtobufConverter {
     }
 
     public byte[] toByteArray(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
-        ProtobufCotEvent.MinimalCotEvent cotEventProtobuf = toCotEventProtobuf(cotEvent);
+        ProtobufCotEvent.CotEvent cotEventProtobuf = toCotEventProtobuf(cotEvent);
         return cotEventProtobuf.toByteArray();
     }
 
@@ -142,7 +142,7 @@ public class CotEventProtobufConverter {
         CotEvent cotEvent = null;
 
         try {
-            ProtobufCotEvent.MinimalCotEvent protoCotEvent = ProtobufCotEvent.MinimalCotEvent.parseFrom(cotProtobuf);
+            ProtobufCotEvent.CotEvent protoCotEvent = ProtobufCotEvent.CotEvent.parseFrom(cotProtobuf);
 
             CustomBytesFields customBytesFields = mCustomBytesConverter.unpackCustomBytes(protoCotEvent.getCustomBytes(), mStartOfYearMs);
             CustomBytesExtFields customBytesExtFields = mCustomBytesExtConverter.unpackCustomBytesExt(protoCotEvent.getCustomBytesExt());
@@ -173,8 +173,8 @@ public class CotEventProtobufConverter {
     /**
      * toByteArray
      */
-    private ProtobufCotEvent.MinimalCotEvent toCotEventProtobuf(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
-        ProtobufCotEvent.MinimalCotEvent.Builder builder = ProtobufCotEvent.MinimalCotEvent.newBuilder();
+    private ProtobufCotEvent.CotEvent toCotEventProtobuf(CotEvent cotEvent) throws MappingNotFoundException, UnknownDetailFieldException {
+        ProtobufCotEvent.CotEvent.Builder builder = ProtobufCotEvent.CotEvent.newBuilder();
 
         SubstitutionValues substitutionValues = new SubstitutionValues();
         String uid = cotEvent.getUID();
@@ -223,11 +223,11 @@ public class CotEventProtobufConverter {
         return builder.build();
     }
 
-    private ProtobufDetail.MinimalDetail toDetail(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufDetail.MinimalDetail.Builder builder = ProtobufDetail.MinimalDetail.newBuilder();
-        ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder = null;
-        ProtobufDrawnShape.MinimalDrawnShape.Builder drawnShapeBuilder = null;
-        ProtobufRoute.MinimalRoute.Builder routeBuilder = null;
+    private ProtobufDetail.Detail toDetail(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufDetail.Detail.Builder builder = ProtobufDetail.Detail.newBuilder();
+        ProtobufDetailStyle.DetailStyle.Builder detailStyleBuilder = null;
+        ProtobufDrawnShape.DrawnShape.Builder drawnShapeBuilder = null;
+        ProtobufRoute.Route.Builder routeBuilder = null;
 
         for (CotDetail innerDetail : cotDetail.getChildren()) {
             switch (innerDetail.getElementName()) {
@@ -257,7 +257,7 @@ public class CotEventProtobufConverter {
                     } else if (innerDetail.getAttribute(KEY_LINE) != null) {
                         builder.setFreehandLink(mFreehandLinkProtobufConverter.toFreehandLink(innerDetail));
                     } else {
-                        drawnShapeBuilder = drawnShapeBuilder != null ? drawnShapeBuilder : ProtobufDrawnShape.MinimalDrawnShape.newBuilder();
+                        drawnShapeBuilder = drawnShapeBuilder != null ? drawnShapeBuilder : ProtobufDrawnShape.DrawnShape.newBuilder();
                         mShapeLinkProtobufConverter.toShapeLink(innerDetail, drawnShapeBuilder);
                     }
                     break;
@@ -348,7 +348,7 @@ public class CotEventProtobufConverter {
      * toCotEvent
      */
 
-    private CotDetail cotDetailFromProtoDetail(CotEvent cotEvent, ProtobufDetail.MinimalDetail detail, CustomBytesExtFields customBytesExtFields, SubstitutionValues substitutionValues) {
+    private CotDetail cotDetailFromProtoDetail(CotEvent cotEvent, ProtobufDetail.Detail detail, CustomBytesExtFields customBytesExtFields, SubstitutionValues substitutionValues) {
         CotDetail cotDetail = new CotDetail();
 
         mTakvProtobufConverter.maybeAddTakv(cotDetail, detail.getTakv());
@@ -372,7 +372,7 @@ public class CotEventProtobufConverter {
         mHeightAndHeightUnitProtobufConverter.maybeAddHeightAndHeightUnit(cotDetail, detail.getHeight(), customBytesExtFields);
         mLinkAttrProtobufConverter.maybeAddLinkAttr(cotDetail, detail.getRoute(), customBytesExtFields);
 
-        ProtobufDetailStyle.MinimalDetailStyle detailStyle = detail.getDetailStyle();
+        ProtobufDetailStyle.DetailStyle detailStyle = detail.getDetailStyle();
         mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detailStyle.getColor());
         mDetailStyleProtobufConverter.maybeAddStrokeWeight(cotDetail, detailStyle);
         mDetailStyleProtobufConverter.maybeAddStrokeColor(cotDetail, detailStyle);
@@ -385,7 +385,7 @@ public class CotEventProtobufConverter {
         return cotDetail;
     }
 
-    private void maybeAddUidDroid(CotEvent cotEvent, CotDetail cotDetail, ProtobufContact.MinimalContact contact) {
+    private void maybeAddUidDroid(CotEvent cotEvent, CotDetail cotDetail, ProtobufContact.Contact contact) {
         boolean isPli = cotEvent.getType().equals(CotMessageTypes.TYPE_PLI);
         String callsign = contact.getCallsign();
 
@@ -408,11 +408,11 @@ public class CotEventProtobufConverter {
         }
     }
 
-    private ProtobufDetailStyle.MinimalDetailStyle.Builder maybeMakeDetailStyleBuilder(ProtobufDetailStyle.MinimalDetailStyle.Builder builder) {
-        return builder != null ? builder : ProtobufDetailStyle.MinimalDetailStyle.newBuilder();
+    private ProtobufDetailStyle.DetailStyle.Builder maybeMakeDetailStyleBuilder(ProtobufDetailStyle.DetailStyle.Builder builder) {
+        return builder != null ? builder : ProtobufDetailStyle.DetailStyle.newBuilder();
     }
 
-    private ProtobufRoute.MinimalRoute.Builder maybeMakeRouteBuilder(ProtobufRoute.MinimalRoute.Builder builder) {
-        return builder != null ? builder : ProtobufRoute.MinimalRoute.newBuilder();
+    private ProtobufRoute.Route.Builder maybeMakeRouteBuilder(ProtobufRoute.Route.Builder builder) {
+        return builder != null ? builder : ProtobufRoute.Route.newBuilder();
     }
 }

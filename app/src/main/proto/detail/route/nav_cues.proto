@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufNavCues";
+
+import "detail/route/nav_cue.proto";
+
+message NavCues {
+  repeated NavCue navCues = 1;
+}

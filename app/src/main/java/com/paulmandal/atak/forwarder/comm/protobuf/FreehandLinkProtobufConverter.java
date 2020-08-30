@@ -13,8 +13,8 @@ public class FreehandLinkProtobufConverter {
 
     private static final String KEY_LINE = "line";
 
-    public ProtobufFreehandLink.MinimalFreehandLink toFreehandLink(CotDetail cotDetail) throws UnknownDetailFieldException {
-        ProtobufFreehandLink.MinimalFreehandLink.Builder builder = ProtobufFreehandLink.MinimalFreehandLink.newBuilder();
+    public ProtobufFreehandLink.FreehandLink toFreehandLink(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufFreehandLink.FreehandLink.Builder builder = ProtobufFreehandLink.FreehandLink.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -32,12 +32,12 @@ public class FreehandLinkProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddFreehandLink(CotDetail cotDetail, ProtobufFreehandLink.MinimalFreehandLink freehandLink) {
-        if (freehandLink != null && freehandLink != ProtobufFreehandLink.MinimalFreehandLink.getDefaultInstance()) {
+    public void maybeAddFreehandLink(CotDetail cotDetail, ProtobufFreehandLink.FreehandLink freehandLink) {
+        if (freehandLink != null && freehandLink != ProtobufFreehandLink.FreehandLink.getDefaultInstance()) {
             CotDetail freehandLinkDetail = new CotDetail(KEY_LINK);
 
             ByteString freehandLine = freehandLink.getLine();
-            if (freehandLine != ProtobufFreehandLink.MinimalFreehandLink.getDefaultInstance().getLine()) {
+            if (freehandLine != ProtobufFreehandLink.FreehandLink.getDefaultInstance().getLine()) {
                 try {
                     freehandLinkDetail.setAttribute(KEY_LINE, GzipHelper.decompress(freehandLine.toByteArray()));
                 } catch (IOException e) {

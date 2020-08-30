@@ -15,8 +15,8 @@ public class ChatGroupProtobufConverter {
     private static final String KEY_ID = "id";
     private static final String KEY_UID = "uid";
 
-    public ProtobufChatGroup.MinimalChatGroup toChatGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
-        ProtobufChatGroup.MinimalChatGroup.Builder builder = ProtobufChatGroup.MinimalChatGroup.newBuilder();
+    public ProtobufChatGroup.ChatGroup toChatGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+        ProtobufChatGroup.ChatGroup.Builder builder = ProtobufChatGroup.ChatGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -44,8 +44,8 @@ public class ChatGroupProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddChatGroup(CotDetail cotDetail, ProtobufChatGroup.MinimalChatGroup chatGroup, SubstitutionValues substitutionValues) {
-        if (chatGroup != null && chatGroup != ProtobufChatGroup.MinimalChatGroup.getDefaultInstance()) {
+    public void maybeAddChatGroup(CotDetail cotDetail, ProtobufChatGroup.ChatGroup chatGroup, SubstitutionValues substitutionValues) {
+        if (chatGroup != null && chatGroup != ProtobufChatGroup.ChatGroup.getDefaultInstance()) {
             CotDetail chatGroupDetail = new CotDetail(KEY_CHAT_GROUP);
 
             String id = chatGroup.getId();

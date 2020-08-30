@@ -40,5 +40,4 @@ public class LabelsOnProtobufConverter {
             cotDetail.addChild(labelsOnDetail);
         }
     }
-
 }

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufDetailStyle";
+
+import "minimal_color.proto";
+
+message MinimalDetailStyle {
+  MinimalColor color = 1;
+}

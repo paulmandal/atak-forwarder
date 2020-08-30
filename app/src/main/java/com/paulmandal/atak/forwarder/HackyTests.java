@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder;
 
 import android.util.Log;
 
+import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
@@ -10,6 +11,9 @@ import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFact
 import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
 import com.paulmandal.atak.forwarder.comm.protobuf.UnknownDetailFieldException;
 import com.paulmandal.atak.forwarder.xmlutils.XmlComparer;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // Tests to validate our protobufs
 public class HackyTests {
@@ -182,10 +186,39 @@ public class HackyTests {
             convertedCotEvent.setStale(placeholderTime);
             convertedCotEvent.setPoint(cotPoint);
 
+            CotDetail remarksDetail = cotEvent.getDetail().getFirstChildByName(0, "remarks");
+            CotDetail convertedRemarksDetail = convertedCotEvent.getDetail().getFirstChildByName(0, "remarks");
+            if (remarksDetail != null) {
+                remarksDetail.setAttribute("time", placeholderTime.toString());
+                convertedRemarksDetail.setAttribute("time", placeholderTime.toString());
+            }
+
+            CotDetail linkDetail = cotEvent.getDetail().getFirstChildByName(0, "link");
+            CotDetail convertedLinkDetail = convertedCotEvent.getDetail().getFirstChildByName(0, "link");
+            if (linkDetail != null && linkDetail.getAttribute("production_time") != null) {
+                linkDetail.setAttribute("production_time", placeholderTime.toString());
+                convertedLinkDetail.setAttribute("production_time", placeholderTime.toString());
+            }
+
+            List<CotDetail> removeable = new ArrayList<>();
+            for (CotDetail child : cotEvent.getDetail().getChildren()) {
+                if (child.getElementName().equals("archive")) {
+                    removeable.add(child);
+                }
+            }
+
+            for (CotDetail remove : removeable) {
+                cotEvent.getDetail().removeChild(remove);
+            }
+
             XmlComparer xmlComparer = new XmlComparer();
-            xmlComparer.compareXmls(messageType, cotEvent.toString(), convertedCotEvent.toString());
+            boolean matched = xmlComparer.compareXmls(messageType, cotEvent.toString(), convertedCotEvent.toString());
+            if (matched) {
+                Log.d(TAG, messageType + " size: " + cotEventAsBytes.length + " bytes!");
+            }
         } catch (UnknownDetailFieldException | MappingNotFoundException e) {
             Log.d(TAG, "validation failed while marshalling to XML: " + e.getMessage());
+            Log.d(TAG, "original: " + cotEvent.toString());
             e.printStackTrace();
         }
     }

@@ -32,6 +32,8 @@ public class CotEventProtobufConverterFactory {
                 new StatusProtobufConverter(),
                 new HeightAndHeightUnitProtobufConverter(),
                 new ModelProtobufConverter(),
+                new DetailStyleProtobufConverter(),
+                new CeHumanInputProtobufConverter(),
                 startOfYearMs);
     }
 }

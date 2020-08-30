@@ -8,6 +8,7 @@ import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDetail;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufDetailStyle;
 
 public class CotEventProtobufConverter {
     private static final String TAG = "ATAKDBG." + CotEventProtobufConverter.class.getSimpleName();
@@ -15,7 +16,6 @@ public class CotEventProtobufConverter {
     /**
      * CotDetail fields
      */
-    private static final String KEY_DETAIL = "detail";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_UNDERSCORED_GROUP = "__group";
     private static final String KEY_PRECISIONLOCATION = "precisionlocation";
@@ -32,6 +32,7 @@ public class CotEventProtobufConverter {
     private static final String KEY_MODEL = "model";
     private static final String KEY_LABELS_ON = "labels_on";
     private static final String KEY_HEIGHT_UNIT = "height_unit";
+    private static final String KEY_CE_HUMAN_INPUT = "ce_human_input";
     private static final String KEY_HEIGHT = "height";
 
     // Fields
@@ -60,6 +61,8 @@ public class CotEventProtobufConverter {
     private final StatusProtobufConverter mStatusProtobufConverter;
     private final HeightAndHeightUnitProtobufConverter mHeightAndHeightUnitProtobufConverter;
     private final ModelProtobufConverter mModelProtobufConverter;
+    private final DetailStyleProtobufConverter mDetailStyleProtobufConverter;
+    private final CeHumanInputProtobufConverter mCeHumanInputProtobufConverter;
     private final long mStartOfYearMs;
 
     public CotEventProtobufConverter(TakvProtobufConverter takvProtobufConverter,
@@ -78,6 +81,8 @@ public class CotEventProtobufConverter {
                                      StatusProtobufConverter statusProtobufConverter,
                                      HeightAndHeightUnitProtobufConverter heightAndHeightUnitProtobufConverter,
                                      ModelProtobufConverter modelProtobufConverter,
+                                     DetailStyleProtobufConverter detailStyleProtobufConverter,
+                                     CeHumanInputProtobufConverter ceHumanInputProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
         mTrackProtobufConverter = trackProtobufConverter;
@@ -95,6 +100,8 @@ public class CotEventProtobufConverter {
         mStatusProtobufConverter = statusProtobufConverter;
         mHeightAndHeightUnitProtobufConverter = heightAndHeightUnitProtobufConverter;
         mModelProtobufConverter = modelProtobufConverter;
+        mDetailStyleProtobufConverter = detailStyleProtobufConverter;
+        mCeHumanInputProtobufConverter = ceHumanInputProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
 
@@ -167,7 +174,7 @@ public class CotEventProtobufConverter {
         double hae = cotPoint != null ? cotPoint.getHae() : 0;
         builder.setCustomBytes(mCustomBytesConverter.packCustomBytes(cotEvent.getTime(), cotEvent.getStale(), hae, mStartOfYearMs));
 
-        CustomBytesExtFields customBytesExtFields = new CustomBytesExtFields(cotEvent.getHow(), null, null, null, null, null, null, null, null);
+        CustomBytesExtFields customBytesExtFields = new CustomBytesExtFields(cotEvent.getHow(), null, null, null, null, null, null, null, null, null);
 
         CotDetail cotDetail = cotEvent.getDetail();
 
@@ -175,6 +182,7 @@ public class CotEventProtobufConverter {
         mUnderscoreGroupProtobufConverter.maybeGetRoleValue(cotDetail, customBytesExtFields);
         mStatusProtobufConverter.maybeGetStatusValues(cotDetail, customBytesExtFields);
         mLabelsOnProtobufConverter.maybeGetLabelsOnValue(cotDetail, customBytesExtFields);
+        mCeHumanInputProtobufConverter.maybeGetCeHumanInputValues(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeGetHeightUnitValues(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeGetHeightValues(cotDetail, customBytesExtFields);
 
@@ -187,6 +195,8 @@ public class CotEventProtobufConverter {
 
     private ProtobufDetail.MinimalDetail toDetail(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
         ProtobufDetail.MinimalDetail.Builder builder = ProtobufDetail.MinimalDetail.newBuilder();
+        ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder = null;
+
         for (CotDetail innerDetail : cotDetail.getChildren()) {
             switch (innerDetail.getElementName()) {
                 case KEY_CONTACT:
@@ -216,6 +226,9 @@ public class CotEventProtobufConverter {
                 case KEY_LABELS_ON:
                     mLabelsOnProtobufConverter.toLabelsOn(innerDetail);
                     break;
+                case KEY_CE_HUMAN_INPUT:
+                    mCeHumanInputProtobufConverter.toCeHumanInput(innerDetail);
+                    break;
                 case KEY_HEIGHT_UNIT:
                     mHeightAndHeightUnitProtobufConverter.toHeightUnit(innerDetail);
                     break;
@@ -229,7 +242,8 @@ public class CotEventProtobufConverter {
                     builder.setIconSetPath(innerDetail.getAttribute(KEY_ICON_SET_PATH));
                     break;
                 case KEY_COLOR:
-                    mDroppedFieldConverter.toColor(innerDetail);
+                    detailStyleBuilder = maybeMakeDetailStyleBuilder(detailStyleBuilder);
+                    mDetailStyleProtobufConverter.toColor(innerDetail, detailStyleBuilder);
                     break;
                 case KEY_ARCHIVE:
                     mDroppedFieldConverter.toArchive(innerDetail);
@@ -247,6 +261,11 @@ public class CotEventProtobufConverter {
                     throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
             }
         }
+
+        if (detailStyleBuilder != null) {
+            builder.setDetailStyle(detailStyleBuilder);
+        }
+
         return builder.build();
     }
 
@@ -269,7 +288,9 @@ public class CotEventProtobufConverter {
         mServerDestinationProtobufConverter.maybeAddServerDestination(cotDetail, detail.getServerDestination(), substitutionValues);
         mModelProtobufConverter.maybeAddModel(cotDetail, detail.getModel());
         mLabelsOnProtobufConverter.maybeAddLabelsOn(cotDetail, customBytesExtFields);
+        mCeHumanInputProtobufConverter.maybeAddCeHumanInput(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeAddHeightAndHeightUnit(cotDetail, customBytesExtFields);
+        mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detail.getDetailStyle().getColor());
 
         maybeAddUidDroid(cotEvent, cotDetail, detail.getContact());
 
@@ -299,5 +320,12 @@ public class CotEventProtobufConverter {
 
             cotDetail.addChild(userIconDetail);
         }
+    }
+
+    private ProtobufDetailStyle.MinimalDetailStyle.Builder maybeMakeDetailStyleBuilder(ProtobufDetailStyle.MinimalDetailStyle.Builder builder) {
+        if (builder != null) {
+            return builder;
+        }
+        return ProtobufDetailStyle.MinimalDetailStyle.newBuilder();
     }
 }

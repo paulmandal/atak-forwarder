@@ -21,7 +21,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class XmlComparer {
     private static final String TAG = "ATAKDBG." + XmlComparer.class.getSimpleName();
 
-    public void compareXmls(String messageType, String lhs, String rhs) {
+    public boolean compareXmls(String messageType, String lhs, String rhs) {
         try {
             DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
@@ -36,19 +36,20 @@ public class XmlComparer {
             Document converted = db.parse(new StringInputStream(rhs));
             converted.normalizeDocument();
 
-            boolean matched = original.isEqualNode(converted);
-            boolean otherMatched = compare(original, converted);
+            boolean matched = compare(original, converted);
 
-            if (!matched && !otherMatched) {
+            if (!matched) {
                 Log.d(TAG, "messageType: " + messageType + " mismatch, o: " + lhs);
                 Log.d(TAG, "messageType: " + messageType + " mismatch, c: " + rhs);
             } else {
                 Log.d(TAG, "messageType: " + messageType + " matched!");
+                return true;
             }
         } catch (ParserConfigurationException | IOException | SAXException | UnsupportedOperationException e) {
             Log.d(TAG, "messageType: " + messageType + " matched: false");
             e.printStackTrace();
         }
+        return false;
     }
 
     private boolean compare(Document lhs, Document rhs) {
@@ -90,14 +91,14 @@ public class XmlComparer {
                 Node rhsNode = rhsAttributeMap.get(nodeName);
 
                 if (rhsNode == null) {
-                    Log.d(TAG, "  " + path + "." + nodeName + ": missing attribute on converted obj.");
+                    Log.d(TAG, "  " + path + "." + lhs.getNodeName() + "." + nodeName + ": missing attribute on converted obj.");
                     return false;
                 }
 
                 String lhsValue = lhsNode.getNodeValue();
                 String rhsValue = rhsNode.getNodeValue();
                 if (!lhsValue.equals(rhsValue)) {
-                    Log.d(TAG, "  " + path + "." + nodeName + ": values differ: " + lhsValue + ", rhs: " + rhsValue);
+                    Log.d(TAG, "  " + path + "." + lhs.getNodeName() + "." + nodeName + ": values differ: " + lhsValue + ", rhs: " + rhsValue);
                     return false;
                 }
             }

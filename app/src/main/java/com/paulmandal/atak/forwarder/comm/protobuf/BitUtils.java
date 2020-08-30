@@ -66,7 +66,7 @@ public class BitUtils {
 
     public static long packNullableBoolean(long customBytes, int containerLength, Boolean value, int fieldLength, ShiftTracker shiftTracker) {
         if (value != null) {
-            customBytes |= ((value ? 1 : 0)) & createBitmask(1) << containerLength - shiftTracker.accumulatedShift - fieldLength;
+            customBytes |= ((value ? 1 : 0) & createBitmask(1)) << containerLength - shiftTracker.accumulatedShift - fieldLength;
             shiftTracker.accumulatedShift += fieldLength;
             return customBytes;
         }

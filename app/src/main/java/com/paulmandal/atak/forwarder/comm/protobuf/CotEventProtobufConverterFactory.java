@@ -25,13 +25,27 @@ public class CotEventProtobufConverterFactory {
                 new ChatProtobufConverter(
                         new ChatGroupProtobufConverter(),
                         new HierarchyProtobufConverter(new GroupProtobufConverter(new GroupContactProtobufConverter()))),
-                new LinkProtobufConverter(),
                 new LabelsOnProtobufConverter(),
                 new PrecisionLocationProtobufConverter(),
                 new DroppedFieldConverter(),
                 new StatusProtobufConverter(),
                 new HeightAndHeightUnitProtobufConverter(),
                 new ModelProtobufConverter(),
+                new DetailStyleProtobufConverter(),
+                new CeHumanInputProtobufConverter(),
+                new FreehandLinkProtobufConverter(),
+                new ChatLinkProtobufConverter(),
+                new ComplexLinkProtobufConverter(),
+                new ShapeLinkProtobufConverter(),
+                new RouteProtobufConverter(
+                        new NavCuesProtobufConverter(
+                                new NavCueProtobufConverter(
+                                        new TriggerProtobufConverter()
+                                )
+                        )
+                ),
+                new LinkAttrProtobufConverter(),
+                new TogProtobufConverter(),
                 startOfYearMs);
     }
 }

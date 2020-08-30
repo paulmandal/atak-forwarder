@@ -95,6 +95,7 @@ public class GroupProtobufConverter {
                 groupDetail.setAttribute(KEY_UID, uid);
             }
 
+
             List<ProtobufGroupContact.MinimalGroupContact> contacts = group.getContactList();
             for (ProtobufGroupContact.MinimalGroupContact contact : contacts) {
                 mGroupContactProtobufConverter.maybeAddGroupContact(groupDetail, contact, substitutionValues);

@@ -10,8 +10,12 @@ public class TrackProtobufConverter {
     private static final String KEY_COURSE = "course";
     private static final String KEY_SPEED = "speed";
 
+    private static final double NULL_MARKER = -1.0;
+
     public ProtobufTrack.MinimalTrack toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
         ProtobufTrack.MinimalTrack.Builder builder = ProtobufTrack.MinimalTrack.newBuilder();
+        builder.setCourse(NULL_MARKER);
+        builder.setSpeed(NULL_MARKER);
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -32,10 +36,10 @@ public class TrackProtobufConverter {
         if (track != null && track != ProtobufTrack.MinimalTrack.getDefaultInstance()) {
             CotDetail trackDetail = new CotDetail(KEY_TRACK);
 
-            if (track.getCourse() != 0.0) {
+            if (track.getCourse() != NULL_MARKER) {
                 trackDetail.setAttribute(KEY_COURSE, Double.toString(track.getCourse()));
             }
-            if (track.getSpeed() != 0.0) { // TODO: better handling of nulls
+            if (track.getSpeed() != NULL_MARKER) {
                 trackDetail.setAttribute(KEY_SPEED, Double.toString(track.getSpeed()));
             }
             cotDetail.addChild(trackDetail);

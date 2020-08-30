@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufHeight;
 
 public class HeightAndHeightUnitProtobufConverter {
     private static final String KEY_HEIGHT_UNIT = "height_unit";
@@ -17,6 +18,8 @@ public class HeightAndHeightUnitProtobufConverter {
             "feet",
             "nautical miles"
     };
+
+    private static final double NULL_MARKER = -1.0;
 
     public void maybeGetHeightUnitValues(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
         CotDetail heightUnitDetail = cotDetail.getFirstChildByName(0, KEY_HEIGHT_UNIT);
@@ -35,18 +38,6 @@ public class HeightAndHeightUnitProtobufConverter {
             if (heightUnitStr != null) {
                 customBytesExtFields.heightUnit = BitUtils.findMappingForArray("height.unit", MAPPING_HEIGHT_UNIT, heightUnitStr);
             }
-
-            String heightValueInnerText = heightDetail.getInnerText();
-            if (heightValueInnerText != null) {
-                double heightValueDouble = Double.parseDouble(heightValueInnerText);
-                customBytesExtFields.heightValue = (int)heightValueDouble;
-            }
-
-            String heightValueStr = heightDetail.getAttribute(KEY_VALUE);
-            if (heightValueStr != null) {
-                double heightValueDouble = Double.parseDouble(heightValueStr);
-                customBytesExtFields.heightValue = (int)heightValueDouble;
-            }
         }
     }
 
@@ -60,22 +51,33 @@ public class HeightAndHeightUnitProtobufConverter {
         }
     }
 
-    public void toHeight(CotDetail cotDetail) throws UnknownDetailFieldException {
+    public ProtobufHeight.MinimalHeight toHeight(CotDetail cotDetail) throws UnknownDetailFieldException {
+        ProtobufHeight.MinimalHeight.Builder builder = ProtobufHeight.MinimalHeight.newBuilder();
+        builder.setHeightValue(NULL_MARKER);
+
+        if (cotDetail.getInnerText() != null) {
+            builder.setHeightValue(Double.parseDouble(cotDetail.getInnerText()));
+        }
+
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
                 case KEY_UNIT:
+                    // Do nothing, we are packing this into bits
+                    break;
                 case KEY_VALUE:
-                    // Do nothing, we are packing these into bits
+                    builder.setHeightValue(Double.parseDouble(attribute.getValue()));
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: height." + attribute.getName());
             }
         }
+
+        return builder.build();
     }
 
-    public void maybeAddHeightAndHeightUnit(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.heightUnit != null || customBytesExtFields.heightValue != null) {
+    public void maybeAddHeightAndHeightUnit(CotDetail cotDetail, ProtobufHeight.MinimalHeight height, CustomBytesExtFields customBytesExtFields) {
+        if (customBytesExtFields.heightUnit != null || (height != null && height != ProtobufHeight.MinimalHeight.getDefaultInstance())) {
             CotDetail heightDetail = new CotDetail(KEY_HEIGHT);
 
             if (customBytesExtFields.heightUnit != null) {
@@ -88,8 +90,8 @@ public class HeightAndHeightUnitProtobufConverter {
                 heightDetail.setAttribute(KEY_UNIT, MAPPING_HEIGHT_UNIT[customBytesExtFields.heightUnit]);
             }
 
-            if (customBytesExtFields.heightValue != null) {
-                String heightValueStr = Float.toString(customBytesExtFields.heightValue);
+            if (height.getHeightValue() != NULL_MARKER) {
+                String heightValueStr = Double.toString(height.getHeightValue());
                 heightDetail.setInnerText(heightValueStr);
                 heightDetail.setAttribute(KEY_VALUE, heightValueStr);
             }

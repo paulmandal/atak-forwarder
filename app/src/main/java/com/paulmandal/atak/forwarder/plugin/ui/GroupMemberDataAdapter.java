@@ -9,6 +9,8 @@ import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
@@ -32,11 +34,12 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View view = null;
+    @NonNull
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
+        View view;
         if (convertView == null) {
             LayoutInflater inflator = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflator.inflate(R.layout.group_member_list_view_item, null);
+            view = inflator.inflate(R.layout.group_member_list_view_item, parent);
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.callsign = (TextView) view.findViewById(R.id.textview_callsign);
             viewHolder.inOutSwitch = (Switch) view.findViewById(R.id.switch_in_out);

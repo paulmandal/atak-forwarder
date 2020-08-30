@@ -31,19 +31,21 @@ public class ServerDestinationProtobufConverter {
     }
 
     public void maybeAddServerDestination(CotDetail cotDetail, ProtobufServerDestination.ServerDestination serverDestination, SubstitutionValues substitutionValues) {
-        if (serverDestination != null && serverDestination != ProtobufServerDestination.ServerDestination.getDefaultInstance()) {
-            CotDetail serverDestinationDetail = new CotDetail(KEY_SERVER_DESTINATION);
-
-            String destinations = serverDestination.getDestinations();
-            if (!StringUtils.isNullOrEmpty(destinations)) {
-                if (destinations.contains(UID_SUBSTITUTION_MARKER)) {
-                    destinations = destinations.replace(UID_SUBSTITUTION_MARKER, substitutionValues.uidFromGeoChat);
-                }
-                serverDestinationDetail.setAttribute(KEY_DESTINATIONS, destinations);
-            }
-
-            cotDetail.addChild(serverDestinationDetail);
+        if (serverDestination == null || serverDestination == ProtobufServerDestination.ServerDestination.getDefaultInstance()) {
+            return;
         }
-    }
 
+        CotDetail serverDestinationDetail = new CotDetail(KEY_SERVER_DESTINATION);
+
+        String destinations = serverDestination.getDestinations();
+        if (!StringUtils.isNullOrEmpty(destinations)) {
+            if (destinations.contains(UID_SUBSTITUTION_MARKER)) {
+                destinations = destinations.replace(UID_SUBSTITUTION_MARKER, substitutionValues.uidFromGeoChat);
+            }
+            serverDestinationDetail.setAttribute(KEY_DESTINATIONS, destinations);
+        }
+
+        cotDetail.addChild(serverDestinationDetail);
+    }
 }
+

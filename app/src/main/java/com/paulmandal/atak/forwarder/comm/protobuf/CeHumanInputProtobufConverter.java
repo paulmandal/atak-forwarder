@@ -27,12 +27,14 @@ public class CeHumanInputProtobufConverter {
     }
 
     public void maybeAddCeHumanInput(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.ceHumanInput != null) {
-            CotDetail ceHumanInputDetail = new CotDetail(KEY_CE_HUMAN_INPUT);
-
-            ceHumanInputDetail.setInnerText(Boolean.toString(customBytesExtFields.ceHumanInput));
-
-            cotDetail.addChild(ceHumanInputDetail);
+        if (customBytesExtFields.ceHumanInput == null) {
+            return;
         }
+
+        CotDetail ceHumanInputDetail = new CotDetail(KEY_CE_HUMAN_INPUT);
+
+        ceHumanInputDetail.setInnerText(Boolean.toString(customBytesExtFields.ceHumanInput));
+
+        cotDetail.addChild(ceHumanInputDetail);
     }
 }

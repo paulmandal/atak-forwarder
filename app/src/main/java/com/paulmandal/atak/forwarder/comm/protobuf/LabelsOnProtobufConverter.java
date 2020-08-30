@@ -32,12 +32,14 @@ public class LabelsOnProtobufConverter {
     }
 
     public void maybeAddLabelsOn(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.labelsOn != null) {
-            CotDetail labelsOnDetail = new CotDetail(KEY_LABELS_ON);
-
-            labelsOnDetail.setAttribute(KEY_VALUE, Boolean.toString(customBytesExtFields.labelsOn));
-
-            cotDetail.addChild(labelsOnDetail);
+        if (customBytesExtFields.labelsOn == null) {
+            return;
         }
+
+        CotDetail labelsOnDetail = new CotDetail(KEY_LABELS_ON);
+
+        labelsOnDetail.setAttribute(KEY_VALUE, Boolean.toString(customBytesExtFields.labelsOn));
+
+        cotDetail.addChild(labelsOnDetail);
     }
 }

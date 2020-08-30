@@ -3,7 +3,6 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDrawnShape;
-import com.paulmandal.atak.forwarder.protobufs.ProtobufShape;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufShapeLink;
 
 public class ShapeLinkProtobufConverter {
@@ -44,25 +43,27 @@ public class ShapeLinkProtobufConverter {
     }
 
     public void maybeAddDrawnShape(CotDetail cotDetail, ProtobufDrawnShape.DrawnShape drawnShape) {
-        if (drawnShape != null && drawnShape != ProtobufDrawnShape.DrawnShape.getDefaultInstance()
-                && drawnShape.getLinkList() != ProtobufShape.Shape.getDefaultInstance().getLinkList()) {
-            for (ProtobufShapeLink.ShapeLink link : drawnShape.getLinkList()) {
-                CotDetail linkDetail = new CotDetail(KEY_LINK);
+        if (drawnShape == null || drawnShape == ProtobufDrawnShape.DrawnShape.getDefaultInstance()
+                || drawnShape.getLinkList() == ProtobufDrawnShape.DrawnShape.getDefaultInstance().getLinkList()) {
+            return;
+        }
 
-                String point = "";
-                if (link.getLat() != NULL_VALUE) {
-                    point += Double.toString(link.getLat());
-                }
-                if (link.getLon() != NULL_VALUE) {
-                    point += ((point.length() > 0 ? "," : "") + link.getLon());
-                }
-                if (link.getHae() != NULL_VALUE) {
-                    point += ((point.length() > 0 ? "," : "") + link.getHae());
-                }
-                linkDetail.setAttribute(KEY_POINT, point);
+        for (ProtobufShapeLink.ShapeLink link : drawnShape.getLinkList()) {
+            CotDetail linkDetail = new CotDetail(KEY_LINK);
 
-                cotDetail.addChild(linkDetail);
+            String point = "";
+            if (link.getLat() != NULL_VALUE) {
+                point += Double.toString(link.getLat());
             }
+            if (link.getLon() != NULL_VALUE) {
+                point += ((point.length() > 0 ? "," : "") + link.getLon());
+            }
+            if (link.getHae() != NULL_VALUE) {
+                point += ((point.length() > 0 ? "," : "") + link.getHae());
+            }
+            linkDetail.setAttribute(KEY_POINT, point);
+
+            cotDetail.addChild(linkDetail);
         }
     }
 }

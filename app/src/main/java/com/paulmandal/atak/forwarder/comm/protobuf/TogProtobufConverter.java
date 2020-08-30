@@ -32,12 +32,14 @@ public class TogProtobufConverter {
     }
 
     public void maybeAddTog(CotDetail cotDetail, CustomBytesExtFields customBytesExtFields) {
-        if (customBytesExtFields.tog != null) {
-            CotDetail togDetail = new CotDetail(KEY_TOG);
-
-            togDetail.setAttribute(KEY_ENABLED, customBytesExtFields.tog ? "1" : "0");
-
-            cotDetail.addChild(togDetail);
+        if (customBytesExtFields.tog == null) {
+            return;
         }
+
+        CotDetail togDetail = new CotDetail(KEY_TOG);
+
+        togDetail.setAttribute(KEY_ENABLED, customBytesExtFields.tog ? "1" : "0");
+
+        cotDetail.addChild(togDetail);
     }
 }

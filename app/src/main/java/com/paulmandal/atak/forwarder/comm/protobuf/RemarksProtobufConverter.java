@@ -40,7 +40,7 @@ public class RemarksProtobufConverter {
                     try {
                         long time = CoordinatedTime.fromCot(attribute.getValue()).getMilliseconds();
                         long sinceStartOfYear = (time - startOfYearMs) / 1000;
-                        builder.setTime((int)sinceStartOfYear);
+                        builder.setTime((int) sinceStartOfYear);
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
@@ -53,30 +53,32 @@ public class RemarksProtobufConverter {
     }
 
     public void maybeAddRemarks(CotDetail cotDetail, ProtobufRemarks.Remarks remarks, SubstitutionValues substitutionValues, long startOfYearMs) {
-        if (remarks != null && remarks != ProtobufRemarks.Remarks.getDefaultInstance()) {
-            CotDetail remarksDetail = new CotDetail(KEY_REMARKS);
-
-            if (!StringUtils.isNullOrEmpty(remarks.getRemarks())) {
-                remarksDetail.setInnerText(remarks.getRemarks());
-            }
-            String source = remarks.getSource();
-            if (!StringUtils.isNullOrEmpty(source)) {
-                if (source.contains(UID_SUBSTITUTION_MARKER)) {
-                    source = source.replace(UID_SUBSTITUTION_MARKER, substitutionValues.uidFromGeoChat);
-                }
-                remarksDetail.setAttribute(KEY_SOURCE, source);
-            }
-            if (!StringUtils.isNullOrEmpty(remarks.getTo())) {
-                remarksDetail.setAttribute(KEY_TO, remarks.getTo());
-            }
-            long timeOffset = remarks.getTime();
-            if (timeOffset > 0) {
-                long timeMs = startOfYearMs + (timeOffset * 1000);
-                CoordinatedTime time = new CoordinatedTime(timeMs);
-                remarksDetail.setAttribute(KEY_TIME, time.toString());
-            }
-
-            cotDetail.addChild(remarksDetail);
+        if (remarks == null || remarks == ProtobufRemarks.Remarks.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail remarksDetail = new CotDetail(KEY_REMARKS);
+
+        if (!StringUtils.isNullOrEmpty(remarks.getRemarks())) {
+            remarksDetail.setInnerText(remarks.getRemarks());
+        }
+        String source = remarks.getSource();
+        if (!StringUtils.isNullOrEmpty(source)) {
+            if (source.contains(UID_SUBSTITUTION_MARKER)) {
+                source = source.replace(UID_SUBSTITUTION_MARKER, substitutionValues.uidFromGeoChat);
+            }
+            remarksDetail.setAttribute(KEY_SOURCE, source);
+        }
+        if (!StringUtils.isNullOrEmpty(remarks.getTo())) {
+            remarksDetail.setAttribute(KEY_TO, remarks.getTo());
+        }
+        long timeOffset = remarks.getTime();
+        if (timeOffset > 0) {
+            long timeMs = startOfYearMs + (timeOffset * 1000);
+            CoordinatedTime time = new CoordinatedTime(timeMs);
+            remarksDetail.setAttribute(KEY_TIME, time.toString());
+        }
+
+        cotDetail.addChild(remarksDetail);
     }
 }

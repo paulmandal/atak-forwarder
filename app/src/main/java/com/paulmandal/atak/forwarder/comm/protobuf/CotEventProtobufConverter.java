@@ -235,7 +235,7 @@ public class CotEventProtobufConverter {
                     builder.setContact(mContactProtobufConverter.toContact(innerDetail));
                     break;
                 case KEY_UNDERSCORED_GROUP:
-                    builder.setGroup(mUnderscoreGroupProtobufConverter.toUnderscoreGroup(innerDetail, substitutionValues));
+                    builder.setGroup(mUnderscoreGroupProtobufConverter.toUnderscoreGroup(innerDetail));
                     break;
                 case KEY_TAKV:
                     builder.setTakv(mTakvProtobufConverter.toTakv(innerDetail));

@@ -37,20 +37,22 @@ public class TakvProtobufConverter {
     }
 
     public void maybeAddTakv(CotDetail cotDetail, ProtobufTakv.Takv takv) {
-        if (takv != null && takv != ProtobufTakv.Takv.getDefaultInstance()) {
-            CotDetail takvDetail = new CotDetail(KEY_TAKV);
-
-            takvDetail.setAttribute(KEY_OS, Integer.toString(takv.getOs()));
-            if (!StringUtils.isNullOrEmpty(takv.getVersion())) {
-                takvDetail.setAttribute(KEY_VERSION, takv.getVersion());
-            }
-            if (!StringUtils.isNullOrEmpty(takv.getDevice())) {
-                takvDetail.setAttribute(KEY_DEVICE, takv.getDevice());
-            }
-            if (!StringUtils.isNullOrEmpty(takv.getPlatform())) {
-                takvDetail.setAttribute(KEY_PLATFORM, takv.getPlatform());
-            }
-            cotDetail.addChild(takvDetail);
+        if (takv == null || takv == ProtobufTakv.Takv.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail takvDetail = new CotDetail(KEY_TAKV);
+
+        takvDetail.setAttribute(KEY_OS, Integer.toString(takv.getOs()));
+        if (!StringUtils.isNullOrEmpty(takv.getVersion())) {
+            takvDetail.setAttribute(KEY_VERSION, takv.getVersion());
+        }
+        if (!StringUtils.isNullOrEmpty(takv.getDevice())) {
+            takvDetail.setAttribute(KEY_DEVICE, takv.getDevice());
+        }
+        if (!StringUtils.isNullOrEmpty(takv.getPlatform())) {
+            takvDetail.setAttribute(KEY_PLATFORM, takv.getPlatform());
+        }
+        cotDetail.addChild(takvDetail);
     }
 }

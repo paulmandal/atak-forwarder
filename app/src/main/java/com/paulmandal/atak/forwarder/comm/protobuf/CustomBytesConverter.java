@@ -16,7 +16,7 @@ public class CustomBytesConverter {
     private static final int CUSTOM_FIELD_STALE_LENGTH = 17;
     private static final int CUSTOM_FIELD_HAE_LENGTH = 14;
 
-    public long packCustomBytes(CoordinatedTime time, CoordinatedTime stale, double hae, long startOfYearMs) throws MappingNotFoundException {
+    public long packCustomBytes(CoordinatedTime time, CoordinatedTime stale, double hae, long startOfYearMs) {
         ShiftTracker shiftTracker = new ShiftTracker();
         long customBytes = 0;
 
@@ -44,6 +44,4 @@ public class CustomBytesConverter {
 
         return new CustomBytesFields(time, stale, hae);
     }
-
-
 }

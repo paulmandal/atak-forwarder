@@ -17,7 +17,7 @@ public class UnderscoreGroupProtobufConverter {
         }
     }
 
-    public ProtobufUnderscoreGroup.UnderscoreGroup toUnderscoreGroup(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
+    public ProtobufUnderscoreGroup.UnderscoreGroup toUnderscoreGroup(CotDetail cotDetail) throws UnknownDetailFieldException {
         ProtobufUnderscoreGroup.UnderscoreGroup.Builder builder = ProtobufUnderscoreGroup.UnderscoreGroup.newBuilder();
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
@@ -36,17 +36,19 @@ public class UnderscoreGroupProtobufConverter {
     }
 
     public void maybeAddUnderscoreGroup(CotDetail cotDetail, ProtobufUnderscoreGroup.UnderscoreGroup group, CustomBytesExtFields customBytesExtFields) {
-        if (group != null && group != ProtobufUnderscoreGroup.UnderscoreGroup.getDefaultInstance()) {
-            CotDetail groupDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
-
-            if (!StringUtils.isNullOrEmpty(group.getName())) {
-                groupDetail.setAttribute(KEY_NAME, group.getName());
-            }
-            if (!StringUtils.isNullOrEmpty(customBytesExtFields.role)) {
-                groupDetail.setAttribute(KEY_ROLE, customBytesExtFields.role);
-            }
-
-            cotDetail.addChild(groupDetail);
+        if (group == null || group == ProtobufUnderscoreGroup.UnderscoreGroup.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail groupDetail = new CotDetail(KEY_UNDERSCORED_GROUP);
+
+        if (!StringUtils.isNullOrEmpty(group.getName())) {
+            groupDetail.setAttribute(KEY_NAME, group.getName());
+        }
+        if (!StringUtils.isNullOrEmpty(customBytesExtFields.role)) {
+            groupDetail.setAttribute(KEY_ROLE, customBytesExtFields.role);
+        }
+
+        cotDetail.addChild(groupDetail);
     }
 }

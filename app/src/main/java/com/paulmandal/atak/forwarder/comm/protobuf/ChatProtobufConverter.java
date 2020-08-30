@@ -85,39 +85,41 @@ public class ChatProtobufConverter {
 
 
     public void maybeAddChat(CotDetail cotDetail, ProtobufChat.Chat chat, SubstitutionValues substitutionValues) {
-        if (chat != null && chat != ProtobufChat.Chat.getDefaultInstance()) {
-            CotDetail chatDetail = new CotDetail(KEY_CHAT);
-
-            String parent = chat.getParent();
-            if (!StringUtils.isNullOrEmpty(parent)) {
-                if (parent.equals(USER_GROUPS_SUBSTITUTION_MARKER)) {
-                    parent = VALUE_USER_GROUPS;
-                }
-                chatDetail.setAttribute(KEY_PARENT, parent);
-            }
-            if (chat.getGroupOwner() > 0) {
-                chatDetail.setAttribute(KEY_GROUP_OWNER, Boolean.toString((chat.getGroupOwner() & BitUtils.createBitmask(1)) == 1));
-            }
-            String chatroom = chat.getChatroom();
-            if (!StringUtils.isNullOrEmpty(chatroom)) {
-                if (chatroom.equals(CHATROOM_SUBSTITUTION_MARKER)) {
-                    chatroom = substitutionValues.chatroomFromGeoChat;
-                }
-                chatDetail.setAttribute(KEY_CHATROOM, chatroom);
-            }
-            substitutionValues.idFromChat = chat.getId();
-            if (!StringUtils.isNullOrEmpty(substitutionValues.idFromChat)) {
-                chatDetail.setAttribute(KEY_ID, substitutionValues.idFromChat);
-            }
-            substitutionValues.senderCallsignFromChat = chat.getSenderCallsign();
-            if (!StringUtils.isNullOrEmpty(substitutionValues.senderCallsignFromChat)) {
-                chatDetail.setAttribute(KEY_SENDER_CALLSIGN, substitutionValues.senderCallsignFromChat);
-            }
-
-            mChatGroupProtobufConverter.maybeAddChatGroup(chatDetail, chat.getChatGroup(), substitutionValues);
-            mHierarchyProtobufConverter.maybeAddHierarchy(chatDetail, chat.getHierarchy(), substitutionValues);
-
-            cotDetail.addChild(chatDetail);
+        if (chat == null || chat == ProtobufChat.Chat.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail chatDetail = new CotDetail(KEY_CHAT);
+
+        String parent = chat.getParent();
+        if (!StringUtils.isNullOrEmpty(parent)) {
+            if (parent.equals(USER_GROUPS_SUBSTITUTION_MARKER)) {
+                parent = VALUE_USER_GROUPS;
+            }
+            chatDetail.setAttribute(KEY_PARENT, parent);
+        }
+        if (chat.getGroupOwner() > 0) {
+            chatDetail.setAttribute(KEY_GROUP_OWNER, Boolean.toString((chat.getGroupOwner() & BitUtils.createBitmask(1)) == 1));
+        }
+        String chatroom = chat.getChatroom();
+        if (!StringUtils.isNullOrEmpty(chatroom)) {
+            if (chatroom.equals(CHATROOM_SUBSTITUTION_MARKER)) {
+                chatroom = substitutionValues.chatroomFromGeoChat;
+            }
+            chatDetail.setAttribute(KEY_CHATROOM, chatroom);
+        }
+        substitutionValues.idFromChat = chat.getId();
+        if (!StringUtils.isNullOrEmpty(substitutionValues.idFromChat)) {
+            chatDetail.setAttribute(KEY_ID, substitutionValues.idFromChat);
+        }
+        substitutionValues.senderCallsignFromChat = chat.getSenderCallsign();
+        if (!StringUtils.isNullOrEmpty(substitutionValues.senderCallsignFromChat)) {
+            chatDetail.setAttribute(KEY_SENDER_CALLSIGN, substitutionValues.senderCallsignFromChat);
+        }
+
+        mChatGroupProtobufConverter.maybeAddChatGroup(chatDetail, chat.getChatGroup(), substitutionValues);
+        mHierarchyProtobufConverter.maybeAddHierarchy(chatDetail, chat.getHierarchy(), substitutionValues);
+
+        cotDetail.addChild(chatDetail);
     }
 }

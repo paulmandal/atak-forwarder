@@ -45,28 +45,30 @@ public class ChatGroupProtobufConverter {
     }
 
     public void maybeAddChatGroup(CotDetail cotDetail, ProtobufChatGroup.ChatGroup chatGroup, SubstitutionValues substitutionValues) {
-        if (chatGroup != null && chatGroup != ProtobufChatGroup.ChatGroup.getDefaultInstance()) {
-            CotDetail chatGroupDetail = new CotDetail(KEY_CHAT_GROUP);
-
-            String id = chatGroup.getId();
-            if (!StringUtils.isNullOrEmpty(id)) {
-                if (id.equals(ID_SUBSTITUTION_MARKER)) {
-                    id = substitutionValues.idFromChat;
-                }
-                chatGroupDetail.setAttribute(KEY_ID, id);
-            }
-            List<String> uidList = chatGroup.getUidList();
-            for (int i = 0 ; i < uidList.size() ; i++) {
-                String uid = uidList.get(i);
-                if (uid.equals(UID_SUBSTITUTION_MARKER)) {
-                    uid = substitutionValues.uidFromGeoChat;
-                } else {
-                    substitutionValues.uidsFromChatGroup.add(uid);
-                }
-                chatGroupDetail.setAttribute(KEY_UID + i, uid);
-            }
-
-            cotDetail.addChild(chatGroupDetail);
+        if (chatGroup == null || chatGroup == ProtobufChatGroup.ChatGroup.getDefaultInstance()) {
+            return;
         }
+
+        CotDetail chatGroupDetail = new CotDetail(KEY_CHAT_GROUP);
+
+        String id = chatGroup.getId();
+        if (!StringUtils.isNullOrEmpty(id)) {
+            if (id.equals(ID_SUBSTITUTION_MARKER)) {
+                id = substitutionValues.idFromChat;
+            }
+            chatGroupDetail.setAttribute(KEY_ID, id);
+        }
+        List<String> uidList = chatGroup.getUidList();
+        for (int i = 0; i < uidList.size(); i++) {
+            String uid = uidList.get(i);
+            if (uid.equals(UID_SUBSTITUTION_MARKER)) {
+                uid = substitutionValues.uidFromGeoChat;
+            } else {
+                substitutionValues.uidsFromChatGroup.add(uid);
+            }
+            chatGroupDetail.setAttribute(KEY_UID + i, uid);
+        }
+
+        cotDetail.addChild(chatGroupDetail);
     }
 }

@@ -12,6 +12,7 @@ public class TrackProtobufConverter {
 
     public ProtobufTrack.MinimalTrack toTrack(CotDetail cotDetail) throws UnknownDetailFieldException {
         ProtobufTrack.MinimalTrack.Builder builder = ProtobufTrack.MinimalTrack.newBuilder();
+        builder.setSpeed(-1.0); // Set this to a default so we know if speed = 0.0 or was null when we're re-assembling
         CotAttribute[] attributes = cotDetail.getAttributes();
         for (CotAttribute attribute : attributes) {
             switch (attribute.getName()) {
@@ -35,7 +36,7 @@ public class TrackProtobufConverter {
             if (track.getCourse() != 0.0) {
                 trackDetail.setAttribute(KEY_COURSE, Double.toString(track.getCourse()));
             }
-            if (track.getSpeed() != 0.0) { // TODO: better handling of nulls
+            if (track.getSpeed() != -1.0) {
                 trackDetail.setAttribute(KEY_SPEED, Double.toString(track.getSpeed()));
             }
             cotDetail.addChild(trackDetail);

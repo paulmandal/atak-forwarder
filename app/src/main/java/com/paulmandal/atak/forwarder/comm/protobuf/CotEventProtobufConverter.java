@@ -4,6 +4,8 @@ import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
+import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDetail;
 
@@ -35,6 +37,7 @@ public class CotEventProtobufConverter {
     // Fields
     private static final String KEY_ICON_SET_PATH = "iconsetpath";
     private static final String KEY_UID = "uid";
+    private static final String KEY_DROID = "Droid";
 
     /**
      * Special Values
@@ -124,7 +127,7 @@ public class CotEventProtobufConverter {
             cotEvent.setStart(customBytesFields.time);
             cotEvent.setStale(customBytesFields.stale);
             cotEvent.setHow(customBytesExtFields.how);
-            cotEvent.setDetail(cotDetailFromProtoDetail(protoCotEvent.getDetail(), customBytesExtFields, substitutionValues));
+            cotEvent.setDetail(cotDetailFromProtoDetail(cotEvent, protoCotEvent.getDetail(), customBytesExtFields, substitutionValues));
             cotEvent.setPoint(new CotPoint(protoCotEvent.getLat(), protoCotEvent.getLon(), customBytesFields.hae, protoCotEvent.getCe(), protoCotEvent.getLe()));
         } catch (InvalidProtocolBufferException e) {
             e.printStackTrace();
@@ -251,7 +254,7 @@ public class CotEventProtobufConverter {
      * toCotEvent
      */
 
-    private CotDetail cotDetailFromProtoDetail(ProtobufDetail.MinimalDetail detail, CustomBytesExtFields customBytesExtFields, SubstitutionValues substitutionValues) {
+    private CotDetail cotDetailFromProtoDetail(CotEvent cotEvent, ProtobufDetail.MinimalDetail detail, CustomBytesExtFields customBytesExtFields, SubstitutionValues substitutionValues) {
         CotDetail cotDetail = new CotDetail();
 
         mTakvProtobufConverter.maybeAddTakv(cotDetail, detail.getTakv());
@@ -268,7 +271,27 @@ public class CotEventProtobufConverter {
         mLabelsOnProtobufConverter.maybeAddLabelsOn(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeAddHeightAndHeightUnit(cotDetail, customBytesExtFields);
 
-        String iconSetPath = detail.getIconSetPath();
+        maybeAddUidDroid(cotEvent, cotDetail, detail.getContact());
+
+        maybeAddUserIcon(cotDetail, detail.getIconSetPath());
+
+        return cotDetail;
+    }
+
+    private void maybeAddUidDroid(CotEvent cotEvent, CotDetail cotDetail, ProtobufContact.MinimalContact contact) {
+        boolean isPli = cotEvent.getType().equals(CotMessageTypes.TYPE_PLI);
+        String callsign = contact.getCallsign();
+
+        if (!StringUtils.isNullOrEmpty(callsign) && isPli) {
+            CotDetail uidDetail = new CotDetail(KEY_UID);
+
+            uidDetail.setAttribute(KEY_DROID, callsign);
+
+            cotDetail.addChild(uidDetail);
+        }
+    }
+
+    private void maybeAddUserIcon(CotDetail cotDetail, String iconSetPath) {
         if (!StringUtils.isNullOrEmpty(iconSetPath)) {
             CotDetail userIconDetail = new CotDetail(KEY_USER_ICON);
 
@@ -276,7 +299,5 @@ public class CotEventProtobufConverter {
 
             cotDetail.addChild(userIconDetail);
         }
-
-        return cotDetail;
     }
 }

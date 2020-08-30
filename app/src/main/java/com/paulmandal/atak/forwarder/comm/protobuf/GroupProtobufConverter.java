@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
+import android.util.Log;
+
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufGroup;
@@ -59,6 +61,7 @@ public class GroupProtobufConverter {
         for (CotDetail child : children) {
             switch (child.getElementName()) {
                 case KEY_GROUP:
+                    Log.d("HIERDBG", "  adding nested group: " + child.getAttribute("uid"));
                     builder.setGroup(toGroup(child, substitutionValues));
                     break;
                 case KEY_CONTACT:
@@ -95,6 +98,8 @@ public class GroupProtobufConverter {
                 groupDetail.setAttribute(KEY_UID, uid);
             }
 
+            Log.d("HIERDBG", "adding COT for group: " + uid);
+
             List<ProtobufGroupContact.MinimalGroupContact> contacts = group.getContactList();
             for (ProtobufGroupContact.MinimalGroupContact contact : contacts) {
                 mGroupContactProtobufConverter.maybeAddGroupContact(groupDetail, contact, substitutionValues);
@@ -102,6 +107,7 @@ public class GroupProtobufConverter {
 
             ProtobufGroup.MinimalGroup nestedGroup = group.getGroup();
             if (nestedGroup != null && nestedGroup != ProtobufGroup.MinimalGroup.getDefaultInstance()) {
+                Log.d("HIERDBG", "  adding nested COT for group: " + uid);
                 maybeAddGroup(groupDetail, nestedGroup, substitutionValues);
             }
 

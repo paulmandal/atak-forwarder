@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
+import android.util.Log;
+
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufGroup;
@@ -31,6 +33,7 @@ public class HierarchyProtobufConverter {
         for (CotDetail child : children) {
             switch (child.getElementName()) {
                 case KEY_GROUP:
+                    Log.d("HIERDBG", "adding group: " + child.getAttribute("uid"));
                     builder.setGroup(mGroupProtobufConverter.toGroup(child, substitutionValues));
                     break;
                 default:

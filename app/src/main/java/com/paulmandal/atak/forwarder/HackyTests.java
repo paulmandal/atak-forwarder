@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder;
 
 import android.util.Log;
 
-import com.amazonaws.util.StringInputStream;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
@@ -10,15 +9,7 @@ import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFactory;
 import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
 import com.paulmandal.atak.forwarder.comm.protobuf.UnknownDetailFieldException;
-
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import java.io.IOException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import com.paulmandal.atak.forwarder.xmlutils.XmlComparer;
 
 // Tests to validate our protobufs
 public class HackyTests {
@@ -168,52 +159,35 @@ public class HackyTests {
         validate("Casevac", "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><event version=\"2.0\" uid=\"73443f09-ffa1-48cc-9320-468ef66de928\" type=\"b-r-f-h-c\" time=\"2020-08-29T21:35:16.116Z\" start=\"2020-08-29T21:35:16.116Z\" stale=\"2020-09-15T22:15:45.044Z\" how=\"h-g-i-g-o\"><point lat=\"39.78241884464438\" lon=\"-104.95112289275129\" hae=\"1571.4416229473507\" ce=\"9999999.0\" le=\"9999999.0\"/><detail><status readiness=\"false\"/><archive/><contact callsign=\"dasuberdog\"/><remarks/><archive/><link uid=\"ANDROID-53af0912586418dc\" production_time=\"2020-08-29T21:34:15.269Z\" type=\"a-f-G-U-C\" parent_callsign=\"dasuberdog\" relation=\"p-p\"/><precisionlocation altsrc=\"DTED2\"/><color argb=\"-1\"/><_flow-tags_ AndroidMedicalLine=\"2020-08-29T21:35:16.116Z\"/><_medevac_ litter=\"1\" nonus_civilian=\"1\" us_civilian=\"1\" freq=\"67\" terrain_none=\"true\" ambulatory=\"1\" zone_prot_selection=\"0\" title=\"MED.29.153415\" priority=\"1\" epw=\"1\" hoist=\"true\" us_military=\"1\" nonus_military=\"1\" extraction_equipment=\"true\" medline_remarks=\"\" security=\"1\" routine=\"1\" ventilator=\"true\" equipment_other=\"true\" hlz_marking=\"1\" casevac=\"false\" urgent=\"1\" equipment_detail=\"bals\" child=\"1\"/></detail></event>");
     }
 
-    public void validate(String messageType, String testXml) throws MappingNotFoundException, UnknownDetailFieldException {
+    public void validate(String messageType, String testXml) {
+        Log.d(TAG, "validating: " + messageType);
         CotEvent cotEvent = CotEvent.parse(testXml);
 
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
-        byte[] cotEventAsBytes = cotEventProtobufConverter.toByteArray(cotEvent);
-        CotEvent convertedCotEvent = cotEventProtobufConverter.toCotEvent(cotEventAsBytes);
-
-        // Wipe out known fudged fields
-        CoordinatedTime placeholderTime = new CoordinatedTime();
-        CotPoint cotPoint = new CotPoint(0.0, 0.0, 0.0, 0.0, 0.0);
-
-        cotEvent.setTime(placeholderTime);
-        cotEvent.setStart(placeholderTime);
-        cotEvent.setStale(placeholderTime);
-        cotEvent.setPoint(cotPoint);
-
-        convertedCotEvent.setTime(placeholderTime);
-        convertedCotEvent.setStart(placeholderTime);
-        convertedCotEvent.setStale(placeholderTime);
-        convertedCotEvent.setPoint(cotPoint);
-
         try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            dbf.setNamespaceAware(true);
-            dbf.setCoalescing(true);
-            dbf.setIgnoringElementContentWhitespace(true);
-            dbf.setIgnoringComments(true);
-            DocumentBuilder db = dbf.newDocumentBuilder();
+            byte[] cotEventAsBytes = cotEventProtobufConverter.toByteArray(cotEvent);
+            CotEvent convertedCotEvent = cotEventProtobufConverter.toCotEvent(cotEventAsBytes);
 
-            Document original = db.parse(new StringInputStream(cotEvent.toString()));
-            original.normalizeDocument();
+            // Wipe out known fudged fields
+            CoordinatedTime placeholderTime = new CoordinatedTime();
+            CotPoint cotPoint = new CotPoint(0.0, 0.0, 0.0, 0.0, 0.0);
 
-            Document converted = db.parse(new StringInputStream(convertedCotEvent.toString()));
-            converted.normalizeDocument();
+            cotEvent.setTime(placeholderTime);
+            cotEvent.setStart(placeholderTime);
+            cotEvent.setStale(placeholderTime);
+            cotEvent.setPoint(cotPoint);
 
-            boolean matched = original.isEqualNode(converted);
+            convertedCotEvent.setTime(placeholderTime);
+            convertedCotEvent.setStart(placeholderTime);
+            convertedCotEvent.setStale(placeholderTime);
+            convertedCotEvent.setPoint(cotPoint);
 
-            if (!matched) {
-                Log.d(TAG, "messageType: " + messageType + " mismatch, o: " + cotEvent.toString());
-                Log.d(TAG, "messageType: " + messageType + " mismatch, c: " + convertedCotEvent.toString());
-            } else {
-                Log.d(TAG, "messageType: " + messageType + " matched!");
-            }
-        } catch (ParserConfigurationException | IOException | SAXException | UnsupportedOperationException e) {
-            Log.d(TAG, "messageType: " + messageType + " matched: false");
+            XmlComparer xmlComparer = new XmlComparer();
+            xmlComparer.compareXmls(messageType, cotEvent.toString(), convertedCotEvent.toString());
+        } catch (UnknownDetailFieldException | MappingNotFoundException e) {
+            Log.d(TAG, "validation failed while marshalling to XML: " + e.getMessage());
             e.printStackTrace();
         }
     }
+
 }

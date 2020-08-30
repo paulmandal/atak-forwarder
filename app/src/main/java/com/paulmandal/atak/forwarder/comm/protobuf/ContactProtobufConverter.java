@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.comm.protobuf;
 
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;
-import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 
 import java.math.BigInteger;
@@ -15,7 +14,7 @@ public class ContactProtobufConverter {
     private static final String KEY_CALLSIGN = "callsign";
     private static final String KEY_ENDPOINT = "endpoint";
 
-    private static final String FAKE_ENDPOINT_ADDRESS = "10.254.254.254:4242:tcp";
+    private static final String FAKE_ENDPOINT_ADDRESS = "0.0.0.0";
     private static final String DEFAULT_CHAT_PORT_AND_PROTO = ":4242:tcp";
 
     public ProtobufContact.Contact toContact(CotDetail cotDetail) throws UnknownDetailFieldException {
@@ -43,7 +42,7 @@ public class ContactProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddContact(CotDetail cotDetail, ProtobufContact.Contact contact, CustomBytesExtFields customBytesExtFields) {
+    public void maybeAddContact(CotDetail cotDetail, ProtobufContact.Contact contact, boolean isPli) {
         if (contact == null || contact == ProtobufContact.Contact.getDefaultInstance()) {
             return;
         }
@@ -62,9 +61,9 @@ public class ContactProtobufConverter {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
-        } else if (customBytesExtFields.how.equals(CotMessageTypes.TYPE_PLI)) {
+        } else if (isPli) {
             // PLI without endpoint -- sent by client that doesn't have an IP address, add a fake endpoint so that GeoChat works
-            contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS);
+            contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS + DEFAULT_CHAT_PORT_AND_PROTO);
         }
 
         cotDetail.addChild(contactDetail);

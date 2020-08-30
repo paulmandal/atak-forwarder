@@ -352,7 +352,7 @@ public class CotEventProtobufConverter {
         CotDetail cotDetail = new CotDetail();
 
         mTakvProtobufConverter.maybeAddTakv(cotDetail, detail.getTakv());
-        mContactProtobufConverter.maybeAddContact(cotDetail, detail.getContact(), customBytesExtFields);
+        mContactProtobufConverter.maybeAddContact(cotDetail, detail.getContact(), cotEvent.getType().equals(CotMessageTypes.TYPE_PLI));
         mPrecisionLocationProtobufConverter.maybeAddPrecisionLocation(cotDetail, customBytesExtFields);
         mUnderscoreGroupProtobufConverter.maybeAddUnderscoreGroup(cotDetail, detail.getGroup(), customBytesExtFields);
         mStatusProtobufConverter.maybeAddStatus(cotDetail, customBytesExtFields);

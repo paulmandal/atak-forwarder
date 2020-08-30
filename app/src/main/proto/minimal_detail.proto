@@ -11,13 +11,16 @@ import "minimal_takv.proto";
 import "minimal_underscore_group.proto";
 import "minimal_track.proto";
 import "minimal_remarks.proto";
-import "minimal_link.proto";
+import "minimal_complex_link.proto";
+import "minimal_chat_link.proto";
+import "minimal_freehand_link.proto";
 import "minimal_chat.proto";
 import "minimal_server_destination.proto";
 import "minimal_model.proto";
 import "minimal_detail_style.proto"; // TODO: rename this?
-import "minimal_freehand_link.proto";
 import "minimal_height.proto";
+import "minimal_shape.proto";
+import "minimal_route.proto";
 
 message MinimalDetail {
   MinimalContact contact = 1;
@@ -25,12 +28,15 @@ message MinimalDetail {
   MinimalUnderscoreGroup group = 3;
   MinimalTrack track = 4;
   MinimalRemarks remarks = 5;
-  MinimalLink link = 6;
+  MinimalComplexLink complexLink = 6;
+  MinimalChatLink chatLink = 7;
   MinimalChat chat = 8;
   MinimalServerDestination serverDestination = 9;
   MinimalModel model = 10;
   MinimalDetailStyle detailStyle = 11;
-  MinimalFreehandLink freehandLink = 12;
-  MinimalHeight height = 13;
-  string iconSetPath = 14;
+  MinimalHeight height = 12;
+  string iconSetPath = 13;
+  MinimalShape shape = 14;
+  MinimalRoute route = 15;
+  MinimalFreehandLink freehandLink = 16;
 }

@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufRoute";
+
+import "minimal_route_link.proto";
+
+message MinimalRoute {
+  repeated MinimalRouteLink link = 1;
+}

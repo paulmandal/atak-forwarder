@@ -4,9 +4,9 @@ option optimize_for = LITE_RUNTIME;
 
 package com.paulmandal.atak.forwarder.protobufs;
 
-option java_outer_classname = "ProtobufLink";
+option java_outer_classname = "ProtobufComplexLink";
 
-message MinimalLink {
+message MinimalComplexLink {
   string uid = 1;
   string type = 2; // TODO: move to custom bytes + mapping
   string parentCallsign = 3;

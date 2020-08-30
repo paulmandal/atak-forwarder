@@ -10,4 +10,7 @@ import "minimal_color.proto";
 
 message MinimalDetailStyle {
   MinimalColor color = 1;
+  int32 strokeWeight = 2;
+  int32 strokeColor = 3;
+  int32 fillColor = 4;
 }

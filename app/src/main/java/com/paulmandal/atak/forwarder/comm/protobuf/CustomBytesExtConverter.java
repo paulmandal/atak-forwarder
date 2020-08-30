@@ -23,7 +23,6 @@ public class CustomBytesExtConverter {
     private static final int CUSTOM_FIELD_READINESS_LENGTH = 2;
     private static final int CUSTOM_FIELD_LABELS_ON_LENGTH = 2;
     private static final int CUSTOM_FIELD_HEIGHT_UNIT_LENGTH = 4;
-    private static final int CUSTOM_FIELD_HEIGHT_VALUE_LENGTH = 14;
     private static final int CUSTOM_FIELD_CE_HUMAN_INPUT_LENGTH = 2;
 
     private static final String[] MAPPING_HOW = {
@@ -75,7 +74,6 @@ public class CustomBytesExtConverter {
         customBytes = BitUtils.packNullableBoolean(customBytes, LONG_INT_LENGTH, customBytesExtFields.readiness, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
         customBytes = BitUtils.packNullableBoolean(customBytes, LONG_INT_LENGTH, customBytesExtFields.labelsOn, CUSTOM_FIELD_LABELS_ON_LENGTH, shiftTracker);
         customBytes = BitUtils.packNullableInt(customBytes, LONG_INT_LENGTH, customBytesExtFields.heightUnit, CUSTOM_FIELD_HEIGHT_UNIT_LENGTH, shiftTracker);
-        customBytes = BitUtils.packNullableInt(customBytes, LONG_INT_LENGTH, customBytesExtFields.heightValue, CUSTOM_FIELD_HEIGHT_VALUE_LENGTH, shiftTracker);
         customBytes = BitUtils.packNullableBoolean(customBytes, LONG_INT_LENGTH, customBytesExtFields.ceHumanInput, CUSTOM_FIELD_CE_HUMAN_INPUT_LENGTH, shiftTracker);
 
         return customBytes;
@@ -92,9 +90,8 @@ public class CustomBytesExtConverter {
         Boolean readiness = BitUtils.unpackNullableBoolean(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_READINESS_LENGTH, shiftTracker);
         Boolean labelsOn = BitUtils.unpackNullableBoolean(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_LABELS_ON_LENGTH, shiftTracker);
         Integer heightUnit = BitUtils.unpackNullableInt(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_HEIGHT_UNIT_LENGTH, shiftTracker);
-        Integer heightValue = BitUtils.unpackNullableInt(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_HEIGHT_VALUE_LENGTH, shiftTracker);
         Boolean ceHumanInput = BitUtils.unpackNullableBoolean(customBytesExt, LONG_INT_LENGTH, CUSTOM_FIELD_CE_HUMAN_INPUT_LENGTH, shiftTracker);
 
-        return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery, readiness, labelsOn, heightUnit, heightValue, ceHumanInput);
+        return new CustomBytesExtFields(how, geoPointSrc, altSrc, role, battery, readiness, labelsOn, heightUnit, ceHumanInput);
     }
 }

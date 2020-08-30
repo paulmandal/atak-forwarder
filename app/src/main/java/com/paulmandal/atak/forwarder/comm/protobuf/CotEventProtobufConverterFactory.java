@@ -34,6 +34,7 @@ public class CotEventProtobufConverterFactory {
                 new ModelProtobufConverter(),
                 new DetailStyleProtobufConverter(),
                 new CeHumanInputProtobufConverter(),
+                new FreehandLinkProtobufConverter(),
                 startOfYearMs);
     }
 }

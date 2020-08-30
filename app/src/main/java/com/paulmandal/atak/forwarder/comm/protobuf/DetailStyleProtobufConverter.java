@@ -7,6 +7,8 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufDetailStyle;
 
 public class DetailStyleProtobufConverter {
     private static final String KEY_COLOR = "color";
+    private static final String KEY_STROKE_COLOR = "strokeColor";
+    private static final String KEY_STROKE_WEIGHT = "strokeWeight";
 
     private static final String KEY_ARGB = "argb";
     private static final String KEY_VALUE = "value";
@@ -42,6 +44,52 @@ public class DetailStyleProtobufConverter {
             }
 
             cotDetail.addChild(colorDetail);
+        }
+    }
+
+    public void toStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_VALUE:
+                    detailStyleBuilder.setStrokeColor(Integer.parseInt(attribute.getValue()));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: strokeColor." + attribute.getName());
+            }
+        }
+    }
+
+    public void maybeAddStrokeColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle detailStyle) {
+        if (detailStyle.getStrokeColor() != 0) {
+            CotDetail strokeColorDetail = new CotDetail(KEY_STROKE_COLOR);
+
+            strokeColorDetail.setAttribute(KEY_VALUE, Integer.toString(detailStyle.getStrokeColor()));
+
+            cotDetail.addChild(strokeColorDetail);
+        }
+    }
+
+    public void toStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_VALUE:
+                    detailStyleBuilder.setStrokeWeight((int)(Double.parseDouble(attribute.getValue()) * 100));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: strokeWeight." + attribute.getName());
+            }
+        }
+    }
+
+    public void maybeAddStrokeWeight(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle detailStyle) {
+        if (detailStyle.getStrokeWeight() != 0) {
+            CotDetail strokeWeightDetail = new CotDetail(KEY_STROKE_WEIGHT);
+
+            strokeWeightDetail.setAttribute(KEY_VALUE, Double.toString(detailStyle.getStrokeWeight() / 100D));
+
+            cotDetail.addChild(strokeWeightDetail);
         }
     }
 }

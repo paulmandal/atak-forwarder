@@ -16,6 +16,8 @@ import "minimal_chat.proto";
 import "minimal_server_destination.proto";
 import "minimal_model.proto";
 import "minimal_detail_style.proto"; // TODO: rename this?
+import "minimal_freehand_link.proto";
+import "minimal_height.proto";
 
 message MinimalDetail {
   MinimalContact contact = 1;
@@ -28,5 +30,7 @@ message MinimalDetail {
   MinimalServerDestination serverDestination = 9;
   MinimalModel model = 10;
   MinimalDetailStyle detailStyle = 11;
-  string iconSetPath = 12;
+  MinimalFreehandLink freehandLink = 12;
+  MinimalHeight height = 13;
+  string iconSetPath = 14;
 }

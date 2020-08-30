@@ -43,10 +43,10 @@ public class ShapeLinkProtobufConverter {
         shapeBuilder.addLink(builder);
     }
 
-    public void maybeAddShape(CotDetail cotDetail, ProtobufShape.MinimalShape shape) {
-        if (shape != null && shape != ProtobufShape.MinimalShape.getDefaultInstance()
-                && shape.getLinkList() != ProtobufShape.MinimalShape.getDefaultInstance().getLinkList()) {
-            for (ProtobufShapeLink.MinimalShapeLink link : shape.getLinkList()) {
+    public void maybeAddDrawnShape(CotDetail cotDetail, ProtobufDrawnShape.MinimalDrawnShape drawnShape) {
+        if (drawnShape != null && drawnShape != ProtobufDrawnShape.MinimalDrawnShape.getDefaultInstance()
+                && drawnShape.getLinkList() != ProtobufShape.MinimalShape.getDefaultInstance().getLinkList()) {
+            for (ProtobufShapeLink.MinimalShapeLink link : drawnShape.getLinkList()) {
                 CotDetail linkDetail = new CotDetail(KEY_LINK);
 
                 String point = "";

@@ -39,6 +39,7 @@ public class CotEventProtobufConverterFactory {
                 new ShapeLinkProtobufConverter(),
                 new RouteLinkProtobufConverter(),
                 new RouteLinkAttrProtobufConverter(),
+                new TogProtobufConverter(),
                 startOfYearMs);
     }
 }

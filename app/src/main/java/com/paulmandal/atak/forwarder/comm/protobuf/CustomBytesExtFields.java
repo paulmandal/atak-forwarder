@@ -10,8 +10,9 @@ public class CustomBytesExtFields {
     public Boolean labelsOn;
     public Integer heightUnit;
     public Boolean ceHumanInput;
+    public Boolean tog;
 
-    public CustomBytesExtFields(String how, String geoPointSrc, String altSrc, String role, Integer battery, Boolean readiness, Boolean labelsOn, Integer heightUnit, Boolean ceHumanInput) {
+    public CustomBytesExtFields(String how, String geoPointSrc, String altSrc, String role, Integer battery, Boolean readiness, Boolean labelsOn, Integer heightUnit, Boolean ceHumanInput, Boolean tog) {
         this.how = how;
         this.geoPointSrc = geoPointSrc;
         this.altSrc = altSrc;
@@ -21,5 +22,6 @@ public class CustomBytesExtFields {
         this.labelsOn = labelsOn;
         this.heightUnit = heightUnit;
         this.ceHumanInput = ceHumanInput;
+        this.tog = tog;
     }
 }

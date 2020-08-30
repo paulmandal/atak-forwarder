@@ -39,13 +39,13 @@ public class XmlComparer {
             boolean matched = compare(original, converted);
 
             if (!matched) {
-                Log.d(TAG, "messageType: " + messageType + " mismatch, o: " + lhs);
-                Log.d(TAG, "messageType: " + messageType + " mismatch, c: " + rhs);
+                Log.e(TAG, "messageType: " + messageType + " mismatch, o: " + lhs);
+                Log.e(TAG, "messageType: " + messageType + " mismatch, c: " + rhs);
             } else {
                 return true;
             }
         } catch (ParserConfigurationException | IOException | SAXException | UnsupportedOperationException e) {
-            Log.d(TAG, "messageType: " + messageType + " matched: false");
+            Log.e(TAG, "messageType: " + messageType + " matched: false");
             e.printStackTrace();
         }
         return false;
@@ -63,7 +63,7 @@ public class XmlComparer {
         String lhsNodeValue = lhs.getNodeValue();
         String rhsNodeValue = rhs.getNodeValue();
         if (lhsNodeValue != null && !lhsNodeValue.equals(rhsNodeValue)) {
-            Log.d(TAG, "  " + path + "." + lhs.getNodeName() + ": didn't match inner value: " + lhsNodeValue);
+            Log.e(TAG, "  " + path + "." + lhs.getNodeName() + ": didn't match inner value: " + lhsNodeValue);
             return false;
         }
 
@@ -90,14 +90,14 @@ public class XmlComparer {
                 Node rhsNode = rhsAttributeMap.get(nodeName);
 
                 if (rhsNode == null) {
-                    Log.d(TAG, "  " + path + "." + lhs.getNodeName() + "." + nodeName + ": missing attribute on converted obj.");
+                    Log.e(TAG, "  " + path + "." + lhs.getNodeName() + "." + nodeName + ": missing attribute on converted obj.");
                     return false;
                 }
 
                 String lhsValue = lhsNode.getNodeValue();
                 String rhsValue = rhsNode.getNodeValue();
                 if (!lhsValue.equals(rhsValue)) {
-                    Log.d(TAG, "  " + path + "." + lhs.getNodeName() + "." + nodeName + ": values differ: " + lhsValue + ", rhs: " + rhsValue);
+                    Log.e(TAG, "  " + path + "." + lhs.getNodeName() + "." + nodeName + ": values differ: " + lhsValue + ", rhs: " + rhsValue);
                     return false;
                 }
             }
@@ -125,7 +125,7 @@ public class XmlComparer {
             Node rhsNode = rhsNodesMap.get(nodeName);
 
             if (rhsNode == null) {
-                Log.d(TAG, "  " + path + "." + nodeName + ": missing child node on converted obj.");
+                Log.e(TAG, "  " + path + "." + nodeName + ": missing child node on converted obj.");
                 return false;
             }
 

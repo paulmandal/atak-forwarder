@@ -9,6 +9,7 @@ public class DetailStyleProtobufConverter {
     private static final String KEY_COLOR = "color";
     private static final String KEY_STROKE_COLOR = "strokeColor";
     private static final String KEY_STROKE_WEIGHT = "strokeWeight";
+    private static final String KEY_FILL_COLOR = "fillColor";
 
     private static final String KEY_ARGB = "argb";
     private static final String KEY_VALUE = "value";
@@ -90,6 +91,29 @@ public class DetailStyleProtobufConverter {
             strokeWeightDetail.setAttribute(KEY_VALUE, Double.toString(detailStyle.getStrokeWeight() / 100D));
 
             cotDetail.addChild(strokeWeightDetail);
+        }
+    }
+
+    public void toFillColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle.Builder detailStyleBuilder) throws UnknownDetailFieldException {
+        CotAttribute[] attributes = cotDetail.getAttributes();
+        for (CotAttribute attribute : attributes) {
+            switch (attribute.getName()) {
+                case KEY_VALUE:
+                    detailStyleBuilder.setFillColor(Integer.parseInt(attribute.getValue()));
+                    break;
+                default:
+                    throw new UnknownDetailFieldException("Don't know how to handle detail field: strokeWeight." + attribute.getName());
+            }
+        }
+    }
+
+    public void maybeAddFillColor(CotDetail cotDetail, ProtobufDetailStyle.MinimalDetailStyle detailStyle) {
+        if (detailStyle.getFillColor() != 0) {
+            CotDetail fillColorDetail = new CotDetail(KEY_FILL_COLOR);
+
+            fillColorDetail.setAttribute(KEY_VALUE, Integer.toString(detailStyle.getFillColor()));
+
+            cotDetail.addChild(fillColorDetail);
         }
     }
 }

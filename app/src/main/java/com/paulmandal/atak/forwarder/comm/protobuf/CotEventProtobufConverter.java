@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
+import android.util.Log;
+
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -36,6 +38,7 @@ public class CotEventProtobufConverter {
     private static final String KEY_SERVER_DESTINATION = "__serverdestination";
     private static final String KEY_MODEL = "model";
     private static final String KEY_LABELS_ON = "labels_on";
+    private static final String KEY_TOG = "tog";
     private static final String KEY_HEIGHT_UNIT = "height_unit";
     private static final String KEY_CE_HUMAN_INPUT = "ce_human_input";
     private static final String KEY_HEIGHT = "height";
@@ -75,6 +78,7 @@ public class CotEventProtobufConverter {
     private final ShapeLinkProtobufConverter mShapeLinkProtobufConverter;
     private final RouteLinkProtobufConverter mRouteLinkProtobufConverter;
     private final RouteLinkAttrProtobufConverter mRouteLinkAttrProtobufConverter;
+    private final TogProtobufConverter mTogProtobufConverter;
     private final long mStartOfYearMs;
 
     public CotEventProtobufConverter(TakvProtobufConverter takvProtobufConverter,
@@ -100,6 +104,7 @@ public class CotEventProtobufConverter {
                                      ShapeLinkProtobufConverter shapeLinkProtobufConverter,
                                      RouteLinkProtobufConverter routeLinkProtobufConverter,
                                      RouteLinkAttrProtobufConverter routeLinkAttrProtobufConverter,
+                                     TogProtobufConverter togProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
         mTrackProtobufConverter = trackProtobufConverter;
@@ -124,6 +129,7 @@ public class CotEventProtobufConverter {
         mShapeLinkProtobufConverter = shapeLinkProtobufConverter;
         mRouteLinkProtobufConverter = routeLinkProtobufConverter;
         mRouteLinkAttrProtobufConverter = routeLinkAttrProtobufConverter;
+        mTogProtobufConverter = togProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
 
@@ -196,7 +202,7 @@ public class CotEventProtobufConverter {
         double hae = cotPoint != null ? cotPoint.getHae() : 0;
         builder.setCustomBytes(mCustomBytesConverter.packCustomBytes(cotEvent.getTime(), cotEvent.getStale(), hae, mStartOfYearMs));
 
-        CustomBytesExtFields customBytesExtFields = new CustomBytesExtFields(cotEvent.getHow(), null, null, null, null, null, null, null, null);
+        CustomBytesExtFields customBytesExtFields = new CustomBytesExtFields(cotEvent.getHow(), null, null, null, null, null, null, null, null, null);
 
         CotDetail cotDetail = cotEvent.getDetail();
 
@@ -207,6 +213,7 @@ public class CotEventProtobufConverter {
         mCeHumanInputProtobufConverter.maybeGetCeHumanInputValues(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeGetHeightUnitValues(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeGetHeightValues(cotDetail, customBytesExtFields);
+        mTogProtobufConverter.maybeGetTogValue(cotDetail, customBytesExtFields);
 
         builder.setCustomBytesExt(mCustomBytesExtConverter.packCustomBytesExt(customBytesExtFields));
 
@@ -261,6 +268,9 @@ public class CotEventProtobufConverter {
                     break;
                 case KEY_LABELS_ON:
                     mLabelsOnProtobufConverter.toLabelsOn(innerDetail);
+                    break;
+                case KEY_TOG:
+                    mTogProtobufConverter.toTog(innerDetail);
                     break;
                 case KEY_CE_HUMAN_INPUT:
                     mCeHumanInputProtobufConverter.toCeHumanInput(innerDetail);
@@ -343,16 +353,20 @@ public class CotEventProtobufConverter {
         mComplexLinkProtobufConverter.maybeAddComplexLink(cotDetail, detail.getComplexLink(), substitutionValues, mStartOfYearMs);
         mFreehandLinkProtobufConverter.maybeAddFreehandLink(cotDetail, detail.getFreehandLink());
         mRouteLinkProtobufConverter.maybeAddRoute(cotDetail, detail.getRoute());
-        mShapeLinkProtobufConverter.maybeAddShape(cotDetail, detail.getShape());
+        mShapeLinkProtobufConverter.maybeAddDrawnShape(cotDetail, detail.getDrawnShape());
         mChatProtobufConverter.maybeAddChat(cotDetail, detail.getChat(), substitutionValues);
         mServerDestinationProtobufConverter.maybeAddServerDestination(cotDetail, detail.getServerDestination(), substitutionValues);
         mModelProtobufConverter.maybeAddModel(cotDetail, detail.getModel());
         mLabelsOnProtobufConverter.maybeAddLabelsOn(cotDetail, customBytesExtFields);
+        mTogProtobufConverter.maybeAddTog(cotDetail, customBytesExtFields);
         mCeHumanInputProtobufConverter.maybeAddCeHumanInput(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeAddHeightAndHeightUnit(cotDetail, detail.getHeight(), customBytesExtFields);
-        mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detail.getDetailStyle().getColor());
-        mDetailStyleProtobufConverter.maybeAddStrokeWeight(cotDetail, detail.getDetailStyle());
-        mDetailStyleProtobufConverter.maybeAddStrokeColor(cotDetail, detail.getDetailStyle());
+
+        ProtobufDetailStyle.MinimalDetailStyle detailStyle = detail.getDetailStyle();
+        mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detailStyle.getColor());
+        mDetailStyleProtobufConverter.maybeAddStrokeWeight(cotDetail, detailStyle);
+        mDetailStyleProtobufConverter.maybeAddStrokeColor(cotDetail, detailStyle);
+        mDetailStyleProtobufConverter.maybeAddFillColor(cotDetail, detailStyle);
 
         maybeAddUidDroid(cotEvent, cotDetail, detail.getContact());
 

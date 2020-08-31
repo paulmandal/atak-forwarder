@@ -19,6 +19,7 @@ import "detail/detail_style.proto"; // TODO: rename this?
 import "detail/height.proto";
 import "detail/shape.proto";
 import "detail/drawn_shape.proto";
+import "detail/sensor.proto";
 
 import "detail/route/route.proto";
 
@@ -42,5 +43,6 @@ message Detail {
   Shape shape = 14;
   DrawnShape drawnShape = 15;
   Route route = 16;
-  FreehandLink freehandLink = 17;
+  Sensor sensor = 17;
+  FreehandLink freehandLink = 18;
 }

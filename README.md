@@ -2,13 +2,13 @@
 
 An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports GoTenna Mesh.
 
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/0-disconnected.png "Plugin Disconnected Indicator")
+![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/master/images/plugin-disconnected-indicator.png)
 <br>
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/1-group-management.png "Group Management")
+![Group Management](https://github.com/paulmandal/atak-forwarder/raw/master/images/group-management.png)
 <br>
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/2-group-chat.png "Group Chat")
+![Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/master/images/direct-messaging.png)
 <br>
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/3-transmit-messages.png "Transmit Map Markers")
+![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/master/images/transmit-map-markers.png)
 
 # Features
 

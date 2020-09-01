@@ -46,6 +46,10 @@ public class CotEventProtobufConverterFactory {
                 ),
                 new LinkAttrProtobufConverter(),
                 new TogProtobufConverter(),
+                new SensorProtobufConverter(),
+                new VideoProtobufConverter(
+                        new ConnectionEntryProtobufConverter()
+                ),
                 startOfYearMs);
     }
 }

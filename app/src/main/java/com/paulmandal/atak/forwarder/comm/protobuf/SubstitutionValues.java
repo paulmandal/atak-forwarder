@@ -21,4 +21,5 @@ public class SubstitutionValues {
     public String senderCallsignFromChat;
     public List<String> uidsFromChatGroup = new ArrayList<>();
     public List<String> uidsFromRoute = new ArrayList<>();
+    public String uidFromVideo;
 }

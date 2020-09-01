@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufConnectionEntry";
+
+message ConnectionEntry {
+  int32 networkTimeout = 1;
+  string uid = 2;
+  string path = 3;
+  string protocol = 4; // TODO: move to mapping
+  int32 bufferTime = 5;
+  string address = 6; // TODO: move to bytes? can this be a FQDN?
+  int32 port = 7;
+  sint32 roverPort = 8;
+  int32 rtspReliable = 9;
+  bool ignoreEmbeddedKLV = 10; // TODO: move to bits?
+  string alias = 11;
+}

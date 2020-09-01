@@ -42,6 +42,8 @@ public class CotEventProtobufConverter {
     private static final String KEY_HEIGHT = "height";
     private static final String KEY_LINK_ATTR = "link_attr";
     private static final String KEY_ROUTE_INFO = "__routeinfo";
+    private static final String KEY_SENSOR = "sensor";
+    private static final String KEY_VIDEO = "__video";
 
     // Fields
     private static final String KEY_ICON_SET_PATH = "iconsetpath";
@@ -79,6 +81,8 @@ public class CotEventProtobufConverter {
     private final RouteProtobufConverter mRouteProtobufConverter;
     private final LinkAttrProtobufConverter mLinkAttrProtobufConverter;
     private final TogProtobufConverter mTogProtobufConverter;
+    private final SensorProtobufConverter mSensorProtobufConverter;
+    private final VideoProtobufConverter mVideoProtobufConverter;
     private final long mStartOfYearMs;
 
     public CotEventProtobufConverter(TakvProtobufConverter takvProtobufConverter,
@@ -105,6 +109,8 @@ public class CotEventProtobufConverter {
                                      RouteProtobufConverter routeProtobufConverter,
                                      LinkAttrProtobufConverter linkAttrProtobufConverter,
                                      TogProtobufConverter togProtobufConverter,
+                                     SensorProtobufConverter sensorProtobufConverter,
+                                     VideoProtobufConverter videoProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
         mTrackProtobufConverter = trackProtobufConverter;
@@ -130,6 +136,8 @@ public class CotEventProtobufConverter {
         mRouteProtobufConverter = routeProtobufConverter;
         mLinkAttrProtobufConverter = linkAttrProtobufConverter;
         mTogProtobufConverter = togProtobufConverter;
+        mSensorProtobufConverter = sensorProtobufConverter;
+        mVideoProtobufConverter = videoProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
 
@@ -324,6 +332,12 @@ public class CotEventProtobufConverter {
                     routeBuilder = maybeMakeRouteBuilder(routeBuilder);
                     mLinkAttrProtobufConverter.toLinkAttr(innerDetail, routeBuilder);
                     break;
+                case KEY_SENSOR:
+                    builder.setSensor(mSensorProtobufConverter.toSensor(innerDetail));
+                    break;
+                case KEY_VIDEO:
+                    builder.setVideo(mVideoProtobufConverter.toVideo(innerDetail, substitutionValues));
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
             }
@@ -371,6 +385,8 @@ public class CotEventProtobufConverter {
         mCeHumanInputProtobufConverter.maybeAddCeHumanInput(cotDetail, customBytesExtFields);
         mHeightAndHeightUnitProtobufConverter.maybeAddHeightAndHeightUnit(cotDetail, detail.getHeight(), customBytesExtFields);
         mLinkAttrProtobufConverter.maybeAddLinkAttr(cotDetail, detail.getRoute(), customBytesExtFields);
+        mSensorProtobufConverter.maybeAddSensor(cotDetail, detail.getSensor());
+        mVideoProtobufConverter.maybeAddVideo(cotDetail, detail.getVideo(), substitutionValues);
 
         ProtobufDetailStyle.DetailStyle detailStyle = detail.getDetailStyle();
         mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detailStyle.getColor());

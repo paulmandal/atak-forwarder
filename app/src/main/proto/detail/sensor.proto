@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufSensor";
+
+message Sensor {
+  double fovGreen = 1;
+  double fovBlue = 2;
+  double fovRed = 3;
+  int32 range = 4;
+  int32 azimuth = 5;
+  int32 displayMagneticReference = 6;
+  int32 fov = 7;
+  bool hideFov = 8; // TODO: can be packed into customBytes
+  double fovAlpha = 9;
+}

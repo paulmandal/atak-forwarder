@@ -2,13 +2,13 @@
 
 An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports GoTenna Mesh.
 
-![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/master/images/plugin-disconnected-indicator.png)
+![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/master/images/0-disconnected.png)
 <br>
-![Group Management](https://github.com/paulmandal/atak-forwarder/raw/master/images/group-management.png)
+![Group Management](https://github.com/paulmandal/atak-forwarder/raw/master/images/1-group-management.png)
 <br>
-![Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/master/images/direct-messaging.png)
+![Group Chat](https://github.com/paulmandal/atak-forwarder/raw/master/images/2-group-chat.png)
 <br>
-![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/master/images/transmit-map-markers.png)
+![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/master/images/3-transmit-messages.png)
 
 # Features
 
@@ -54,7 +54,7 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
 
 # Architecture Diagram
 
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/arch-diagram.png "Architecture Diagram")
+![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/master/images/arch-diagram.png)
 
 # Notes on Message Handling
 

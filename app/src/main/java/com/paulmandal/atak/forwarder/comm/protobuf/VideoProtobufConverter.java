@@ -63,6 +63,7 @@ public class VideoProtobufConverter {
 
         String uid = video.getUid();
         if (!StringUtils.isNullOrEmpty(uid)) {
+            substitutionValues.uidFromVideo = uid;
             videoDetail.setAttribute(KEY_UID, uid);
         }
 

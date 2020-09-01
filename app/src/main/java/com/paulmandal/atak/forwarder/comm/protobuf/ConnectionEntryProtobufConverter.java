@@ -21,6 +21,8 @@ public class ConnectionEntryProtobufConverter {
     private static final String KEY_IGNORE_EMBEDDED_KLV = "ignoreEmbeddedKLV";
     private static final String KEY_ALIAS = "alias";
 
+    private static final String VIDEO_UID_SUBSTITUTION_MARKER = "#u";
+
     public ProtobufConnectionEntry.ConnectionEntry toConnectionEntry(CotDetail cotDetail, SubstitutionValues substitutionValues) throws UnknownDetailFieldException {
         ProtobufConnectionEntry.ConnectionEntry.Builder builder  = ProtobufConnectionEntry.ConnectionEntry.newBuilder();
 
@@ -31,7 +33,11 @@ public class ConnectionEntryProtobufConverter {
                     builder.setNetworkTimeout(Integer.parseInt(attribute.getValue()));
                     break;
                 case KEY_UID:
-                    builder.setUid(attribute.getValue());
+                    String uid = attribute.getValue();
+                    if (uid.equals(substitutionValues.uidFromVideo)) {
+                        uid = VIDEO_UID_SUBSTITUTION_MARKER;
+                    }
+                    builder.setUid(uid);
                     break;
                 case KEY_PATH:
                     builder.setPath(attribute.getValue());
@@ -84,7 +90,12 @@ public class ConnectionEntryProtobufConverter {
         CotDetail connectionEntryDetail = new CotDetail(KEY_CONNECTION_ENTRY);
 
         connectionEntryDetail.setAttribute(KEY_NETWORK_TIMEOUT, Integer.toString(connectionEntry.getNetworkTimeout()));
-        connectionEntryDetail.setAttribute(KEY_UID, connectionEntry.getUid());
+
+        String uid = connectionEntry.getUid();
+        if (uid.equals(VIDEO_UID_SUBSTITUTION_MARKER)) {
+            uid = substitutionValues.uidFromVideo;
+        }
+        connectionEntryDetail.setAttribute(KEY_UID, uid);
         connectionEntryDetail.setAttribute(KEY_PATH, connectionEntry.getPath());
         connectionEntryDetail.setAttribute(KEY_PROTOCOL, connectionEntry.getProtocol());
         connectionEntryDetail.setAttribute(KEY_BUFFER_TIME, Integer.toString(connectionEntry.getBufferTime()));

@@ -26,6 +26,8 @@ import "detail/route/route.proto";
 import "detail/geochat/chat.proto";
 import "detail/geochat/chat_link.proto";
 
+import "detail/video/video.proto";
+
 message Detail {
   Contact contact = 1;
   Takv takv = 2;
@@ -44,5 +46,6 @@ message Detail {
   DrawnShape drawnShape = 15;
   Route route = 16;
   Sensor sensor = 17;
-  FreehandLink freehandLink = 18;
+  Video video = 18;
+  FreehandLink freehandLink = 19;
 }

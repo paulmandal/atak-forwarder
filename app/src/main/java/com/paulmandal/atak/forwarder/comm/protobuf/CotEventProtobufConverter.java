@@ -4,6 +4,8 @@ import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.paulmandal.atak.forwarder.comm.protobuf.medevac.FlowTagsProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MedevacProtobufConverter;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
@@ -44,6 +46,8 @@ public class CotEventProtobufConverter {
     private static final String KEY_ROUTE_INFO = "__routeinfo";
     private static final String KEY_SENSOR = "sensor";
     private static final String KEY_VIDEO = "__video";
+    private static final String KEY_FLOW_TAGS = "_flow-tags_";
+    private static final String KEY_MEDEVAC = "_medevac_";
 
     // Fields
     private static final String KEY_ICON_SET_PATH = "iconsetpath";
@@ -83,6 +87,8 @@ public class CotEventProtobufConverter {
     private final TogProtobufConverter mTogProtobufConverter;
     private final SensorProtobufConverter mSensorProtobufConverter;
     private final VideoProtobufConverter mVideoProtobufConverter;
+    private final FlowTagsProtobufConverter mFlowTagsProtobufConverter;
+    private final MedevacProtobufConverter mMedevacProtobufConverter;
     private final long mStartOfYearMs;
 
     public CotEventProtobufConverter(TakvProtobufConverter takvProtobufConverter,
@@ -111,6 +117,8 @@ public class CotEventProtobufConverter {
                                      TogProtobufConverter togProtobufConverter,
                                      SensorProtobufConverter sensorProtobufConverter,
                                      VideoProtobufConverter videoProtobufConverter,
+                                     FlowTagsProtobufConverter flowTagsProtobufConverter,
+                                     MedevacProtobufConverter medevacProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
         mTrackProtobufConverter = trackProtobufConverter;
@@ -138,6 +146,8 @@ public class CotEventProtobufConverter {
         mTogProtobufConverter = togProtobufConverter;
         mSensorProtobufConverter = sensorProtobufConverter;
         mVideoProtobufConverter = videoProtobufConverter;
+        mFlowTagsProtobufConverter = flowTagsProtobufConverter;
+        mMedevacProtobufConverter = medevacProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
 
@@ -338,6 +348,12 @@ public class CotEventProtobufConverter {
                 case KEY_VIDEO:
                     builder.setVideo(mVideoProtobufConverter.toVideo(innerDetail, substitutionValues));
                     break;
+                case KEY_FLOW_TAGS:
+                    builder.setFlowTags(mFlowTagsProtobufConverter.toFlowTags(innerDetail));
+                    break;
+                case KEY_MEDEVAC:
+                    builder.setMedevac(mMedevacProtobufConverter.toMedevac(innerDetail));
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
             }
@@ -387,6 +403,8 @@ public class CotEventProtobufConverter {
         mLinkAttrProtobufConverter.maybeAddLinkAttr(cotDetail, detail.getRoute(), customBytesExtFields);
         mSensorProtobufConverter.maybeAddSensor(cotDetail, detail.getSensor());
         mVideoProtobufConverter.maybeAddVideo(cotDetail, detail.getVideo(), substitutionValues);
+        mFlowTagsProtobufConverter.maybeAddFlowTags(cotDetail, detail.getFlowTags());
+        mMedevacProtobufConverter.maybeAddMedevac(cotDetail, detail.getMedevac());
 
         ProtobufDetailStyle.DetailStyle detailStyle = detail.getDetailStyle();
         mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detailStyle.getColor());

@@ -28,6 +28,9 @@ import "detail/geochat/chat_link.proto";
 
 import "detail/video/video.proto";
 
+import "detail/medevac/flow_tags.proto";
+import "detail/medevac/medevac.proto";
+
 message Detail {
   Contact contact = 1;
   Takv takv = 2;
@@ -48,4 +51,6 @@ message Detail {
   Sensor sensor = 17;
   Video video = 18;
   FreehandLink freehandLink = 19;
+  FlowTags flowTags = 20;
+  Medevac medevac = 21;
 }

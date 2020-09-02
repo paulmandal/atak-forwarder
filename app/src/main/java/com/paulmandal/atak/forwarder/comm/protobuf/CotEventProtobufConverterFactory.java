@@ -1,5 +1,10 @@
 package com.paulmandal.atak.forwarder.comm.protobuf;
 
+import com.paulmandal.atak.forwarder.comm.protobuf.medevac.FlowTagsProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MedevacProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MistProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MistsMapProtobufConverter;
+
 import java.util.Calendar;
 
 public class CotEventProtobufConverterFactory {
@@ -49,6 +54,12 @@ public class CotEventProtobufConverterFactory {
                 new SensorProtobufConverter(),
                 new VideoProtobufConverter(
                         new ConnectionEntryProtobufConverter()
+                ),
+                new FlowTagsProtobufConverter(),
+                new MedevacProtobufConverter(
+                        new MistsMapProtobufConverter(
+                                new MistProtobufConverter()
+                        )
                 ),
                 startOfYearMs);
     }

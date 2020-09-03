@@ -55,7 +55,8 @@ message Medevac {
   string friendlies = 34;
   string enemy = 35;
   string hlzRemarks = 36;
+  string hlzOther = 37;
 
-  bool casevac = 37;
-  MistsMap zMistsMap = 38;
+  bool casevac = 38;
+  MistsMap zMistsMap = 39;
 }

@@ -2,8 +2,9 @@ package com.paulmandal.atak.forwarder.group;
 
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.comm.commhardware.GoTennaCommHardware;
 import com.paulmandal.atak.forwarder.group.persistence.StateStorage;

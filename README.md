@@ -47,6 +47,8 @@ To use this plugin you will need to build your own copy of ATAK-CIV, to do that 
     * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
     * Note: instructions on getting this to work with `installCivRelease` will happen in the next few days, the key is to add your signing fingerprint to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 * copy the GoTenna Public SDK into the `libs/` directory as `gotenna-public-sdk.aar`
+* download Jetifier Standalone: https://dl.google.com/dl/android/studio/jetifier-zips/1.0.0-beta09/jetifier-standalone.zip
+* Jetify `gotenna-public-sdk.aar` using this command: `./jetifier-standalone -i gotenna-public-sdk.aar -o gotenna-public-sdk.aar`
 * copy the ATAK SDK into the `libs/` directory as `main.jar`
 * open this project in Android Studio
     * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable

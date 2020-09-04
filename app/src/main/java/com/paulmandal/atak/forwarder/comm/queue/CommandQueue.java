@@ -1,7 +1,8 @@
 package com.paulmandal.atak.forwarder.comm.queue;
 
 import android.os.Handler;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;

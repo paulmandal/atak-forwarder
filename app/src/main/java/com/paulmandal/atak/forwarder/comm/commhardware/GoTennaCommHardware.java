@@ -332,10 +332,13 @@ public class GoTennaCommHardware extends CommHardware implements GTConnectionMan
 
                 byte[] message = new byte[totalLength];
                 for (int idx = 0, i = 0; i < messagePieces.length; i++) {
-                    if (messagePieces[i] != null) {
-                        for (int j = 0; j < messagePieces[i].length; j++, idx++) {
-                            message[idx] = messagePieces[i][j];
-                        }
+                    if (messagePieces[i] == null) {
+                        // We're missing a chunk of this message so we can't rebuild it
+                        Log.e(TAG, "Missing chunk: " + (i + 1) + "/" + messagePieces.length);
+                        return;
+                    }
+                    for (int j = 0; j < messagePieces[i].length; j++, idx++) {
+                        message[idx] = messagePieces[i][j];
                     }
                 }
                 notifyMessageListeners(message);

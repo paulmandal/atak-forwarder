@@ -27,7 +27,7 @@ public abstract class CommHardware {
         void onGotBatteryInfo(int percentageCharged);
     }
 
-    private static final String TAG = "ATAKDBG." + CommHardware.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
 
     protected static final String BCAST_MARKER = "ATAKBCAST";
 

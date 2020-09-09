@@ -15,7 +15,7 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufDrawnShape;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufRoute;
 
 public class CotEventProtobufConverter {
-    private static final String TAG = "ATAKDBG." + CotEventProtobufConverter.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CotEventProtobufConverter.class.getSimpleName();
 
     /**
      * CotDetail fields

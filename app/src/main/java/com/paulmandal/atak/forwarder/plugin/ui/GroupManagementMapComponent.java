@@ -14,7 +14,7 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
 public class GroupManagementMapComponent extends DropDownMapComponent  {
-    private static final String TAG = "ATAKDBG." + GroupManagementMapComponent.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementMapComponent.class.getSimpleName();
 
     private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 

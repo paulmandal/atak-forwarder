@@ -17,7 +17,7 @@ import java.util.List;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class CommandQueue {
-    private static final String TAG = "ATAKDBG." + CommandQueue.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CommandQueue.class.getSimpleName();
 
     public interface Listener {
         void onMessageQueueSizeChanged(int size);

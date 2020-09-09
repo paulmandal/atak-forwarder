@@ -34,7 +34,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
         CommHardware.BatteryInfoListener {
-    public static final String TAG = "ATAKDBG." + GroupManagementDropDownReceiver.class.getSimpleName();
+    public static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
     private static final int BATTERY_CHECK_INTERVAL_MS = 600000;

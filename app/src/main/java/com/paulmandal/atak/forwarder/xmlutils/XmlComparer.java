@@ -19,7 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 public class XmlComparer {
-    private static final String TAG = "ATAKDBG." + XmlComparer.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + XmlComparer.class.getSimpleName();
 
     public boolean compareXmls(String messageType, String lhs, String rhs) {
         try {

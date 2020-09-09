@@ -41,4 +41,9 @@ public class Config {
      * This can be anything > 1024 and < 65535
      */
     public static final int INBOUND_MESSAGE_SRC_PORT = 17233;
+
+    /**
+     * TAG prefix for all debug messages
+     */
+    public static final String DEBUG_TAG_PREFIX = "ATAKDBG.";
 }

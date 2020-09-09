@@ -37,6 +37,13 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 # Setup
 
+[WIP]
+
+* Follow the instructions below to build ATAK and the plugin, ignore the GoTenna related steps
+* Install Meshtastic: https://play.google.com/store/apps/details?id=com.geeksville.mesh&referrer=utm_source%3Dgithub-android-readme
+* Use the Meshtastic app to pair to your devices and create a channel
+* Open ATAK, messages should be posted to the channel
+
 To use this plugin you will need to build your own copy of ATAK-CIV, to do that first:
 
 * clone the ATAK-CIV repo: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV

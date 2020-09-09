@@ -18,7 +18,7 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor {
-    private static final String TAG = "ATAKDBG." + OutboundMessageHandler.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
     private CommsMapComponent mCommsMapComponent;
     private CommHardware mCommHardware;

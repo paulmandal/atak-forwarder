@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 
-public class GoTennaCommHardware extends CommHardware implements GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener, BatteryStateListener {
+public class GoTennaCommHardware extends MessageLengthLimitedCommHardware implements GTConnectionManager.GTConnectionListener, GTCommandCenter.GTMessageListener, BatteryStateListener {
     private static final String TAG = "ATAKDBG." + GoTennaCommHardware.class.getSimpleName();
 
     public interface GroupListener {

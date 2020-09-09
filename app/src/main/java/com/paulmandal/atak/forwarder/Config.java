@@ -4,13 +4,13 @@ public class Config {
     /**
      * Basic configuration
      */
-    public static final String GOTENNA_SDK_TOKEN = ;
+    public static final String GOTENNA_SDK_TOKEN = "";
 
     /**
      * IMPORTANT this is used to set the GoTenna frequencies, please adjust to your approx lat/lon
      */
-    public static final double FALLBACK_LATITUDE = ; // 40.619373
-    public static final double FALLBACK_LONGITUDE = ; // -74.102977
+    public static final double FALLBACK_LATITUDE = // 40.619373;
+    public static final double FALLBACK_LONGITUDE = // -74.102977;
 
     /**
      * GoTennna Stuff

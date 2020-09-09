@@ -4,10 +4,10 @@ package com.paulmandal.atak.forwarder.comm.commhardware;
 import android.content.Context;
 import android.location.Location;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.gotenna.sdk.GoTenna;
 import com.gotenna.sdk.connection.GTConnectionError;

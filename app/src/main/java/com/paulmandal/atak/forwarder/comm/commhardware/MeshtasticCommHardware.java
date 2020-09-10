@@ -25,6 +25,8 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 
+import java.util.concurrent.CountDownLatch;
+
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
 
@@ -50,11 +52,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final String EXTRA_PACKET_ID = "com.geeksville.mesh.PacketId";
     private static final String EXTRA_STATUS = "com.geeksville.mesh.Status";
 
-
     private Activity mActivity;
 
     IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
+    private CountDownLatch mPendingMessageCountdownLatch; // TODO: maybe move this up to MessageLengthLimitedCommHardware
+    private int mPendingMessageId;
+    private boolean mPendingMessageReceived;
 
     boolean mBound = false;
 
@@ -98,15 +102,23 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     @Override
     protected boolean sendMessageSegment(byte[] message, long targetId) {
         Log.d(TAG, "sendMessageSegment");
+
+        prepareToSendMessage();
+
         DataPacket dataPacket = new DataPacket("^all", message); // TODO: null instead of "^all" ?
         try {
             mMeshService.send(dataPacket);
+            mPendingMessageId = dataPacket.getId();
             Log.d(TAG, "send message id: " + dataPacket.getId());
         } catch (RemoteException e) {
             Log.e(TAG, "sendMessageSegment, RemoteException: " + e.getMessage());
             e.printStackTrace();
+            return false;
         }
-        return true; // TODO: wait for ack?
+
+        awaitPendingMessageCountDownLatch();
+
+        return mPendingMessageReceived;
     }
 
     @Override
@@ -154,7 +166,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         super.destroy();
         mActivity.unbindService(mServiceConnection);
         mActivity.unregisterReceiver(mBroadcastReceiver);
-        // TODO: unregister from broadcasts
         mBound = false;
     }
 
@@ -185,6 +196,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     MessageStatus status = intent.getParcelableExtra(EXTRA_STATUS);
 
                     Log.d(TAG, "id: " + id + " status: " + status);
+
+                    handleMessageStatusChange(id, status);
                     break;
                 case ACTION_RECEIVED_DATA:
                     Log.d(TAG, "ACTION_RECEIVED_DATA");
@@ -203,4 +216,30 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             }
         }
     };
+
+    private void handleMessageStatusChange(int id, MessageStatus status) {
+        if (id != mPendingMessageId) {
+            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about id: " + id + " status: " + status);
+            return;
+        }
+
+        // TODO: fix this, for some reason the MeshService is reporting ERROR for all msgs but they are actually going through
+        mPendingMessageReceived = true; // status != MessageStatus.ERROR;
+
+        if (status == MessageStatus.ERROR || status == MessageStatus.DELIVERED) {
+            mPendingMessageCountdownLatch.countDown();
+        }
+    }
+
+    private void prepareToSendMessage() {
+        mPendingMessageCountdownLatch = new CountDownLatch(1);
+    }
+
+    private void awaitPendingMessageCountDownLatch() {
+        try {
+            mPendingMessageCountdownLatch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }

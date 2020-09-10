@@ -4,9 +4,9 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
-import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;

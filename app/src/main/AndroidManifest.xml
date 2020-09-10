@@ -4,6 +4,7 @@
     tools:ignore="GoogleAppIndexingWarning">
 
     <application
+        tools:replace="android:allowBackup"
         android:allowBackup="false"
         android:description="@string/app_desc"
         android:icon="@drawable/ic_launcher"

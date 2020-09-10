@@ -4,12 +4,13 @@ import android.util.Log;
 
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
 import com.paulmandal.atak.forwarder.comm.protobuf.UnknownDetailFieldException;
+import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;

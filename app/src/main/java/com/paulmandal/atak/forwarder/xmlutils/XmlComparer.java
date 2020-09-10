@@ -3,6 +3,7 @@ package com.paulmandal.atak.forwarder.xmlutils;
 import android.util.Log;
 
 import com.amazonaws.util.StringInputStream;
+import com.paulmandal.atak.forwarder.Config;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

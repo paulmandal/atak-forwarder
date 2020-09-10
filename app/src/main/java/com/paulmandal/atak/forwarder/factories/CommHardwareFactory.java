@@ -5,6 +5,7 @@ import android.os.Handler;
 
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.GoTennaCommHardware;
@@ -27,7 +28,7 @@ public class CommHardwareFactory {
         if (!Config.GOTENNA_SDK_TOKEN.isEmpty()) {
             commHardware = new GoTennaCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory);
         } else {
-//            commHardware = new
+            commHardware = new MeshtasticCommHardware(handler, groupTracker, commandQueue, queuedCommandFactory, activity);
         }
         commHardware.init(activity, callsign, gId, atakUid);
         return commHardware;

@@ -4,6 +4,7 @@ import android.os.Handler;
 
 import androidx.annotation.Nullable;
 
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;

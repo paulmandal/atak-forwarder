@@ -1,12 +1,15 @@
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlinx-serialization'
 
-def PLUGIN_VERSION = "1.0"
+def PLUGIN_VERSION = "0.2.0"
 def ATAK_VERSION = "4.1.0"
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "29.0.3"
+    compileSdkVersion 28
+    buildToolsVersion "30.0.1"
 
     dexOptions {
         jumboMode = true
@@ -70,8 +73,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility '1.8'
-        targetCompatibility '1.8'
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = "1.8"
     }
 
     signingConfigs {
@@ -163,10 +170,15 @@ sourceSets {
 
 dependencies {
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
 
     implementation 'eo.view:batterymeter:2.0.0'
+
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-runtime:1.0-M1-1.4.0-rc" // TODO: do we need this?
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version" // TODO: do we need this?
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version" // TODO: do we need this?
 
     implementation fileTree(dir: '../libs/gotenna-public-sdk.aar', include: '*.aar')
     compileOnly fileTree(dir: '../libs/main.jar', include: '*.jar')

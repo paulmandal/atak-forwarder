@@ -1,4 +1,3 @@
-
 package com.paulmandal.atak.forwarder.plugin;
 
 import android.app.Activity;
@@ -10,6 +9,7 @@ import android.os.Looper;
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.HackyTests;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;

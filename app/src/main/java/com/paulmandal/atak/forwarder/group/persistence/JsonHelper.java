@@ -15,9 +15,12 @@ public class JsonHelper {
     private static final String KEY_ATAK_UID = "atakUid";
     private static final String KEY_IS_IN_GROUP = "isInGroup";
     private static final String KEY_CALLSIGN = "callsign";
+    private static final String KEY_BATTERY_PERCENTAGE = "batteryPercentage";
 
     private static final String KEY_GROUP_ID = "groupId";
     private static final String KEY_MEMBER_GIDS = "memberGids";
+
+    private static final int NO_VALUE = -1;
 
     public List<UserInfo> parseUserJson(String userJsonStr) {
         try {
@@ -29,8 +32,12 @@ public class JsonHelper {
                 String atakUid = json.getString(KEY_ATAK_UID);
                 boolean isInGroup = json.getBoolean(KEY_IS_IN_GROUP);
                 String callsign = json.getString(KEY_CALLSIGN);
+                Integer batteryPercentage = json.getInt(KEY_BATTERY_PERCENTAGE);
+                if (batteryPercentage == NO_VALUE) {
+                    batteryPercentage = null;
+                }
 
-                UserInfo userInfo = new UserInfo(callsign, meshId, atakUid, isInGroup);
+                UserInfo userInfo = new UserInfo(callsign, meshId, atakUid, isInGroup, batteryPercentage);
                 userInfoList.add(userInfo);
             }
 
@@ -68,6 +75,7 @@ public class JsonHelper {
                 userJson.put(KEY_ATAK_UID, userInfo.atakUid);
                 userJson.put(KEY_IS_IN_GROUP, userInfo.isInGroup);
                 userJson.put(KEY_CALLSIGN, userInfo.callsign);
+                userJson.put(KEY_BATTERY_PERCENTAGE, userInfo.batteryPercentage != null ? userInfo.batteryPercentage : NO_VALUE);
                 jsonArray.put(userJson);
             }
         } catch (JSONException e) {

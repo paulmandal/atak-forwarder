@@ -28,7 +28,7 @@ public class CommHardwareFactory {
 //            commHardware = new GoTennaCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory);
             throw new RuntimeException("GoTenna Mesh is not currently supported.");
         } else {
-            UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false);
+            UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
             commHardware = new MeshtasticCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
         }
 //        commHardware.init(activity, callsign, gId, atakUid);

@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.group;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -59,7 +58,6 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
         for (UserInfo user : mUserInfoList) {
             if (user.meshId.equals(meshId)) {
                 if (user.atakUid == null || !user.atakUid.equals(atakUid)) {
-                    Log.d(TAG, "## onUserDiscoveryBroadcastReceived, adding atakUid for user: " + callsign + ", meshId: " + meshId + ", atakUid: " + atakUid);
                     user.callsign = callsign;
                     user.atakUid = atakUid;
                 }
@@ -69,8 +67,7 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
         }
 
         if (!found) {
-            Log.d(TAG, "## onUserDiscoveryBroadcastReceived, add: " + callsign + ", meshId: " + meshId + ", atakUid: " + atakUid);
-            mUserInfoList.add(new UserInfo(callsign, meshId, atakUid, false));
+            mUserInfoList.add(new UserInfo(callsign, meshId, atakUid, false, null));
 
             if (mUpdateListener != null) {
                 mHandler.post(() -> mUpdateListener.onUsersUpdated());
@@ -90,6 +87,11 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
             for (UserInfo user : mUserInfoList) {
                 if (user.meshId.equals(possiblyNewUser.meshId)) {
                     found = true;
+
+                    if (user.batteryPercentage != possiblyNewUser.batteryPercentage) {
+                        user.batteryPercentage = possiblyNewUser.batteryPercentage;
+                    }
+
                     break;
                 }
             }
@@ -112,7 +114,7 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
 
     public String getMeshIdForUid(String atakUid) {
         for (UserInfo userInfo : mUserInfoList) {
-            if (userInfo.atakUid.equals(atakUid)) {
+            if (userInfo.atakUid != null && userInfo.atakUid.equals(atakUid)) {
                 return userInfo.meshId;
             }
         }

@@ -155,21 +155,21 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 //            if (!mMeshService.connectionState().equals("CONNECTED")) {
 //                return;
 //            }
-//            try {
-//                byte[] radioConfigBytes = mMeshService.getRadioConfig();
-//                if (radioConfigBytes != null) {
-//                    MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
-//                    Log.d(TAG, " radioConfig: " + radioConfig);
-//                    MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-//                    MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
-//
-//                    Log.d(TAG, " user prefs: " + userPreferences);
-//                    Log.d(TAG, " channelSettings: " + channelSettings);
-//                    Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
-//                }
-//            } catch (InvalidProtocolBufferException e) {
-//                e.printStackTrace();
-//            }
+            try {
+                byte[] radioConfigBytes = mMeshService.getRadioConfig();
+                if (radioConfigBytes != null) {
+                    MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+                    Log.d(TAG, " radioConfig: " + radioConfig);
+                    MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+                    MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+
+                    Log.d(TAG, " user prefs: " + userPreferences);
+                    Log.d(TAG, " channelSettings: " + channelSettings);
+                    Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
+                }
+            } catch (InvalidProtocolBufferException e) {
+                e.printStackTrace();
+            }
 
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -254,12 +254,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     Log.d(TAG, "ACTION_NODE_CHANGE: " + nodeInfo);
+                    getSelfInfo().batteryPercentage = nodeInfo.getBatteryPctLevel();
                     try {
                         List<NodeInfo> nodes = mMeshService.getNodes();
                         List<UserInfo> userInfoList = new ArrayList<>();
                         for (NodeInfo nodeInfoItem : nodes) {
                             MeshUser meshUser = nodeInfoItem.getUser();
-                            userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true));
+                            userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
                         }
                         mGroupListener.onGroupMembersUpdated(userInfoList);
                     } catch (RemoteException e) {

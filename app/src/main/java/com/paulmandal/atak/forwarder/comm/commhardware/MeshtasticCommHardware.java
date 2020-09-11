@@ -60,6 +60,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final String EXTRA_PACKET_ID = "com.geeksville.mesh.PacketId";
     private static final String EXTRA_STATUS = "com.geeksville.mesh.Status";
 
+    private static final String STATE_DISCONNECTED = "DISCONNECTED";
+
     private GroupListener mGroupListener;
     private Activity mActivity;
 
@@ -88,16 +90,14 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Log.d(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mBound = true;
-                setupRadio();
-                tryReadRadioStuff();
-                setConnected(true);
-                notifyConnectionStateListeners(ConnectionState.CONNECTED);
             }
 
             public void onServiceDisconnected(ComponentName className) {
                 Log.e(TAG, "Service has unexpectedly disconnected");
                 mMeshService = null;
                 setConnected(false);
+                notifyConnectionStateListeners(ConnectionState.DISCONNECTED);
+                mBound = false;
             }
         };
 
@@ -138,9 +138,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private void setupRadio() {
         try {
-            if (!mMeshService.connectionState().equals("CONNECTED")) {
-                return;
-            }
             UserInfo selfInfo = getSelfInfo();
             Log.d(TAG, "setting long/short names to: " + selfInfo.callsign + ", " + selfInfo.callsign.substring(0, 1));
             mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
@@ -154,9 +151,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             getSelfInfo().meshId = mMeshService.getMyId();
             Log.d(TAG, "myId: " + mMeshService.getMyId());
             Log.d(TAG, "My Node Info: " + mMeshService.getMyNodeInfo());
-            if (!mMeshService.connectionState().equals("CONNECTED")) {
-                return;
-            }
+//            if (!mMeshService.connectionState().equals("CONNECTED")) {
+//                return;
+//            }
 //            try {
 //                byte[] radioConfigBytes = mMeshService.getRadioConfig();
 //                if (radioConfigBytes != null) {
@@ -242,11 +239,15 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             switch (action) {
                 case ACTION_MESH_CONNECTED:
-                    Log.d(TAG, "ACTION_MESH_CONNECTED: " + intent.getStringExtra(EXTRA_CONNECTED));
-                    setConnected(true);
+                    boolean connected = !intent.getStringExtra(EXTRA_CONNECTED).equals("DISCONNECTED");
+                    Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected);
+                    setConnected(connected);
                     setupRadio();
                     tryReadRadioStuff();
-                    broadcastDiscoveryMessage(true);
+                    if (connected) {
+                        broadcastDiscoveryMessage(true);
+                    }
+                    notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED);
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);

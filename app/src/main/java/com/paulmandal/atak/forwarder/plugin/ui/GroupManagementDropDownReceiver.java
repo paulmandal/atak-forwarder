@@ -20,7 +20,6 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
@@ -302,14 +301,14 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     }
 
     private void setEditModeAndUiForGroup() {
-        GroupInfo groupInfo = mGroupTracker.getGroup();
-        if (groupInfo != null) {
-            mGroupIdTextView.setText(String.format(Locale.getDefault(), "%d", groupInfo.groupId));
-            mCreateGroupButton.setText(R.string.add_to_group);
-            mEditMode = EditMode.ADD_USERS;
-        } else {
-            mEditMode = EditMode.NEW_GROUP;
-        }
+//        GroupInfo groupInfo = mGroupTracker.getGroup();
+//        if (groupInfo != null) {
+//            mGroupIdTextView.setText(String.format(Locale.getDefault(), "%d", groupInfo.groupId));
+//            mCreateGroupButton.setText(R.string.add_to_group);
+//            mEditMode = EditMode.ADD_USERS;
+//        } else {
+//            mEditMode = EditMode.NEW_GROUP;
+//        }
     }
 
     private void setupListView() {

@@ -1,6 +1,5 @@
 package com.paulmandal.atak.forwarder.group.persistence;
 
-import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import org.json.JSONArray;
@@ -42,23 +41,23 @@ public class JsonHelper {
         return null;
     }
 
-    public GroupInfo parseGroupJson(String groupInfoStr) {
-        try {
-            JSONObject json = new JSONObject(groupInfoStr);
-            long groupId = json.getLong(KEY_GROUP_ID);
-            List<Long> memberGids = new ArrayList<>();
-
-            JSONArray jsonArray = json.getJSONArray(KEY_MEMBER_GIDS);
-            for (int i = 0 ; i < jsonArray.length() ; i++) {
-                memberGids.add(jsonArray.getLong(i));
-            }
-
-            return new GroupInfo(groupId, memberGids);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+//    public GroupInfo parseGroupJson(String groupInfoStr) {
+//        try {
+//            JSONObject json = new JSONObject(groupInfoStr);
+//            long groupId = json.getLong(KEY_GROUP_ID);
+//            List<Long> memberGids = new ArrayList<>();
+//
+//            JSONArray jsonArray = json.getJSONArray(KEY_MEMBER_GIDS);
+//            for (int i = 0 ; i < jsonArray.length() ; i++) {
+//                memberGids.add(jsonArray.getLong(i));
+//            }
+//
+//            return new GroupInfo(groupId, memberGids);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return null;
+//    }
 
     public String toJson(List<UserInfo> userInfoList) {
         JSONArray jsonArray = new JSONArray();
@@ -77,18 +76,18 @@ public class JsonHelper {
         return jsonArray.toString();
     }
 
-    public String toJson(GroupInfo groupInfo) {
-        JSONObject json = new JSONObject();
-        try {
-            json.put(KEY_GROUP_ID, groupInfo.groupId);
-            JSONArray jsonArray = new JSONArray();
-            for (long memberGid : groupInfo.memberGids) {
-                jsonArray.put(memberGid);
-            }
-            json.put(KEY_MEMBER_GIDS, jsonArray);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return json.toString();
-    }
+//    public String toJson(GroupInfo groupInfo) {
+//        JSONObject json = new JSONObject();
+//        try {
+//            json.put(KEY_GROUP_ID, groupInfo.groupId);
+//            JSONArray jsonArray = new JSONArray();
+//            for (long memberGid : groupInfo.memberGids) {
+//                jsonArray.put(memberGid);
+//            }
+//            json.put(KEY_MEMBER_GIDS, jsonArray);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//        return json.toString();
+//    }
 }

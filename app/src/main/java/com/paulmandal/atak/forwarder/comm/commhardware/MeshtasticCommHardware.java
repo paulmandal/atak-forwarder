@@ -198,6 +198,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
+        Log.d(TAG, "DISCO handleBroadcastDiscoveryMessage: " + new String(broadcastDiscoveryCommand.discoveryMessage));
         if (!sendMessageSegment(broadcastDiscoveryCommand.discoveryMessage, DataPacket.ID_BROADCAST)) {
             // Send this message back to the queue
             queueCommand(broadcastDiscoveryCommand);
@@ -252,6 +253,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
+                    Log.d(TAG, "ACTION_NODE_CHANGE: " + nodeInfo);
                     try {
                         List<NodeInfo> nodes = mMeshService.getNodes();
                         List<UserInfo> userInfoList = new ArrayList<>();
@@ -308,7 +310,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         String callsign = messageSplit[2];
         boolean initialDiscoveryMessage = messageSplit[3].equals("1");
 
-        Log.d(TAG, "handleDiscoveryMessage, meshId: " + meshId + ", atakUid: " + atakUid + ", callsign: " + callsign);
+        Log.d(TAG, "DISCO handleDiscoveryMessage, meshId: " + meshId + ", atakUid: " + atakUid + ", callsign: " + callsign + ", initial: " + initialDiscoveryMessage);
 
         if (initialDiscoveryMessage) {
             broadcastDiscoveryMessage(false);

@@ -103,7 +103,7 @@ public class CommandQueue {
     }
 
     @Nullable
-    public QueuedCommand popHighestPriorityCommand(boolean isConnected, boolean isInGroup) {
+    public QueuedCommand popHighestPriorityCommand(boolean isConnected) {
         QueuedCommand highestPriorityCommand = null;
         int messageQueueSize;
         synchronized (mQueuedCommands) {
@@ -116,11 +116,6 @@ public class CommandQueue {
                         || queuedCommand.commandType == CommandType.GET_BATTERY_STATUS
                         || queuedCommand.commandType == CommandType.CREATE_GROUP)) {
                     // Ignore commands that require connectivity
-                    continue;
-                }
-
-                if (!isInGroup && queuedCommand.commandType == CommandType.SEND_TO_GROUP) {
-                    // Ignore group messages for now
                     continue;
                 }
 

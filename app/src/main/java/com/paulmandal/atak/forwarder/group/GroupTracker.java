@@ -30,15 +30,13 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
     private StateStorage mStateStorage;
 
     private List<UserInfo> mUserInfoList;
-    private GroupInfo mGroupInfo;
 
     private UpdateListener mUpdateListener;
 
     public GroupTracker(Context atakContext,
                         Handler uiThreadHandler,
                         StateStorage stateStorage,
-                        @Nullable List<UserInfo> userInfoList,
-                        @Nullable GroupInfo groupInfo) {
+                        @Nullable List<UserInfo> userInfoList) {
         mAtakContext = atakContext;
         mHandler = uiThreadHandler;
         mStateStorage = stateStorage;
@@ -48,15 +46,10 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
         }
 
         mUserInfoList = userInfoList;
-        mGroupInfo = groupInfo;
     }
 
     public List<UserInfo> getUsers() {
         return mUserInfoList;
-    }
-
-    public GroupInfo getGroup() {
-        return mGroupInfo;
     }
 
     @Override
@@ -132,11 +125,10 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
 
     public void clearData() {
         mUserInfoList = new ArrayList<>();
-        mGroupInfo = null;
         storeState();
     }
 
     private void storeState() {
-        mStateStorage.storeState(mUserInfoList, mGroupInfo);
+        mStateStorage.storeState(mUserInfoList);
     }
 }

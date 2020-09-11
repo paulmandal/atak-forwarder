@@ -7,7 +7,6 @@ import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.List;
@@ -19,7 +18,6 @@ public class StateStorage {
     private static final String KEY_PLI_CACHE_PURGE_TIME = "pliCachePurgeTime";
     private static final String KEY_DEFAULT_CACHE_PURGE_TIME = "defaultCachePurgeTime";
     private static final String KEY_USERS = "users";
-    private static final String KEY_GROUP = "group";
 
     private Context mContext;
     private JsonHelper mJsonHelper;
@@ -39,19 +37,6 @@ public class StateStorage {
         }
 
         return mJsonHelper.parseUserJson(usersStr);
-    }
-
-    @Nullable
-    public GroupInfo getGroupInfo() {
-        SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
-        String groupStr = sharedPref.getString(KEY_GROUP, null);
-
-        if (groupStr == null) {
-            return null;
-        }
-
-        return mJsonHelper.parseGroupJson(groupStr);
-
     }
 
     public int getDefaultCachePurgeTimeMs() {
@@ -78,11 +63,10 @@ public class StateStorage {
         editor.apply();
     }
 
-    public void storeState(List<UserInfo> userInfoList, GroupInfo groupInfo) {
+    public void storeState(List<UserInfo> userInfoList) {
         SharedPreferences sharedPref = mContext.getSharedPreferences(mContext.getString(R.string.shared_prefs_filename), Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(KEY_USERS, mJsonHelper.toJson(userInfoList));
-        editor.putString(KEY_GROUP, groupInfo == null ? null : mJsonHelper.toJson(groupInfo));
         editor.apply();
     }
 }

@@ -104,12 +104,12 @@ public abstract class CommHardware {
             return;
         }
 
-        if (mGroupTracker.getGroup() == null) {
-            Log.d(TAG, "addToGroup: not in a group yet");
-            return;
-        }
+//        if (mGroupTracker.getGroup() == null) {
+//            Log.d(TAG, "addToGroup: not in a group yet");
+//            return;
+//        }
 
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createAddToGroupCommand(mGroupTracker.getGroup().groupId, allMemberGids, newMemberGids));
+//        mCommandQueue.queueCommand(mQueuedCommandFactory.createAddToGroupCommand(mGroupTracker.getGroup().groupId, allMemberGids, newMemberGids));
     }
 
     public void connect() {
@@ -152,9 +152,9 @@ public abstract class CommHardware {
         return mConnected;
     }
 
-    public boolean isInGroup() {
-        return mGroupTracker.getGroup() != null;
-    }
+//    public boolean isInGroup() {
+//        return mGroupTracker.getGroup() != null;
+//    }
 
     /**
      * Listener Management
@@ -184,7 +184,7 @@ public abstract class CommHardware {
             while (!mDestroyed) {
                 sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
 
-                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnected, mGroupTracker.getGroup() != null);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnected);
 
                 if (queuedCommand == null) {
                     continue;
@@ -238,6 +238,7 @@ public abstract class CommHardware {
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
         String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        Log.d(TAG, "DISCO queueing broadcastDiscoveryMessage: " + broadcastData);
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 

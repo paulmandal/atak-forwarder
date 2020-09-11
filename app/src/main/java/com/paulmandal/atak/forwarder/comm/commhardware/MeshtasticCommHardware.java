@@ -15,6 +15,7 @@ import android.util.Log;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
+import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -27,13 +28,14 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface GroupListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-        void onGroupCreated(String groupId, List<String> memberMeshIds);
+        void onGroupMembersUpdated(List<UserInfo> userInfoList);
     }
 
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
@@ -139,7 +141,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void setupRadio() {
         try {
             UserInfo selfInfo = getSelfInfo();
-            Log.d(TAG, "setting long/short names to: " + selfInfo.callsign + ", " + selfInfo.callsign.substring(0, 1));
             mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -251,13 +252,16 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
-                    Log.d(TAG, "ACTION_NODE_CHANGE, info: " + nodeInfo);
                     try {
                         List<NodeInfo> nodes = mMeshService.getNodes();
+                        List<UserInfo> userInfoList = new ArrayList<>();
                         for (NodeInfo nodeInfoItem : nodes) {
-                            Log.d(TAG, "  node info: " + nodeInfoItem);
+                            MeshUser meshUser = nodeInfoItem.getUser();
+                            userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true));
                         }
+                        mGroupListener.onGroupMembersUpdated(userInfoList);
                     } catch (RemoteException e) {
+                        Log.e(TAG, "Exception getting nodes: " + e.getMessage());
                         e.printStackTrace();
                     }
                     tryReadRadioStuff();

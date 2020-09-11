@@ -17,6 +17,7 @@ import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
@@ -24,10 +25,17 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryComma
 import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.UserInfo;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
+    public interface GroupListener {
+        void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
+        void onGroupCreated(String groupId, List<String> memberMeshIds);
+    }
+
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
 
     /**
@@ -52,6 +60,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final String EXTRA_PACKET_ID = "com.geeksville.mesh.PacketId";
     private static final String EXTRA_STATUS = "com.geeksville.mesh.Status";
 
+    private GroupListener mGroupListener;
     private Activity mActivity;
 
     IMeshService mMeshService;
@@ -63,20 +72,26 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     boolean mBound = false;
 
     public MeshtasticCommHardware(Handler handler,
+                                  GroupListener groupListener,
                                   GroupTracker groupTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
-                                  Activity activity) {
-        super(handler, commandQueue, queuedCommandFactory, groupTracker);
+                                  Activity activity,
+                                  UserInfo selfInfo) {
+        super(handler, commandQueue, queuedCommandFactory, groupTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
         mActivity = activity;
+        mGroupListener = groupListener;
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
                 Log.d(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mBound = true;
+                setupRadio();
+                tryReadRadioStuff();
                 setConnected(true);
+                notifyConnectionStateListeners(ConnectionState.CONNECTED);
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -100,12 +115,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     @Override
-    protected boolean sendMessageSegment(byte[] message, long targetId) {
+    protected boolean sendMessageSegment(byte[] message, String targetId) {
         Log.d(TAG, "sendMessageSegment");
 
         prepareToSendMessage();
 
-        DataPacket dataPacket = new DataPacket("^all", message); // TODO: null instead of "^all" ?
+        DataPacket dataPacket = new DataPacket(targetId, message);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
@@ -121,6 +136,48 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         return mPendingMessageReceived;
     }
 
+    private void setupRadio() {
+        try {
+            if (!mMeshService.connectionState().equals("CONNECTED")) {
+                return;
+            }
+            UserInfo selfInfo = getSelfInfo();
+            Log.d(TAG, "setting long/short names to: " + selfInfo.callsign + ", " + selfInfo.callsign.substring(0, 1));
+            mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void tryReadRadioStuff() {
+        try {
+            getSelfInfo().meshId = mMeshService.getMyId();
+            Log.d(TAG, "myId: " + mMeshService.getMyId());
+            Log.d(TAG, "My Node Info: " + mMeshService.getMyNodeInfo());
+            if (!mMeshService.connectionState().equals("CONNECTED")) {
+                return;
+            }
+//            try {
+//                byte[] radioConfigBytes = mMeshService.getRadioConfig();
+//                if (radioConfigBytes != null) {
+//                    MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+//                    Log.d(TAG, " radioConfig: " + radioConfig);
+//                    MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+//                    MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+//
+//                    Log.d(TAG, " user prefs: " + userPreferences);
+//                    Log.d(TAG, " channelSettings: " + channelSettings);
+//                    Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
+//                }
+//            } catch (InvalidProtocolBufferException e) {
+//                e.printStackTrace();
+//            }
+
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public boolean isBatteryCharging() {
         return false;
@@ -133,7 +190,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void handleScanForCommDevice() {
-        // TODO: handle connnect/disconnect in plugin
+        // TODO: handle connect/disconnect in plugin
     }
 
     @Override
@@ -143,7 +200,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
-        // TODO: handle group creation in plugin
+        if (!sendMessageSegment(broadcastDiscoveryCommand.discoveryMessage, DataPacket.ID_BROADCAST)) {
+            // Send this message back to the queue
+            queueCommand(broadcastDiscoveryCommand);
+        }
     }
 
     @Override
@@ -184,10 +244,22 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_MESH_CONNECTED:
                     Log.d(TAG, "ACTION_MESH_CONNECTED: " + intent.getStringExtra(EXTRA_CONNECTED));
                     setConnected(true);
+                    setupRadio();
+                    tryReadRadioStuff();
+                    broadcastDiscoveryMessage(true);
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     Log.d(TAG, "ACTION_NODE_CHANGE, info: " + nodeInfo);
+                    try {
+                        List<NodeInfo> nodes = mMeshService.getNodes();
+                        for (NodeInfo nodeInfoItem : nodes) {
+                            Log.d(TAG, "  node info: " + nodeInfoItem);
+                        }
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    tryReadRadioStuff();
                     break;
                 case ACTION_MESSAGE_STATUS:
                     Log.d(TAG, "ACTION_MESSAGE_STATUS");
@@ -205,7 +277,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
                     if (payload.getDataType() == MeshProtos.Data.Type.CLEAR_TEXT_VALUE) {
-                        handleMessageChunk(0, payload.getBytes()); // TODO: fix sender id
+                        String message = new String(payload.getBytes());
+                        Log.d(TAG, "data: " + message);
+                        if (message.startsWith(BCAST_MARKER)) {
+                            handleDiscoveryMessage(message);
+                        } else {
+                            handleMessageChunk(payload.getFrom(), payload.getBytes());
+                        }
                     } else {
                         Log.e(TAG, "Unknown payload type: " + payload.getDataType());
                     }
@@ -216,6 +294,22 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             }
         }
     };
+
+    private void handleDiscoveryMessage(String message) {
+        String messageWithoutMarker = message.replace(BCAST_MARKER + ",", "");
+        String[] messageSplit = messageWithoutMarker.split(",");
+        String meshId = messageSplit[0];
+        String atakUid = messageSplit[1];
+        String callsign = messageSplit[2];
+        boolean initialDiscoveryMessage = messageSplit[3].equals("1");
+
+        Log.d(TAG, "handleDiscoveryMessage, meshId: " + meshId + ", atakUid: " + atakUid + ", callsign: " + callsign);
+
+        if (initialDiscoveryMessage) {
+            broadcastDiscoveryMessage(false);
+        }
+        mGroupListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
+    }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
         if (id != mPendingMessageId) {

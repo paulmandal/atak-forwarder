@@ -1,6 +1,6 @@
 # ATAK Packet Forwarder 
 
-An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports GoTenna Mesh.
+An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports GoTenna Mesh and Meshtastic devices.
 
 ![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/master/images/plugin-disconnected-indicator.png)
 <br>

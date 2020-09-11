@@ -1,11 +1,9 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
-import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.CallSuper;
-import androidx.annotation.NonNull;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -68,11 +66,13 @@ public abstract class CommHardware {
     public CommHardware(Handler uiThreadHandler,
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
-                        GroupTracker groupTracker) {
+                        GroupTracker groupTracker,
+                        UserInfo selfInfo) {
         mHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mGroupTracker = groupTracker;
+        mSelfInfo = selfInfo;
 
         startWorkerThreads();
     }
@@ -80,10 +80,10 @@ public abstract class CommHardware {
     /**
      * External API
      */
-    @CallSuper
-    public void init(@NonNull Context context, @NonNull String callsign, long gId, String atakUid) {
-        mSelfInfo = new UserInfo(callsign, gId, atakUid, mGroupTracker.getGroup() != null);
-    }
+//    @CallSuper
+//    public void init(@NonNull Context context, @NonNull String callsign, long gId, String atakUid) {
+//        mSelfInfo = new UserInfo(callsign, gId, atakUid, mGroupTracker.getGroup() != null);
+//    }
 
     public void broadcastDiscoveryMessage() {
         broadcastDiscoveryMessage(false);
@@ -237,7 +237,7 @@ public abstract class CommHardware {
     }
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = BCAST_MARKER + "," + getSelfInfo().gId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 

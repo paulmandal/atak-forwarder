@@ -12,7 +12,7 @@ import java.util.List;
 
 public class JsonHelper {
 
-    private static final String KEY_GID = "gId";
+    private static final String KEY_MESH_ID = "meshId";
     private static final String KEY_ATAK_UID = "atakUid";
     private static final String KEY_IS_IN_GROUP = "isInGroup";
     private static final String KEY_CALLSIGN = "callsign";
@@ -26,12 +26,12 @@ public class JsonHelper {
             List<UserInfo> userInfoList = new ArrayList<>();
             for (int i = 0 ; i < jsonArray.length() ; i++) {
                 JSONObject json = jsonArray.getJSONObject(i);
-                long gId = json.getLong(KEY_GID);
+                String meshId = json.getString(KEY_MESH_ID);
                 String atakUid = json.getString(KEY_ATAK_UID);
                 boolean isInGroup = json.getBoolean(KEY_IS_IN_GROUP);
                 String callsign = json.getString(KEY_CALLSIGN);
 
-                UserInfo userInfo = new UserInfo(callsign, gId, atakUid, isInGroup);
+                UserInfo userInfo = new UserInfo(callsign, meshId, atakUid, isInGroup);
                 userInfoList.add(userInfo);
             }
 
@@ -65,7 +65,7 @@ public class JsonHelper {
         try {
             for (UserInfo userInfo : userInfoList) {
                 JSONObject userJson = new JSONObject();
-                userJson.put(KEY_GID, userInfo.gId);
+                userJson.put(KEY_MESH_ID, userInfo.meshId);
                 userJson.put(KEY_ATAK_UID, userInfo.atakUid);
                 userJson.put(KEY_IS_IN_GROUP, userInfo.isInGroup);
                 userJson.put(KEY_CALLSIGN, userInfo.callsign);

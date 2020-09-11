@@ -18,7 +18,7 @@ data class MeshUser(val id: String, val longName: String, val shortName: String)
     Parcelable {
 
     override fun toString(): String {
-        return "MeshUser(id=${id.anonymize}, longName=${longName.anonymize}, shortName=${shortName.anonymize})"
+        return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName})"
     }
 }
 
@@ -57,7 +57,7 @@ data class Position(
     fun bearing(o: Position) = bearing(latitude, longitude, o.latitude, o.longitude)
 
     override fun toString(): String {
-        return "Position(lat=${latitude.anonymize}, lon=${longitude.anonymize}, alt=${altitude.anonymize}, time=${time}, batteryPctLevel=${batteryPctLevel})"
+        return "Position(lat=${latitude}, lon=${longitude}, alt=${altitude}, time=${time}, batteryPctLevel=${batteryPctLevel})"
     }
 }
 

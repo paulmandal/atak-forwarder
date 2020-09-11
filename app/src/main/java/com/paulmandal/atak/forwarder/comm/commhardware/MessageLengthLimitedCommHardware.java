@@ -3,12 +3,13 @@ package com.paulmandal.atak.forwarder.comm.commhardware;
 import android.os.Handler;
 import android.util.Log;
 
+import com.geeksville.mesh.DataPacket;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.group.GroupInfo;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,16 +19,17 @@ import java.util.Map;
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
-    private static final int MESSAGE_CHUNK_LENGTH = Config.MESSAGE_CHUNK_LENGTH;
-
     private GroupTracker mGroupTracker;
+    private final int mMessageChunkLength;
 
-    private final Map<Long, List<MessageChunk>> mIncomingMessages = new HashMap<>();
+    private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
+    private final Map<Long, List<MessageChunk>> mIncomingGoTennaMessages = new HashMap<>(); // TODO: abstract this
 
-    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, GroupTracker groupTracker) {
-        super(uiThreadHandler, commandQueue, queuedCommandFactory, groupTracker);
+    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, GroupTracker groupTracker, int messageChunkLength, UserInfo selfInfo) {
+        super(uiThreadHandler, commandQueue, queuedCommandFactory, groupTracker, selfInfo);
 
         mGroupTracker = groupTracker;
+        mMessageChunkLength = messageChunkLength;
     }
 
     @Override
@@ -35,26 +37,81 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         sendMessageToUserOrGroup(sendMessageCommand);
     }
 
-    protected void handleMessageChunk(long senderGid, byte[] messageChunk) {
+    protected void handleMessageChunk(String meshId, byte[] messageChunk) {
         int messageIndex = messageChunk[0] >> 4 & 0x0f;
         int messageCount = messageChunk[0] & 0x0f;
 
-        Log.d(TAG, "  messageChunk: " + messageIndex + "/" + messageCount + " from: " + senderGid);
+        Log.d(TAG, "<---  messageChunk: " + messageIndex + "/" + messageCount + " from: " + meshId);
 
         byte[] chunk = new byte[messageChunk.length - 1];
         for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {
             chunk[idx] = messageChunk[i];
         }
-        handleMessageChunk(senderGid, messageIndex, messageCount, chunk);
+        handleMessageChunk(meshId, messageIndex, messageCount, chunk);
     }
 
-
-    private void handleMessageChunk(long senderGid, int messageIndex, int messageCount, byte[] messageChunk) {
+    private void handleMessageChunk(String meshId, int messageIndex, int messageCount, byte[] messageChunk) {
         synchronized (mIncomingMessages) { // TODO: better sync block?
-            List<MessageChunk> incomingMessagesFromUser = mIncomingMessages.get(senderGid);
+            List<MessageChunk> incomingMessagesFromUser = mIncomingMessages.get(meshId);
             if (incomingMessagesFromUser == null) {
                 incomingMessagesFromUser = new ArrayList<>();
-                mIncomingMessages.put(senderGid, incomingMessagesFromUser);
+                mIncomingMessages.put(meshId, incomingMessagesFromUser);
+            }
+            incomingMessagesFromUser.add(new MessageChunk(messageIndex, messageCount, messageChunk));
+
+            if (messageIndex == messageCount - 1) {
+                // Message complete!
+                byte[][] messagePieces = new byte[messageCount][];
+                int totalLength = 0;
+                for (MessageChunk messagePiece : incomingMessagesFromUser) {
+                    if (messagePiece.count > messageCount) {
+                        // TODO: better handling for mis-ordered messages
+                        continue;
+                    }
+                    messagePieces[messagePiece.index] = messagePiece.chunk;
+                    totalLength = totalLength + messagePiece.chunk.length;
+                }
+
+                incomingMessagesFromUser.clear();
+
+                byte[] message = new byte[totalLength];
+                for (int idx = 0, i = 0; i < messagePieces.length; i++) {
+                    if (messagePieces[i] == null) {
+                        // We're missing a chunk of this message so we can't rebuild it
+                        Log.e(TAG, "Missing chunk: " + (i + 1) + "/" + messagePieces.length);
+                        return;
+                    }
+                    for (int j = 0; j < messagePieces[i].length; j++, idx++) {
+                        message[idx] = messagePieces[i][j];
+                    }
+                }
+                notifyMessageListeners(message);
+            }
+        }
+    }
+
+    /**
+     * GoTenna Message Handling -- TODO: abstract this
+     */
+    protected void handleGoTennaMessageChunk(long senderGid, byte[] messageChunk) {
+        int messageIndex = messageChunk[0] >> 4 & 0x0f;
+        int messageCount = messageChunk[0] & 0x0f;
+
+        Log.d(TAG, "<---  messageChunk: " + messageIndex + "/" + messageCount + " from: " + senderGid);
+
+        byte[] chunk = new byte[messageChunk.length - 1];
+        for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {
+            chunk[idx] = messageChunk[i];
+        }
+        handleGoTennaMessageChunk(senderGid, messageIndex, messageCount, chunk);
+    }
+
+    private void handleGoTennaMessageChunk(long senderGid, int messageIndex, int messageCount, byte[] messageChunk) {
+        synchronized (mIncomingGoTennaMessages) { // TODO: better sync block?
+            List<MessageChunk> incomingMessagesFromUser = mIncomingGoTennaMessages.get(senderGid);
+            if (incomingMessagesFromUser == null) {
+                incomingMessagesFromUser = new ArrayList<>();
+                mIncomingGoTennaMessages.put(senderGid, incomingMessagesFromUser);
             }
             incomingMessagesFromUser.add(new MessageChunk(messageIndex, messageCount, messageChunk));
 
@@ -96,7 +153,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         byte[] message = sendMessageCommand.message;
         String[] toUIDs = sendMessageCommand.toUIDs;
         // Check message length and break up if necessary
-        int chunks = (int) Math.ceil((double) message.length / (double) MESSAGE_CHUNK_LENGTH);
+        int chunks = (int) Math.ceil((double) message.length / (double) mMessageChunkLength);
 
         if (chunks > 15) {
             Log.e(TAG, "Cannot break message into more than 15 pieces since we only have 1 byte for the header");
@@ -107,8 +164,8 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
 
         byte[][] messages = new byte[chunks][];
         for (int i = 0; i < chunks; i++) {
-            int start = i * MESSAGE_CHUNK_LENGTH;
-            int end = Math.min((i + 1) * MESSAGE_CHUNK_LENGTH, message.length);
+            int start = i * mMessageChunkLength;
+            int end = Math.min((i + 1) * mMessageChunkLength, message.length);
             int length = end - start;
 
             messages[i] = new byte[length + 1];
@@ -126,18 +183,20 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         }
     }
 
+    // TODO: abstract this
     private void sendMessagesToGroup(byte[][] messages) {
-        GroupInfo groupInfo = mGroupTracker.getGroup();
-        if (groupInfo == null) {
-            Log.d(TAG, "  Tried to broadcast message without group, returning");
-            return;
-        }
+//        GroupInfo groupInfo = mGroupTracker.getGroup(); TODO: re-enable this
+//        if (groupInfo == null) {
+//            Log.d(TAG, "  Tried to broadcast message without group, returning");
+//            return;
+//        }
 
         for (int i = 0; i < messages.length; i++) {
             byte[] message = messages[i];
-            long groupId = groupInfo.groupId;
+//            long groupId = groupInfo.groupId;
+            String groupId = DataPacket.ID_BROADCAST;
 
-            Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
+            Log.d(TAG, "---> sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
 
             if (!sendMessageSegment(message, groupId)) {
                 i--;
@@ -149,19 +208,25 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         }
     }
 
+    // TODO: abstract this
     private void sendMessagesToUsers(byte[][] messages, String[] toUIDs) {
         for (String uId : toUIDs) {
             for (int i = 0; i < messages.length; i++) {
                 byte[] message = messages[i];
-                long gId = mGroupTracker.getGidForUid(uId);
-
-                if (gId == GroupTracker.USER_NOT_FOUND) {
+                String meshId = mGroupTracker.getMeshIdForUid(uId);
+                if (meshId.equals(GroupTracker.USER_NOT_FOUND)) {
+                    Log.d(TAG, "msg can't find user: " + uId);
                     continue;
                 }
+//                long gId = mGroupTracker.getGidForUid(uId);
+//
+//                if (gId == GroupTracker.USER_NOT_FOUND) {
+//                    continue;
+//                }
                 // Send message to individual
-                Log.d(TAG, "    sending chunk " + (i + 1) + "/" + messages.length + " to individual: " + gId + ", " + new String(message));
+                Log.d(TAG, "--->  sending chunk " + (i + 1) + "/" + messages.length + " to individual: " + meshId + ", " + new String(message));
 
-                if (!sendMessageSegment(message, gId)) {
+                if (!sendMessageSegment(message, meshId)) {
                     i--;
                 }
 
@@ -190,5 +255,5 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     /**
      * To be implemented by child classes
      */
-    protected abstract boolean sendMessageSegment(byte[] message, long targetId);
+    protected abstract boolean sendMessageSegment(byte[] message, String targetId);
 }

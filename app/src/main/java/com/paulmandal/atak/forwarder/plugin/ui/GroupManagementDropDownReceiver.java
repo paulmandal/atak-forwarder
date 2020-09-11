@@ -209,46 +209,46 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
             List<Long> gIdsForGroup = new ArrayList<>();
             mCreateGroupButton.setOnClickListener((View v) -> {
-                if (mEditMode == EditMode.ADD_USERS) {
-                    List<Long> newGidsForGroup = new ArrayList<>();
-
-                    StringBuilder usernamesForOutput = new StringBuilder();
-                    boolean first = true;
-
-                    for (int i = 0; i < mUsers.size(); i++) {
-                        UserInfo originalUser = mUsers.get(i);
-                        UserInfo modifiedUser = mModifiedUsers.get(i);
-                        if (originalUser.isInGroup) {
-                            gIdsForGroup.add(originalUser.gId);
-                        }
-                        if (!originalUser.isInGroup && modifiedUser.isInGroup) {
-                            gIdsForGroup.add(originalUser.gId);
-                            newGidsForGroup.add(originalUser.gId);
-
-                            usernamesForOutput.append(first ? "" : ", ");
-                            usernamesForOutput.append(originalUser.callsign);
-                            first = false;
-                        }
-                    }
-
-                    Toast.makeText(mAtakContext, "Adding users to group: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
-                    mCommHardware.addToGroup(gIdsForGroup, newGidsForGroup);
-                } else {
-                    StringBuilder usernamesForOutput = new StringBuilder();
-                    boolean first = true;
-
-                    for (UserInfo user : mModifiedUsers) {
-                        if (user.isInGroup) {
-                            gIdsForGroup.add(user.gId);
-
-                            usernamesForOutput.append(first ? "" : ", ");
-                            usernamesForOutput.append(user.callsign);
-                            first = false;
-                        }
-                    }
-                    Toast.makeText(mAtakContext, "Creating group with users: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
-                    mCommHardware.createGroup(gIdsForGroup);
-                }
+//                if (mEditMode == EditMode.ADD_USERS) {
+//                    List<Long> newGidsForGroup = new ArrayList<>();
+//
+//                    StringBuilder usernamesForOutput = new StringBuilder();
+//                    boolean first = true;
+//
+//                    for (int i = 0; i < mUsers.size(); i++) {
+//                        UserInfo originalUser = mUsers.get(i);
+//                        UserInfo modifiedUser = mModifiedUsers.get(i);
+//                        if (originalUser.isInGroup) {
+//                            gIdsForGroup.add(originalUser.meshId);
+//                        }
+//                        if (!originalUser.isInGroup && modifiedUser.isInGroup) {
+//                            gIdsForGroup.add(originalUser.meshId);
+//                            newGidsForGroup.add(originalUser.meshId);
+//
+//                            usernamesForOutput.append(first ? "" : ", ");
+//                            usernamesForOutput.append(originalUser.callsign);
+//                            first = false;
+//                        }
+//                    }
+//
+//                    Toast.makeText(mAtakContext, "Adding users to group: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
+//                    mCommHardware.addToGroup(gIdsForGroup, newGidsForGroup);
+//                } else {
+//                    StringBuilder usernamesForOutput = new StringBuilder();
+//                    boolean first = true;
+//
+//                    for (UserInfo user : mModifiedUsers) {
+//                        if (user.isInGroup) {
+//                            gIdsForGroup.add(user.meshId);
+//
+//                            usernamesForOutput.append(first ? "" : ", ");
+//                            usernamesForOutput.append(user.callsign);
+//                            first = false;
+//                        }
+//                    }
+//                    Toast.makeText(mAtakContext, "Creating group with users: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
+//                    mCommHardware.createGroup(gIdsForGroup);
+//                }
             });
 
             mMapView.post(mBatteryChargeCheckRunnable);

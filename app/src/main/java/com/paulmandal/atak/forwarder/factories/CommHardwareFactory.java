@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.os.Handler;
 
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -24,14 +23,8 @@ public class CommHardwareFactory {
         String atakUid = mapView.getSelfMarker().getUID();
 
         CommHardware commHardware;
-        if (!Config.GOTENNA_SDK_TOKEN.isEmpty()) {
-//            commHardware = new GoTennaCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory);
-            throw new RuntimeException("GoTenna Mesh is not currently supported.");
-        } else {
-            UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
-            commHardware = new MeshtasticCommHardware(handler, channelListener, groupTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
-        }
-//        commHardware.init(activity, callsign, gId, atakUid);
+        UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
+        commHardware = new MeshtasticCommHardware(handler, channelListener, groupTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
         return commHardware;
     }
 

@@ -1,10 +1,7 @@
 package com.paulmandal.atak.forwarder;
 
 public class Config {
-    /**
-     * Basic configuration
-     */
-    public static final String GOTENNA_SDK_TOKEN = "";
+    public static final int PSK_LENGTH = 32;
 
     /**
      * Tweaks to message handling

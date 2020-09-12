@@ -43,6 +43,7 @@ public class QrHelper {
         return bitmap;
     }
 
+    // TODO: move this or remove it
     public static String toBinaryString(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte b : bytes) {

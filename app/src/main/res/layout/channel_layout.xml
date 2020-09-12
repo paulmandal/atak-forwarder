@@ -11,19 +11,23 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="@string/channel_name" />
+        android:text="@string/channel_name"
+        android:visibility="gone" />
 
     <EditText
         android:id="@+id/edittext_channel_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignEnd="@id/label_channel_name"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:visibility="gone" />
 
     <RadioGroup
+        android:id="@+id/radio_group_modem_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:visibility="gone">
 
         <RadioButton
             android:id="@+id/radio_button_short_range"
@@ -47,6 +51,7 @@
             android:id="@+id/radio_button_very_long_range"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="true"
             android:text="@string/very_long_range" />
     </RadioGroup>
 
@@ -59,9 +64,9 @@
         android:visibility="gone" />
 
     <FrameLayout
+        android:id="@+id/qr_scanner_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/qr_scanner_container"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 

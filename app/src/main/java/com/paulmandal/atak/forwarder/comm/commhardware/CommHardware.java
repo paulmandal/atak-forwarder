@@ -5,6 +5,7 @@ import android.util.Log;
 
 import androidx.annotation.CallSuper;
 
+import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
@@ -82,10 +83,10 @@ public abstract class CommHardware {
         broadcastDiscoveryMessage(false);
     }
 
-    public void updateChannelSettings(String channelName, byte[] psk) {
+    public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
         // TODO: enforce connected?
 
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk));
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk, modemConfig));
     }
 
     public void connect() {

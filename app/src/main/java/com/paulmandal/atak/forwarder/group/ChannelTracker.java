@@ -7,6 +7,7 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
+import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
@@ -34,6 +35,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     private String mChannelName;
     private byte[] mPsk;
+    private MeshProtos.ChannelSettings.ModemConfig mModemConfig;
 
     private List<UpdateListener> mUpdateListeners = new ArrayList<>();
 
@@ -60,6 +62,9 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     }
     public byte[] getPsk() {
         return mPsk;
+    }
+    public MeshProtos.ChannelSettings.ModemConfig getModemConfig() {
+        return mModemConfig;
     }
 
     @Override
@@ -127,9 +132,10 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     }
 
     @Override
-    public void onChannelSettingsUpdated(String channelName, byte[] psk) {
+    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
         mChannelName = channelName;
         mPsk = psk;
+        mModemConfig = modemConfig;
 
         for (UpdateListener updateListener : mUpdateListeners) {
             updateListener.onChannelUpdated();

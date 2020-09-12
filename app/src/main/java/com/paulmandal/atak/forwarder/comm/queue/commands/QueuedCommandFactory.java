@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.queue.commands;
 
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.geeksville.mesh.MeshProtos;
 
 public class QueuedCommandFactory {
     public QueuedCommand createScanForCommDeviceCommand() {
@@ -15,8 +16,8 @@ public class QueuedCommandFactory {
         return new BroadcastDiscoveryCommand(CommandType.BROADCAST_DISCOVERY_MSG, QueuedCommand.PRIORITY_HIGH, System.currentTimeMillis(), discoveryMessage);
     }
 
-    public UpdateChannelCommand createUpdateChannelCommand(String channelName, byte[] psk) {
-        return new UpdateChannelCommand(CommandType.UPDATE_CHANNEL, QueuedCommand.PRIORITY_HIGH, System.currentTimeMillis(), channelName, psk);
+    public UpdateChannelCommand createUpdateChannelCommand(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
+        return new UpdateChannelCommand(CommandType.UPDATE_CHANNEL, QueuedCommand.PRIORITY_HIGH, System.currentTimeMillis(), channelName, psk, modemConfig);
     }
 
     public SendMessageCommand createSendMessageCommand(int priority, CotEvent cotEvent, byte[] message, String[] toUIDs) {

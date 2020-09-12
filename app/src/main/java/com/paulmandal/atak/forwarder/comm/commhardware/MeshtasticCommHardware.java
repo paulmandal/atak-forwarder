@@ -27,6 +27,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
 import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
+import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +37,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface ChannelListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
         void onChannelMembersUpdated(List<UserInfo> userInfoList);
-        void onChannelSettingsUpdated(String channelName, byte[] psk);
+        void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     }
 
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
@@ -220,7 +221,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
             MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-            mChannelListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray());
+            mChannelListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
 
             Log.e(TAG, " getChannelStatus.name: " + channelSettings.getName());
         } catch (RemoteException | InvalidProtocolBufferException e) {
@@ -352,6 +353,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void handleUpdateChannel(UpdateChannelCommand updateChannelCommand) {
+        Log.e(TAG, "handleUpdateChannel: " +updateChannelCommand.channelName + ", modem: " + updateChannelCommand.modemConfig + ", psk: " + QrHelper.toBinaryString(updateChannelCommand.psk));
         try {
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
@@ -372,6 +374,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             channelSettingsBuilder.setName(updateChannelCommand.channelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(updateChannelCommand.psk));
+            channelSettingsBuilder.setModemConfig(updateChannelCommand.modemConfig);
 
             // End Updates TODO: remove
 

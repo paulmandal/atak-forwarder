@@ -9,8 +9,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Config;
@@ -19,10 +21,16 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
+
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
 public class ChannelTab {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTab.class.getSimpleName();
+
+    private static final int PSK_LENGTH = Config.PSK_LENGTH;
 
     private Context mAtakContext;
 
@@ -30,6 +38,8 @@ public class ChannelTab {
 
     private ChannelTracker mChannelTracker;
     private QrHelper mQrHelper;
+
+    private RadioGroup mModemSettingRadioGroup;
 
     private TextView mChannelNameLabel;
     private EditText mChannelNameEditText;
@@ -45,6 +55,13 @@ public class ChannelTab {
 
     private View.OnClickListener mEditChannelOnClickListener;
     private View.OnClickListener mSaveChannelOnClickListener;
+
+    Map<Integer, MeshProtos.ChannelSettings.ModemConfig> mRadioButtonToModemSettingMap = new HashMap() {{
+        put(R.id.radio_button_short_range, MeshProtos.ChannelSettings.ModemConfig.Bw125Cr45Sf128);
+        put(R.id.radio_button_medium_range, MeshProtos.ChannelSettings.ModemConfig.Bw500Cr45Sf128);
+        put(R.id.radio_button_long_range, MeshProtos.ChannelSettings.ModemConfig.Bw31_25Cr48Sf512);
+        put(R.id.radio_button_very_long_range, MeshProtos.ChannelSettings.ModemConfig.Bw125Cr48Sf4096);
+    }};
 
     private enum ScreenMode {
         DEFAULT,
@@ -68,6 +85,7 @@ public class ChannelTab {
         mChannelNameEditText = templateView.findViewById(R.id.edittext_channel_name);
         mChannelQr = templateView.findViewById(R.id.channel_qr);
         mQrScannerContainer = templateView.findViewById(R.id.qr_scanner_container);
+        mModemSettingRadioGroup = templateView.findViewById(R.id.radio_group_modem_setting);
 
         /*
          * Show/Hide QR
@@ -75,8 +93,22 @@ public class ChannelTab {
         mShowQrOnClickListener = (View v) -> {
             setMode(ScreenMode.SHOW_QR);
 
+            byte[] channelName = mChannelTracker.getChannelName().getBytes();
+            byte[] psk = mChannelTracker.getPsk();
+            byte modemConfig = (byte) mChannelTracker.getModemConfig().getNumber();
+
+            byte[] payload = new byte[psk.length + 1 + channelName.length];
+            for (int i = 0; i < psk.length; i++) {
+                payload[i] = psk[i];
+            }
+            payload[psk.length] = modemConfig;
+
+            for (int i = psk.length + 1, j = 0; i < channelName.length; i++, j++) {
+                payload[i] = channelName[j];
+            }
+
             try {
-                Bitmap bm = mQrHelper.encodeAsBitmap(mChannelTracker.getPsk());
+                Bitmap bm = mQrHelper.encodeAsBitmap(payload);
                 if (bm != null) {
                     mChannelQr.setImageBitmap(bm);
                 }
@@ -118,7 +150,14 @@ public class ChannelTab {
         mSaveChannelOnClickListener = (View v) -> {
             setMode(ScreenMode.DEFAULT);
 
-            // TODO: store settings
+            // Generate a new PSK
+            SecureRandom random = new SecureRandom();
+            byte[] psk = new byte[PSK_LENGTH];
+            random.nextBytes(psk);
+
+            MeshProtos.ChannelSettings.ModemConfig modemConfig = mRadioButtonToModemSettingMap.get(mModemSettingRadioGroup.getCheckedRadioButtonId());
+
+            mCommHardware.updateChannelSettings(mChannelNameEditText.getText().toString(), psk, modemConfig);
 
             Button b = (Button) v;
             b.setText(R.string.edit_channel);
@@ -127,6 +166,11 @@ public class ChannelTab {
 
         mEditOrSaveButton = templateView.findViewById(R.id.button_edit_or_save_channel);
         mEditOrSaveButton.setOnClickListener(mEditChannelOnClickListener);
+
+        /*
+         * Edit Radio Button
+         */
+        mModemSettingRadioGroup = templateView.findViewById(R.id.radio_group_modem_setting);
 
         /*
          * Scan QR
@@ -139,18 +183,30 @@ public class ChannelTab {
             scannerView.setResultHandler((Result rawResult) -> {
                 setMode(ScreenMode.DEFAULT);
 
-                // Do something with the result here
-                // TODO: store settings
                 String resultText = rawResult.getText();
                 byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
+
+                byte[] psk = new byte[PSK_LENGTH];
+                for (int i = 0; i < PSK_LENGTH; i++) {
+                    psk[i] = resultBytes[i];
+                }
+
+                int modemConfigValue = resultBytes[PSK_LENGTH];
+
+                byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
+                for (int i = PSK_LENGTH + 1, j = 0; i < resultBytes.length; i++, j++) {
+                    channelNameBytes[j] = resultBytes[i];
+                }
+                MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
+
+                mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
                 Log.e(TAG, " read bytes: " + QrHelper.toBinaryString(resultBytes));
                 Log.e(TAG, rawResult.getText()); // Prints scan results
                 Log.e(TAG, rawResult.getBarcodeFormat().toString()); // Prints the scan format (qrcode, pdf417 etc.)
 
-                // If you would like to resume scanning, call this method below:
                 scannerView.stopCamera();
                 mQrScannerContainer.removeView(scannerView);
-            }); // Register ourselves as a handler for scan results.
+            });
             mQrScannerContainer.addView(scannerView);
             scannerView.startCamera();
         });
@@ -162,6 +218,7 @@ public class ChannelTab {
                 mChannelNameLabel.setVisibility(View.GONE);
                 mChannelNameEditText.setVisibility(View.GONE);
                 mChannelQr.setVisibility(View.GONE);
+                mModemSettingRadioGroup.setVisibility(View.GONE);
 
                 mShowOrHideQrButton.setVisibility(View.VISIBLE);
                 mScanQrButton.setVisibility(View.VISIBLE);
@@ -176,6 +233,10 @@ public class ChannelTab {
                 mEditOrSaveButton.setVisibility(View.GONE);
                 break;
             case EDIT_CHANNEL:
+                mChannelNameLabel.setVisibility(View.VISIBLE);
+                mChannelNameEditText.setVisibility(View.VISIBLE);
+                mModemSettingRadioGroup.setVisibility(View.VISIBLE);
+
                 mShowOrHideQrButton.setVisibility(View.GONE);
                 mScanQrButton.setVisibility(View.GONE);
                 break;

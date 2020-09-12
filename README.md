@@ -23,7 +23,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 # To Do
 
-* Get this working with Release builds of ATAK
+* Automatically adjust link speed / range based on # of lost messages
 * Message IDs and receipt confirmation
 * Improve chat message shrinking further
 * Figure out why some messages fail to parse (1/8 msgs)

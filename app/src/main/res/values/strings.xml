@@ -34,6 +34,13 @@
     <string name="reusing_old_psk">Reusing old PSK!</string>
     <string name="using_new_psk">Using new PSK!</string>
 
+    <string name="warning">Warning</string>
+    <string name="start_channel_edit_dialog">Warning if you make any changes here you will lose your current channel settings!</string>
+    <string name="start_qr_scan_dialog">Warning if you start this scan you will lose your current channel settings!</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+
     <!-- AdvancedTab -->
     <string name="set_msg_block_ttl_mins">Repeat Msg Block TTL (mins)</string>
     <string name="set_pli_block_ttl_s">PLI max. freq. (s)</string>

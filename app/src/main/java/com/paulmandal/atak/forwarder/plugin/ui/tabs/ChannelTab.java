@@ -1,6 +1,8 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
@@ -150,18 +152,13 @@ public class ChannelTab {
          * Edit / Save Channel
          */
         mEditChannelOnClickListener = (View v) -> {
-            setMode(ScreenMode.EDIT_CHANNEL);
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mPluginContext)
+                    .setTitle(R.string.warning)
+                    .setMessage(R.string.start_channel_edit_dialog)
+                    .setPositiveButton(R.string.ok, (DialogInterface dialog, int whichButton) -> startEditChannel(v))
+                    .setNegativeButton(R.string.cancel,(DialogInterface dialog, int whichButton) -> dialog.cancel());
 
-            mChannelNameEditText.setText(mChannelTracker.getChannelName());
-            mModemSettingRadioGroup.check(getRadioButtonForModemConfig(mChannelTracker.getModemConfig()));
-            mPsk = mChannelTracker.getPsk();
-
-            mPskStatusTextView.setText(R.string.reusing_old_psk);
-            mPskStatusTextView.setTextColor(mPluginContext.getResources().getColor(R.color.red));
-
-            Button b = (Button) v;
-            b.setText(R.string.save);
-            v.setOnClickListener(mSaveChannelOnClickListener);
+            alertDialog.show();
         };
 
         mSaveChannelOnClickListener = (View v) -> {
@@ -202,38 +199,63 @@ public class ChannelTab {
          */
         mScanQrButton = templateView.findViewById(R.id.button_scan_channel_qr);
         mScanQrButton.setOnClickListener((View v) -> {
-            setMode(ScreenMode.SCAN_QR);
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mPluginContext)
+                    .setTitle(R.string.warning)
+                    .setMessage(R.string.start_qr_scan_dialog)
+                    .setPositiveButton(R.string.ok, (DialogInterface dialog, int whichButton) -> startQrScan())
+                    .setNegativeButton(R.string.cancel,(DialogInterface dialog, int whichButton) -> dialog.cancel());
 
-            ZXingScannerView scannerView = new ZXingScannerView(mPluginContext);
-            scannerView.setResultHandler((Result rawResult) -> {
-                setMode(ScreenMode.DEFAULT);
-
-                String resultText = rawResult.getText();
-                byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
-
-                byte[] psk = new byte[PSK_LENGTH];
-                for (int i = 0; i < PSK_LENGTH; i++) {
-                    psk[i] = resultBytes[i];
-                }
-
-                int modemConfigValue = resultBytes[PSK_LENGTH];
-
-                byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
-                for (int i = PSK_LENGTH + 1, j = 0; i < resultBytes.length; i++, j++) {
-                    channelNameBytes[j] = resultBytes[i];
-                }
-                MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
-
-                mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
-                Log.e(TAG, " read bytes: " + QrHelper.toBinaryString(resultBytes));
-                Log.e(TAG, "  cname: " + new String(channelNameBytes) + ", psk: " + QrHelper.toBinaryString(psk));
-
-                scannerView.stopCamera();
-                mQrScannerContainer.removeView(scannerView);
-            });
-            mQrScannerContainer.addView(scannerView);
-            scannerView.startCamera();
+            alertDialog.show();
         });
+    }
+
+    private void startEditChannel(View v) {
+        setMode(ScreenMode.EDIT_CHANNEL);
+
+        mChannelNameEditText.setText(mChannelTracker.getChannelName());
+        mModemSettingRadioGroup.check(getRadioButtonForModemConfig(mChannelTracker.getModemConfig()));
+        mPsk = mChannelTracker.getPsk();
+
+        mPskStatusTextView.setText(R.string.reusing_old_psk);
+        mPskStatusTextView.setTextColor(mPluginContext.getResources().getColor(R.color.red));
+
+        Button b = (Button) v;
+        b.setText(R.string.save);
+        v.setOnClickListener(mSaveChannelOnClickListener);
+    }
+
+    private void startQrScan() {
+        setMode(ScreenMode.SCAN_QR);
+
+        ZXingScannerView scannerView = new ZXingScannerView(mPluginContext);
+        scannerView.setResultHandler((Result rawResult) -> {
+            setMode(ScreenMode.DEFAULT);
+
+            String resultText = rawResult.getText();
+            byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
+
+            byte[] psk = new byte[PSK_LENGTH];
+            for (int i = 0; i < PSK_LENGTH; i++) {
+                psk[i] = resultBytes[i];
+            }
+
+            int modemConfigValue = resultBytes[PSK_LENGTH];
+
+            byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
+            for (int i = PSK_LENGTH + 1, j = 0; i < resultBytes.length; i++, j++) {
+                channelNameBytes[j] = resultBytes[i];
+            }
+            MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
+
+            mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
+            Log.e(TAG, " read bytes: " + QrHelper.toBinaryString(resultBytes));
+            Log.e(TAG, "  cname: " + new String(channelNameBytes) + ", psk: " + QrHelper.toBinaryString(psk));
+
+            scannerView.stopCamera();
+            mQrScannerContainer.removeView(scannerView);
+        });
+        mQrScannerContainer.addView(scannerView);
+        scannerView.startCamera();
     }
 
     private void setMode(ScreenMode mode) {

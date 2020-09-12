@@ -27,6 +27,7 @@ import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -72,8 +73,7 @@ public class ForwarderLifecycle implements Lifecycle {
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, stateStorage, stateStorage.getUsers());
-        channelTracker.clearData(); // TODO: remove me
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, new ArrayList<>());
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory);
         MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);

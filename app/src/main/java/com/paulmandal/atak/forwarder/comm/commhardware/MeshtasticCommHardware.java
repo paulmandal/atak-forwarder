@@ -94,6 +94,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Log.d(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mBound = true;
+
+                try {
+                    boolean connected = mMeshService.connectionState().equals("CONNECTED");
+                    handleConnectionChange(connected);
+                } catch (RemoteException e) {
+                    Log.e(TAG, "RemoteException during initial service connection: " + e.getMessage());
+                }
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -272,13 +279,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_MESH_CONNECTED:
                     boolean connected = !intent.getStringExtra(EXTRA_CONNECTED).equals("DISCONNECTED");
                     Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected);
-                    setConnected(connected);
-                    setupRadio();
-                    updateMeshId();
-                    if (connected) {
-                        broadcastDiscoveryMessage(true);
-                    }
-                    notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED);
+                    handleConnectionChange(connected);
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
@@ -320,6 +321,18 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             }
         }
     };
+
+    private void handleConnectionChange(boolean connected) {
+        setConnected(connected);
+        setupRadio();
+        updateMeshId();
+        updateChannelMembers();
+        updateChannelStatus();
+        if (connected) {
+            broadcastDiscoveryMessage(true);
+        }
+        notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED);
+    }
 
     private void handleDiscoveryMessage(String message) {
         String messageWithoutMarker = message.replace(BCAST_MARKER + ",", "");

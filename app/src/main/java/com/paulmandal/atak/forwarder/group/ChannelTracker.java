@@ -20,8 +20,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTracker.class.getSimpleName();
 
     public interface UpdateListener {
-        void onUsersUpdated();
-        void onChannelUpdated();
+        void onUpdated();
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -88,7 +87,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             mUserInfoList.add(new UserInfo(callsign, meshId, atakUid, false, null));
 
             for (UpdateListener updateListener : mUpdateListeners) {
-                updateListener.onUsersUpdated();
+                updateListener.onUpdated();
             }
         }
 
@@ -124,7 +123,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             mUserInfoList.addAll(newUsers);
 
             for (UpdateListener updateListener : mUpdateListeners) {
-                updateListener.onChannelUpdated();
+                updateListener.onUpdated();
             }
 
             storeState();
@@ -138,7 +137,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         mModemConfig = modemConfig;
 
         for (UpdateListener updateListener : mUpdateListeners) {
-            updateListener.onChannelUpdated();
+            updateListener.onUpdated();
         }
     }
 
@@ -158,7 +157,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     public void removeUpdateListener(UpdateListener listener) {
         mUpdateListeners.remove(listener);
     }
-
 
     public void clearData() {
         mUserInfoList = new ArrayList<>();

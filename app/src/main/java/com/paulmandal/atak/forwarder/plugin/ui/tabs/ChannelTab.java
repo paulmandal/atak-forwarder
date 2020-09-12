@@ -32,7 +32,7 @@ public class ChannelTab {
 
     private static final int PSK_LENGTH = Config.PSK_LENGTH;
 
-    private Context mAtakContext;
+    private Context mPluginContext;
 
     private CommHardware mCommHardware;
 
@@ -70,11 +70,11 @@ public class ChannelTab {
         SHOW_QR
     }
 
-    public ChannelTab(Context atakContext,
+    public ChannelTab(Context pluginContext,
                       CommHardware commHardware,
                       ChannelTracker channelTracker,
                       QrHelper qrHelper) {
-        mAtakContext = atakContext;
+        mPluginContext = pluginContext;
         mCommHardware = commHardware;
         mChannelTracker = channelTracker;
         mQrHelper = qrHelper;
@@ -97,15 +97,21 @@ public class ChannelTab {
             byte[] psk = mChannelTracker.getPsk();
             byte modemConfig = (byte) mChannelTracker.getModemConfig().getNumber();
 
+            Log.e(TAG, "channelName.len: " + channelName.length);
+            Log.e(TAG, "psk.len: " + psk.length);
+
             byte[] payload = new byte[psk.length + 1 + channelName.length];
             for (int i = 0; i < psk.length; i++) {
                 payload[i] = psk[i];
             }
             payload[psk.length] = modemConfig;
 
-            for (int i = psk.length + 1, j = 0; i < channelName.length; i++, j++) {
+            for (int i = psk.length + 1, j = 0; j < channelName.length; i++, j++) {
                 payload[i] = channelName[j];
             }
+
+            Log.e(TAG, " wrote bytes: " + QrHelper.toBinaryString(payload));
+            Log.e(TAG, "  cname: " + new String(channelName) + ", psk: " + QrHelper.toBinaryString(psk));
 
             try {
                 Bitmap bm = mQrHelper.encodeAsBitmap(payload);
@@ -157,6 +163,7 @@ public class ChannelTab {
 
             MeshProtos.ChannelSettings.ModemConfig modemConfig = mRadioButtonToModemSettingMap.get(mModemSettingRadioGroup.getCheckedRadioButtonId());
 
+            mChannelTracker.clearData();
             mCommHardware.updateChannelSettings(mChannelNameEditText.getText().toString(), psk, modemConfig);
 
             Button b = (Button) v;
@@ -179,7 +186,7 @@ public class ChannelTab {
         mScanQrButton.setOnClickListener((View v) -> {
             setMode(ScreenMode.SCAN_QR);
 
-            ZXingScannerView scannerView = new ZXingScannerView(mAtakContext);
+            ZXingScannerView scannerView = new ZXingScannerView(mPluginContext);
             scannerView.setResultHandler((Result rawResult) -> {
                 setMode(ScreenMode.DEFAULT);
 
@@ -201,8 +208,7 @@ public class ChannelTab {
 
                 mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
                 Log.e(TAG, " read bytes: " + QrHelper.toBinaryString(resultBytes));
-                Log.e(TAG, rawResult.getText()); // Prints scan results
-                Log.e(TAG, rawResult.getBarcodeFormat().toString()); // Prints the scan format (qrcode, pdf417 etc.)
+                Log.e(TAG, "  cname: " + new String(channelNameBytes) + ", psk: " + QrHelper.toBinaryString(psk));
 
                 scannerView.stopCamera();
                 mQrScannerContainer.removeView(scannerView);

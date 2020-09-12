@@ -3,8 +3,6 @@
     <string name="app_name">ATAK Forwarder</string>
     <string name="app_desc">Forwards CoT messages to/from ATAK via a hardware layer</string>
 
-    <string name="shared_prefs_filename">atak-forwarder</string>
-
     <!-- SettingsTab  -->
     <string name="connection_status_scanning">Scanning</string>
     <string name="connection_status_connected">Connected</string>

@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:padding="8dp" />
+        android:paddingStart="8dp" />
 
     <eo.view.batterymeter.BatteryMeterView
         android:id="@+id/battery_meter"
@@ -18,7 +18,7 @@
         android:layout_height="16dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        android:padding="8dp"
+        android:paddingEnd="8dp"
         app:batteryMeterChargingColor="#4caf50"
         app:batteryMeterColor="#0277bd"
         app:batteryMeterCriticalChargeLevel="15"

@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.graphics.Bitmap;
 import android.util.Base64;
-import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
@@ -19,7 +18,6 @@ public class QrHelper {
     private static final int WIDTH = 512;
 
     public Bitmap encodeAsBitmap(byte[] input) throws WriterException {
-        Log.e(TAG, " wrote bytes: " + toBinaryString(input));
         String base64 = Base64.encodeToString(input, Base64.DEFAULT);
 
         BitMatrix result;

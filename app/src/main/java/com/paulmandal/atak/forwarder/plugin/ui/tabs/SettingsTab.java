@@ -73,19 +73,8 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     private View.OnClickListener mUnpairClickListener = (View v) -> mCommHardware.disconnect();
 
     @Override
-    public void onUsersUpdated() {
-        Toast.makeText(mAtakContext, "User list updated", Toast.LENGTH_SHORT).show();
-        updateUi();
-    }
-
-    @Override
-    public void onChannelUpdated() {
-        Toast.makeText(mAtakContext, "Group membership updated", Toast.LENGTH_SHORT).show();
-        updateUi();
-    }
-
     // TODO: maybe break this into individual UI components or wait for MVVM
-    private void updateUi() {
+    public void onUpdated() {
         mChannelName.setText(String.format("#%s", mChannelTracker.getChannelName()));
         setupListView();
     }

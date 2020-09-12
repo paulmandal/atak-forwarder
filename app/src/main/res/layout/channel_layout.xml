@@ -18,14 +18,19 @@
         android:id="@+id/edittext_channel_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@id/label_channel_name"
         android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/label_channel_name"
+        android:lines="1"
+        android:maxLines="1"
+        android:singleLine="true"
         android:visibility="gone" />
 
     <RadioGroup
         android:id="@+id/radio_group_modem_setting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@id/edittext_channel_name"
+        android:layout_alignParentStart="true"
         android:orientation="vertical"
         android:visibility="gone">
 

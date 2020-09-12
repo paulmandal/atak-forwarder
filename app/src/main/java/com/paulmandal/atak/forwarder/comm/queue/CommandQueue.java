@@ -146,9 +146,12 @@ public class CommandQueue {
     }
 
     public void clearData() {
+        int messageQueueSize;
         synchronized (mQueuedCommands) {
             mQueuedCommands.clear();
+            messageQueueSize = mQueuedCommands.size();
         }
+        notifyListener(messageQueueSize);
     }
 
     public void setListener(Listener listener) {

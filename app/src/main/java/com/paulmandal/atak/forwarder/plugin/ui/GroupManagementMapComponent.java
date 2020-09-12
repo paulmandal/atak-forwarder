@@ -12,8 +12,11 @@ import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
 
-public class GroupManagementMapComponent extends DropDownMapComponent  {
+public class GroupManagementMapComponent extends DropDownMapComponent {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementMapComponent.class.getSimpleName();
 
     private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
@@ -34,13 +37,22 @@ public class GroupManagementMapComponent extends DropDownMapComponent  {
         mCommandQueue = commandQueue;
     }
 
-    public void onCreate(final Context context, Intent intent,
+    public void onCreate(final Context pluginContext, Intent intent,
                          final MapView mapView) {
+        pluginContext.setTheme(R.style.ATAKPluginTheme);
+        super.onCreate(pluginContext, intent, mapView);
 
-        context.setTheme(R.style.ATAKPluginTheme);
-        super.onCreate(context, intent, mapView);
+        Context atakContext = mapView.getContext();
 
-        GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView, context, mapView.getContext(), mGroupTracker, mCommHardware, mCotMessageCache, mCommandQueue);
+        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mGroupTracker, mCommHardware, mCotMessageCache, mCommandQueue);
+        ChannelTab channelTab = new ChannelTab();
+        AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
+
+        GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,
+                pluginContext,
+                settingsTab,
+                channelTab,
+                advancedTab);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);

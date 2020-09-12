@@ -139,51 +139,51 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void setupRadio() {
+        Log.e(TAG, "setupRadio()");
         try {
             UserInfo selfInfo = getSelfInfo();
             mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
 
-    private void tryReadRadioStuff() {
-        try {
-            getSelfInfo().meshId = mMeshService.getMyId();
-            Log.d(TAG, "myId: " + mMeshService.getMyId());
-            Log.d(TAG, "My Node Info: " + mMeshService.getMyNodeInfo());
-//            if (!mMeshService.connectionState().equals("CONNECTED")) {
-//                return;
-//            }
-            try {
-                byte[] radioConfigBytes = mMeshService.getRadioConfig();
-                if (radioConfigBytes != null) {
-                    MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
-                    Log.d(TAG, " radioConfig: " + radioConfig);
-                    MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-                    MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+            // Set up radio / channel settings
+            byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
-                    Log.d(TAG, " user prefs: " + userPreferences);
-                    Log.d(TAG, " channelSettings: " + channelSettings);
-                    Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
-                }
-            } catch (InvalidProtocolBufferException e) {
-                e.printStackTrace();
+            if (radioConfigBytes == null) {
+                Log.e(TAG, "radioConfigBytes was null");
+                return;
             }
 
-        } catch (RemoteException e) {
+            MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+            MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+            MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+
+            Log.e(TAG, " radioConfig: " + radioConfig);
+
+            MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
+            MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+            MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
+
+            // Begin Updates TODO: remove
+
+            userPreferencesBuilder.setPositionBroadcastSecs(3600);
+            userPreferencesBuilder.setScreenOnSecs(1);
+
+            // End Updates TODO: remove
+
+            radioConfigBuilder.setPreferences(userPreferencesBuilder);
+            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
+
+            radioConfig = radioConfigBuilder.build();
+
+            Log.e(TAG, "updated!");
+            Log.e(TAG, " radioConfig: " + radioConfig);
+
+            mMeshService.setRadioConfig(radioConfig.toByteArray());
+
+            Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
+        } catch (RemoteException | InvalidProtocolBufferException e) {
+            Log.e(TAG, "Exception in setupRadio(): " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public boolean isBatteryCharging() {
-        return false;
-    }
-
-    @Override
-    public Integer getBatteryChargePercentage() {
-        return null;
     }
 
     @Override
@@ -245,7 +245,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected);
                     setConnected(connected);
                     setupRadio();
-                    tryReadRadioStuff();
                     if (connected) {
                         broadcastDiscoveryMessage(true);
                     }
@@ -267,7 +266,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                         Log.e(TAG, "Exception getting nodes: " + e.getMessage());
                         e.printStackTrace();
                     }
-                    tryReadRadioStuff();
                     break;
                 case ACTION_MESSAGE_STATUS:
                     Log.d(TAG, "ACTION_MESSAGE_STATUS");

@@ -7,23 +7,9 @@ public class Config {
     public static final String GOTENNA_SDK_TOKEN = "";
 
     /**
-     * IMPORTANT this is used to set the GoTenna frequencies, please adjust to your approx lat/lon
+     * Tweaks to message handling
      */
-    public static final double FALLBACK_LATITUDE = // 40.619373;
-    public static final double FALLBACK_LONGITUDE = // -74.102977;
-
-    /**
-     * GoTennna Stuff
-     */
-    public static final int SCAN_TIMEOUT_MS = 30000;
-
-    /**
-     * Tweaks to message handling -- GoTenna max message length is 235 bytes with a max transmission rate of 5 msgs per minute (approx, according to their error messages)
-     */
-    public static final int GOTENNA_MESSAGE_CHUNK_LENGTH = 220;
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 100;
-    public static final int QUOTA_REFRESH_TIME_MS = 60000;
-    public static final int MESSAGES_PER_MINUTE = 5;
     public static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = 2000;
 
     /**

@@ -20,11 +20,6 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class CommHardware {
-    public interface BatteryInfoListener { // TODO: move this somewhere better
-        void onChargeStateChanged(boolean isCharging);
-        void onGotBatteryInfo(int percentageCharged);
-    }
-
     private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
 
     protected static final String BCAST_MARKER = "ATAKBCAST";
@@ -52,7 +47,6 @@ public abstract class CommHardware {
     private QueuedCommandFactory mQueuedCommandFactory;
     private GroupTracker mGroupTracker;
 
-    private BatteryInfoListener mBatteryInfoListener;
     private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
     private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
@@ -137,10 +131,6 @@ public abstract class CommHardware {
         }
 
         mCommandQueue.queueCommand(mQueuedCommandFactory.createRequestBatteryStatusCommand());
-    }
-
-    public void setBatteryInfoListener(BatteryInfoListener batteryInfoListener) {
-        mBatteryInfoListener = batteryInfoListener;
     }
 
     @CallSuper
@@ -242,18 +232,6 @@ public abstract class CommHardware {
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 
-    protected void notifyBatteryChargeStateChanged(boolean isBatteryCharging) {
-        if (mBatteryInfoListener != null) {
-            mBatteryInfoListener.onChargeStateChanged(isBatteryCharging);
-        }
-    }
-
-    protected void notifyGotBatteryInfo(int percentageCharged) {
-        if (mBatteryInfoListener != null) {
-            mBatteryInfoListener.onGotBatteryInfo(percentageCharged);
-        }
-    }
-
     protected void notifyMessageListeners(byte[] message) {
         for (MessageListener listener : mMessageListeners) {
             mHandler.post(() -> listener.onMessageReceived(message));
@@ -279,8 +257,6 @@ public abstract class CommHardware {
     /**
      * For subclasses to implement
      */
-    public abstract boolean isBatteryCharging(); // TODO: move this battery stuff somewhere else, into another class?
-    public abstract Integer getBatteryChargePercentage();
     protected abstract void handleScanForCommDevice();
     protected abstract void handleDisconnectFromCommDevice();
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -11,14 +12,18 @@
         android:layout_alignParentTop="true"
         android:padding="8dp" />
 
-    <Switch
-        android:id="@+id/switch_in_out"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <eo.view.batterymeter.BatteryMeterView
+        android:id="@+id/battery_meter"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:padding="8dp"
-        android:showText="true"
-        android:textOff="@string/group_out_text"
-        android:textOn="@string/group_in_text" />
+        app:batteryMeterChargingColor="#4caf50"
+        app:batteryMeterColor="#0277bd"
+        app:batteryMeterCriticalChargeLevel="15"
+        app:batteryMeterCriticalColor="#d84315"
+        app:batteryMeterIndicatorColor="@android:color/transparent"
+        app:batteryMeterTheme="sharp"
+        app:batteryMeterUnknownColor="#e0e0e0" />
 </RelativeLayout>

@@ -8,7 +8,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.ArrayList;
@@ -19,13 +19,13 @@ import java.util.Map;
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
-    private GroupTracker mGroupTracker;
+    private ChannelTracker mGroupTracker;
     private final int mMessageChunkLength;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
     private final Map<Long, List<MessageChunk>> mIncomingGoTennaMessages = new HashMap<>(); // TODO: abstract this
 
-    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, GroupTracker groupTracker, int messageChunkLength, UserInfo selfInfo) {
+    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, ChannelTracker groupTracker, int messageChunkLength, UserInfo selfInfo) {
         super(uiThreadHandler, commandQueue, queuedCommandFactory, groupTracker, selfInfo);
 
         mGroupTracker = groupTracker;
@@ -214,7 +214,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
             for (int i = 0; i < messages.length; i++) {
                 byte[] message = messages[i];
                 String meshId = mGroupTracker.getMeshIdForUid(uId);
-                if (meshId.equals(GroupTracker.USER_NOT_FOUND)) {
+                if (meshId.equals(ChannelTracker.USER_NOT_FOUND)) {
                     Log.d(TAG, "msg can't find user: " + uId);
                     continue;
                 }

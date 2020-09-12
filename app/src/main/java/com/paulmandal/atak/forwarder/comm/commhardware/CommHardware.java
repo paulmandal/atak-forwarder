@@ -13,7 +13,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.List;
@@ -45,7 +45,7 @@ public abstract class CommHardware {
 
     private final CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
-    private GroupTracker mGroupTracker;
+    private ChannelTracker mGroupTracker;
 
     private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
     private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
@@ -60,7 +60,7 @@ public abstract class CommHardware {
     public CommHardware(Handler uiThreadHandler,
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
-                        GroupTracker groupTracker,
+                        ChannelTracker groupTracker,
                         UserInfo selfInfo) {
         mHandler = uiThreadHandler;
         mCommandQueue = commandQueue;

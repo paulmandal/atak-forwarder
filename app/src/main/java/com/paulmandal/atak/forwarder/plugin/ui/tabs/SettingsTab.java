@@ -11,12 +11,12 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupMemberDataAdapter;
 
 import java.util.Locale;
 
-public class SettingsTab implements GroupTracker.UpdateListener,
+public class SettingsTab implements ChannelTracker.UpdateListener,
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener {
     private final Context mPluginContext;
@@ -24,7 +24,7 @@ public class SettingsTab implements GroupTracker.UpdateListener,
 
     private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
-    private GroupTracker mGroupTracker;
+    private ChannelTracker mChannelTracker;
     private CommHardware mCommHardware;
 
     private TextView mConnectionStatusTextView;
@@ -37,13 +37,13 @@ public class SettingsTab implements GroupTracker.UpdateListener,
 
     public SettingsTab(Context pluginContext,
                        Context atakContext,
-                       GroupTracker groupTracker,
+                       ChannelTracker channelTracker,
                        CommHardware commHardware,
                        CotMessageCache cotMessageCache,
                        CommandQueue commandQueue) {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
-        mGroupTracker = groupTracker;
+        mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
         mCommandQueue = commandQueue;
@@ -54,8 +54,8 @@ public class SettingsTab implements GroupTracker.UpdateListener,
         mChannelName = (TextView) templateView.findViewById(R.id.textview_channel_name);
 
         mMessageQueueLengthTextView = (TextView)templateView.findViewById(R.id.textview_message_queue_length);
-        mCreateGroupButton = (Button) templateView.findViewById(R.id.button_create_group);
-        mGroupMembersListView = (ListView) templateView.findViewById(R.id.listview_group_members);
+        mCreateGroupButton = (Button) templateView.findViewById(R.id.button_create_channel);
+        mGroupMembersListView = (ListView) templateView.findViewById(R.id.listview_channel_members);
 
         Button broadcastDiscovery = (Button) templateView.findViewById(R.id.button_broadcast_discovery);
         mScanOrUnpair = (Button) templateView.findViewById(R.id.button_scan_or_unpair);
@@ -69,7 +69,7 @@ public class SettingsTab implements GroupTracker.UpdateListener,
 
         mScanOrUnpair.setOnClickListener(mScanClickListener);
 
-        mGroupTracker.setUpdateListener(this);
+        mChannelTracker.setUpdateListener(this);
         mCommandQueue.setListener(this);
         mCommHardware.addConnectionStateListener(this);
     }
@@ -85,17 +85,18 @@ public class SettingsTab implements GroupTracker.UpdateListener,
     }
 
     @Override
-    public void onGroupUpdated() {
+    public void onChannelUpdated() {
         Toast.makeText(mAtakContext, "Group membership updated", Toast.LENGTH_SHORT).show();
         updateUi();
     }
 
     private void updateUi() {
+        mChannelName.setText(String.format("#%s", mChannelTracker.getChannelName()));
         setupListView();
     }
 
     private void setupListView() {
-        GroupMemberDataAdapter groupMemberDataAdapter = new GroupMemberDataAdapter(mPluginContext, mGroupTracker.getUsers());
+        GroupMemberDataAdapter groupMemberDataAdapter = new GroupMemberDataAdapter(mPluginContext, mChannelTracker.getUsers());
         mGroupMembersListView.setAdapter(groupMemberDataAdapter);
     }
 

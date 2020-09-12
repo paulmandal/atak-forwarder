@@ -25,7 +25,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.ArrayList;
@@ -33,9 +33,10 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
-    public interface GroupListener {
+    public interface ChannelListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-        void onGroupMembersUpdated(List<UserInfo> userInfoList);
+        void onChannelMembersUpdated(List<UserInfo> userInfoList);
+        void onChannelSettingsUpdated(String channelName, byte[] psk);
     }
 
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
@@ -64,7 +65,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final String STATE_DISCONNECTED = "DISCONNECTED";
 
-    private GroupListener mGroupListener;
+    private ChannelListener mChannelListener;
     private Activity mActivity;
 
     IMeshService mMeshService;
@@ -76,8 +77,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     boolean mBound = false;
 
     public MeshtasticCommHardware(Handler handler,
-                                  GroupListener groupListener,
-                                  GroupTracker groupTracker,
+                                  ChannelListener channelListener,
+                                  ChannelTracker groupTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   Activity activity,
@@ -85,7 +86,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         super(handler, commandQueue, queuedCommandFactory, groupTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
         mActivity = activity;
-        mGroupListener = groupListener;
+        mChannelListener = channelListener;
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -186,6 +187,43 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
+    private void updateChannelMembers() {
+        try {
+            List<NodeInfo> nodes = mMeshService.getNodes();
+            List<UserInfo> userInfoList = new ArrayList<>();
+            for (NodeInfo nodeInfoItem : nodes) {
+                MeshUser meshUser = nodeInfoItem.getUser();
+                userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
+            }
+            mChannelListener.onChannelMembersUpdated(userInfoList);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Exception getting nodes: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void updateChannelStatus() {
+        Log.e(TAG, "getChannelStatus");
+        try {
+            byte[] radioConfigBytes = mMeshService.getRadioConfig();
+
+            if (radioConfigBytes == null) {
+                Log.e(TAG, "radioConfigBytes was null");
+                return;
+            }
+
+            MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+            MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+
+            mChannelListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray());
+
+            Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
+        } catch (RemoteException | InvalidProtocolBufferException e) {
+            Log.e(TAG, "Exception in setupRadio(): " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void handleScanForCommDevice() {
         // TODO: handle connect/disconnect in plugin
@@ -254,22 +292,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     Log.d(TAG, "ACTION_NODE_CHANGE: " + nodeInfo);
                     getSelfInfo().batteryPercentage = nodeInfo.getBatteryPctLevel();
-                    try {
-                        List<NodeInfo> nodes = mMeshService.getNodes();
-                        List<UserInfo> userInfoList = new ArrayList<>();
-                        for (NodeInfo nodeInfoItem : nodes) {
-                            MeshUser meshUser = nodeInfoItem.getUser();
-                            userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
-                        }
-                        mGroupListener.onGroupMembersUpdated(userInfoList);
-                    } catch (RemoteException e) {
-                        Log.e(TAG, "Exception getting nodes: " + e.getMessage());
-                        e.printStackTrace();
-                    }
+
+                    updateChannelMembers();
+                    updateChannelStatus();
                     break;
                 case ACTION_MESSAGE_STATUS:
                     Log.d(TAG, "ACTION_MESSAGE_STATUS");
-
                     int id = intent.getIntExtra(EXTRA_PACKET_ID, 0);
                     MessageStatus status = intent.getParcelableExtra(EXTRA_STATUS);
 
@@ -314,7 +342,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         if (initialDiscoveryMessage) {
             broadcastDiscoveryMessage(false);
         }
-        mGroupListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
+        mChannelListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {

@@ -21,7 +21,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.persistence.JsonHelper;
 import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
@@ -72,7 +72,7 @@ public class ForwarderLifecycle implements Lifecycle {
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        GroupTracker groupTracker = new GroupTracker(activity, uiThreadHandler, stateStorage, stateStorage.getUsers());
+        ChannelTracker groupTracker = new ChannelTracker(activity, uiThreadHandler, stateStorage, stateStorage.getUsers());
         groupTracker.clearData(); // TODO: remove me
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, groupTracker, groupTracker, commandQueue, queuedCommandFactory);
         MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);

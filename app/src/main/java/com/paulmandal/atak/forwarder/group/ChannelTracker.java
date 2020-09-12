@@ -13,12 +13,12 @@ import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GroupTracker implements MeshtasticCommHardware.GroupListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + GroupTracker.class.getSimpleName();
+public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTracker.class.getSimpleName();
 
     public interface UpdateListener {
         void onUsersUpdated();
-        void onGroupUpdated();
+        void onChannelUpdated();
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -30,12 +30,15 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
 
     private List<UserInfo> mUserInfoList;
 
+    private String mChannelName;
+    private byte[] mPsk;
+
     private UpdateListener mUpdateListener;
 
-    public GroupTracker(Context atakContext,
-                        Handler uiThreadHandler,
-                        StateStorage stateStorage,
-                        @Nullable List<UserInfo> userInfoList) {
+    public ChannelTracker(Context atakContext,
+                          Handler uiThreadHandler,
+                          StateStorage stateStorage,
+                          @Nullable List<UserInfo> userInfoList) {
         mAtakContext = atakContext;
         mHandler = uiThreadHandler;
         mStateStorage = stateStorage;
@@ -49,6 +52,12 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
 
     public List<UserInfo> getUsers() {
         return mUserInfoList;
+    }
+    public String getChannelName() {
+        return mChannelName;
+    }
+    public byte[] getPsk() {
+        return mPsk;
     }
 
     @Override
@@ -79,7 +88,7 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
     }
 
     @Override
-    public void onGroupMembersUpdated(List<UserInfo> userInfoList) {
+    public void onChannelMembersUpdated(List<UserInfo> userInfoList) {
         List<UserInfo> newUsers = new ArrayList<>();
 
         for (UserInfo possiblyNewUser : userInfoList) {
@@ -105,11 +114,17 @@ public class GroupTracker implements MeshtasticCommHardware.GroupListener {
             mUserInfoList.addAll(newUsers);
 
             if (mUpdateListener != null) {
-                mHandler.post(() -> mUpdateListener.onGroupUpdated());
+                mHandler.post(() -> mUpdateListener.onChannelUpdated());
             }
 
             storeState();
         }
+    }
+
+    @Override
+    public void onChannelSettingsUpdated(String channelName, byte[] psk) {
+        mChannelName = channelName;
+        mPsk = psk;
     }
 
     public String getMeshIdForUid(String atakUid) {

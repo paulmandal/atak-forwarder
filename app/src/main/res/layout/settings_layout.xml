@@ -38,10 +38,10 @@
         android:layout_alignParentEnd="true" />
 
     <ListView
-        android:id="@+id/listview_group_members"
+        android:id="@+id/listview_channel_members"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_create_group"
+        android:layout_above="@id/button_create_channel"
         android:layout_below="@id/textview_channel_name"
         android:layout_alignParentStart="true" />
 
@@ -62,7 +62,7 @@
         android:text="@string/broadcast_discovery" />
 
     <Button
-        android:id="@+id/button_create_group"
+        android:id="@+id/button_create_channel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"

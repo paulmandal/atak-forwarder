@@ -9,15 +9,15 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 public class CommHardwareFactory {
     public static CommHardware createAndInitCommHardware(Activity activity,
                                                          MapView mapView,
                                                          Handler handler,
-                                                         MeshtasticCommHardware.GroupListener groupListener,
-                                                         GroupTracker groupTracker,
+                                                         MeshtasticCommHardware.ChannelListener channelListener,
+                                                         ChannelTracker groupTracker,
                                                          CommandQueue commandQueue,
                                                          QueuedCommandFactory queuedCommandFactory) {
         String callsign = mapView.getDeviceCallsign();
@@ -29,7 +29,7 @@ public class CommHardwareFactory {
             throw new RuntimeException("GoTenna Mesh is not currently supported.");
         } else {
             UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
-            commHardware = new MeshtasticCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
+            commHardware = new MeshtasticCommHardware(handler, channelListener, groupTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
         }
 //        commHardware.init(activity, callsign, gId, atakUid);
         return commHardware;

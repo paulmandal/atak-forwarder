@@ -24,7 +24,7 @@ public abstract class CommHardware {
 
     protected static final String BCAST_MARKER = "ATAKBCAST";
 
-    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES;
+    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS;
 
     public enum ConnectionState {
         SCANNING,
@@ -146,7 +146,7 @@ public abstract class CommHardware {
     protected void startWorkerThreads() {
         mMessageWorkerThread = new Thread(() -> {
             while (!mDestroyed) {
-                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
+                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS);
 
                 QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnected);
 

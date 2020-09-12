@@ -60,6 +60,13 @@
             android:text="@string/very_long_range" />
     </RadioGroup>
 
+    <TextView
+        android:id="@+id/textview_psk_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/radio_group_modem_setting"
+        android:layout_alignParentStart="true" />
+
     <ImageView
         android:id="@+id/channel_qr"
         android:layout_width="wrap_content"
@@ -98,4 +105,12 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/edit_channel" />
+
+    <Button
+        android:id="@+id/button_gen_psk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/generate_new_psk" />
 </RelativeLayout>

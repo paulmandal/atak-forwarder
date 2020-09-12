@@ -45,6 +45,7 @@ public class ChannelTab {
     private EditText mChannelNameEditText;
     private ImageView mChannelQr;
     private FrameLayout mQrScannerContainer;
+    private TextView mPskStatusTextView;
 
     private Button mShowOrHideQrButton;
     private Button mScanQrButton;
@@ -55,6 +56,8 @@ public class ChannelTab {
 
     private View.OnClickListener mEditChannelOnClickListener;
     private View.OnClickListener mSaveChannelOnClickListener;
+
+    private byte[] mPsk;
 
     Map<Integer, MeshProtos.ChannelSettings.ModemConfig> mRadioButtonToModemSettingMap = new HashMap() {{
         put(R.id.radio_button_short_range, MeshProtos.ChannelSettings.ModemConfig.Bw125Cr45Sf128);
@@ -86,6 +89,7 @@ public class ChannelTab {
         mChannelQr = templateView.findViewById(R.id.channel_qr);
         mQrScannerContainer = templateView.findViewById(R.id.qr_scanner_container);
         mModemSettingRadioGroup = templateView.findViewById(R.id.radio_group_modem_setting);
+        mPskStatusTextView = templateView.findViewById(R.id.textview_psk_status);
 
         /*
          * Show/Hide QR
@@ -148,6 +152,13 @@ public class ChannelTab {
         mEditChannelOnClickListener = (View v) -> {
             setMode(ScreenMode.EDIT_CHANNEL);
 
+            mChannelNameEditText.setText(mChannelTracker.getChannelName());
+            mModemSettingRadioGroup.check(getRadioButtonForModemConfig(mChannelTracker.getModemConfig()));
+            mPsk = mChannelTracker.getPsk();
+
+            mPskStatusTextView.setText(R.string.reusing_old_psk);
+            mPskStatusTextView.setTextColor(mPluginContext.getResources().getColor(R.color.red));
+
             Button b = (Button) v;
             b.setText(R.string.save);
             v.setOnClickListener(mSaveChannelOnClickListener);
@@ -156,15 +167,10 @@ public class ChannelTab {
         mSaveChannelOnClickListener = (View v) -> {
             setMode(ScreenMode.DEFAULT);
 
-            // Generate a new PSK
-            SecureRandom random = new SecureRandom();
-            byte[] psk = new byte[PSK_LENGTH];
-            random.nextBytes(psk);
-
             MeshProtos.ChannelSettings.ModemConfig modemConfig = mRadioButtonToModemSettingMap.get(mModemSettingRadioGroup.getCheckedRadioButtonId());
 
             mChannelTracker.clearData();
-            mCommHardware.updateChannelSettings(mChannelNameEditText.getText().toString(), psk, modemConfig);
+            mCommHardware.updateChannelSettings(mChannelNameEditText.getText().toString(), mPsk, modemConfig);
 
             Button b = (Button) v;
             b.setText(R.string.edit_channel);
@@ -173,6 +179,18 @@ public class ChannelTab {
 
         mEditOrSaveButton = templateView.findViewById(R.id.button_edit_or_save_channel);
         mEditOrSaveButton.setOnClickListener(mEditChannelOnClickListener);
+
+        Button genPsk = templateView.findViewById(R.id.button_gen_psk);
+        genPsk.setOnClickListener((View v) -> {
+            SecureRandom random = new SecureRandom();
+            byte[] psk = new byte[PSK_LENGTH];
+            random.nextBytes(psk);
+
+            mPsk = psk;
+
+            mPskStatusTextView.setText(R.string.using_new_psk);
+            mPskStatusTextView.setTextColor(mPluginContext.getResources().getColor(R.color.green));
+        });
 
         /*
          * Edit Radio Button
@@ -225,6 +243,7 @@ public class ChannelTab {
                 mChannelNameEditText.setVisibility(View.GONE);
                 mChannelQr.setVisibility(View.GONE);
                 mModemSettingRadioGroup.setVisibility(View.GONE);
+                mPskStatusTextView.setVisibility(View.GONE);
 
                 mShowOrHideQrButton.setVisibility(View.VISIBLE);
                 mScanQrButton.setVisibility(View.VISIBLE);
@@ -242,6 +261,7 @@ public class ChannelTab {
                 mChannelNameLabel.setVisibility(View.VISIBLE);
                 mChannelNameEditText.setVisibility(View.VISIBLE);
                 mModemSettingRadioGroup.setVisibility(View.VISIBLE);
+                mPskStatusTextView.setVisibility(View.VISIBLE);
 
                 mShowOrHideQrButton.setVisibility(View.GONE);
                 mScanQrButton.setVisibility(View.GONE);
@@ -249,4 +269,12 @@ public class ChannelTab {
         }
     }
 
+    public int getRadioButtonForModemConfig(MeshProtos.ChannelSettings.ModemConfig modemConfig) {
+        for (Map.Entry<Integer, MeshProtos.ChannelSettings.ModemConfig> entry : mRadioButtonToModemSettingMap.entrySet()) {
+            if (entry.getValue().equals(modemConfig)) {
+                return entry.getKey();
+            }
+        }
+        return 0;
+    }
 }

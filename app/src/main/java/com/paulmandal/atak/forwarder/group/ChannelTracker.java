@@ -10,7 +10,6 @@ import androidx.annotation.Nullable;
 import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +27,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private Context mAtakContext;
     private Handler mHandler;
 
-    private StateStorage mStateStorage;
-
     private List<UserInfo> mUserInfoList;
 
     private String mChannelName;
@@ -40,11 +37,9 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public ChannelTracker(Context atakContext,
                           Handler uiThreadHandler,
-                          StateStorage stateStorage,
                           @Nullable List<UserInfo> userInfoList) {
         mAtakContext = atakContext;
         mHandler = uiThreadHandler;
-        mStateStorage = stateStorage;
 
         if (userInfoList == null) {
             userInfoList = new ArrayList<>();
@@ -91,7 +86,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             }
         }
 
-        storeState();
         Toast.makeText(mAtakContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
     }
 
@@ -125,8 +119,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             for (UpdateListener updateListener : mUpdateListeners) {
                 updateListener.onUpdated();
             }
-
-            storeState();
         }
     }
 
@@ -160,10 +152,5 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public void clearData() {
         mUserInfoList = new ArrayList<>();
-        storeState();
-    }
-
-    private void storeState() {
-        mStateStorage.storeState(mUserInfoList);
     }
 }

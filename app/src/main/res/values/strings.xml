@@ -29,6 +29,11 @@
     <string name="long_range">Long Range / Slower</string>
     <string name="very_long_range">Very Long Range / Slow</string>
 
+    <string name="generate_new_psk">Gen New PSK</string>
+
+    <string name="reusing_old_psk">Reusing old PSK!</string>
+    <string name="using_new_psk">Using new PSK!</string>
+
     <!-- AdvancedTab -->
     <string name="set_msg_block_ttl_mins">Repeat Msg Block TTL (mins)</string>
     <string name="set_pli_block_ttl_s">PLI max. freq. (s)</string>

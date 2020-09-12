@@ -32,6 +32,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface ChannelListener {
@@ -41,6 +42,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
+
+    private static final int MESSAGE_AWAIT_TIMEOUT_MS = Config.MESSAGE_AWAIT_TIMEOUT_MS;
 
     /**
      * Intents the Meshtastic service can send
@@ -64,7 +67,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final String EXTRA_PACKET_ID = "com.geeksville.mesh.PacketId";
     private static final String EXTRA_STATUS = "com.geeksville.mesh.Status";
 
-    private static final String STATE_DISCONNECTED = "DISCONNECTED";
+    private static final String STATE_CONNECTED = "CONNECTED";
 
     private ChannelListener mChannelListener;
     private Activity mActivity;
@@ -96,7 +99,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 mBound = true;
 
                 try {
-                    boolean connected = mMeshService.connectionState().equals("CONNECTED");
+                    boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
                     handleConnectionChange(connected);
                 } catch (RemoteException e) {
                     Log.e(TAG, "RemoteException during initial service connection: " + e.getMessage());
@@ -201,11 +204,14 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void updateChannelMembers() {
+        Log.e(TAG, "updateChannelMembers");
         try {
             List<NodeInfo> nodes = mMeshService.getNodes();
             List<UserInfo> userInfoList = new ArrayList<>();
             for (NodeInfo nodeInfoItem : nodes) {
+
                 MeshUser meshUser = nodeInfoItem.getUser();
+                Log.e(TAG, "nodeInfo: " + nodeInfoItem);
                 userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
             }
             mChannelListener.onChannelMembersUpdated(userInfoList);
@@ -277,8 +283,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             switch (action) {
                 case ACTION_MESH_CONNECTED:
-                    boolean connected = !intent.getStringExtra(EXTRA_CONNECTED).equals("DISCONNECTED");
-                    Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected);
+                    String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
+                    boolean connected = extraConnected.equals(STATE_CONNECTED);
+                    Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
                     handleConnectionChange(connected);
                     break;
                 case ACTION_NODE_CHANGE:
@@ -407,12 +414,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
      * Message Utils
      */
     private void prepareToSendMessage() {
+        mPendingMessageReceived = false;
         mPendingMessageCountdownLatch = new CountDownLatch(1);
     }
 
     private void awaitPendingMessageCountDownLatch() {
         try {
-            mPendingMessageCountdownLatch.await();
+            mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

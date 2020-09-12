@@ -6,8 +6,9 @@ public class Config {
     /**
      * Tweaks to message handling
      */
-    public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 100;
-    public static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = 2000;
+    public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;
+    public static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = 2000;
+    public static final int MESSAGE_AWAIT_TIMEOUT_MS = 30000;
 
     /**
      * How long shape/PLI messages live in the cache CotMessageCache (preventing them being resent)

@@ -8,7 +8,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.group.ChannelTracker;
@@ -22,7 +21,6 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     private final Context mPluginContext;
     private final Context mAtakContext;
 
-    private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
     private ChannelTracker mChannelTracker;
     private CommHardware mCommHardware;
@@ -32,20 +30,17 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
 
     private TextView mMessageQueueLengthTextView;
     private ListView mGroupMembersListView;
-    private Button mCreateGroupButton;
     private Button mScanOrUnpair;
 
     public SettingsTab(Context pluginContext,
                        Context atakContext,
                        ChannelTracker channelTracker,
                        CommHardware commHardware,
-                       CotMessageCache cotMessageCache,
                        CommandQueue commandQueue) {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
-        mCotMessageCache = cotMessageCache;
         mCommandQueue = commandQueue;
     }
 
@@ -54,7 +49,6 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
         mChannelName = (TextView) templateView.findViewById(R.id.textview_channel_name);
 
         mMessageQueueLengthTextView = (TextView)templateView.findViewById(R.id.textview_message_queue_length);
-        mCreateGroupButton = (Button) templateView.findViewById(R.id.button_create_channel);
         mGroupMembersListView = (ListView) templateView.findViewById(R.id.listview_channel_members);
 
         Button broadcastDiscovery = (Button) templateView.findViewById(R.id.button_broadcast_discovery);
@@ -69,7 +63,7 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
 
         mScanOrUnpair.setOnClickListener(mScanClickListener);
 
-        mChannelTracker.setUpdateListener(this);
+        mChannelTracker.addUpdateListener(this);
         mCommandQueue.setListener(this);
         mCommHardware.addConnectionStateListener(this);
     }
@@ -90,6 +84,7 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
         updateUi();
     }
 
+    // TODO: maybe break this into individual UI components or wait for MVVM
     private void updateUi() {
         mChannelName.setText(String.format("#%s", mChannelTracker.getChannelName()));
         setupListView();

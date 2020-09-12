@@ -34,14 +34,14 @@
         android:id="@+id/textview_message_queue_length"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="8dp" />
 
     <ListView
         android:id="@+id/listview_channel_members"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_create_channel"
+        android:layout_above="@id/button_scan_or_unpair"
         android:layout_below="@id/textview_channel_name"
         android:layout_alignParentStart="true" />
 
@@ -49,8 +49,8 @@
         android:id="@+id/button_scan_or_unpair"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
         android:text="@string/unpair" />
 
     <Button
@@ -60,12 +60,4 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/broadcast_discovery" />
-
-    <Button
-        android:id="@+id/button_create_channel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/create_group" />
 </RelativeLayout>

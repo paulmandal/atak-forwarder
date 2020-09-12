@@ -21,17 +21,17 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
 
     private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
-    private ChannelTracker mGroupTracker;
+    private ChannelTracker mChannelTracker;
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
 
 
-    public GroupManagementMapComponent(ChannelTracker groupTracker,
+    public GroupManagementMapComponent(ChannelTracker channelTracker,
                                        CommHardware commHardware,
                                        CotMessageCache cotMessageCache,
                                        CommandQueue commandQueue) {
-        mGroupTracker = groupTracker;
+        mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
         mCommandQueue = commandQueue;
@@ -44,8 +44,8 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
 
         Context atakContext = mapView.getContext();
 
-        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mGroupTracker, mCommHardware, mCotMessageCache, mCommandQueue);
-        ChannelTab channelTab = new ChannelTab();
+        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue);
+        ChannelTab channelTab = new ChannelTab(atakContext, mCommHardware, mChannelTracker, new QrHelper());
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
 
         GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,

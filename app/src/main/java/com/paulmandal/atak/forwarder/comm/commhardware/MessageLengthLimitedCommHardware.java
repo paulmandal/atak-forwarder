@@ -91,62 +91,6 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     }
 
     /**
-     * GoTenna Message Handling -- TODO: abstract this
-     */
-    protected void handleGoTennaMessageChunk(long senderGid, byte[] messageChunk) {
-        int messageIndex = messageChunk[0] >> 4 & 0x0f;
-        int messageCount = messageChunk[0] & 0x0f;
-
-        Log.d(TAG, "<---  messageChunk: " + messageIndex + "/" + messageCount + " from: " + senderGid);
-
-        byte[] chunk = new byte[messageChunk.length - 1];
-        for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {
-            chunk[idx] = messageChunk[i];
-        }
-        handleGoTennaMessageChunk(senderGid, messageIndex, messageCount, chunk);
-    }
-
-    private void handleGoTennaMessageChunk(long senderGid, int messageIndex, int messageCount, byte[] messageChunk) {
-        synchronized (mIncomingGoTennaMessages) { // TODO: better sync block?
-            List<MessageChunk> incomingMessagesFromUser = mIncomingGoTennaMessages.get(senderGid);
-            if (incomingMessagesFromUser == null) {
-                incomingMessagesFromUser = new ArrayList<>();
-                mIncomingGoTennaMessages.put(senderGid, incomingMessagesFromUser);
-            }
-            incomingMessagesFromUser.add(new MessageChunk(messageIndex, messageCount, messageChunk));
-
-            if (messageIndex == messageCount - 1) {
-                // Message complete!
-                byte[][] messagePieces = new byte[messageCount][];
-                int totalLength = 0;
-                for (MessageChunk messagePiece : incomingMessagesFromUser) {
-                    if (messagePiece.count > messageCount) {
-                        // TODO: better handling for mis-ordered messages
-                        continue;
-                    }
-                    messagePieces[messagePiece.index] = messagePiece.chunk;
-                    totalLength = totalLength + messagePiece.chunk.length;
-                }
-
-                incomingMessagesFromUser.clear();
-
-                byte[] message = new byte[totalLength];
-                for (int idx = 0, i = 0; i < messagePieces.length; i++) {
-                    if (messagePieces[i] == null) {
-                        // We're missing a chunk of this message so we can't rebuild it
-                        Log.e(TAG, "Missing chunk: " + (i + 1) + "/" + messagePieces.length);
-                        return;
-                    }
-                    for (int j = 0; j < messagePieces[i].length; j++, idx++) {
-                        message[idx] = messagePieces[i][j];
-                    }
-                }
-                notifyMessageListeners(message);
-            }
-        }
-    }
-
-    /**
      * Message handling
      */
     protected void sendMessageToUserOrGroup(SendMessageCommand sendMessageCommand) {

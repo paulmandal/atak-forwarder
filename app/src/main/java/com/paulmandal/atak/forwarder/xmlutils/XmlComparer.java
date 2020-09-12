@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.xmlutils;
 
 import android.util.Log;
 
-import com.amazonaws.util.StringInputStream;
 import com.paulmandal.atak.forwarder.Config;
 
 import org.w3c.dom.Document;
@@ -11,6 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,10 +31,10 @@ public class XmlComparer {
             dbf.setIgnoringComments(true);
             DocumentBuilder db = dbf.newDocumentBuilder();
 
-            Document original = db.parse(new StringInputStream(lhs));
+            Document original = db.parse(new ByteArrayInputStream(lhs.getBytes()));
             original.normalizeDocument();
 
-            Document converted = db.parse(new StringInputStream(rhs));
+            Document converted = db.parse(new ByteArrayInputStream(rhs.getBytes()));
             converted.normalizeDocument();
 
             boolean matched = compare(original, converted);

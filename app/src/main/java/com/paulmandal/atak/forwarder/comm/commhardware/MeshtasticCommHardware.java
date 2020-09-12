@@ -18,13 +18,13 @@ import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
+import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
 import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
@@ -139,8 +139,18 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         return mPendingMessageReceived;
     }
 
+    private void updateMeshId() {
+        Log.e(TAG, "updateMeshId()");
+        try {
+            getSelfInfo().meshId = mMeshService.getMyId();
+            Log.e(TAG, "Updated to: " + getSelfInfo().meshId);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Exception updating meshId: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void setupRadio() {
-        Log.e(TAG, "setupRadio()");
         try {
             UserInfo selfInfo = getSelfInfo();
             mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
@@ -157,8 +167,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
             MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-            Log.e(TAG, " radioConfig: " + radioConfig);
-
             MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
             MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
             MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
@@ -174,9 +182,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
 
             radioConfig = radioConfigBuilder.build();
-
-            Log.e(TAG, "updated!");
-            Log.e(TAG, " radioConfig: " + radioConfig);
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
 
@@ -217,7 +222,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             mChannelListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray());
 
-            Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
+            Log.e(TAG, " getChannelStatus.name: " + channelSettings.getName());
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in setupRadio(): " + e.getMessage());
             e.printStackTrace();
@@ -241,21 +246,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             // Send this message back to the queue
             queueCommand(broadcastDiscoveryCommand);
         }
-    }
-
-    @Override
-    protected void handleCreateGroup(CreateGroupCommand createGroupCommand) {
-        // TODO: handle group creation in plugin
-    }
-
-    @Override
-    protected void handleAddToGroup(AddToGroupCommand addToGroupCommand) {
-        // TODO: handle group creation in plugin
-    }
-
-    @Override
-    protected void handleGetBatteryStatus() {
-        // TODO: handle group creation in plugin
     }
 
     @Override
@@ -283,6 +273,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected);
                     setConnected(connected);
                     setupRadio();
+                    updateMeshId();
                     if (connected) {
                         broadcastDiscoveryMessage(true);
                     }
@@ -359,6 +350,46 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
+    @Override
+    protected void handleUpdateChannel(UpdateChannelCommand updateChannelCommand) {
+        try {
+            byte[] radioConfigBytes = mMeshService.getRadioConfig();
+
+            if (radioConfigBytes == null) {
+                Log.e(TAG, "radioConfigBytes was null");
+                return;
+            }
+
+            MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+            MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+            MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+
+            MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
+            MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+            MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
+
+            // Begin Updates TODO: remove
+
+            channelSettingsBuilder.setName(updateChannelCommand.channelName);
+            channelSettingsBuilder.setPsk(ByteString.copyFrom(updateChannelCommand.psk));
+
+            // End Updates TODO: remove
+
+            radioConfigBuilder.setPreferences(userPreferencesBuilder);
+            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
+
+            radioConfig = radioConfigBuilder.build();
+
+            mMeshService.setRadioConfig(radioConfig.toByteArray());
+        } catch (RemoteException | InvalidProtocolBufferException e) {
+            Log.e(TAG, "Exception in handleUpdateChannel(): " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Message Utils
+     */
     private void prepareToSendMessage() {
         mPendingMessageCountdownLatch = new CountDownLatch(1);
     }

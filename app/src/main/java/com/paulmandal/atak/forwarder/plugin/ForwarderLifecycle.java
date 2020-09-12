@@ -72,13 +72,13 @@ public class ForwarderLifecycle implements Lifecycle {
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        ChannelTracker groupTracker = new ChannelTracker(activity, uiThreadHandler, stateStorage, stateStorage.getUsers());
-        groupTracker.clearData(); // TODO: remove me
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, groupTracker, groupTracker, commandQueue, queuedCommandFactory);
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, stateStorage, stateStorage.getUsers());
+        channelTracker.clearData(); // TODO: remove me
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory);
         MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(groupTracker, mCommHardware, cotMessageCache, commandQueue));
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

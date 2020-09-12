@@ -7,12 +7,11 @@ import androidx.annotation.CallSuper;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
 import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
@@ -83,27 +82,10 @@ public abstract class CommHardware {
         broadcastDiscoveryMessage(false);
     }
 
-    public void createGroup(List<Long> memberGids) {
-        if (!mConnected) {
-            Log.d(TAG, "createGroup: not connected yet");
-            return;
-        }
+    public void updateChannelSettings(String channelName, byte[] psk) {
+        // TODO: enforce connected?
 
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createCreateGroupCommand(memberGids));
-    }
-
-    public void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids) {
-        if (!mConnected) {
-            Log.d(TAG, "addToGroup: not connected yet");
-            return;
-        }
-
-//        if (mGroupTracker.getGroup() == null) {
-//            Log.d(TAG, "addToGroup: not in a group yet");
-//            return;
-//        }
-
-//        mCommandQueue.queueCommand(mQueuedCommandFactory.createAddToGroupCommand(mGroupTracker.getGroup().groupId, allMemberGids, newMemberGids));
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk));
     }
 
     public void connect() {
@@ -122,15 +104,6 @@ public abstract class CommHardware {
         }
 
         mCommandQueue.queueCommand(mQueuedCommandFactory.createDisconnectFromCommDeviceCommand());
-    }
-
-    public void requestBatteryStatus() {
-        if (!mConnected) {
-            Log.d(TAG, "requestBatteryStatus: not connected yet");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createRequestBatteryStatusCommand());
     }
 
     @CallSuper
@@ -190,18 +163,12 @@ public abstract class CommHardware {
                     case BROADCAST_DISCOVERY_MSG:
                         handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
                         break;
-                    case CREATE_GROUP:
-                        handleCreateGroup((CreateGroupCommand) queuedCommand);
+                    case UPDATE_CHANNEL:
+                        handleUpdateChannel((UpdateChannelCommand) queuedCommand);
                         break;
-                    case ADD_TO_GROUP:
-                        handleAddToGroup((AddToGroupCommand) queuedCommand);
-                        break;
-                    case SEND_TO_GROUP:
+                    case SEND_TO_CHANNEL:
                     case SEND_TO_INDIVIDUAL:
                         handleSendMessage((SendMessageCommand) queuedCommand);
-                        break;
-                    case GET_BATTERY_STATUS:
-                        handleGetBatteryStatus();
                         break;
                 }
             }
@@ -260,8 +227,6 @@ public abstract class CommHardware {
     protected abstract void handleScanForCommDevice();
     protected abstract void handleDisconnectFromCommDevice();
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
-    protected abstract void handleCreateGroup(CreateGroupCommand createGroupCommand);
-    protected abstract void handleAddToGroup(AddToGroupCommand addToGroupCommand);
+    protected abstract void handleUpdateChannel(UpdateChannelCommand updateChannelCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
-    protected abstract void handleGetBatteryStatus();
 }

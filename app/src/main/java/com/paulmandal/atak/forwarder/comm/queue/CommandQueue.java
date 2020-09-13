@@ -46,7 +46,6 @@ public class CommandQueue {
                 if (commandToQueue.commandType == queuedCommand.commandType) {
                     // Do not create duplicates for broadcasting discovery, and connect/disconnect from device
                     if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                            || commandToQueue.commandType == CommandType.DISCONNECT_FROM_COMM_DEVICE
                             || commandToQueue.commandType == CommandType.SCAN_FOR_COMM_DEVICE) {
                         return;
                     }

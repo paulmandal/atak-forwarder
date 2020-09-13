@@ -16,7 +16,7 @@ public class CommHardwareFactory {
                                                          MapView mapView,
                                                          Handler handler,
                                                          MeshtasticCommHardware.ChannelListener channelListener,
-                                                         ChannelTracker groupTracker,
+                                                         ChannelTracker channelTracker,
                                                          CommandQueue commandQueue,
                                                          QueuedCommandFactory queuedCommandFactory) {
         String callsign = mapView.getDeviceCallsign();
@@ -24,7 +24,7 @@ public class CommHardwareFactory {
 
         CommHardware commHardware;
         UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
-        commHardware = new MeshtasticCommHardware(handler, channelListener, groupTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
+        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
         return commHardware;
     }
 

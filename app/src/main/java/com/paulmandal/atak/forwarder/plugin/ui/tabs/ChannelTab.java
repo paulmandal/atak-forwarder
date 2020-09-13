@@ -35,6 +35,7 @@ public class ChannelTab {
     private static final int PSK_LENGTH = Config.PSK_LENGTH;
 
     private Context mPluginContext;
+    private Context mAtakContext;
 
     private CommHardware mCommHardware;
 
@@ -52,6 +53,7 @@ public class ChannelTab {
     private Button mShowOrHideQrButton;
     private Button mScanQrButton;
     private Button mEditOrSaveButton;
+    private Button mGenPskButton;
 
     private View.OnClickListener mShowQrOnClickListener;
     private View.OnClickListener mHideQrOnClickListener;
@@ -76,10 +78,12 @@ public class ChannelTab {
     }
 
     public ChannelTab(Context pluginContext,
+                      Context atakContext,
                       CommHardware commHardware,
                       ChannelTracker channelTracker,
                       QrHelper qrHelper) {
         mPluginContext = pluginContext;
+        mAtakContext = atakContext;
         mCommHardware = commHardware;
         mChannelTracker = channelTracker;
         mQrHelper = qrHelper;
@@ -152,11 +156,11 @@ public class ChannelTab {
          * Edit / Save Channel
          */
         mEditChannelOnClickListener = (View v) -> {
-            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mPluginContext)
-                    .setTitle(R.string.warning)
-                    .setMessage(R.string.start_channel_edit_dialog)
-                    .setPositiveButton(R.string.ok, (DialogInterface dialog, int whichButton) -> startEditChannel(v))
-                    .setNegativeButton(R.string.cancel,(DialogInterface dialog, int whichButton) -> dialog.cancel());
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mAtakContext)
+                    .setTitle(mPluginContext.getResources().getString(R.string.warning))
+                    .setMessage(mPluginContext.getResources().getString(R.string.start_channel_edit_dialog))
+                    .setPositiveButton(mPluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> startEditChannel(v))
+                    .setNegativeButton(mPluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
             alertDialog.show();
         };
@@ -168,6 +172,7 @@ public class ChannelTab {
 
             mChannelTracker.clearData();
             mCommHardware.updateChannelSettings(mChannelNameEditText.getText().toString(), mPsk, modemConfig);
+            mCommHardware.broadcastDiscoveryMessage();
 
             Button b = (Button) v;
             b.setText(R.string.edit_channel);
@@ -177,8 +182,8 @@ public class ChannelTab {
         mEditOrSaveButton = templateView.findViewById(R.id.button_edit_or_save_channel);
         mEditOrSaveButton.setOnClickListener(mEditChannelOnClickListener);
 
-        Button genPsk = templateView.findViewById(R.id.button_gen_psk);
-        genPsk.setOnClickListener((View v) -> {
+        mGenPskButton = templateView.findViewById(R.id.button_gen_psk);
+        mGenPskButton.setOnClickListener((View v) -> {
             SecureRandom random = new SecureRandom();
             byte[] psk = new byte[PSK_LENGTH];
             random.nextBytes(psk);
@@ -199,11 +204,11 @@ public class ChannelTab {
          */
         mScanQrButton = templateView.findViewById(R.id.button_scan_channel_qr);
         mScanQrButton.setOnClickListener((View v) -> {
-            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mPluginContext)
-                    .setTitle(R.string.warning)
-                    .setMessage(R.string.start_qr_scan_dialog)
-                    .setPositiveButton(R.string.ok, (DialogInterface dialog, int whichButton) -> startQrScan())
-                    .setNegativeButton(R.string.cancel,(DialogInterface dialog, int whichButton) -> dialog.cancel());
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mAtakContext)
+                    .setTitle(mPluginContext.getResources().getString(R.string.warning))
+                    .setMessage(mPluginContext.getResources().getString(R.string.start_qr_scan_dialog))
+                    .setPositiveButton(mPluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> startQrScan())
+                    .setNegativeButton(mPluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
             alertDialog.show();
         });
@@ -248,8 +253,7 @@ public class ChannelTab {
             MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
 
             mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
-            Log.e(TAG, " read bytes: " + QrHelper.toBinaryString(resultBytes));
-            Log.e(TAG, "  cname: " + new String(channelNameBytes) + ", psk: " + QrHelper.toBinaryString(psk));
+            mCommHardware.broadcastDiscoveryMessage();
 
             scannerView.stopCamera();
             mQrScannerContainer.removeView(scannerView);
@@ -270,6 +274,7 @@ public class ChannelTab {
                 mShowOrHideQrButton.setVisibility(View.VISIBLE);
                 mScanQrButton.setVisibility(View.VISIBLE);
                 mEditOrSaveButton.setVisibility(View.VISIBLE);
+                mGenPskButton.setVisibility(View.GONE);
                 break;
             case SCAN_QR:
                 mShowOrHideQrButton.setVisibility(View.GONE);
@@ -287,6 +292,7 @@ public class ChannelTab {
 
                 mShowOrHideQrButton.setVisibility(View.GONE);
                 mScanQrButton.setVisibility(View.GONE);
+                mGenPskButton.setVisibility(View.VISIBLE);
                 break;
         }
     }

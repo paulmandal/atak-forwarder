@@ -45,7 +45,7 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
         Context atakContext = mapView.getContext();
 
         SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue);
-        ChannelTab channelTab = new ChannelTab(pluginContext, mCommHardware, mChannelTracker, new QrHelper());
+        ChannelTab channelTab = new ChannelTab(pluginContext, atakContext, mCommHardware, mChannelTracker, new QrHelper());
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
 
         GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,

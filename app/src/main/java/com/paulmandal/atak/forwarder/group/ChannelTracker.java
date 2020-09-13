@@ -66,7 +66,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         // Check for user
         boolean found = false;
         for (UserInfo user : mUserInfoList) {
-            Log.e(TAG, "checking against uer: " + user.meshId + ", " + user.callsign + " for incomfing meshId: " + meshId);
             if (user.meshId.equals(meshId)) {
                 if (user.atakUid == null || !user.atakUid.equals(atakUid)) {
                     user.callsign = callsign;
@@ -78,7 +77,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         }
 
         if (!found) {
-            Log.e(TAG, "adding user in ChannelTracker: " + callsign + ", " + meshId + ", " + atakUid + ", " + false + ", " + null);
             mUserInfoList.add(new UserInfo(callsign, meshId, atakUid, false, null));
 
             for (UpdateListener updateListener : mUpdateListeners) {
@@ -108,7 +106,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             }
 
             if (!found && !newUsers.contains(possiblyNewUser)) {
-                Log.e(TAG, "adding user in onChannelMembersUpdated: " + possiblyNewUser.callsign + ", " + possiblyNewUser.meshId + ", " + possiblyNewUser.atakUid + ", " + possiblyNewUser.isInGroup + ", " + possiblyNewUser.batteryPercentage);
                 newUsers.add(possiblyNewUser);
             }
         }

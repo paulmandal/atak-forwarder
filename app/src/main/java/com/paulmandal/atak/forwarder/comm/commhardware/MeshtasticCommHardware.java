@@ -44,6 +44,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
 
     private static final int MESSAGE_AWAIT_TIMEOUT_MS = Config.MESSAGE_AWAIT_TIMEOUT_MS;
+    private static final int DELAY_AFTER_STOPPING_SERVICE = Config.DELAY_AFTER_STOPPING_SERVICE;
 
     /**
      * Intents the Meshtastic service can send
@@ -78,16 +79,19 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private int mPendingMessageId;
     private boolean mPendingMessageReceived;
 
+    private Intent mServiceIntent;
+
     boolean mBound = false;
+    boolean mRadioSetupCalled = false;
 
     public MeshtasticCommHardware(Handler handler,
                                   ChannelListener channelListener,
-                                  ChannelTracker groupTracker,
+                                  ChannelTracker channelTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   Activity activity,
                                   UserInfo selfInfo) {
-        super(handler, commandQueue, queuedCommandFactory, groupTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
+        super(handler, commandQueue, queuedCommandFactory, channelTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
         mActivity = activity;
         mChannelListener = channelListener;
@@ -98,26 +102,23 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mBound = true;
 
-                try {
-                    boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
-                    handleConnectionChange(connected);
-                } catch (RemoteException e) {
-                    Log.e(TAG, "RemoteException during initial service connection: " + e.getMessage());
-                }
+                maybeInitialConnection();
             }
 
             public void onServiceDisconnected(ComponentName className) {
                 Log.e(TAG, "Service has unexpectedly disconnected");
                 mMeshService = null;
-                setConnected(false);
+
+                setConnectionState(ConnectionState.DISCONNECTED);
                 notifyConnectionStateListeners(ConnectionState.DISCONNECTED);
                 mBound = false;
             }
         };
 
-        Intent intent = new Intent();
-        intent.setClassName("com.geeksville.mesh","com.geeksville.mesh.service.MeshService");
-        activity.bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        mServiceIntent = new Intent();
+        mServiceIntent.setClassName("com.geeksville.mesh","com.geeksville.mesh.service.MeshService");
+
+        bindToService();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_MESH_CONNECTED);
@@ -130,15 +131,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected boolean sendMessageSegment(byte[] message, String targetId) {
-        Log.d(TAG, "sendMessageSegment");
-
         prepareToSendMessage();
 
         DataPacket dataPacket = new DataPacket(targetId, message);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
-            Log.d(TAG, "send message id: " + dataPacket.getId());
+            Log.d(TAG, "sendMessageSegment() waiting for ACK/NACK for msgId: " + dataPacket.getId());
         } catch (RemoteException e) {
             Log.e(TAG, "sendMessageSegment, RemoteException: " + e.getMessage());
             e.printStackTrace();
@@ -150,18 +149,132 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         return mPendingMessageReceived;
     }
 
-    private void updateMeshId() {
-        Log.e(TAG, "updateMeshId()");
+    @Override
+    protected void handleUpdateChannel(UpdateChannelCommand updateChannelCommand) {
+        Log.e(TAG, "handleUpdateChannel: " +updateChannelCommand.channelName + ", modem: " + updateChannelCommand.modemConfig + ", psk: " + QrHelper.toBinaryString(updateChannelCommand.psk));
         try {
-            getSelfInfo().meshId = mMeshService.getMyId();
-            Log.e(TAG, "Updated to: " + getSelfInfo().meshId);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Exception updating meshId: " + e.getMessage());
+            byte[] radioConfigBytes = mMeshService.getRadioConfig();
+
+            if (radioConfigBytes == null) {
+                Log.e(TAG, "radioConfigBytes was null");
+                return;
+            }
+
+            MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+            MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+            MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+
+            MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
+            MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+            MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
+
+            // Begin Updates TODO: remove
+
+            channelSettingsBuilder.setName(updateChannelCommand.channelName);
+            channelSettingsBuilder.setPsk(ByteString.copyFrom(updateChannelCommand.psk));
+            channelSettingsBuilder.setModemConfig(updateChannelCommand.modemConfig);
+
+            // End Updates TODO: remove
+
+            radioConfigBuilder.setPreferences(userPreferencesBuilder);
+            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
+
+            radioConfig = radioConfigBuilder.build();
+
+            mMeshService.setRadioConfig(radioConfig.toByteArray());
+        } catch (RemoteException | InvalidProtocolBufferException e) {
+            Log.e(TAG, "Exception in handleUpdateChannel(): " + e.getMessage());
             e.printStackTrace();
         }
     }
 
-    private void setupRadio() {
+    @Override
+    protected void handleScanForCommDevice() {
+        Log.e(TAG, "\"scanning\" for comm device");
+        unbindAndStopService();
+        bindToService();
+    }
+
+    @Override
+    protected void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
+        Log.d(TAG, "DISCO handleBroadcastDiscoveryMessage: " + new String(broadcastDiscoveryCommand.discoveryMessage));
+        if (!sendMessageSegment(broadcastDiscoveryCommand.discoveryMessage, DataPacket.ID_BROADCAST)) {
+            // Send this message back to the queue
+            queueCommand(broadcastDiscoveryCommand);
+        }
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        mActivity.unbindService(mServiceConnection);
+        mActivity.unregisterReceiver(mBroadcastReceiver);
+        mBound = false;
+    }
+
+    private void bindToService() {
+        mActivity.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    private void unbindAndStopService() {
+        mActivity.unbindService(mServiceConnection);
+        mActivity.stopService(mServiceIntent);
+
+
+        try {
+            Thread.sleep(DELAY_AFTER_STOPPING_SERVICE);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void maybeInitialConnection() {
+        ConnectionState oldConnectionState = getConnectionState();
+
+        updateConnectionState();
+
+        boolean connected = getConnectionState() == ConnectionState.CONNECTED;
+
+        if (connected) {
+            maybeSetupRadio();
+            updateMeshId();
+            updateChannelMembers();
+            updateChannelStatus();
+        }
+
+        if (oldConnectionState != getConnectionState() && connected) {
+            broadcastDiscoveryMessage(true);
+        }
+
+        notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED);
+    }
+
+    private void updateConnectionState() {
+        Log.e(TAG, "updateConnectionState()");
+        try {
+            String meshId = mMeshService.getMyId();
+            ConnectionState connectionState;
+            if (meshId == null) {
+                connectionState = ConnectionState.UNPAIRED;
+            } else {
+                boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
+                connectionState = connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED;
+            }
+
+            setConnectionState(connectionState);
+            notifyConnectionStateListeners(connectionState);
+            Log.e(TAG, "  Connection state now: " + connectionState);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Exception in updateConnectionState: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void maybeSetupRadio() {
+        if (mRadioSetupCalled) {
+            return;
+        }
+
         try {
             UserInfo selfInfo = getSelfInfo();
             mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
@@ -182,12 +295,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
             MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
 
-            // Begin Updates TODO: remove
+            // Begin Updates
 
             userPreferencesBuilder.setPositionBroadcastSecs(3600);
             userPreferencesBuilder.setScreenOnSecs(1);
 
-            // End Updates TODO: remove
+            // End Updates
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder);
             radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
@@ -195,34 +308,39 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             radioConfig = radioConfigBuilder.build();
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
-
-            Log.d(TAG, " channelSettings.name: " + channelSettings.getName());
+            mRadioSetupCalled = true;
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in setupRadio(): " + e.getMessage());
             e.printStackTrace();
         }
     }
 
+    private void updateMeshId() {
+        try {
+            getSelfInfo().meshId = mMeshService.getMyId();
+        } catch (RemoteException e) {
+            Log.e(TAG, "Exception in updateMeshId(): " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     private void updateChannelMembers() {
-        Log.e(TAG, "updateChannelMembers");
         try {
             List<NodeInfo> nodes = mMeshService.getNodes();
             List<UserInfo> userInfoList = new ArrayList<>();
             for (NodeInfo nodeInfoItem : nodes) {
 
                 MeshUser meshUser = nodeInfoItem.getUser();
-                Log.e(TAG, "nodeInfo: " + nodeInfoItem);
                 userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
             }
             mChannelListener.onChannelMembersUpdated(userInfoList);
         } catch (RemoteException e) {
-            Log.e(TAG, "Exception getting nodes: " + e.getMessage());
+            Log.e(TAG, "Exception in updateChannelMembers(): " + e.getMessage());
             e.printStackTrace();
         }
     }
 
     private void updateChannelStatus() {
-        Log.e(TAG, "getChannelStatus");
         try {
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
@@ -235,39 +353,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
             mChannelListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
-
-            Log.e(TAG, " getChannelStatus.name: " + channelSettings.getName());
         } catch (RemoteException | InvalidProtocolBufferException e) {
-            Log.e(TAG, "Exception in setupRadio(): " + e.getMessage());
+            Log.e(TAG, "Exception in updateChannelStatus(): " + e.getMessage());
             e.printStackTrace();
         }
-    }
-
-    @Override
-    protected void handleScanForCommDevice() {
-        // TODO: handle connect/disconnect in plugin
-    }
-
-    @Override
-    protected void handleDisconnectFromCommDevice() {
-        // TODO: handle connnect/disconnect in plugin
-    }
-
-    @Override
-    protected void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
-        Log.d(TAG, "DISCO handleBroadcastDiscoveryMessage: " + new String(broadcastDiscoveryCommand.discoveryMessage));
-        if (!sendMessageSegment(broadcastDiscoveryCommand.discoveryMessage, DataPacket.ID_BROADCAST)) {
-            // Send this message back to the queue
-            queueCommand(broadcastDiscoveryCommand);
-        }
-    }
-
-    @Override
-    public void destroy() {
-        super.destroy();
-        mActivity.unbindService(mServiceConnection);
-        mActivity.unregisterReceiver(mBroadcastReceiver);
-        mBound = false;
     }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -286,7 +375,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
                     boolean connected = extraConnected.equals(STATE_CONNECTED);
                     Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
-                    handleConnectionChange(connected);
+
+                    maybeInitialConnection();
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
@@ -329,18 +419,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     };
 
-    private void handleConnectionChange(boolean connected) {
-        setConnected(connected);
-        setupRadio();
-        updateMeshId();
-        updateChannelMembers();
-        updateChannelStatus();
-        if (connected) {
-            broadcastDiscoveryMessage(true);
-        }
-        notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED);
-    }
-
     private void handleDiscoveryMessage(String message) {
         String messageWithoutMarker = message.replace(BCAST_MARKER + ",", "");
         String[] messageSplit = messageWithoutMarker.split(",");
@@ -359,54 +437,14 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
         if (id != mPendingMessageId) {
-            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about id: " + id + " status: " + status);
+            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about msgId: " + id + " status: " + status);
             return;
         }
 
-        // TODO: fix this, for some reason the MeshService is reporting ERROR for all msgs but they are actually going through
-        mPendingMessageReceived = true; // status != MessageStatus.ERROR;
+        mPendingMessageReceived = status != MessageStatus.ERROR;
 
         if (status == MessageStatus.ERROR || status == MessageStatus.DELIVERED) {
             mPendingMessageCountdownLatch.countDown();
-        }
-    }
-
-    @Override
-    protected void handleUpdateChannel(UpdateChannelCommand updateChannelCommand) {
-        Log.e(TAG, "handleUpdateChannel: " +updateChannelCommand.channelName + ", modem: " + updateChannelCommand.modemConfig + ", psk: " + QrHelper.toBinaryString(updateChannelCommand.psk));
-        try {
-            byte[] radioConfigBytes = mMeshService.getRadioConfig();
-
-            if (radioConfigBytes == null) {
-                Log.e(TAG, "radioConfigBytes was null");
-                return;
-            }
-
-            MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
-            MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-            MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
-
-            MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
-            MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
-            MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
-
-            // Begin Updates TODO: remove
-
-            channelSettingsBuilder.setName(updateChannelCommand.channelName);
-            channelSettingsBuilder.setPsk(ByteString.copyFrom(updateChannelCommand.psk));
-            channelSettingsBuilder.setModemConfig(updateChannelCommand.modemConfig);
-
-            // End Updates TODO: remove
-
-            radioConfigBuilder.setPreferences(userPreferencesBuilder);
-            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
-
-            radioConfig = radioConfigBuilder.build();
-
-            mMeshService.setRadioConfig(radioConfig.toByteArray());
-        } catch (RemoteException | InvalidProtocolBufferException e) {
-            Log.e(TAG, "Exception in handleUpdateChannel(): " + e.getMessage());
-            e.printStackTrace();
         }
     }
 
@@ -422,6 +460,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         try {
             mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
+            Log.e(TAG, "Timed out waiting for message ACK/NACK");
             e.printStackTrace();
         }
     }

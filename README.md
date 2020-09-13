@@ -24,6 +24,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 # To Do
 
 * Automatically adjust link speed / range based on # of lost messages
+* Use T-Beam as a GPS source (if it proves to be more accurate than the phone's)
 * Message IDs and receipt confirmation
 * Improve chat message shrinking further
 * Figure out why some messages fail to parse (1/8 msgs)

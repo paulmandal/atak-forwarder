@@ -8,10 +8,6 @@ public class QueuedCommandFactory {
         return new QueuedCommand(CommandType.SCAN_FOR_COMM_DEVICE, QueuedCommand.PRIORITY_HIGHEST, System.currentTimeMillis());
     }
 
-    public QueuedCommand createDisconnectFromCommDeviceCommand() {
-        return new QueuedCommand(CommandType.DISCONNECT_FROM_COMM_DEVICE, QueuedCommand.PRIORITY_HIGHEST, System.currentTimeMillis());
-    }
-
     public BroadcastDiscoveryCommand createBroadcastDiscoveryCommand(byte[] discoveryMessage) {
         return new BroadcastDiscoveryCommand(CommandType.BROADCAST_DISCOVERY_MSG, QueuedCommand.PRIORITY_HIGH, System.currentTimeMillis(), discoveryMessage);
     }

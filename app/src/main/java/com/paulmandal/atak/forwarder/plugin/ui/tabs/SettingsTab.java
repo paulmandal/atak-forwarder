@@ -13,6 +13,9 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupMemberDataAdapter;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Formatter;
 import java.util.Locale;
 
 public class SettingsTab implements ChannelTracker.UpdateListener,
@@ -30,7 +33,7 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
 
     private TextView mMessageQueueLengthTextView;
     private ListView mGroupMembersListView;
-    private Button mScanOrUnpair;
+    private Button PairedButton;
 
     public SettingsTab(Context pluginContext,
                        Context atakContext,
@@ -45,37 +48,34 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     }
 
     public void init(View templateView) {
-        mConnectionStatusTextView = (TextView) templateView.findViewById(R.id.textview_connection_status);
-        mChannelName = (TextView) templateView.findViewById(R.id.textview_channel_name);
+        mConnectionStatusTextView = templateView.findViewById(R.id.textview_connection_status);
+        mChannelName = templateView.findViewById(R.id.textview_channel_name);
 
-        mMessageQueueLengthTextView = (TextView)templateView.findViewById(R.id.textview_message_queue_length);
-        mGroupMembersListView = (ListView) templateView.findViewById(R.id.listview_channel_members);
+        mMessageQueueLengthTextView = templateView.findViewById(R.id.textview_message_queue_length);
+        mGroupMembersListView = templateView.findViewById(R.id.listview_channel_members);
 
-        Button broadcastDiscovery = (Button) templateView.findViewById(R.id.button_broadcast_discovery);
-        mScanOrUnpair = (Button) templateView.findViewById(R.id.button_scan_or_unpair);
+        Button broadcastDiscovery = templateView.findViewById(R.id.button_broadcast_discovery);
+        PairedButton = templateView.findViewById(R.id.button_paired);
 
         mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", mCommandQueue.getQueueSize()));
+        PairedButton.setOnClickListener((View v) -> mCommHardware.connect());
 
         broadcastDiscovery.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
             mCommHardware.broadcastDiscoveryMessage();
         });
 
-        mScanOrUnpair.setOnClickListener(mScanClickListener);
 
         mChannelTracker.addUpdateListener(this);
         mCommandQueue.setListener(this);
         mCommHardware.addConnectionStateListener(this);
     }
 
-    private View.OnClickListener mScanClickListener = (View v) -> mCommHardware.connect();
-
-    private View.OnClickListener mUnpairClickListener = (View v) -> mCommHardware.disconnect();
-
     @Override
     // TODO: maybe break this into individual UI components or wait for MVVM
     public void onUpdated() {
-        mChannelName.setText(String.format("#%s", mChannelTracker.getChannelName()));
+        byte[] psk = mChannelTracker.getPsk();
+        mChannelName.setText(String.format("#%s - %s", mChannelTracker.getChannelName(), psk != null ? hashFromBytes(psk) : null));
         setupListView();
     }
 
@@ -92,11 +92,8 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     @Override
     public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
         switch (connectionState) {
-            case SCANNING:
-                handleScanStarted();
-                break;
-            case TIMEOUT:
-                handleScanTimeout();
+            case UNPAIRED:
+                handleUnpaired();
                 break;
             case CONNECTED:
                 handleDeviceConnected();
@@ -107,30 +104,39 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
         }
     }
 
-    public void handleScanStarted() {
-        Toast.makeText(mAtakContext, "Scanning for comm device", Toast.LENGTH_SHORT).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_scanning);
-        mScanOrUnpair.setOnClickListener(null);
-    }
-
-    public void handleScanTimeout() {
-        Toast.makeText(mAtakContext, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_timeout);
-        mScanOrUnpair.setOnClickListener(mScanClickListener);
-        mScanOrUnpair.setText(R.string.scan);
+    public void handleUnpaired() {
+        Toast.makeText(mAtakContext, "Comm device is not paired -- pair with it in the Android Settings > Connected Devices menu and then click Paired", Toast.LENGTH_LONG).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_unpaired);
+        PairedButton.setVisibility(View.VISIBLE);
     }
 
     public void handleDeviceConnected() {
         Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_connected);
-        mScanOrUnpair.setOnClickListener(mUnpairClickListener);
-        mScanOrUnpair.setText(R.string.unpair);
+        PairedButton.setVisibility(View.GONE);
     }
 
     public void handleDeviceDisconnected() {
-        Toast.makeText(mAtakContext, "Comm device disconnected", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mAtakContext, "Comm device disconnected -- or maybe unpaired -- pair with it in the Android Settings > Connected Devices menu and then click Paired", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
-        mScanOrUnpair.setOnClickListener(mScanClickListener);
-        mScanOrUnpair.setText(R.string.scan);
+        PairedButton.setVisibility(View.VISIBLE);
+    }
+
+    private String hashFromBytes(byte[] bytes) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-1");
+            bytes = md.digest(bytes);
+
+            Formatter formatter  = new Formatter();
+            for (byte b : bytes) {
+                formatter.format("%02x", b);
+            }
+
+            String hash = formatter.toString();
+            return hash.substring(hash.length() - 8);
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -19,16 +19,15 @@ import java.util.Map;
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
-    private ChannelTracker mGroupTracker;
+    private ChannelTracker mChannelTracker;
     private final int mMessageChunkLength;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
-    private final Map<Long, List<MessageChunk>> mIncomingGoTennaMessages = new HashMap<>(); // TODO: abstract this
 
-    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, ChannelTracker groupTracker, int messageChunkLength, UserInfo selfInfo) {
-        super(uiThreadHandler, commandQueue, queuedCommandFactory, groupTracker, selfInfo);
+    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, ChannelTracker channelTracker, int messageChunkLength, UserInfo selfInfo) {
+        super(uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
 
-        mGroupTracker = groupTracker;
+        mChannelTracker = channelTracker;
         mMessageChunkLength = messageChunkLength;
     }
 
@@ -127,17 +126,9 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         }
     }
 
-    // TODO: abstract this
     private void sendMessagesToGroup(byte[][] messages) {
-//        GroupInfo groupInfo = mGroupTracker.getGroup(); TODO: re-enable this
-//        if (groupInfo == null) {
-//            Log.d(TAG, "  Tried to broadcast message without group, returning");
-//            return;
-//        }
-
         for (int i = 0; i < messages.length; i++) {
             byte[] message = messages[i];
-//            long groupId = groupInfo.groupId;
             String groupId = DataPacket.ID_BROADCAST;
 
             Log.d(TAG, "---> sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
@@ -152,21 +143,16 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         }
     }
 
-    // TODO: abstract this
     private void sendMessagesToUsers(byte[][] messages, String[] toUIDs) {
         for (String uId : toUIDs) {
             for (int i = 0; i < messages.length; i++) {
                 byte[] message = messages[i];
-                String meshId = mGroupTracker.getMeshIdForUid(uId);
+                String meshId = mChannelTracker.getMeshIdForUid(uId);
                 if (meshId.equals(ChannelTracker.USER_NOT_FOUND)) {
                     Log.d(TAG, "msg can't find user: " + uId);
                     continue;
                 }
-//                long gId = mGroupTracker.getGidForUid(uId);
-//
-//                if (gId == GroupTracker.USER_NOT_FOUND) {
-//                    continue;
-//                }
+
                 // Send message to individual
                 Log.d(TAG, "--->  sending chunk " + (i + 1) + "/" + messages.length + " to individual: " + meshId + ", " + new String(message));
 

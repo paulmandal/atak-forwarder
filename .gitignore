@@ -16,9 +16,6 @@
 build
 corpus/
 
-# GoTenna SDK
-libs/gotenna-public-sdk.aar
-
 # ATAK SDK
 libs/main.jar
 libs/atak-javadoc.jar

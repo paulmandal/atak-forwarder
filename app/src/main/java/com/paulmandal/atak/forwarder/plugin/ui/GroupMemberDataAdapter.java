@@ -39,8 +39,8 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
             LayoutInflater inflator = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = inflator.inflate(R.layout.group_member_list_view_item, parent, false);
             final ViewHolder viewHolder = new ViewHolder();
-            viewHolder.callsign = (TextView) view.findViewById(R.id.textview_callsign);
-            viewHolder.batteryMeterView = (BatteryMeterView) view.findViewById(R.id.battery_meter);
+            viewHolder.callsign = view.findViewById(R.id.textview_callsign);
+            viewHolder.batteryMeterView = view.findViewById(R.id.battery_meter);
             view.setTag(viewHolder);
         } else {
             view = convertView;

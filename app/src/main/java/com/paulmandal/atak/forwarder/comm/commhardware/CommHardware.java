@@ -13,7 +13,6 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
-import com.paulmandal.atak.forwarder.group.ChannelTracker;
 import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.List;
@@ -27,8 +26,7 @@ public abstract class CommHardware {
     private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS;
 
     public enum ConnectionState {
-        SCANNING,
-        TIMEOUT,
+        UNPAIRED,
         DISCONNECTED,
         CONNECTED
     }
@@ -45,14 +43,13 @@ public abstract class CommHardware {
 
     private final CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
-    private ChannelTracker mGroupTracker;
 
     private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
     private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private Thread mMessageWorkerThread;
 
-    private boolean mConnected = false;
+    private ConnectionState mConnectionState;
     private boolean mDestroyed = false;
 
     private UserInfo mSelfInfo;
@@ -60,12 +57,10 @@ public abstract class CommHardware {
     public CommHardware(Handler uiThreadHandler,
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
-                        ChannelTracker groupTracker,
                         UserInfo selfInfo) {
         mHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
-        mGroupTracker = groupTracker;
         mSelfInfo = selfInfo;
 
         startWorkerThreads();
@@ -74,11 +69,6 @@ public abstract class CommHardware {
     /**
      * External API
      */
-//    @CallSuper
-//    public void init(@NonNull Context context, @NonNull String callsign, long gId, String atakUid) {
-//        mSelfInfo = new UserInfo(callsign, gId, atakUid, mGroupTracker.getGroup() != null);
-//    }
-
     public void broadcastDiscoveryMessage() {
         broadcastDiscoveryMessage(false);
     }
@@ -90,7 +80,7 @@ public abstract class CommHardware {
     }
 
     public void connect() {
-        if (mConnected) {
+        if (mConnectionState == ConnectionState.CONNECTED) {
             Log.d(TAG, "connect: already connected");
             return;
         }
@@ -98,28 +88,10 @@ public abstract class CommHardware {
         mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
     }
 
-    public void disconnect() {
-        if (!mConnected) {
-            Log.d(TAG, "forgetDevice: already disconnected");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createDisconnectFromCommDeviceCommand());
-    }
-
     @CallSuper
     public void destroy() {
         mDestroyed = true;
     }
-
-    public boolean isConnected() {
-        return mConnected;
-    }
-
-//    public boolean isInGroup() {
-//        return mGroupTracker.getGroup() != null;
-//    }
-
     /**
      * Listener Management
      */
@@ -148,7 +120,7 @@ public abstract class CommHardware {
             while (!mDestroyed) {
                 sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS);
 
-                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnected);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.CONNECTED);
 
                 if (queuedCommand == null) {
                     continue;
@@ -157,9 +129,6 @@ public abstract class CommHardware {
                 switch (queuedCommand.commandType) {
                     case SCAN_FOR_COMM_DEVICE:
                         handleScanForCommDevice();
-                        break;
-                    case DISCONNECT_FROM_COMM_DEVICE:
-                        handleDisconnectFromCommDevice();
                         break;
                     case BROADCAST_DISCOVERY_MSG:
                         handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
@@ -182,8 +151,12 @@ public abstract class CommHardware {
         return mDestroyed;
     }
 
-    protected void setConnected(boolean isConnected) {
-        mConnected = isConnected;
+    protected void setConnectionState(ConnectionState connectionState) {
+        mConnectionState = connectionState;
+    }
+
+    public ConnectionState getConnectionState() {
+        return mConnectionState;
     }
 
     protected UserInfo getSelfInfo() {
@@ -226,7 +199,6 @@ public abstract class CommHardware {
      * For subclasses to implement
      */
     protected abstract void handleScanForCommDevice();
-    protected abstract void handleDisconnectFromCommDevice();
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
     protected abstract void handleUpdateChannel(UpdateChannelCommand updateChannelCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);

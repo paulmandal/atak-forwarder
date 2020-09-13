@@ -54,6 +54,7 @@ To use this plugin you will need to build your own copy of ATAK-CIV and copy som
 * Set up your channel in the Channel tab on one device, then show the QR code and scan it on your other device(s)
 * You should see notifications about "discovery broadcasts" once all devices are on the same channel, if you do not check the channel name, hash, and try clicking `Broadcast Discovery` in the plugin settings menu (click the @)
 * You should soon see map markers for each of your devices
+* Note: this plugin will configure your Meshtastic device to send out position updates once per hour and to turn the LCD off after 1 second, you can tweak those values in `Config.java`
 
 # Architecture Diagram (somewhat outdated)
 

@@ -1,7 +1,6 @@
 package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
-import android.os.Handler;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -24,7 +23,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     public static final String USER_NOT_FOUND = "";
 
     private Context mAtakContext;
-    private Handler mHandler;
 
     private List<UserInfo> mUserInfoList;
 
@@ -35,10 +33,8 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private List<UpdateListener> mUpdateListeners = new ArrayList<>();
 
     public ChannelTracker(Context atakContext,
-                          Handler uiThreadHandler,
                           @Nullable List<UserInfo> userInfoList) {
         mAtakContext = atakContext;
-        mHandler = uiThreadHandler;
 
         if (userInfoList == null) {
             userInfoList = new ArrayList<>();

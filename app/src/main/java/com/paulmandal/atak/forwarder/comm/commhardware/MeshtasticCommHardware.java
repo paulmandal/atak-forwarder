@@ -180,6 +180,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             radioConfig = radioConfigBuilder.build();
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
+            updateChannelStatus();
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in handleUpdateChannel(): " + e.getMessage());
             e.printStackTrace();
@@ -324,7 +325,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             List<NodeInfo> nodes = mMeshService.getNodes();
             List<UserInfo> userInfoList = new ArrayList<>();
             for (NodeInfo nodeInfoItem : nodes) {
-
                 MeshUser meshUser = nodeInfoItem.getUser();
                 userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
             }

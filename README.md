@@ -48,6 +48,7 @@ To use this plugin you will need to build your own copy of ATAK-CIV and copy som
     * Comment out this line in `MeshService.kt`: `startLocationRequests()`
     * Build the service/app and install it onto your devices
 * Pair your device with your Meshtastic radio in Android Settings > Connected Devices
+* Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`
 * Build the `atak-forwarder` plugin and install it on your devices
 * Open ATAK, the red @ sign in the lower right corner should turn green soon after opening the app, if it does not something is wrong with your BLE pairing, try re-pairing your Meshtastic device, then clicking on the red @ sign and clicking `Paired`
 * Set up your channel in the Channel tab on one device, then show the QR code and scan it on your other device(s)

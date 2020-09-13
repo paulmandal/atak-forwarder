@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufEllipseLink";
+
+import "detail/shape/style.proto";
+
+message EllipseLink {
+  string uid = 1;
+  string type = 2;
+  string relation = 3;
+  Style style = 4;
+}

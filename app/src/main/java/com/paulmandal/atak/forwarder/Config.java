@@ -12,6 +12,12 @@ public class Config {
     public static final int DELAY_AFTER_STOPPING_SERVICE = 5000;
 
     /**
+     * Meshtastic Radio Config
+     */
+    public static final int POSITION_BROADCAST_INTERVAL_S = 3600;
+    public static final int LCD_SCREEN_ON_S = 1;
+
+    /**
      * Tweaks to message handling
      */
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;

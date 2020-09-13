@@ -44,6 +44,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final int MESSAGE_AWAIT_TIMEOUT_MS = Config.MESSAGE_AWAIT_TIMEOUT_MS;
     private static final int DELAY_AFTER_STOPPING_SERVICE = Config.DELAY_AFTER_STOPPING_SERVICE;
+    private static final int POSITION_BROADCAST_INTERVAL_S = Config.POSITION_BROADCAST_INTERVAL_S;
+    private static final int LCD_SCREEN_ON_S = Config.LCD_SCREEN_ON_S;
 
     /**
      * Intents the Meshtastic service can send
@@ -293,8 +295,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             // Begin Updates
 
-            userPreferencesBuilder.setPositionBroadcastSecs(3600);
-            userPreferencesBuilder.setScreenOnSecs(1);
+            userPreferencesBuilder.setPositionBroadcastSecs(POSITION_BROADCAST_INTERVAL_S);
+            userPreferencesBuilder.setScreenOnSecs(LCD_SCREEN_ON_S);
 
             // End Updates
 

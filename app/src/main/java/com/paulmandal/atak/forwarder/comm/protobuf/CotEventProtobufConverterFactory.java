@@ -4,6 +4,7 @@ import com.paulmandal.atak.forwarder.comm.protobuf.medevac.FlowTagsProtobufConve
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MedevacProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MistProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MistsMapProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.GeoFenceProtobufConverter;
 
 import java.util.Calendar;
 
@@ -61,6 +62,7 @@ public class CotEventProtobufConverterFactory {
                                 new MistProtobufConverter()
                         )
                 ),
+                new GeoFenceProtobufConverter(),
                 startOfYearMs);
     }
 }

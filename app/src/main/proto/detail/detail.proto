@@ -28,6 +28,8 @@ import "detail/geochat/chat_link.proto";
 
 import "detail/video/video.proto";
 
+import "detail/shape/geofence.proto";
+
 import "detail/medevac/flow_tags.proto";
 import "detail/medevac/medevac.proto";
 
@@ -50,7 +52,8 @@ message Detail {
   Route route = 16;
   Sensor sensor = 17;
   Video video = 18;
-  FreehandLink freehandLink = 19;
-  FlowTags flowTags = 20;
-  Medevac medevac = 21;
+  GeoFence geoFence = 19;
+  FreehandLink freehandLink = 20;
+  FlowTags flowTags = 21;
+  Medevac medevac = 22;
 }

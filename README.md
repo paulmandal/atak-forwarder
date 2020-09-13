@@ -36,6 +36,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 To use this plugin you will need to build your own copy of ATAK-CIV and copy some files, to do that first:
 
+* install Meshtastic-Android: https://play.google.com/store/apps/details?id=com.geeksville.mesh or https://github.com/meshtastic/Meshtastic-Android
 * clone the ATAK-CIV repo: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV
 * clone this repo into the same parent directory that you cloned the DoD's ATAK repo to (i.e. not into the `AndroidTacticalAssaultKit-CIV` directory)
 * get the ATAK-CIV SDK: http://7n7.us/civtak4sdk
@@ -44,9 +45,6 @@ To use this plugin you will need to build your own copy of ATAK-CIV and copy som
     * Note: if you would like to use `installCivRelease` instead, you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 * copy the ATAK SDK into the `libs/` directory as `main.jar`
 * Run `git submodule init` in the `atak-forwarder` directory
-* clone the Meshtastic service/app: https://github.com/meshtastic/Meshtastic-Android
-    * Comment out this line in `MeshService.kt`: `startLocationRequests()`
-    * Build the service/app and install it onto your devices
 * Pair your device with your Meshtastic radio in Android Settings > Connected Devices
 * Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`
 * Build the `atak-forwarder` plugin and install it on your devices

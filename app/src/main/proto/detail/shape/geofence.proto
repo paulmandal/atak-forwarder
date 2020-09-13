@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufGeoFence";
+
+message GeoFence {
+  bool elevationMonitored = 1;
+  Monitor monitor = 2;
+  Trigger trigger = 3;
+  bool tracking = 4;
+  double minElevation = 5;
+  double maxElevation = 6;
+  double boundingSphere = 7; // TODO: maybe another data type?
+
+  enum Trigger {
+    ENTRY = 0;
+    EXIT = 1;
+    BOTH = 2;
+  }
+
+  enum Monitor {
+    TAKUSERS = 0;
+    FRIENDLY = 1;
+    HOSTILE = 2;
+    CUSTOM = 3;
+    ALL = 4;
+  }
+}

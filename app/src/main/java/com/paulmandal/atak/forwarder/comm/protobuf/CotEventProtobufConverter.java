@@ -4,8 +4,10 @@ import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.FlowTagsProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MedevacProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.GeoFenceProtobufConverter;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
@@ -13,7 +15,6 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufDetail;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDetailStyle;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufDrawnShape;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufRoute;
-import com.paulmandal.atak.forwarder.Config;
 
 public class CotEventProtobufConverter {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + CotEventProtobufConverter.class.getSimpleName();
@@ -49,6 +50,7 @@ public class CotEventProtobufConverter {
     private static final String KEY_VIDEO = "__video";
     private static final String KEY_FLOW_TAGS = "_flow-tags_";
     private static final String KEY_MEDEVAC = "_medevac_";
+    private static final String KEY_GEOFENCE = "__geofence";
 
     // Fields
     private static final String KEY_ICON_SET_PATH = "iconsetpath";
@@ -90,6 +92,7 @@ public class CotEventProtobufConverter {
     private final VideoProtobufConverter mVideoProtobufConverter;
     private final FlowTagsProtobufConverter mFlowTagsProtobufConverter;
     private final MedevacProtobufConverter mMedevacProtobufConverter;
+    private final GeoFenceProtobufConverter mGeoFenceProtobufConverter;
     private final long mStartOfYearMs;
 
     public CotEventProtobufConverter(TakvProtobufConverter takvProtobufConverter,
@@ -120,6 +123,7 @@ public class CotEventProtobufConverter {
                                      VideoProtobufConverter videoProtobufConverter,
                                      FlowTagsProtobufConverter flowTagsProtobufConverter,
                                      MedevacProtobufConverter medevacProtobufConverter,
+                                     GeoFenceProtobufConverter geoFenceProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
         mTrackProtobufConverter = trackProtobufConverter;
@@ -149,6 +153,7 @@ public class CotEventProtobufConverter {
         mVideoProtobufConverter = videoProtobufConverter;
         mFlowTagsProtobufConverter = flowTagsProtobufConverter;
         mMedevacProtobufConverter = medevacProtobufConverter;
+        mGeoFenceProtobufConverter = geoFenceProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
 
@@ -349,6 +354,9 @@ public class CotEventProtobufConverter {
                 case KEY_VIDEO:
                     builder.setVideo(mVideoProtobufConverter.toVideo(innerDetail, substitutionValues));
                     break;
+                case KEY_GEOFENCE:
+                    builder.setGeoFence(mGeoFenceProtobufConverter.toGeoFence(innerDetail));
+                    break;
                 case KEY_FLOW_TAGS:
                     builder.setFlowTags(mFlowTagsProtobufConverter.toFlowTags(innerDetail));
                     break;
@@ -404,6 +412,7 @@ public class CotEventProtobufConverter {
         mLinkAttrProtobufConverter.maybeAddLinkAttr(cotDetail, detail.getRoute(), customBytesExtFields);
         mSensorProtobufConverter.maybeAddSensor(cotDetail, detail.getSensor());
         mVideoProtobufConverter.maybeAddVideo(cotDetail, detail.getVideo(), substitutionValues);
+        mGeoFenceProtobufConverter.maybeAddGeoFence(cotDetail, detail.getGeoFence());
         mFlowTagsProtobufConverter.maybeAddFlowTags(cotDetail, detail.getFlowTags());
         mMedevacProtobufConverter.maybeAddMedevac(cotDetail, detail.getMedevac());
 

@@ -36,6 +36,8 @@ public class HackyTests {
         testCasevacAllFields();
         testCasevacNoFields();
         testCircle();
+        testGeoFenceWithAltitude();
+        testGeoFenceWithoutAltitude();
     }
 
     public void testPli() {
@@ -110,6 +112,14 @@ public class HackyTests {
 
     public void testCircle() {
         validate("Circle", -1, "<?xml version='1.0' encoding='UTF-8' standalone='yes'?><event version='2.0' uid='df11ad17-79d8-436b-ba7f-6c12a7d147d3' type='u-d-c-c' time='2020-08-30T18:50:27.452Z' start='2020-08-30T18:50:27.452Z' stale='2020-08-31T18:50:27.452Z' how='h-e'><point lat='39.52907656661326' lon='-105.75665450279342' hae='3100.9553102169134' ce='9999999.0' le='9999999.0' /><detail><shape><ellipse major='10.557862958543073' minor='10.557862958543073' angle='360'/><link uid='df11ad17-79d8-436b-ba7f-6c12a7d147d3.Style' type='b-x-KmlStyle' relation='p-c'><Style><LineStyle><color>ff0000ff</color><width>4.0</width></LineStyle><PolyStyle><color>960000ff</color></PolyStyle></Style></link></shape><contact callsign='Drawing Circle 1'/><remarks></remarks><archive/><strokeColor value='-16776961'/><strokeWeight value='4.0'/><fillColor value='-1778384641'/><labels_on value='true'/><precisionlocation altsrc='DTED2'/></detail></event>");
+    }
+
+    public void testGeoFenceWithAltitude() {
+        validate("GeoFence w/ Altitude", -1, "<?xml version='1.0' encoding='UTF-8' standalone='yes'?><event version='2.0' uid='07965d48-0d4b-4575-9c5b-c56a4b66ce10' type='u-d-r' time='2020-09-13T05:25:30.882Z' start='2020-09-13T05:25:30.882Z' stale='2020-09-14T05:25:30.882Z' how='h-e'><point lat='39.86657654739065' lon='-105.16496033254576' hae='1698.7690850953754' ce='9999999.0' le='9999999.0' /><detail><link point='39.93470375464395,-105.24931298523292,1743.6532212063455'/><link point='39.79887842819508,-105.24974402778368,1880.848705771484'/><link point='39.79843415916509,-105.08077499386248'/><link point='39.93425862060156,-105.08000930131891'/><tog enabled='1'/><strokeColor value='-16729857'/><strokeWeight value='3.4'/><fillColor value='-1778337537'/><remarks>Rmks</remarks><__geofence elevationMonitored='true' minElevation='0.7919789468754104' monitor='TAKUsers' trigger='Both' tracking='true' maxElevation='96.19437894687542' boundingSphere='85000.0'/><precisionlocation altsrc='DTED2'/><contact callsign='Warning'/><archive/><labels_on value='true'/></detail></event>");
+    }
+
+    public void testGeoFenceWithoutAltitude() {
+        validate("GeoFence w/o Altitude", -1, "<?xml version='1.0' encoding='UTF-8' standalone='yes'?><event version='2.0' uid='07965d48-0d4b-4575-9c5b-c56a4b66ce10' type='u-d-r' time='2020-09-13T05:24:17.214Z' start='2020-09-13T05:24:17.214Z' stale='2020-09-14T05:24:17.214Z' how='h-e'><point lat='39.86657654739065' lon='-105.16496033254576' hae='1698.7690850953754' ce='9999999.0' le='9999999.0' /><detail><link point='39.93470375464395,-105.24931298523292,1743.6532212063455'/><link point='39.79887842819508,-105.24974402778368,1880.848705771484'/><link point='39.79843415916509,-105.08077499386248'/><link point='39.93425862060156,-105.08000930131891'/><tog enabled='1'/><strokeColor value='-16729857'/><strokeWeight value='3.4'/><fillColor value='-1778337537'/><remarks>Rmks</remarks><__geofence elevationMonitored='false' minElevation='NaN' monitor='All' trigger='Entry' tracking='false' maxElevation='NaN' boundingSphere='85000.0'/><precisionlocation altsrc='DTED2'/><contact callsign='Warning'/><archive/><labels_on value='true'/></detail></event>");
     }
 
     public void validate(String messageType, int maxSize, String testXml) {

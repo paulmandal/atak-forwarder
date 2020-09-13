@@ -387,9 +387,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     Log.d(TAG, "ACTION_MESSAGE_STATUS");
                     int id = intent.getIntExtra(EXTRA_PACKET_ID, 0);
                     MessageStatus status = intent.getParcelableExtra(EXTRA_STATUS);
-
-                    Log.d(TAG, "id: " + id + " status: " + status);
-
                     handleMessageStatusChange(id, status);
                     break;
                 case ACTION_RECEIVED_DATA:
@@ -437,6 +434,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
 
         mPendingMessageReceived = status != MessageStatus.ERROR;
+        Log.d(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for: " + status);
 
         if (status == MessageStatus.ERROR || status == MessageStatus.DELIVERED) {
             mPendingMessageCountdownLatch.countDown();

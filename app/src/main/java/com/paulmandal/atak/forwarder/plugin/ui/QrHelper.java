@@ -40,14 +40,4 @@ public class QrHelper {
         bitmap.setPixels(pixels, 0, WIDTH, 0, 0, w, h);
         return bitmap;
     }
-
-    // TODO: move this or remove it
-    public static String toBinaryString(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
-            sb.append(" ");
-        }
-        return sb.toString();
-    }
 }

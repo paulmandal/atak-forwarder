@@ -51,7 +51,3 @@
 }
 -keep class * implements transapps.maps.plugin.lifecycle.Lifecycle {
 }
-
--dontwarn sun.misc.Unsafe
--dontwarn javax.**
--dontwarn com.amazonaws.**

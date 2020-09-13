@@ -21,9 +21,8 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
-import com.paulmandal.atak.forwarder.group.ChannelTracker;
-import com.paulmandal.atak.forwarder.group.persistence.JsonHelper;
-import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 
@@ -64,8 +63,7 @@ public class ForwarderLifecycle implements Lifecycle {
 
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
-        JsonHelper jsonHelper = new JsonHelper();
-        StateStorage stateStorage = new StateStorage(activity, jsonHelper);
+        StateStorage stateStorage = new StateStorage(activity);
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();

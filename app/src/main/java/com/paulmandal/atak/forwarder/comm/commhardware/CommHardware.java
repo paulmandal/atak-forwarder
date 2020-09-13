@@ -13,7 +13,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
-import com.paulmandal.atak.forwarder.group.UserInfo;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -74,8 +74,6 @@ public abstract class CommHardware {
     }
 
     public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        // TODO: enforce connected?
-
         mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk, modemConfig));
     }
 

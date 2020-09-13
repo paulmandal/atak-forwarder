@@ -10,7 +10,7 @@ import android.widget.Toast;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.group.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupMemberDataAdapter;
 
 import java.security.MessageDigest;

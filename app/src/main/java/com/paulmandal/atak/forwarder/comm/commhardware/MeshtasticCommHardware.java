@@ -25,9 +25,8 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
-import com.paulmandal.atak.forwarder.group.ChannelTracker;
-import com.paulmandal.atak.forwarder.group.UserInfo;
-import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;

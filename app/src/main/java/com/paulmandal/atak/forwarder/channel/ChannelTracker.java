@@ -1,8 +1,7 @@
-package com.paulmandal.atak.forwarder.group;
+package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;

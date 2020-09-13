@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.group;
+package com.paulmandal.atak.forwarder.channel;
 
 import androidx.annotation.Nullable;
 

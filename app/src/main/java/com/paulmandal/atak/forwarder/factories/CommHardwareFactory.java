@@ -8,8 +8,8 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.group.ChannelTracker;
-import com.paulmandal.atak.forwarder.group.UserInfo;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 public class CommHardwareFactory {
     public static CommHardware createAndInitCommHardware(Activity activity,

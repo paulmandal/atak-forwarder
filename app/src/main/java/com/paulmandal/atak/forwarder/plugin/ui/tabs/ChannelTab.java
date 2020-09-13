@@ -107,9 +107,6 @@ public class ChannelTab {
             byte[] psk = mChannelTracker.getPsk();
             byte modemConfig = (byte) mChannelTracker.getModemConfig().getNumber();
 
-            Log.e(TAG, "channelName.len: " + channelName.length);
-            Log.e(TAG, "psk.len: " + psk.length);
-
             byte[] payload = new byte[psk.length + 1 + channelName.length];
             for (int i = 0; i < psk.length; i++) {
                 payload[i] = psk[i];
@@ -119,9 +116,6 @@ public class ChannelTab {
             for (int i = psk.length + 1, j = 0; j < channelName.length; i++, j++) {
                 payload[i] = channelName[j];
             }
-
-            Log.e(TAG, " wrote bytes: " + QrHelper.toBinaryString(payload));
-            Log.e(TAG, "  cname: " + new String(channelName) + ", psk: " + QrHelper.toBinaryString(psk));
 
             try {
                 Bitmap bm = mQrHelper.encodeAsBitmap(payload);

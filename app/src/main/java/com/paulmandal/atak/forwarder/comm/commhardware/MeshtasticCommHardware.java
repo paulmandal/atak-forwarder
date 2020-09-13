@@ -151,7 +151,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void handleUpdateChannel(UpdateChannelCommand updateChannelCommand) {
-        Log.e(TAG, "handleUpdateChannel: " +updateChannelCommand.channelName + ", modem: " + updateChannelCommand.modemConfig + ", psk: " + QrHelper.toBinaryString(updateChannelCommand.psk));
         try {
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
@@ -190,14 +189,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void handleScanForCommDevice() {
-        Log.e(TAG, "\"scanning\" for comm device");
         unbindAndStopService();
         bindToService();
     }
 
     @Override
     protected void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
-        Log.d(TAG, "DISCO handleBroadcastDiscoveryMessage: " + new String(broadcastDiscoveryCommand.discoveryMessage));
         if (!sendMessageSegment(broadcastDiscoveryCommand.discoveryMessage, DataPacket.ID_BROADCAST)) {
             // Send this message back to the queue
             queueCommand(broadcastDiscoveryCommand);
@@ -250,7 +247,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void updateConnectionState() {
-        Log.e(TAG, "updateConnectionState()");
         try {
             String meshId = mMeshService.getMyId();
             ConnectionState connectionState;
@@ -263,7 +259,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             setConnectionState(connectionState);
             notifyConnectionStateListeners(connectionState);
-            Log.e(TAG, "  Connection state now: " + connectionState);
+            Log.e(TAG, "  ConnectionState: " + connectionState);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in updateConnectionState: " + e.getMessage());
             e.printStackTrace();

@@ -60,8 +60,7 @@ public class ForwarderLifecycle implements Lifecycle {
         HackyTests hackyTests = new HackyTests();
         hackyTests.runAllTests();
 
-        // TODO: this is kinda a mess, move to a Factory and clean this up
-
+        // TODO: this is kinda a mess, move to a Factory and clean this up (or use Dagger 2)
 
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();

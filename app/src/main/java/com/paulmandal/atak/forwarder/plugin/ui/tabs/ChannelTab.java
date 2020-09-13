@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.util.Base64;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,8 +18,8 @@ import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 
 import java.security.SecureRandom;
@@ -108,18 +107,10 @@ public class ChannelTab {
             byte modemConfig = (byte) mChannelTracker.getModemConfig().getNumber();
 
             byte[] payload = new byte[psk.length + 1 + channelName.length];
+
             System.arraycopy(psk, 0, payload, 0, psk.length);
-
             payload[psk.length] = modemConfig;
-
-            for (int i = psk.length + 1, j = 0; j < channelName.length; i++, j++) {
-                payload[i] = channelName[j];
-            }
-
-            Log.e(TAG, "out: " + QrHelper.bytesToBinaryString(payload));
-            Log.e(TAG, "psk: " + QrHelper.bytesToBinaryString(psk));
-            Log.e(TAG, "cn: " + QrHelper.bytesToBinaryString(channelName));
-            Log.e(TAG, "out hash: " + QrHelper.hashFromBytes(payload));
+            System.arraycopy(channelName, 0, payload, psk.length + 1, channelName.length);
 
             try {
                 Bitmap bm = mQrHelper.encodeAsBitmap(payload);
@@ -238,20 +229,13 @@ public class ChannelTab {
             byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
 
             byte[] psk = new byte[PSK_LENGTH];
-            System.arraycopy(resultBytes, 0, psk, 0, PSK_LENGTH);
-
-            int modemConfigValue = resultBytes[PSK_LENGTH];
-
             byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
-            for (int i = PSK_LENGTH + 1, j = 0; i < resultBytes.length; i++, j++) {
-                channelNameBytes[j] = resultBytes[i];
-            }
-            MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
 
-            Log.e(TAG, "in: " + QrHelper.bytesToBinaryString(resultBytes));
-            Log.e(TAG, "psk: " + QrHelper.bytesToBinaryString(psk));
-            Log.e(TAG, "cn: " + QrHelper.bytesToBinaryString(channelNameBytes));
-            Log.e(TAG, "in hash: " + QrHelper.hashFromBytes(resultBytes));
+            System.arraycopy(resultBytes, 0, psk, 0, PSK_LENGTH);
+            int modemConfigValue = resultBytes[PSK_LENGTH];
+            System.arraycopy(resultBytes, PSK_LENGTH + 1, channelNameBytes, 0, resultBytes.length - PSK_LENGTH - 1);
+
+            MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
 
             mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
             mCommHardware.broadcastDiscoveryMessage();

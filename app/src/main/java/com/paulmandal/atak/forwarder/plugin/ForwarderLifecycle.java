@@ -9,8 +9,11 @@ import android.os.Looper;
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
+import com.paulmandal.atak.forwarder.BuildConfig;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.HackyTests;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
@@ -21,8 +24,6 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
-import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 
@@ -56,8 +57,10 @@ public class ForwarderLifecycle implements Lifecycle {
         }
         mMapView = (MapView)transappsMapView.getView();
 
-        HackyTests hackyTests = new HackyTests();
-        hackyTests.runAllTests();
+        if (BuildConfig.DEBUG) {
+            HackyTests hackyTests = new HackyTests();
+            hackyTests.runAllTests();
+        }
 
         // TODO: this is kinda a mess, move to a Factory and clean this up (or use Dagger 2)
 

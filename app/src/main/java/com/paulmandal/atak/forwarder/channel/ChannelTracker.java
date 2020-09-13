@@ -142,6 +142,11 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public void clearData() {
         mUserInfoList = new ArrayList<>();
+        mChannelName = null;
+        mPsk = null;
+        mModemConfig = null;
+
+        notifyListeners();
     }
 
     private void notifyListeners() {

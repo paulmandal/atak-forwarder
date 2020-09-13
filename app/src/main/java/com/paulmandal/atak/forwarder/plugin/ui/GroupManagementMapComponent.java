@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
@@ -15,6 +14,7 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
 
 public class GroupManagementMapComponent extends DropDownMapComponent {
@@ -44,8 +44,10 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
 
         Context atakContext = mapView.getContext();
 
-        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue);
-        ChannelTab channelTab = new ChannelTab(pluginContext, atakContext, mCommHardware, mChannelTracker, new QrHelper());
+        HashHelper hashHelper = new HashHelper();
+
+        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue, hashHelper);
+        ChannelTab channelTab = new ChannelTab(pluginContext, atakContext, mCommHardware, mChannelTracker, new QrHelper(), hashHelper);
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
 
         GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,

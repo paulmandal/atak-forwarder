@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
@@ -40,6 +42,7 @@ public class ChannelTab {
 
     private ChannelTracker mChannelTracker;
     private QrHelper mQrHelper;
+    private HashHelper mHashHelper;
 
     private RadioGroup mModemSettingRadioGroup;
 
@@ -80,12 +83,14 @@ public class ChannelTab {
                       Context atakContext,
                       CommHardware commHardware,
                       ChannelTracker channelTracker,
-                      QrHelper qrHelper) {
+                      QrHelper qrHelper,
+                      HashHelper hashHelper) {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mCommHardware = commHardware;
         mChannelTracker = channelTracker;
         mQrHelper = qrHelper;
+        mHashHelper = hashHelper;
     }
 
     public void init(View templateView) {
@@ -100,6 +105,11 @@ public class ChannelTab {
          * Show/Hide QR
          */
         mShowQrOnClickListener = (View v) -> {
+            if (mChannelTracker.getChannelName() == null) {
+                Toast.makeText(mAtakContext, "Channel settings not yet available, check in the Settings tab", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             setMode(ScreenMode.SHOW_QR);
 
             byte[] channelName = mChannelTracker.getChannelName().getBytes();
@@ -166,6 +176,8 @@ public class ChannelTab {
             Button b = (Button) v;
             b.setText(R.string.edit_channel);
             v.setOnClickListener(mEditChannelOnClickListener);
+
+            Toast.makeText(mAtakContext, "Saved channel settings", Toast.LENGTH_SHORT).show();
         };
 
         mEditOrSaveButton = templateView.findViewById(R.id.button_edit_or_save_channel);
@@ -237,6 +249,10 @@ public class ChannelTab {
 
             MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
 
+            Toast.makeText(mAtakContext, "Updated channel settings from QR", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Updating channel settings: " + new String(channelNameBytes) + ", " + modemConfig + ", " + mHashHelper.hashFromBytes(psk));
+
+            mChannelTracker.clearData();
             mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
             mCommHardware.broadcastDiscoveryMessage();
 

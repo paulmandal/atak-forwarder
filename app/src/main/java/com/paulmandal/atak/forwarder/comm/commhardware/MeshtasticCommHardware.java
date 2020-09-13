@@ -429,12 +429,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
         if (id != mPendingMessageId) {
-            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about msgId: " + id + " status: " + status);
+            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about msgId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
             return;
         }
 
         mPendingMessageReceived = status != MessageStatus.ERROR;
-        Log.d(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for: " + status);
+        Log.d(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
 
         if (status == MessageStatus.ERROR || status == MessageStatus.DELIVERED) {
             mPendingMessageCountdownLatch.countDown();
@@ -450,11 +450,15 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void awaitPendingMessageCountDownLatch() {
+        boolean timedOut = false;
         try {
-            mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            timedOut = mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
-            Log.e(TAG, "Timed out waiting for message ACK/NACK");
             e.printStackTrace();
+        }
+
+        if(timedOut) {
+            Log.e(TAG, "Timed out waiting for message ACK/NACK for: " + mPendingMessageId);
         }
     }
 }

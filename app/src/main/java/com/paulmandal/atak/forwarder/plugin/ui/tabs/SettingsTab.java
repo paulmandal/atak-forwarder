@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.View;
 import android.widget.Button;
@@ -13,9 +14,6 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupMemberDataAdapter;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.Formatter;
 import java.util.Locale;
 
 public class SettingsTab implements ChannelTracker.UpdateListener,
@@ -27,6 +25,7 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     private CommandQueue mCommandQueue;
     private ChannelTracker mChannelTracker;
     private CommHardware mCommHardware;
+    private HashHelper mHashHelper;
 
     private TextView mConnectionStatusTextView;
     private TextView mChannelName;
@@ -39,12 +38,14 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
                        Context atakContext,
                        ChannelTracker channelTracker,
                        CommHardware commHardware,
-                       CommandQueue commandQueue) {
+                       CommandQueue commandQueue,
+                       HashHelper hashHelper) {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCommandQueue = commandQueue;
+        mHashHelper = hashHelper;
     }
 
     public void init(View templateView) {
@@ -72,10 +73,10 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     }
 
     @Override
-    // TODO: maybe break this into individual UI components or wait for MVVM
+    @SuppressLint("DefaultLocale")
     public void onUpdated() {
         byte[] psk = mChannelTracker.getPsk();
-        mChannelName.setText(String.format("#%s - %s", mChannelTracker.getChannelName(), psk != null ? hashFromBytes(psk) : null));
+        mChannelName.setText(String.format("#%s - %s - %d", mChannelTracker.getChannelName(), psk != null ? mHashHelper.hashFromBytes(psk) : null, mChannelTracker.getModemConfig() != null ? mChannelTracker.getModemConfig().getNumber() : -1));
         setupListView();
     }
 
@@ -120,23 +121,5 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
         Toast.makeText(mAtakContext, "Comm device disconnected -- or maybe unpaired -- pair with it in the Android Settings > Connected Devices menu and then click Paired", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
         PairedButton.setVisibility(View.VISIBLE);
-    }
-
-    private String hashFromBytes(byte[] bytes) {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-1");
-            bytes = md.digest(bytes);
-
-            Formatter formatter  = new Formatter();
-            for (byte b : bytes) {
-                formatter.format("%02x", b);
-            }
-
-            String hash = formatter.toString();
-            return hash.substring(hash.length() - 8);
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 }

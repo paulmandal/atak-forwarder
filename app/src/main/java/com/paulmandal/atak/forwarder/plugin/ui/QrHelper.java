@@ -15,7 +15,7 @@ public class QrHelper {
     public static int COLOR_WHITE = 0xFFFFFFFF;
     public static int COLOR_BLACK = 0xFF000000;
 
-    private static final int WIDTH = 512;
+    private static final int WIDTH = 640;
 
     public Bitmap encodeAsBitmap(byte[] input) throws WriterException {
         String base64 = Base64.encodeToString(input, Base64.DEFAULT);

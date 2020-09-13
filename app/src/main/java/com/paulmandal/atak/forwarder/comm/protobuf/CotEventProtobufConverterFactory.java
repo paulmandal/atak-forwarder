@@ -4,7 +4,13 @@ import com.paulmandal.atak.forwarder.comm.protobuf.medevac.FlowTagsProtobufConve
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MedevacProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MistProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MistsMapProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.EllipseLinkProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.EllipseProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.shape.GeoFenceProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.LineStyleProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.PolyStyleProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.ShapeProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.StyleProtobufConverter;
 
 import java.util.Calendar;
 
@@ -63,6 +69,15 @@ public class CotEventProtobufConverterFactory {
                         )
                 ),
                 new GeoFenceProtobufConverter(),
+                new ShapeProtobufConverter(
+                        new EllipseProtobufConverter(),
+                        new EllipseLinkProtobufConverter(
+                                new StyleProtobufConverter(
+                                        new LineStyleProtobufConverter(),
+                                        new PolyStyleProtobufConverter()
+                                )
+                        )
+                ),
                 startOfYearMs);
     }
 }

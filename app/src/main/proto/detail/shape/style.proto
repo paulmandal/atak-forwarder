@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufStyle";
+
+import "detail/shape/line_style.proto";
+import "detail/shape/poly_style.proto";
+
+message Style {
+  LineStyle lineStyle = 1;
+  PolyStyle polyStyle = 2;
+}

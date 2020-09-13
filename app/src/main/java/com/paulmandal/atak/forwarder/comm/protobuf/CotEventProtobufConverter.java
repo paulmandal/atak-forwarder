@@ -8,6 +8,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.FlowTagsProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.medevac.MedevacProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.shape.GeoFenceProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.shape.ShapeProtobufConverter;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufCotEvent;
@@ -51,6 +52,7 @@ public class CotEventProtobufConverter {
     private static final String KEY_FLOW_TAGS = "_flow-tags_";
     private static final String KEY_MEDEVAC = "_medevac_";
     private static final String KEY_GEOFENCE = "__geofence";
+    private static final String KEY_SHAPE = "shape";
 
     // Fields
     private static final String KEY_ICON_SET_PATH = "iconsetpath";
@@ -93,6 +95,7 @@ public class CotEventProtobufConverter {
     private final FlowTagsProtobufConverter mFlowTagsProtobufConverter;
     private final MedevacProtobufConverter mMedevacProtobufConverter;
     private final GeoFenceProtobufConverter mGeoFenceProtobufConverter;
+    private final ShapeProtobufConverter mShapeProtobufConverter;
     private final long mStartOfYearMs;
 
     public CotEventProtobufConverter(TakvProtobufConverter takvProtobufConverter,
@@ -124,6 +127,7 @@ public class CotEventProtobufConverter {
                                      FlowTagsProtobufConverter flowTagsProtobufConverter,
                                      MedevacProtobufConverter medevacProtobufConverter,
                                      GeoFenceProtobufConverter geoFenceProtobufConverter,
+                                     ShapeProtobufConverter shapeProtobufConverter,
                                      long startOfYearMs) {
         mTakvProtobufConverter = takvProtobufConverter;
         mTrackProtobufConverter = trackProtobufConverter;
@@ -154,6 +158,7 @@ public class CotEventProtobufConverter {
         mFlowTagsProtobufConverter = flowTagsProtobufConverter;
         mMedevacProtobufConverter = medevacProtobufConverter;
         mGeoFenceProtobufConverter = geoFenceProtobufConverter;
+        mShapeProtobufConverter = shapeProtobufConverter;
         mStartOfYearMs = startOfYearMs;
     }
 
@@ -363,6 +368,9 @@ public class CotEventProtobufConverter {
                 case KEY_MEDEVAC:
                     builder.setMedevac(mMedevacProtobufConverter.toMedevac(innerDetail));
                     break;
+                case KEY_SHAPE:
+                    builder.setShape(mShapeProtobufConverter.toShape(innerDetail));
+                    break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail subobject: " + innerDetail.getElementName());
             }
@@ -415,6 +423,7 @@ public class CotEventProtobufConverter {
         mGeoFenceProtobufConverter.maybeAddGeoFence(cotDetail, detail.getGeoFence());
         mFlowTagsProtobufConverter.maybeAddFlowTags(cotDetail, detail.getFlowTags());
         mMedevacProtobufConverter.maybeAddMedevac(cotDetail, detail.getMedevac());
+        mShapeProtobufConverter.maybeAddShape(cotDetail, detail.getShape());
 
         ProtobufDetailStyle.DetailStyle detailStyle = detail.getDetailStyle();
         mDetailStyleProtobufConverter.maybeAddColor(cotDetail, detailStyle.getColor());

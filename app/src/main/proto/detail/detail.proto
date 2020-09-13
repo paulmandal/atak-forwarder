@@ -17,7 +17,7 @@ import "detail/server_destination.proto";
 import "detail/model.proto";
 import "detail/detail_style.proto"; // TODO: rename this?
 import "detail/height.proto";
-import "detail/shape.proto";
+import "detail/shape/shape.proto";
 import "detail/drawn_shape.proto";
 import "detail/sensor.proto";
 

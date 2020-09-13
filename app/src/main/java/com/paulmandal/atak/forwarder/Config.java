@@ -28,7 +28,7 @@ public class Config {
      * How long shape/PLI messages live in the cache CotMessageCache (preventing them being resent)
      */
     public static final int DEFAULT_CACHE_PURGE_TIME_MS = 1800000;
-    public static final int DEFAULT_PLI_CACHE_PURGE_TIME_MS = 60000;
+    public static final int DEFAULT_PLI_CACHE_PURGE_TIME_MS = 20000;
 
     /**
      * IP and port to retransmit inbound messages to, this should work with the defaults in ATAK

@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
+import android.os.Handler;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -23,6 +24,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     public static final String USER_NOT_FOUND = "";
 
     private Context mAtakContext;
+    private Handler mUiThreadHandler;
 
     private List<UserInfo> mUserInfoList;
 
@@ -33,8 +35,10 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private List<UpdateListener> mUpdateListeners = new ArrayList<>();
 
     public ChannelTracker(Context atakContext,
+                          Handler uiThreadHandler,
                           @Nullable List<UserInfo> userInfoList) {
         mAtakContext = atakContext;
+        mUiThreadHandler = uiThreadHandler;
 
         if (userInfoList == null) {
             userInfoList = new ArrayList<>();
@@ -74,9 +78,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         if (!found) {
             mUserInfoList.add(new UserInfo(callsign, meshId, atakUid, false, null));
 
-            for (UpdateListener updateListener : mUpdateListeners) {
-                updateListener.onUpdated();
-            }
+            notifyListeners();
         }
 
         Toast.makeText(mAtakContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
@@ -108,9 +110,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         if (newUsers.size() > 0) {
             mUserInfoList.addAll(newUsers);
 
-            for (UpdateListener updateListener : mUpdateListeners) {
-                updateListener.onUpdated();
-            }
+            notifyListeners();
         }
     }
 
@@ -120,9 +120,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         mPsk = psk;
         mModemConfig = modemConfig;
 
-        for (UpdateListener updateListener : mUpdateListeners) {
-            updateListener.onUpdated();
-        }
+        notifyListeners();
     }
 
     public String getMeshIdForUid(String atakUid) {
@@ -144,5 +142,11 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public void clearData() {
         mUserInfoList = new ArrayList<>();
+    }
+
+    private void notifyListeners() {
+        for (UpdateListener updateListener : mUpdateListeners) {
+            mUiThreadHandler.post(updateListener::onUpdated);
+        }
     }
 }

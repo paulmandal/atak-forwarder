@@ -2,16 +2,17 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
@@ -25,7 +26,6 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
-
 
     public GroupManagementMapComponent(ChannelTracker channelTracker,
                                        CommHardware commHardware,

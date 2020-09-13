@@ -427,8 +427,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         String callsign = messageSplit[2];
         boolean initialDiscoveryMessage = messageSplit[3].equals("1");
 
-        Log.d(TAG, "DISCO handleDiscoveryMessage, meshId: " + meshId + ", atakUid: " + atakUid + ", callsign: " + callsign + ", initial: " + initialDiscoveryMessage);
-
         if (initialDiscoveryMessage) {
             broadcastDiscoveryMessage(false);
         }

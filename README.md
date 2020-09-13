@@ -13,8 +13,8 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 # Features
 
 * Peer discovery
-* In-app group and device management
-* Broadcast messages are sent to the group (e.g. map markers, PLI)
+* In-app channel management
+* Broadcast messages are sent to the channel (e.g. map markers, PLI)
 * Direct messages to other users (e.g. chat messages)
 * Efficient comm. using protobufs -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
 * Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~380 bytes, group chat ~400 bytes
@@ -27,8 +27,6 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * Use T-Beam as a GPS source (if it proves to be more accurate than the phone's)
 * Message IDs and receipt confirmation
 * Improve chat message shrinking further
-* Figure out why some messages fail to parse (1/8 msgs)
-* Retry on disconnection from comm. device
 * Smarter sending -- Map Markers get higher priority unless PLI has not gotten sent in ~5 minutes
 * Smarter sending -- Send a list of map markers to group, other clients can reply with which marker they are missing, build up a list of missing markers if more than 1 person is missing send to group, otherwise send to individuals
 * Needs more real-world stability testing
@@ -36,30 +34,25 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 # Setup
 
-[WIP]
-
-* `git submodule init`
-* Follow the instructions below to build ATAK and the plugin, ignore the GoTenna related steps
-* Clone the Meshtastic service/app: https://github.com/meshtastic/Meshtastic-Android
-* Comment out this line in `MeshService.kt`: `startLocationRequests()`
-* Build the service/app and install it on your devices
-* Use the Meshtastic app to pair to your devices and create a channel
-* Open ATAK, messages should be posted to the channel
-
-To use this plugin you will need to build your own copy of ATAK-CIV, to do that first:
+To use this plugin you will need to build your own copy of ATAK-CIV and copy some files, to do that first:
 
 * clone the ATAK-CIV repo: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV
 * clone this repo into the same parent directory that you cloned the DoD's ATAK repo to (i.e. not into the `AndroidTacticalAssaultKit-CIV` directory)
 * get the ATAK-CIV SDK: http://7n7.us/civtak4sdk
-* follow the instructions for building ATAK in the ATAK repo's BULIDING.md file, load the application onto your devices using the `installCivDebug` Gradle task
+* follow the instructions for building ATAK in the ATAK repo's `BULIDING.md` file, load the application onto your devices using the `installCivDebug` Gradle task
     * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
-    * Note: instructions on getting this to work with `installCivRelease` will happen in the next few days, the key is to add your signing fingerprint to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
-* download Jetifier Standalone: https://dl.google.com/dl/android/studio/jetifier-zips/1.0.0-beta09/jetifier-standalone.zip
-* Jetify `gotenna-public-sdk.aar` using this command: `./jetifier-standalone -i gotenna-public-sdk.aar -o gotenna-public-sdk.aar`
+    * Note: if you would like to use `installCivRelease` instead, you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 * copy the ATAK SDK into the `libs/` directory as `main.jar`
-* open this project in Android Studio
-    * Edit `Config.java`, put your GoTenna SDK token in the `GOTENNA_SDK_TOKEN` variable
-    * Set `FALLBACK_LATITUDE` and `FALLBACK_LATITUDE` to your approximate lat/lon, this is how the application determines which frequencies your GoTenna should use do DO NOT MISS THIS STEP!
+* Run `git submodule init` in the `atak-forwarder` directory
+* clone the Meshtastic service/app: https://github.com/meshtastic/Meshtastic-Android
+    * Comment out this line in `MeshService.kt`: `startLocationRequests()`
+    * Build the service/app and install it onto your devices
+* Pair your device with your Meshtastic radio in Android Settings > Connected Devices
+* Build the `atak-forwarder` plugin and install it on your devices
+* Open ATAK, the red @ sign in the lower right corner should turn green soon after opening the app, if it does not something is wrong with your BLE pairing, try re-pairing your Meshtastic device, then clicking on the red @ sign and clicking `Paired`
+* Set up your channel in the Channel tab on one device, then show the QR code and scan it on your other device(s)
+* You should see notifications about "discovery broadcasts" once all devices are on the same channel, if you do not check the channel name, hash, and try clicking `Broadcast Discovery` in the plugin settings menu (click the @)
+* You should soon see map markers for each of your devices
 
 # Architecture Diagram (somewhat outdated)
 

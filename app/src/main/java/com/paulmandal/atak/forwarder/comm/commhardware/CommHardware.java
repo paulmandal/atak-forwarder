@@ -169,7 +169,6 @@ public abstract class CommHardware {
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
         String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
-        Log.d(TAG, "DISCO queueing broadcastDiscoveryMessage: " + broadcastData);
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 

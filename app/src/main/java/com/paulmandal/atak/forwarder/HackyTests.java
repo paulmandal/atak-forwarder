@@ -17,7 +17,7 @@ import java.util.List;
 
 // Tests to validate our protobufs
 public class HackyTests {
-    private static final String TAG = "ATAKDBG." + HackyTests.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + HackyTests.class.getSimpleName();
 
     public void runAllTests() {
         testPli();

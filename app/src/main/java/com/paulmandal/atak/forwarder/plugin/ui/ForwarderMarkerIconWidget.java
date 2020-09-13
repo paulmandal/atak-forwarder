@@ -37,7 +37,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.addWidget(this);
 
-        updateIcon(commHardware.isConnected());
+        updateIcon(commHardware.getConnectionState() == CommHardware.ConnectionState.CONNECTED);
     }
 
     @Override
@@ -56,8 +56,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
     @Override
     public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
         switch (connectionState) {
-            case SCANNING:
-            case TIMEOUT:
+            case UNPAIRED:
             case DISCONNECTED:
                 updateIcon(false);
                 break;

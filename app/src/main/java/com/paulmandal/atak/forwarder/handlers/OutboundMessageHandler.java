@@ -4,12 +4,13 @@ import android.util.Log;
 
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
 import com.paulmandal.atak.forwarder.comm.protobuf.UnknownDetailFieldException;
+import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -18,7 +19,7 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor {
-    private static final String TAG = "ATAKDBG." + OutboundMessageHandler.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
     private CommsMapComponent mCommsMapComponent;
     private CommHardware mCommHardware;
@@ -54,8 +55,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
         Log.d(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
-        if (mCommHardware.isConnected()
-            && (toUIDs != null || mCommHardware.isInGroup())
+        if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.CONNECTED
             && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
                 Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this

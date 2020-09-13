@@ -1,4 +1,3 @@
-
 package com.paulmandal.atak.forwarder.plugin;
 
 import android.app.Activity;
@@ -10,6 +9,7 @@ import android.os.Looper;
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.HackyTests;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
@@ -21,12 +21,12 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.group.persistence.JsonHelper;
-import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -34,7 +34,7 @@ import java.util.LinkedList;
 import transapps.maps.plugin.lifecycle.Lifecycle;
 
 public class ForwarderLifecycle implements Lifecycle {
-    private final static String TAG = "ATAKDBG." + ForwarderLifecycle.class.getSimpleName();
+    private final static String TAG = Config.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
 
     private Context mPluginContext;
     private MapView mMapView;
@@ -59,25 +59,23 @@ public class ForwarderLifecycle implements Lifecycle {
         HackyTests hackyTests = new HackyTests();
         hackyTests.runAllTests();
 
-        // TODO: this is kinda a mess, move to a Factory and clean this up
-
+        // TODO: this is kinda a mess, move to a Factory and clean this up (or use Dagger 2)
 
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
-        JsonHelper jsonHelper = new JsonHelper();
-        StateStorage stateStorage = new StateStorage(activity, jsonHelper);
+        StateStorage stateStorage = new StateStorage(activity);
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        GroupTracker groupTracker = new GroupTracker(activity, uiThreadHandler, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, groupTracker, groupTracker, commandQueue, queuedCommandFactory);
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, new ArrayList<>());
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory);
         MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(groupTracker, mCommHardware, cotMessageCache, commandQueue));
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

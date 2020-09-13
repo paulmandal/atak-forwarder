@@ -2,7 +2,7 @@ package com.paulmandal.atak.forwarder.xmlutils;
 
 import android.util.Log;
 
-import com.amazonaws.util.StringInputStream;
+import com.paulmandal.atak.forwarder.Config;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -10,6 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 public class XmlComparer {
-    private static final String TAG = "ATAKDBG." + XmlComparer.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + XmlComparer.class.getSimpleName();
 
     public boolean compareXmls(String messageType, String lhs, String rhs) {
         try {
@@ -30,10 +31,10 @@ public class XmlComparer {
             dbf.setIgnoringComments(true);
             DocumentBuilder db = dbf.newDocumentBuilder();
 
-            Document original = db.parse(new StringInputStream(lhs));
+            Document original = db.parse(new ByteArrayInputStream(lhs.getBytes()));
             original.normalizeDocument();
 
-            Document converted = db.parse(new StringInputStream(rhs));
+            Document converted = db.parse(new ByteArrayInputStream(rhs.getBytes()));
             converted.normalizeDocument();
 
             boolean matched = compare(original, converted);

@@ -14,7 +14,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class InboundMessageHandler implements CommHardware.MessageListener {
-    private static final String TAG = "ATAKDBG." + InboundMessageHandler.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
 
     private static final int INBOUND_MESSAGE_DEST_PORT = Config.INBOUND_MESSAGE_DEST_PORT;
     private static final int INBOUND_MESSAGE_SRC_PORT = Config.INBOUND_MESSAGE_SRC_PORT;

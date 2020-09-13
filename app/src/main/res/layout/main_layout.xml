@@ -26,6 +26,8 @@
 
                 <include layout="@layout/settings_layout" />
 
+                <include layout="@layout/channel_layout" />
+
                 <include layout="@layout/advanced_layout" />
 
             </FrameLayout>

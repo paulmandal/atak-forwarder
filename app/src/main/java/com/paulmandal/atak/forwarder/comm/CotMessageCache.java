@@ -3,7 +3,7 @@ package com.paulmandal.atak.forwarder.comm;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
-import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 
 import java.util.ArrayList;
 import java.util.List;

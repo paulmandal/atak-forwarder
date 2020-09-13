@@ -4,26 +4,27 @@ import android.app.Activity;
 import android.os.Handler;
 
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.commhardware.GoTennaCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 public class CommHardwareFactory {
     public static CommHardware createAndInitCommHardware(Activity activity,
                                                          MapView mapView,
                                                          Handler handler,
-                                                         GoTennaCommHardware.GroupListener groupListener,
-                                                         GroupTracker groupTracker,
+                                                         MeshtasticCommHardware.ChannelListener channelListener,
+                                                         ChannelTracker channelTracker,
                                                          CommandQueue commandQueue,
                                                          QueuedCommandFactory queuedCommandFactory) {
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
-        long gId = longHashFromString(atakUid);
 
-        CommHardware commHardware = new GoTennaCommHardware(handler, groupListener, groupTracker, commandQueue, queuedCommandFactory);
-        commHardware.init(activity, callsign, gId, atakUid);
+        CommHardware commHardware;
+        UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
+        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
         return commHardware;
     }
 

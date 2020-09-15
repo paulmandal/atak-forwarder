@@ -1,19 +1,17 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.annotation.CallSuper;
 
 import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
-import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -73,18 +71,18 @@ public abstract class CommHardware {
         broadcastDiscoveryMessage(false);
     }
 
-    public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk, modemConfig));
-    }
+//    public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
+//        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk, modemConfig));
+//    }
 
-    public void connect() {
-        if (mConnectionState == ConnectionState.CONNECTED) {
-            Log.d(TAG, "connect: already connected");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
-    }
+//    public void connect() {
+//        if (mConnectionState == ConnectionState.CONNECTED) {
+//            Log.d(TAG, "connect: already connected");
+//            return;
+//        }
+//
+//        mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
+//    }
 
     @CallSuper
     public void destroy() {
@@ -126,13 +124,13 @@ public abstract class CommHardware {
 
                 switch (queuedCommand.commandType) {
                     case SCAN_FOR_COMM_DEVICE:
-                        handleScanForCommDevice();
+//                        handleScanForCommDevice();
                         break;
                     case BROADCAST_DISCOVERY_MSG:
                         handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
                         break;
                     case UPDATE_CHANNEL:
-                        handleUpdateChannel((UpdateChannelCommand) queuedCommand);
+//                        handleUpdateChannel((UpdateChannelCommand) queuedCommand);
                         break;
                     case SEND_TO_CHANNEL:
                     case SEND_TO_INDIVIDUAL:
@@ -195,8 +193,8 @@ public abstract class CommHardware {
     /**
      * For subclasses to implement
      */
-    protected abstract void handleScanForCommDevice();
+    public abstract void connect();
+    public abstract void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
-    protected abstract void handleUpdateChannel(UpdateChannelCommand updateChannelCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
 }

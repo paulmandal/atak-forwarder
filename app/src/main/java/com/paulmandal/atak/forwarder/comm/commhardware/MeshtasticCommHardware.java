@@ -71,6 +71,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final String STATE_CONNECTED = "CONNECTED";
 
+    private ChannelTracker mChannelTracker;
     private ChannelListener mChannelListener;
     private Activity mActivity;
 
@@ -96,6 +97,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         mActivity = activity;
         mChannelListener = channelListener;
+        mChannelTracker = channelTracker;
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -150,8 +152,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         return mPendingMessageReceived;
     }
 
-    @Override
-    protected void handleUpdateChannel(UpdateChannelCommand updateChannelCommand) {
+    public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
         try {
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
@@ -159,6 +160,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Log.e(TAG, "radioConfigBytes was null");
                 return;
             }
+
+            mChannelTracker.clearData();
 
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
             MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
@@ -170,9 +173,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             // Begin Updates TODO: remove
 
-            channelSettingsBuilder.setName(updateChannelCommand.channelName);
-            channelSettingsBuilder.setPsk(ByteString.copyFrom(updateChannelCommand.psk));
-            channelSettingsBuilder.setModemConfig(updateChannelCommand.modemConfig);
+            channelSettingsBuilder.setName(channelName);
+            channelSettingsBuilder.setPsk(ByteString.copyFrom(psk));
+            channelSettingsBuilder.setModemConfig(modemConfig);
 
             // End Updates TODO: remove
 
@@ -190,7 +193,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     @Override
-    protected void handleScanForCommDevice() {
+    public void connect() {
+                if (getConnectionState() == ConnectionState.CONNECTED) {
+            Log.d(TAG, "connect: already connected");
+            return;
+        }
         unbindAndStopService();
         bindToService();
     }
@@ -378,7 +385,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     Log.d(TAG, "ACTION_NODE_CHANGE: " + nodeInfo);
-                    getSelfInfo().batteryPercentage = nodeInfo.getBatteryPctLevel();
 
                     updateChannelMembers();
                     updateChannelStatus();
@@ -452,7 +458,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void awaitPendingMessageCountDownLatch() {
         boolean timedOut = false;
         try {
-            timedOut = mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            timedOut = !mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

@@ -252,7 +252,6 @@ public class ChannelTab {
             Toast.makeText(mAtakContext, "Updated channel settings from QR", Toast.LENGTH_SHORT).show();
             Log.e(TAG, "Updating channel settings: " + new String(channelNameBytes) + ", " + modemConfig + ", " + mHashHelper.hashFromBytes(psk));
 
-            mChannelTracker.clearData();
             mCommHardware.updateChannelSettings(new String(channelNameBytes), psk, modemConfig);
             mCommHardware.broadcastDiscoveryMessage();
 

@@ -43,6 +43,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     }
 
+    public interface MessageAckNackListener {
+        void onMessageAckNack(int msgId, boolean isAck);
+    }
+
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
 
     private static final int MESSAGE_AWAIT_TIMEOUT_MS = Config.MESSAGE_AWAIT_TIMEOUT_MS;
@@ -77,6 +81,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private ChannelTracker mChannelTracker;
     private ChannelListener mChannelListener;
     private ChannelSettingsListener mChannelSettingsListener;
+    private MessageAckNackListener mMessageAckNackListener;
     private Activity mActivity;
 
     IMeshService mMeshService;
@@ -138,6 +143,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     public void setChannelSettingsListener(ChannelSettingsListener listener) {
         mChannelSettingsListener = listener;
+    }
+
+    public void setMessageAckNackListener(MessageAckNackListener listener) {
+        mMessageAckNackListener = listener;
     }
 
     @Override
@@ -202,7 +211,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     public void connect() {
-                if (getConnectionState() == ConnectionState.CONNECTED) {
+        if (getConnectionState() == ConnectionState.CONNECTED) {
             Log.d(TAG, "connect: already connected");
             return;
         }
@@ -442,6 +451,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
+        mMessageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED);
+
         if (id != mPendingMessageId) {
             Log.e(TAG, "handleMessageStatusChange for a msg we don't care about msgId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
             return;

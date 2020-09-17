@@ -70,8 +70,9 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
         mHashHelper = hashHelper;
 
         mIsPskFresh.setValue(false);
-        commHardware.setChannelSettingsListener(this);
         mScreenMode.setValue(ScreenMode.DEFAULT);
+
+        commHardware.setChannelSettingsListener(this);
     }
 
     @Override

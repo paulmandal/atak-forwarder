@@ -10,6 +10,10 @@
 
     <string name="message_queue_length">MsgQ Len</string>
 
+    <string name="delivered_messages">Dlvd</string>
+    <string name="errored_messages">Err</string>
+    <string name="total_messages">Total</string>
+
     <string name="broadcast_discovery">Broadcast Discovery</string>
     <string name="paired">Paired</string>
 

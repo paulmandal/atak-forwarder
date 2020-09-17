@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="8dp"
     tools:parentTag="android.widget.RelativeLayout">
 
     <TextView
@@ -29,12 +28,63 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="8dp" />
 
+    <TextView
+        android:id="@+id/textview_total_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/label_message_queue_length" />
+
+    <TextView
+        android:id="@+id/label_total_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/textview_total_messages"
+        android:text="@string/total_messages" />
+
+    <TextView
+        android:id="@+id/textview_errored_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/label_total_messages" />
+
+    <TextView
+        android:id="@+id/label_errored_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/textview_errored_messages"
+        android:text="@string/errored_messages" />
+
+    <TextView
+        android:id="@+id/textview_delivered_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/label_errored_messages" />
+
+    <TextView
+        android:id="@+id/label_delivered_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/textview_delivered_messages"
+        android:text="@string/delivered_messages" />
+
     <ListView
         android:id="@+id/listview_channel_members"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/button_paired"
-        android:layout_below="@id/textview_connection_status"
+        android:layout_below="@id/textview_total_messages"
         android:layout_alignParentStart="true"
         android:paddingTop="8dp"
         android:paddingBottom="8dp" />

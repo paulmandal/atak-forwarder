@@ -19,6 +19,9 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewMode
 public class StatusTab extends RelativeLayout {
     private Context mAtakContext;
 
+    private TextView mChannelName;
+    private TextView mPskHash;
+    private TextView mModemConfig;
     private TextView mConnectionStatusTextView;
 
     private TextView mMessageQueueLengthTextView;
@@ -41,6 +44,10 @@ public class StatusTab extends RelativeLayout {
         inflate(context, R.layout.status_layout, this);
 
         mConnectionStatusTextView = findViewById(R.id.textview_connection_status);
+
+        mChannelName = findViewById(R.id.channel_name);
+        mPskHash = findViewById(R.id.psk_hash);
+        mModemConfig = findViewById(R.id.modem_config);
 
         mMessageQueueLengthTextView = findViewById(R.id.textview_message_queue_length);
         mDelieveredTextView = findViewById(R.id.textview_delivered_messages);
@@ -95,6 +102,9 @@ public class StatusTab extends RelativeLayout {
                 Toast.makeText(atakContext, String.format("%d errors in a row -- maybe out of range, verify your channel settings if you have not been getting messages", errorsInARow), Toast.LENGTH_LONG).show();
             }
         });
+        statusTabViewModel.getChannelName().observe(lifecycleOwner, channelName -> mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null));
+        statusTabViewModel.getPskHash().observe(lifecycleOwner, pskHash -> mPskHash.setText(pskHash));
+        statusTabViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
     }
 
     public void handleUnpaired() {

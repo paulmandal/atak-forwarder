@@ -128,7 +128,7 @@ public class ChannelTab extends RelativeLayout {
                 return;
             }
 
-            channelTabViewModel.showQr(mChannelQr);
+            channelTabViewModel.showQr();
         });
 
         mScanQrButton.setOnClickListener((View v) -> {

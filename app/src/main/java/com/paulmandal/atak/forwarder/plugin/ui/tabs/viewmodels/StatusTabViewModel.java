@@ -10,10 +10,11 @@ import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
 import java.util.List;
 
-public class StatusTabViewModel implements ChannelTracker.UpdateListener,
+public class StatusTabViewModel extends ChannelStatusViewModel implements ChannelTracker.UpdateListener,
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
         MeshtasticCommHardware.MessageAckNackListener {
@@ -31,7 +32,10 @@ public class StatusTabViewModel implements ChannelTracker.UpdateListener,
 
     public StatusTabViewModel(ChannelTracker channelTracker,
                               MeshtasticCommHardware commHardware,
-                              CommandQueue commandQueue) {
+                              CommandQueue commandQueue,
+                              HashHelper hashHelper) {
+        super(commHardware, hashHelper);
+
         mCommHardware = commHardware;
 
         mMessageQueueSize.setValue(0);

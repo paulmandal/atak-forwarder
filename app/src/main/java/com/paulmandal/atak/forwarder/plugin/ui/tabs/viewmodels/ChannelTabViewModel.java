@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,7 +26,7 @@ import java.security.SecureRandom;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
-public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettingsListener {
+public class ChannelTabViewModel extends ChannelStatusViewModel {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTabViewModel.class.getSimpleName();
 
     public enum ScreenMode {
@@ -49,10 +48,7 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private HashHelper mHashHelper;
 
     private MutableLiveData<ScreenMode> mScreenMode = new MutableLiveData<>();
-    private MutableLiveData<String> mChannelName = new MutableLiveData<>();
     private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
-    private MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
-    private MutableLiveData<String> mPskHash = new MutableLiveData<>();
     private MutableLiveData<Boolean> mIsPskFresh = new MutableLiveData<>();
     private MutableLiveData<Bitmap> mChannelQr = new MutableLiveData<>();
 
@@ -62,6 +58,8 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
                                ChannelTracker channelTracker,
                                QrHelper qrHelper,
                                HashHelper hashHelper) {
+        super(commHardware, hashHelper);
+
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mCommHardware = commHardware;
@@ -71,12 +69,12 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
         mIsPskFresh.setValue(false);
         mScreenMode.setValue(ScreenMode.DEFAULT);
-
-        commHardware.addChannelSettingsListener(this);
     }
 
     @Override
     public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
+        super.onChannelSettingsUpdated(channelName, psk, modemConfig);
+
         Byte[] pskByte = null;
         if (psk != null) {
             pskByte = new Byte[psk.length];
@@ -103,30 +101,12 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
             }
         }
 
-        mChannelName.setValue(channelName);
         mPsk.setValue(pskByte);
-        mModemConfig.setValue(modemConfig);
-        mPskHash.setValue(mHashHelper.hashFromBytes(psk));
    }
 
     @NonNull
     public LiveData<ScreenMode> getScreenMode() {
         return mScreenMode;
-    }
-
-    @Nullable
-    public LiveData<String> getChannelName() {
-        return mChannelName;
-    }
-
-    @Nullable
-    public LiveData<MeshProtos.ChannelSettings.ModemConfig> getModemConfig() {
-        return mModemConfig;
-    }
-
-    @Nullable
-    public LiveData<String> getPskHash() {
-        return mPskHash;
     }
 
     @NonNull
@@ -139,7 +119,7 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
         return mChannelQr;
     }
 
-    public void showQr(ImageView channelQr) {
+    public void showQr() {
         mScreenMode.setValue(ScreenMode.SHOW_QR);
     }
 
@@ -212,10 +192,10 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void clearData() {
+        super.clearData();
+
         mScreenMode.postValue(ScreenMode.DEFAULT);
-        mChannelName.postValue(null);
         mPsk.postValue(null);
-        mModemConfig.postValue(null);
         mIsPskFresh.postValue(false);
     }
 }

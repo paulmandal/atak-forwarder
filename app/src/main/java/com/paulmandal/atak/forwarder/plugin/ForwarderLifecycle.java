@@ -86,9 +86,10 @@ public class ForwarderLifecycle implements Lifecycle {
 
         Context atakContext = mMapView.getContext();
 
-        // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
-        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, (MeshtasticCommHardware) mCommHardware, commandQueue);
-        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, (MeshtasticCommHardware) mCommHardware, channelTracker, new QrHelper(), new HashHelper());
+        HashHelper hashHelper = new HashHelper();
+        // TODO: clean up ugly unchecked casts to MeshstaticCommHardware
+        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, (MeshtasticCommHardware) mCommHardware, commandQueue, hashHelper);
+        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, (MeshtasticCommHardware) mCommHardware, channelTracker, new QrHelper(), hashHelper);
 
         mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel));
 

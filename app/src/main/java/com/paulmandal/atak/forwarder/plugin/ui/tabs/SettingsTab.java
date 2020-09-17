@@ -25,10 +25,8 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     private CommandQueue mCommandQueue;
     private ChannelTracker mChannelTracker;
     private CommHardware mCommHardware;
-    private HashHelper mHashHelper;
 
     private TextView mConnectionStatusTextView;
-    private TextView mChannelName;
 
     private TextView mMessageQueueLengthTextView;
     private ListView mGroupMembersListView;
@@ -38,19 +36,16 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
                        Context atakContext,
                        ChannelTracker channelTracker,
                        CommHardware commHardware,
-                       CommandQueue commandQueue,
-                       HashHelper hashHelper) {
+                       CommandQueue commandQueue) {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCommandQueue = commandQueue;
-        mHashHelper = hashHelper;
     }
 
     public void init(View templateView) {
         mConnectionStatusTextView = templateView.findViewById(R.id.textview_connection_status);
-        mChannelName = templateView.findViewById(R.id.textview_channel_name);
 
         mMessageQueueLengthTextView = templateView.findViewById(R.id.textview_message_queue_length);
         mGroupMembersListView = templateView.findViewById(R.id.listview_channel_members);
@@ -75,8 +70,6 @@ public class SettingsTab implements ChannelTracker.UpdateListener,
     @Override
     @SuppressLint("DefaultLocale")
     public void onUpdated() {
-        byte[] psk = mChannelTracker.getPsk();
-        mChannelName.setText(String.format("#%s - %s - %d", mChannelTracker.getChannelName(), psk != null ? mHashHelper.hashFromBytes(psk) : null, mChannelTracker.getModemConfig() != null ? mChannelTracker.getModemConfig().getNumber() : -1));
         setupListView();
     }
 

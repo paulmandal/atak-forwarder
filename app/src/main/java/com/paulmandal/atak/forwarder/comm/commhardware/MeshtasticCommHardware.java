@@ -37,6 +37,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface ChannelListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
         void onChannelMembersUpdated(List<UserInfo> userInfoList);
+    }
+
+    public interface ChannelSettingsListener {
         void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     }
 
@@ -73,6 +76,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private ChannelTracker mChannelTracker;
     private ChannelListener mChannelListener;
+    private ChannelSettingsListener mChannelSettingsListener;
     private Activity mActivity;
 
     IMeshService mMeshService;
@@ -130,6 +134,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         filter.addAction(ACTION_MESSAGE_STATUS);
 
         mActivity.registerReceiver(mBroadcastReceiver, filter);
+    }
+
+    public void setChannelSettingsListener(ChannelSettingsListener listener) {
+        mChannelSettingsListener = listener;
     }
 
     @Override
@@ -356,7 +364,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
             MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-            mChannelListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
+            mChannelSettingsListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in updateChannelStatus(): " + e.getMessage());
             e.printStackTrace();

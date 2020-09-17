@@ -6,7 +6,6 @@ import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
-import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 
@@ -28,10 +27,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     private List<UserInfo> mUserInfoList;
 
-    private String mChannelName;
-    private byte[] mPsk;
-    private MeshProtos.ChannelSettings.ModemConfig mModemConfig;
-
     private List<UpdateListener> mUpdateListeners = new ArrayList<>();
 
     public ChannelTracker(Context atakContext,
@@ -49,15 +44,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public List<UserInfo> getUsers() {
         return mUserInfoList;
-    }
-    public String getChannelName() {
-        return mChannelName;
-    }
-    public byte[] getPsk() {
-        return mPsk;
-    }
-    public MeshProtos.ChannelSettings.ModemConfig getModemConfig() {
-        return mModemConfig;
     }
 
     @Override
@@ -114,15 +100,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         }
     }
 
-    @Override
-    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mChannelName = channelName;
-        mPsk = psk;
-        mModemConfig = modemConfig;
-
-        notifyListeners();
-    }
-
     public String getMeshIdForUid(String atakUid) {
         for (UserInfo userInfo : mUserInfoList) {
             if (userInfo.atakUid != null && userInfo.atakUid.equals(atakUid)) {
@@ -142,10 +119,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public void clearData() {
         mUserInfoList = new ArrayList<>();
-        mChannelName = null;
-        mPsk = null;
-        mModemConfig = null;
-
         notifyListeners();
     }
 

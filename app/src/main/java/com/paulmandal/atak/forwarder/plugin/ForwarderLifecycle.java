@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFactory;
 import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
@@ -26,6 +27,9 @@ import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
+import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,7 +82,12 @@ public class ForwarderLifecycle implements Lifecycle {
         MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue));
+        Context atakContext = mMapView.getContext();
+
+        // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
+        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, (MeshtasticCommHardware)mCommHardware, channelTracker, new QrHelper(), new HashHelper());
+
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, channelTabViewModel));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

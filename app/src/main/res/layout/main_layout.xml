@@ -26,7 +26,10 @@
 
                 <include layout="@layout/settings_layout" />
 
-                <include layout="@layout/channel_layout" />
+                <com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab
+                    android:id="@+id/tab_channel"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
 
                 <include layout="@layout/advanced_layout" />
 

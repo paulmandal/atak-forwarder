@@ -64,7 +64,6 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         // Set up the rest of the UI
         settingsTab.init(mTemplateView);
-        channelTab.init(mTemplateView);
         advancedTab.init(mTemplateView);
     }
 

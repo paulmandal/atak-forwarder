@@ -1,16 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tab_channel"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    tools:parentTag="android.widget.RelativeLayout">
+
+    <TextView
+        android:id="@+id/channel_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/psk_hash"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/channel_name"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/modem_config"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/psk_hash"
+        android:layout_alignParentTop="true" />
 
     <TextView
         android:id="@+id/label_channel_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/channel_name"
         android:text="@string/channel_name"
         android:visibility="gone" />
 
@@ -18,7 +40,7 @@
         android:id="@+id/edittext_channel_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/channel_name"
         android:layout_toEndOf="@id/label_channel_name"
         android:lines="1"
         android:maxLines="1"
@@ -84,12 +106,20 @@
         android:layout_centerHorizontal="true" />
 
     <Button
-        android:id="@+id/button_show_or_hide_channel_qr"
+        android:id="@+id/button_show_qr"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/show_channel_qr" />
+
+    <Button
+        android:id="@+id/button_hide_qr"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/hide_channel_qr" />
 
     <Button
         android:id="@+id/button_scan_channel_qr"
@@ -100,12 +130,20 @@
         android:text="@string/scan_channel_qr" />
 
     <Button
-        android:id="@+id/button_edit_or_save_channel"
+        android:id="@+id/button_edit_channel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/edit_channel" />
+
+    <Button
+        android:id="@+id/button_save_channel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/save" />
 
     <Button
         android:id="@+id/button_gen_psk"
@@ -115,4 +153,4 @@
         android:layout_alignParentBottom="true"
         android:text="@string/generate_new_psk"
         android:visibility="gone" />
-</RelativeLayout>
+</merge>

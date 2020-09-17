@@ -27,6 +27,7 @@ public class StatusTabViewModel implements ChannelTracker.UpdateListener,
     private MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
+    private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
     public StatusTabViewModel(ChannelTracker channelTracker,
                               MeshtasticCommHardware commHardware,
@@ -37,6 +38,7 @@ public class StatusTabViewModel implements ChannelTracker.UpdateListener,
         mTotalMessages.setValue(0);
         mErroredMessages.setValue(0);
         mDeliveredMessages.setValue(0);
+        mErrorsInARow.setValue(0);
 
         channelTracker.addUpdateListener(this);
         commandQueue.setListener(this);
@@ -89,6 +91,11 @@ public class StatusTabViewModel implements ChannelTracker.UpdateListener,
         return mDeliveredMessages;
     }
 
+    @NonNull
+    public LiveData<Integer> getErrorsInARow() {
+        return mErrorsInARow;
+    }
+
     public void connect() {
         mCommHardware.connect();
     }
@@ -101,8 +108,10 @@ public class StatusTabViewModel implements ChannelTracker.UpdateListener,
     public void onMessageAckNack(int msgId, boolean isAck) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         if (isAck) {
+            mErrorsInARow.setValue(0);
             mDeliveredMessages.setValue(mDeliveredMessages.getValue() + 1);
         } else {
+            mErrorsInARow.setValue(mErrorsInARow.getValue() + 1);
             mErroredMessages.setValue(mErroredMessages.getValue() + 1);
         }
     }

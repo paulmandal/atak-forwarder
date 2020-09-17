@@ -1,6 +1,8 @@
 package com.paulmandal.atak.forwarder.comm;
 
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.geeksville.mesh.MeshProtos;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
@@ -8,21 +10,34 @@ import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CotMessageCache {
+public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsListener {
     private StateStorage mStateStorage;
     private CotComparer mCotComparer;
 
     private List<CachedCotEvent> mCachedEvents;
     private int mPliCachePurgeTimeMs;
     private int mDefaultCachePurgeTimeMs;
+    private int mDataRateAwarePliCachePurgeTimeMs;
 
-    public CotMessageCache(StateStorage stateStorage, CotComparer cotComparer, int defaultCachePurgeTimeMs, int pliCachePurgeTimeMs) {
+    public CotMessageCache(StateStorage stateStorage,
+                           CotComparer cotComparer,
+                           MeshtasticCommHardware commHardware,
+                           int defaultCachePurgeTimeMs,
+                           int pliCachePurgeTimeMs) {
         mStateStorage = stateStorage;
         mCotComparer = cotComparer;
 
         mCachedEvents = new ArrayList<>();
         mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
         mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
+        mDataRateAwarePliCachePurgeTimeMs = pliCachePurgeTimeMs;
+
+        commHardware.addChannelSettingsListener(this);
+    }
+
+    @Override
+    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
+        mDataRateAwarePliCachePurgeTimeMs = mPliCachePurgeTimeMs * modemConfig.getNumber();
     }
 
     public boolean checkIfRecentlySent(CotEvent cotEvent) {
@@ -76,7 +91,7 @@ public class CotMessageCache {
         for (CachedCotEvent cachedCotEvent : mCachedEvents) {
             int purgeTime = mDefaultCachePurgeTimeMs;
             if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                purgeTime = mPliCachePurgeTimeMs;
+                purgeTime = mDataRateAwarePliCachePurgeTimeMs;
             }
             if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
                 purgeEvents.add(cachedCotEvent);

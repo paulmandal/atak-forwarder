@@ -72,7 +72,7 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
         mIsPskFresh.setValue(false);
         mScreenMode.setValue(ScreenMode.DEFAULT);
 
-        commHardware.setChannelSettingsListener(this);
+        commHardware.addChannelSettingsListener(this);
     }
 
     @Override

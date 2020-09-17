@@ -80,7 +80,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private ChannelTracker mChannelTracker;
     private ChannelListener mChannelListener;
-    private ChannelSettingsListener mChannelSettingsListener;
+    private List<ChannelSettingsListener> mChannelSettingsListeners = new ArrayList<>();
     private MessageAckNackListener mMessageAckNackListener;
     private Activity mActivity;
 
@@ -141,8 +141,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         mActivity.registerReceiver(mBroadcastReceiver, filter);
     }
 
-    public void setChannelSettingsListener(ChannelSettingsListener listener) {
-        mChannelSettingsListener = listener;
+    public void addChannelSettingsListener(ChannelSettingsListener listener) {
+        mChannelSettingsListeners.add(listener);
     }
 
     public void setMessageAckNackListener(MessageAckNackListener listener) {
@@ -373,7 +373,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
             MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-            mChannelSettingsListener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
+            for (ChannelSettingsListener listener : mChannelSettingsListeners) {
+                listener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
+            }
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in updateChannelStatus(): " + e.getMessage());
             e.printStackTrace();

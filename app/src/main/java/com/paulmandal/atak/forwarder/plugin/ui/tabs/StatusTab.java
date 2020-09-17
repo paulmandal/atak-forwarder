@@ -90,6 +90,11 @@ public class StatusTab extends RelativeLayout {
         statusTabViewModel.getDeliveredMessages().observe(lifecycleOwner, deliveredMessages -> mDelieveredTextView.setText(String.format("%d", deliveredMessages)));
         statusTabViewModel.getErroredMessages().observe(lifecycleOwner, erroredMessages -> mErroredTextView.setText(String.format("%d", erroredMessages)));
         statusTabViewModel.getTotalMessage().observe(lifecycleOwner, totalMessages -> mTotalTextView.setText(String.format("%d", totalMessages)));
+        statusTabViewModel.getErrorsInARow().observe(lifecycleOwner, errorsInARow -> {
+            if (errorsInARow > 1 && errorsInARow % 5 == 0) {
+                Toast.makeText(atakContext, String.format("%d errors in a row -- maybe out of range, verify your channel settings if you have not been getting messages", errorsInARow), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     public void handleUnpaired() {

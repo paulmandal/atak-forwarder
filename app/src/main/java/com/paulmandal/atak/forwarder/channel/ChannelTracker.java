@@ -17,7 +17,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTracker.class.getSimpleName();
 
     public interface UpdateListener {
-        void onUpdated();
+        void onUpdated(List<UserInfo> userInfoList);
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -124,7 +124,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     private void notifyListeners() {
         for (UpdateListener updateListener : mUpdateListeners) {
-            mUiThreadHandler.post(updateListener::onUpdated);
+            mUiThreadHandler.post(() -> updateListener.onUpdated(mUserInfoList));
         }
     }
 }

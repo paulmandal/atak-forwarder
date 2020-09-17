@@ -16,15 +16,13 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.StatusTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
     public static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
-
-    private SettingsTab mSettingsTab;
-    private AdvancedTab mAdvancedTab;
 
     private final View mTemplateView;
 
@@ -33,24 +31,21 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     public GroupManagementDropDownReceiver(final MapView mapView,
                                            final Context pluginContext,
                                            final Context atakContext,
+                                           final StatusTabViewModel statusTabViewModel,
                                            final ChannelTabViewModel channelTabViewModel,
-                                           final SettingsTab settingsTab,
                                            final AdvancedTab advancedTab) {
         super(mapView);
-        mSettingsTab = settingsTab;
-        mAdvancedTab = advancedTab;
-
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
         // In this case, using it is not necessary - but I am putting it here to remind
         // developers to look at this Inflator
         mTemplateView = PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null);
 
         // Set up tabs
-        TabHost tabs = (TabHost) mTemplateView.findViewById(R.id.tab_host);
+        TabHost tabs = mTemplateView.findViewById(R.id.tab_host);
         tabs.setup();
 
         TabHost.TabSpec spec = tabs.newTabSpec("tab_settings");
-        spec.setContent(R.id.tab_settings);
+        spec.setContent(R.id.tab_status);
         spec.setIndicator("Settings");
         tabs.addTab(spec);
 
@@ -65,10 +60,11 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         tabs.addTab(spec);
 
         // Set up the rest of the UI
-        settingsTab.init(mTemplateView);
+        StatusTab statusTab = mTemplateView.findViewById(R.id.tab_status);
+        statusTab.bind((LifecycleOwner) atakContext, statusTabViewModel, pluginContext, atakContext);
         ChannelTab channelTab = mTemplateView.findViewById(R.id.tab_channel);
         channelTab.bind((LifecycleOwner) atakContext, channelTabViewModel, pluginContext, atakContext);
-        advancedTab.init(mTemplateView);
+        advancedTab.bind(mTemplateView);
     }
 
     public void disposeImpl() {

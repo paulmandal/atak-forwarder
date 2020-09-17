@@ -13,8 +13,8 @@ import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 public class GroupManagementMapComponent extends DropDownMapComponent {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementMapComponent.class.getSimpleName();
@@ -25,17 +25,20 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
+    private StatusTabViewModel mStatusTabViewModel;
     private ChannelTabViewModel mChannelTabViewModel;
 
     public GroupManagementMapComponent(ChannelTracker channelTracker,
                                        CommHardware commHardware,
                                        CotMessageCache cotMessageCache,
                                        CommandQueue commandQueue,
+                                       StatusTabViewModel statusTabViewModel,
                                        ChannelTabViewModel channelTabViewModel) {
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
         mCommandQueue = commandQueue;
+        mStatusTabViewModel= statusTabViewModel;
         mChannelTabViewModel = channelTabViewModel;
     }
 
@@ -46,14 +49,13 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
 
         Context atakContext = mapView.getContext();
 
-        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue);
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
 
         GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,
                 pluginContext,
                 atakContext,
+                mStatusTabViewModel,
                 mChannelTabViewModel,
-                settingsTab,
                 advancedTab);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();

@@ -28,8 +28,6 @@ import java.util.Map;
 public class ChannelTab extends RelativeLayout {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTab.class.getSimpleName();
 
-    private ChannelTabViewModel mChannelTabViewModel;
-
     private TextView mChannelName;
     private TextView mPskHash;
     private TextView mModemConfig;
@@ -94,8 +92,6 @@ public class ChannelTab extends RelativeLayout {
                      ChannelTabViewModel channelTabViewModel,
                      Context pluginContext,
                      Context atakContext) {
-        mChannelTabViewModel = channelTabViewModel;
-        
         channelTabViewModel.getChannelName().observe(lifecycleOwner, channelName -> {
             mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null);
 

@@ -92,7 +92,8 @@ public class CommandQueue {
     @Nullable
     public QueuedCommand popHighestPriorityCommand(boolean isConnected) {
         QueuedCommand highestPriorityCommand = null;
-        int messageQueueSize;
+        int messageQueueSize = 0;
+        boolean messageQueueSizeChanged = false;
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 
@@ -114,20 +115,16 @@ public class CommandQueue {
 
             if (highestPriorityCommand != null) {
                 mQueuedCommands.remove(highestPriorityCommand);
+                messageQueueSize = mQueuedCommands.size();
+                messageQueueSizeChanged = true;
             }
-
-            messageQueueSize = mQueuedCommands.size();
         }
 
-        notifyListener(messageQueueSize);
+        if (messageQueueSizeChanged) {
+            notifyListener(messageQueueSize);
+        }
 
         return highestPriorityCommand;
-    }
-
-    public int getQueueSize() {
-        synchronized (mQueuedCommands) {
-            return mQueuedCommands.size();
-        }
     }
 
     public void clearData() {

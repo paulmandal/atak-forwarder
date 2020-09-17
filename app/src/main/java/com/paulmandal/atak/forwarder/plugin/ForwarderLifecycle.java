@@ -30,6 +30,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,9 +86,10 @@ public class ForwarderLifecycle implements Lifecycle {
         Context atakContext = mMapView.getContext();
 
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
+        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, mCommHardware, commandQueue);
         ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, (MeshtasticCommHardware)mCommHardware, channelTracker, new QrHelper(), new HashHelper());
 
-        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, channelTabViewModel));
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

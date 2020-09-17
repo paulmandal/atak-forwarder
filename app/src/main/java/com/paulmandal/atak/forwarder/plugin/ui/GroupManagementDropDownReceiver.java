@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.TabHost;
 
+import androidx.lifecycle.LifecycleOwner;
+
 import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.dropdown.DropDown;
 import com.atakmap.android.dropdown.DropDownReceiver;
@@ -15,13 +17,13 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 
 public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
     public static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
     private SettingsTab mSettingsTab;
-    private ChannelTab mChannelTab;
     private AdvancedTab mAdvancedTab;
 
     private final View mTemplateView;
@@ -30,12 +32,12 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
     public GroupManagementDropDownReceiver(final MapView mapView,
                                            final Context pluginContext,
+                                           final Context atakContext,
+                                           final ChannelTabViewModel channelTabViewModel,
                                            final SettingsTab settingsTab,
-                                           final ChannelTab channelTab,
                                            final AdvancedTab advancedTab) {
         super(mapView);
         mSettingsTab = settingsTab;
-        mChannelTab = channelTab;
         mAdvancedTab = advancedTab;
 
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
@@ -64,6 +66,8 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         // Set up the rest of the UI
         settingsTab.init(mTemplateView);
+        ChannelTab channelTab = mTemplateView.findViewById(R.id.tab_channel);
+        channelTab.bind((LifecycleOwner) atakContext, channelTabViewModel, pluginContext, atakContext);
         advancedTab.init(mTemplateView);
     }
 

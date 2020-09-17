@@ -29,7 +29,8 @@
                 <com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab
                     android:id="@+id/tab_channel"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
+                    android:layout_height="match_parent"
+                    android:layout_margin="8dp" />
 
                 <include layout="@layout/advanced_layout" />
 

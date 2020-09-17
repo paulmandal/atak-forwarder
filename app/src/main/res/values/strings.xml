@@ -14,6 +14,7 @@
     <string name="paired">Paired</string>
 
     <!-- ChannelTab -->
+    <string name="channel_psk_modem_seperator">/</string>
     <string name="channel_name">Channel Name</string>
 
     <string name="edit_channel">Edit Channel</string>

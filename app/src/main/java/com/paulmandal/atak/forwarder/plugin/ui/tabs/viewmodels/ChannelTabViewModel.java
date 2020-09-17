@@ -76,7 +76,6 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
     @Override
     public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        Log.d(TAG, "onChannelSettingsUpdated: " + channelName);
         Byte[] pskByte = null;
         if (psk != null) {
             pskByte = new Byte[psk.length];
@@ -189,11 +188,12 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
         random.nextBytes(psk);
 
         Byte[] pskByte = new Byte[PSK_LENGTH];
-        System.arraycopy(psk, 0, pskByte, 0, PSK_LENGTH);
+        for (int i = 0 ; i < PSK_LENGTH ; i++) {
+            pskByte[i] = psk[i];
+        }
 
         mPsk.setValue(pskByte);
         mIsPskFresh.setValue(true);
-        mPskHash.setValue(mHashHelper.hashFromBytes(psk));
     }
 
     public void saveChannelSettings(String channelName, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
@@ -201,7 +201,9 @@ public class ChannelTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
         Byte[] pskByte = mPsk.getValue();
         byte[] psk = new byte[pskByte.length];
-        System.arraycopy(pskByte, 0, psk, 0, pskByte.length);
+        for (int i = 0 ; i < pskByte.length ; i++) {
+            psk[i] = pskByte[i];
+        }
 
         mChannelTracker.clearData();
         mCommHardware.updateChannelSettings(channelName, psk, modemConfig);

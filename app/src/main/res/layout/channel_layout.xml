@@ -14,25 +14,45 @@
         android:layout_alignParentTop="true" />
 
     <TextView
+        android:id="@+id/channel_name_psk_seperator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/channel_name"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/channel_psk_modem_seperator" />
+
+    <TextView
         android:id="@+id/psk_hash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/channel_name"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/channel_name_psk_seperator" />
+
+    <TextView
+        android:id="@+id/psk_modem_seperator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/psk_hash"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/channel_psk_modem_seperator" />
 
     <TextView
         android:id="@+id/modem_config"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/psk_hash"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/psk_modem_seperator" />
 
     <TextView
         android:id="@+id/label_channel_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
         android:layout_below="@id/channel_name"
+        android:layout_alignParentStart="true"
         android:text="@string/channel_name"
         android:visibility="gone" />
 

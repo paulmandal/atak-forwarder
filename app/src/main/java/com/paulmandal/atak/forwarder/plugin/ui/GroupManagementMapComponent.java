@@ -3,8 +3,6 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 import android.content.Context;
 import android.content.Intent;
 
-import androidx.lifecycle.LifecycleOwner;
-
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
@@ -15,7 +13,6 @@ import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 
@@ -50,15 +47,13 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
         Context atakContext = mapView.getContext();
 
         SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue);
-        ChannelTab channelTab = new ChannelTab(pluginContext);
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
-
-        channelTab.bind((LifecycleOwner) atakContext, mChannelTabViewModel, pluginContext, atakContext);
 
         GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,
                 pluginContext,
+                atakContext,
+                mChannelTabViewModel,
                 settingsTab,
-                channelTab,
                 advancedTab);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();

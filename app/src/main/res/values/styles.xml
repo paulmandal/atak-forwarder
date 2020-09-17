@@ -10,7 +10,6 @@
         <item name="android:editTextStyle">@style/ATAKEditText</item>
     </style>
 
-
     <style name="ATAKTheme" parent="@android:style/Theme.Holo">
 
         <!--

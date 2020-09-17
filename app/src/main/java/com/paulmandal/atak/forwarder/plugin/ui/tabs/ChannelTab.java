@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -98,15 +97,23 @@ public class ChannelTab extends RelativeLayout {
         mChannelTabViewModel = channelTabViewModel;
         
         channelTabViewModel.getChannelName().observe(lifecycleOwner, channelName -> {
-            Log.d(TAG, "Updating channelName view: " + channelName);
-            String channelNameWithOctothorpe = channelName != null ? String.format("#%s", channelName) : null;
-            mChannelNameEditText.setText(channelNameWithOctothorpe);
-            mChannelName.setText(channelNameWithOctothorpe);
+            mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null);
+
+            // Do not update channel info while editing
+            if (channelTabViewModel.getScreenMode().getValue() == ChannelTabViewModel.ScreenMode.EDIT_CHANNEL) {
+                return;
+            }
+            mChannelNameEditText.setText(channelName);
         });
         channelTabViewModel.getPskHash().observe(lifecycleOwner, pskHash -> mPskHash.setText(pskHash));
         channelTabViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> {
-            mModemSettingRadioGroup.check(getRadioButtonForModemConfig(modemConfig));
             mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null);
+
+            // Do not update channel info while editing
+            if (channelTabViewModel.getScreenMode().getValue() == ChannelTabViewModel.ScreenMode.EDIT_CHANNEL) {
+                return;
+            }
+            mModemSettingRadioGroup.check(getRadioButtonForModemConfig(modemConfig));
         });
         channelTabViewModel.getScreenMode().observe(lifecycleOwner, this::setScreenMode);
         channelTabViewModel.isPskFresh().observe(lifecycleOwner, isPskFresh -> {
@@ -164,14 +171,14 @@ public class ChannelTab extends RelativeLayout {
     private void setScreenMode(ChannelTabViewModel.ScreenMode screenMode) {
         switch (screenMode) {
             case DEFAULT:
-                mChannelNameLabel.setVisibility(View.GONE);
-                mChannelNameEditText.setVisibility(View.GONE);
-                mChannelQr.setVisibility(View.GONE);
-                mModemSettingRadioGroup.setVisibility(View.GONE);
-                mPskStatusTextView.setVisibility(View.GONE);
-                mHideQrButton.setVisibility(View.GONE);
-                mSaveChannelButton.setVisibility(View.GONE);
-                mGenPskButton.setVisibility(View.GONE);
+                mChannelNameLabel.setVisibility(View.INVISIBLE);
+                mChannelNameEditText.setVisibility(View.INVISIBLE);
+                mChannelQr.setVisibility(View.INVISIBLE);
+                mModemSettingRadioGroup.setVisibility(View.INVISIBLE);
+                mPskStatusTextView.setVisibility(View.INVISIBLE);
+                mHideQrButton.setVisibility(View.INVISIBLE);
+                mSaveChannelButton.setVisibility(View.INVISIBLE);
+                mGenPskButton.setVisibility(View.INVISIBLE);
 
                 mChannelName.setVisibility(View.VISIBLE);
                 mPskHash.setVisibility(View.VISIBLE);
@@ -182,19 +189,19 @@ public class ChannelTab extends RelativeLayout {
                 mEditChannelButton.setVisibility(View.VISIBLE);
                 break;
             case SCAN_QR:
-                mShowQrButton.setVisibility(View.GONE);
-                mHideQrButton.setVisibility(View.GONE);
-                mEditChannelButton.setVisibility(View.GONE);
-                mSaveChannelButton.setVisibility(View.GONE);
+                mShowQrButton.setVisibility(View.INVISIBLE);
+                mHideQrButton.setVisibility(View.INVISIBLE);
+                mEditChannelButton.setVisibility(View.INVISIBLE);
+                mSaveChannelButton.setVisibility(View.INVISIBLE);
                 break;
             case SHOW_QR:
                 mChannelQr.setVisibility(View.VISIBLE);
                 mHideQrButton.setVisibility(View.VISIBLE);
 
-                mShowQrButton.setVisibility(View.GONE);
-                mScanQrButton.setVisibility(View.GONE);
-                mEditChannelButton.setVisibility(View.GONE);
-                mSaveChannelButton.setVisibility(View.GONE);
+                mShowQrButton.setVisibility(View.INVISIBLE);
+                mScanQrButton.setVisibility(View.INVISIBLE);
+                mEditChannelButton.setVisibility(View.INVISIBLE);
+                mSaveChannelButton.setVisibility(View.INVISIBLE);
                 break;
             case EDIT_CHANNEL:
                 mChannelNameLabel.setVisibility(View.VISIBLE);
@@ -202,10 +209,12 @@ public class ChannelTab extends RelativeLayout {
                 mModemSettingRadioGroup.setVisibility(View.VISIBLE);
                 mPskStatusTextView.setVisibility(View.VISIBLE);
                 mGenPskButton.setVisibility(View.VISIBLE);
+                mSaveChannelButton.setVisibility(View.VISIBLE);
 
-                mShowQrButton.setVisibility(View.GONE);
-                mHideQrButton.setVisibility(View.GONE);
-                mScanQrButton.setVisibility(View.GONE);
+                mEditChannelButton.setVisibility(INVISIBLE);
+                mShowQrButton.setVisibility(View.INVISIBLE);
+                mHideQrButton.setVisibility(View.INVISIBLE);
+                mScanQrButton.setVisibility(View.INVISIBLE);
                 break;
         }
     }

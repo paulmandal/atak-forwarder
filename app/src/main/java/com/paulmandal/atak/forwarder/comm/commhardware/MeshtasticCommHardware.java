@@ -24,7 +24,6 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 
@@ -208,7 +207,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             mMeshService.setRadioConfig(radioConfig.toByteArray());
             updateChannelStatus();
         } catch (RemoteException | InvalidProtocolBufferException e) {
-            Log.e(TAG, "Exception in handleUpdateChannel(): " + e.getMessage());
+            Log.e(TAG, "Exception in updateChannelSettings(): " + e.getMessage());
             e.printStackTrace();
         }
     }

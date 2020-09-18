@@ -86,6 +86,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
+
     private CountDownLatch mPendingMessageCountdownLatch; // TODO: maybe move this up to MessageLengthLimitedCommHardware
     private int mPendingMessageId;
     private boolean mPendingMessageReceived;
@@ -94,6 +95,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     boolean mBound = false;
     boolean mRadioSetupCalled = false;
+
+    private int mDataRate;
 
     public MeshtasticCommHardware(Handler handler,
                                   ChannelListener channelListener,
@@ -151,7 +154,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected boolean sendMessageSegment(byte[] message, String targetId) {
-        prepareToSendMessage();
+        prepareToSendMessage(message.length);
 
         DataPacket dataPacket = new DataPacket(targetId, message);
         try {
@@ -373,6 +376,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
             MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
+            mDataRate = channelSettings.getModemConfig().getNumber();
+
             for (ChannelSettingsListener listener : mChannelSettingsListeners) {
                 listener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
             }
@@ -471,7 +476,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     /**
      * Message Utils
      */
-    private void prepareToSendMessage() {
+    private void prepareToSendMessage(int messageSize) {
         mPendingMessageReceived = false;
         mPendingMessageCountdownLatch = new CountDownLatch(1);
     }
@@ -479,7 +484,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void awaitPendingMessageCountDownLatch() {
         boolean timedOut = false;
         try {
-            timedOut = !mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS, TimeUnit.MILLISECONDS);
+            timedOut = !mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS * (mDataRate + 1), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

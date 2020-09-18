@@ -44,7 +44,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     public interface MessageAckNackListener {
-        void onMessageAckNack(int msgId, boolean isAck);
+        void onMessageAckNack(int messageId, boolean isAck);
+        void onMessageTimedOut(int messageId);
     }
 
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
@@ -160,7 +161,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
-            Log.d(TAG, "sendMessageSegment() waiting for ACK/NACK for msgId: " + dataPacket.getId());
+            Log.d(TAG, "sendMessageSegment() waiting for ACK/NACK for messageId: " + dataPacket.getId());
         } catch (RemoteException e) {
             Log.e(TAG, "sendMessageSegment, RemoteException: " + e.getMessage());
             e.printStackTrace();
@@ -430,7 +431,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                         if (message.startsWith(BCAST_MARKER)) {
                             handleDiscoveryMessage(message);
                         } else {
-                            handleMessageChunk(payload.getFrom(), payload.getBytes());
+                            handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
                         }
                     } else {
                         Log.e(TAG, "Unknown payload type: " + payload.getDataType());
@@ -461,7 +462,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         mMessageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED);
 
         if (id != mPendingMessageId) {
-            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about msgId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
+            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about messageId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
             return;
         }
 
@@ -491,6 +492,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         if(timedOut) {
             Log.e(TAG, "Timed out waiting for message ACK/NACK for: " + mPendingMessageId);
+            mMessageAckNackListener.onMessageTimedOut(mPendingMessageId);
         }
     }
 }

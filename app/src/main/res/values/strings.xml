@@ -11,6 +11,8 @@
     <string name="message_queue_length">MsgQ Len</string>
 
     <string name="delivered_messages">Dlvd</string>
+    <string name="received_messages">Rcvd</string>
+    <string name="timed_out_messages">T/O</string>
     <string name="errored_messages">Err</string>
     <string name="total_messages">Total</string>
 

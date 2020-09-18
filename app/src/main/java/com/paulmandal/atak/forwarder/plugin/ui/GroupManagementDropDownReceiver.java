@@ -44,9 +44,9 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         TabHost tabs = mTemplateView.findViewById(R.id.tab_host);
         tabs.setup();
 
-        TabHost.TabSpec spec = tabs.newTabSpec("tab_settings");
+        TabHost.TabSpec spec = tabs.newTabSpec("tab_status");
         spec.setContent(R.id.tab_status);
-        spec.setIndicator("Settings");
+        spec.setIndicator("Status");
         tabs.addTab(spec);
 
         spec = tabs.newTabSpec("tab_channel");

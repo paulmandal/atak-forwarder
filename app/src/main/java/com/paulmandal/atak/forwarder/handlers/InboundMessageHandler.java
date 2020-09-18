@@ -32,7 +32,7 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
     }
 
     @Override
-    public void onMessageReceived(byte[] message) {
+    public void onMessageReceived(int messageId, byte[] message) {
         Thread messageConversionAndDispatchThread = new Thread(() -> {
             CotEvent cotEvent = mCotEventProtobufConverter.toCotEvent(message);
 

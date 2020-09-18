@@ -36,7 +36,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         sendMessageToUserOrGroup(sendMessageCommand);
     }
 
-    protected void handleMessageChunk(String meshId, byte[] messageChunk) {
+    protected void handleMessageChunk(int messageId, String meshId, byte[] messageChunk) {
         int messageIndex = messageChunk[0] >> 4 & 0x0f;
         int messageCount = messageChunk[0] & 0x0f;
 
@@ -46,10 +46,10 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {
             chunk[idx] = messageChunk[i];
         }
-        handleMessageChunk(meshId, messageIndex, messageCount, chunk);
+        handleMessageChunk(messageId, meshId, messageIndex, messageCount, chunk);
     }
 
-    private void handleMessageChunk(String meshId, int messageIndex, int messageCount, byte[] messageChunk) {
+    private void handleMessageChunk(int messageId, String meshId, int messageIndex, int messageCount, byte[] messageChunk) {
         synchronized (mIncomingMessages) { // TODO: better sync block?
             List<MessageChunk> incomingMessagesFromUser = mIncomingMessages.get(meshId);
             if (incomingMessagesFromUser == null) {
@@ -84,7 +84,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
                         message[idx] = messagePieces[i][j];
                     }
                 }
-                notifyMessageListeners(message);
+                notifyMessageListeners(messageId, message);
             }
         }
     }

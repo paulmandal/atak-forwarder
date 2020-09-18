@@ -25,7 +25,9 @@ public class StatusTab extends RelativeLayout {
     private TextView mConnectionStatusTextView;
 
     private TextView mMessageQueueLengthTextView;
+    private TextView mReceivedTextView;
     private TextView mDelieveredTextView;
+    private TextView mTimedOutTextView;
     private TextView mErroredTextView;
     private TextView mTotalTextView;
     private ListView mGroupMembersListView;
@@ -50,7 +52,9 @@ public class StatusTab extends RelativeLayout {
         mModemConfig = findViewById(R.id.modem_config);
 
         mMessageQueueLengthTextView = findViewById(R.id.textview_message_queue_length);
+        mReceivedTextView = findViewById(R.id.textview_received_messages);
         mDelieveredTextView = findViewById(R.id.textview_delivered_messages);
+        mTimedOutTextView = findViewById(R.id.textview_timed_out_messages);
         mErroredTextView = findViewById(R.id.textview_errored_messages);
         mTotalTextView = findViewById(R.id.textview_total_messages);
         mGroupMembersListView = findViewById(R.id.listview_channel_members);
@@ -94,7 +98,9 @@ public class StatusTab extends RelativeLayout {
             mGroupMembersListView.setAdapter(groupMemberDataAdapter);
         });
 
+        statusTabViewModel.getReceivedMessages().observe(lifecycleOwner, receivedMessages -> mReceivedTextView.setText(String.format("%d", receivedMessages)));
         statusTabViewModel.getDeliveredMessages().observe(lifecycleOwner, deliveredMessages -> mDelieveredTextView.setText(String.format("%d", deliveredMessages)));
+        statusTabViewModel.getTimedOutMessages().observe(lifecycleOwner, timedOutMessages -> mTimedOutTextView.setText(String.format("%d", timedOutMessages)));
         statusTabViewModel.getErroredMessages().observe(lifecycleOwner, erroredMessages -> mErroredTextView.setText(String.format("%d", erroredMessages)));
         statusTabViewModel.getTotalMessage().observe(lifecycleOwner, totalMessages -> mTotalTextView.setText(String.format("%d", totalMessages)));
         statusTabViewModel.getErrorsInARow().observe(lifecycleOwner, errorsInARow -> {

@@ -105,12 +105,29 @@
         android:text="@string/errored_messages" />
 
     <TextView
-        android:id="@+id/textview_delivered_messages"
+        android:id="@+id/textview_timed_out_messages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
         android:layout_marginEnd="8dp"
         android:layout_toStartOf="@id/label_errored_messages" />
+
+    <TextView
+        android:id="@+id/label_timed_out_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/textview_timed_out_messages"
+        android:text="@string/timed_out_messages" />
+
+    <TextView
+        android:id="@+id/textview_delivered_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/label_timed_out_messages" />
 
     <TextView
         android:id="@+id/label_delivered_messages"
@@ -120,6 +137,23 @@
         android:layout_marginEnd="8dp"
         android:layout_toStartOf="@id/textview_delivered_messages"
         android:text="@string/delivered_messages" />
+
+    <TextView
+        android:id="@+id/textview_received_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/label_delivered_messages" />
+
+    <TextView
+        android:id="@+id/label_received_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/textview_total_messages"
+        android:layout_marginEnd="8dp"
+        android:layout_toStartOf="@id/textview_received_messages"
+        android:text="@string/received_messages" />
 
     <ListView
         android:id="@+id/listview_channel_members"

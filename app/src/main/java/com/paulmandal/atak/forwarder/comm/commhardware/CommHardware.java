@@ -30,7 +30,7 @@ public abstract class CommHardware {
     }
 
     public interface MessageListener {
-        void onMessageReceived(byte[] message);
+        void onMessageReceived(int messageId, byte[] message);
     }
 
     public interface ConnectionStateListener {
@@ -88,6 +88,7 @@ public abstract class CommHardware {
     public void destroy() {
         mDestroyed = true;
     }
+
     /**
      * Listener Management
      */
@@ -168,9 +169,9 @@ public abstract class CommHardware {
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 
-    protected void notifyMessageListeners(byte[] message) {
+    protected void notifyMessageListeners(int messageId, byte[] message) {
         for (MessageListener listener : mMessageListeners) {
-            mHandler.post(() -> listener.onMessageReceived(message));
+            mHandler.post(() -> listener.onMessageReceived(messageId, message));
         }
     }
 

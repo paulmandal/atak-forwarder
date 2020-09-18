@@ -17,7 +17,8 @@ import java.util.List;
 public class StatusTabViewModel extends ChannelStatusViewModel implements ChannelTracker.UpdateListener,
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
-        MeshtasticCommHardware.MessageAckNackListener {
+        MeshtasticCommHardware.MessageAckNackListener,
+        CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + StatusTabViewModel.class.getSimpleName();
 
     private CommHardware mCommHardware;
@@ -28,6 +29,8 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
     private MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
+    private MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
+    private MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
     public StatusTabViewModel(ChannelTracker channelTracker,
@@ -43,11 +46,14 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
         mErroredMessages.setValue(0);
         mDeliveredMessages.setValue(0);
         mErrorsInARow.setValue(0);
+        mTimedOutMessages.setValue(0);
+        mReceivedMessages.setValue(0);
 
         channelTracker.addUpdateListener(this);
         commandQueue.setListener(this);
         commHardware.addConnectionStateListener(this);
         commHardware.setMessageAckNackListener(this);
+        commHardware.addMessageListener(this);
     }
 
     @Override
@@ -86,8 +92,18 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
     }
 
     @NonNull
+    public LiveData<Integer> getTimedOutMessages() {
+        return mTimedOutMessages;
+    }
+
+    @NonNull
     public LiveData<Integer> getErroredMessages() {
         return mErroredMessages;
+    }
+
+    @NonNull
+    public LiveData<Integer> getReceivedMessages() {
+        return mReceivedMessages;
     }
 
     @NonNull
@@ -109,7 +125,7 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
     }
 
     @Override
-    public void onMessageAckNack(int msgId, boolean isAck) {
+    public void onMessageAckNack(int messageId, boolean isAck) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         if (isAck) {
             mErrorsInARow.setValue(0);
@@ -118,5 +134,16 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
             mErrorsInARow.setValue(mErrorsInARow.getValue() + 1);
             mErroredMessages.setValue(mErroredMessages.getValue() + 1);
         }
+    }
+
+    @Override
+    public void onMessageTimedOut(int messageId) {
+        mTotalMessages.setValue(mTotalMessages.getValue() + 1);
+        mTimedOutMessages.setValue(mTimedOutMessages.getValue() + 1);
+    }
+
+    @Override
+    public void onMessageReceived(int messageId, byte[] message) {
+        mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
     }
 }

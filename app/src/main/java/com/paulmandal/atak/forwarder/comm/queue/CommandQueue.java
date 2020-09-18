@@ -8,7 +8,6 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 
 import java.util.ArrayList;
@@ -44,18 +43,8 @@ public class CommandQueue {
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
                 if (commandToQueue.commandType == queuedCommand.commandType) {
-                    // Do not create duplicates for broadcasting discovery, and connect/disconnect from device
-                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                            || commandToQueue.commandType == CommandType.SCAN_FOR_COMM_DEVICE) {
-                        return;
-                    }
-
-                    if (commandToQueue.commandType == CommandType.UPDATE_CHANNEL) {
-                        UpdateChannelCommand queuedCommandAsUpdateChannel = (UpdateChannelCommand) queuedCommand;
-                        UpdateChannelCommand commandToQueueAsUpdateChannel = (UpdateChannelCommand) commandToQueue;
-
-                        queuedCommandAsUpdateChannel.channelName = commandToQueueAsUpdateChannel.channelName;
-                        queuedCommandAsUpdateChannel.psk = commandToQueueAsUpdateChannel.psk;
+                    // Do not create duplicates for broadcasting discovery
+                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG) {
                         return;
                     }
                 }
@@ -99,8 +88,7 @@ public class CommandQueue {
 
                 if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
                         || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
-                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL
-                        || queuedCommand.commandType == CommandType.UPDATE_CHANNEL)) {
+                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL)) {
                     // Ignore commands that require connectivity
                     continue;
                 }

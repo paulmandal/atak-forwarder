@@ -71,19 +71,6 @@ public abstract class CommHardware {
         broadcastDiscoveryMessage(false);
     }
 
-//    public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-//        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk, modemConfig));
-//    }
-
-//    public void connect() {
-//        if (mConnectionState == ConnectionState.CONNECTED) {
-//            Log.d(TAG, "connect: already connected");
-//            return;
-//        }
-//
-//        mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
-//    }
-
     @CallSuper
     public void destroy() {
         mDestroyed = true;
@@ -124,14 +111,8 @@ public abstract class CommHardware {
                 }
 
                 switch (queuedCommand.commandType) {
-                    case SCAN_FOR_COMM_DEVICE:
-//                        handleScanForCommDevice();
-                        break;
                     case BROADCAST_DISCOVERY_MSG:
                         handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
-                        break;
-                    case UPDATE_CHANNEL:
-//                        handleUpdateChannel((UpdateChannelCommand) queuedCommand);
                         break;
                     case SEND_TO_CHANNEL:
                     case SEND_TO_INDIVIDUAL:

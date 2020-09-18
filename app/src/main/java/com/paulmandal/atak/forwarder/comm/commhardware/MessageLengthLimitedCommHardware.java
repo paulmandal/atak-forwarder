@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
+
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
@@ -120,20 +122,27 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         }
 
         if (toUIDs == null) {
-            sendMessagesToGroup(messages);
+            sendMessagesToGroup(messages, sendMessageCommand.cotEvent.getType().equals(TYPE_PLI));
         } else {
             sendMessagesToUsers(messages, toUIDs);
         }
     }
 
-    private void sendMessagesToGroup(byte[][] messages) {
+    private void sendMessagesToGroup(byte[][] messages, boolean isPli) {
         for (int i = 0; i < messages.length; i++) {
             byte[] message = messages[i];
             String groupId = DataPacket.ID_BROADCAST;
 
             Log.d(TAG, "---> sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
 
-            if (!sendMessageSegment(message, groupId)) {
+            boolean messageSent = sendMessageSegment(message, groupId);
+
+            if (!messageSent && isPli) {
+                // Do not attempt to re-send PLIs
+                return;
+            }
+
+            if (!messageSent) {
                 i--;
             }
 

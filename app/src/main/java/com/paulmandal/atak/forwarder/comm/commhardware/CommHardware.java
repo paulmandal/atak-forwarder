@@ -37,7 +37,7 @@ public abstract class CommHardware {
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
-    private Handler mHandler;
+    private Handler mUiThreadHandler;
 
     private final CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
@@ -56,7 +56,7 @@ public abstract class CommHardware {
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
                         UserInfo selfInfo) {
-        mHandler = uiThreadHandler;
+        mUiThreadHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mSelfInfo = selfInfo;
@@ -152,13 +152,13 @@ public abstract class CommHardware {
 
     protected void notifyMessageListeners(int messageId, byte[] message) {
         for (MessageListener listener : mMessageListeners) {
-            mHandler.post(() -> listener.onMessageReceived(messageId, message));
+            mUiThreadHandler.post(() -> listener.onMessageReceived(messageId, message));
         }
     }
 
     protected void notifyConnectionStateListeners(ConnectionState connectionState) {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
-            mHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
+            mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
         }
     }
     /**

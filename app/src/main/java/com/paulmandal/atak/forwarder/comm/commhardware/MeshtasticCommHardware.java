@@ -83,6 +83,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private List<ChannelSettingsListener> mChannelSettingsListeners = new ArrayList<>();
     private MessageAckNackListener mMessageAckNackListener;
     private Activity mActivity;
+    private Handler mUiThreadHandler;
 
     IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
@@ -98,15 +99,16 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private int mDataRate;
 
-    public MeshtasticCommHardware(Handler handler,
+    public MeshtasticCommHardware(Handler uiThreadHandler,
                                   ChannelListener channelListener,
                                   ChannelTracker channelTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   Activity activity,
                                   UserInfo selfInfo) {
-        super(handler, commandQueue, queuedCommandFactory, channelTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
+        super(uiThreadHandler, commandQueue, queuedCommandFactory, channelTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
+        mUiThreadHandler = uiThreadHandler;
         mActivity = activity;
         mChannelListener = channelListener;
         mChannelTracker = channelTracker;
@@ -458,7 +460,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
-        mMessageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED);
+        mUiThreadHandler.post(() -> mMessageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED));
 
         if (id != mPendingMessageId) {
             Log.e(TAG, "handleMessageStatusChange for a msg we don't care about messageId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
@@ -491,7 +493,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         if(timedOut) {
             Log.e(TAG, "Timed out waiting for message ACK/NACK for: " + mPendingMessageId);
-            mMessageAckNackListener.onMessageTimedOut(mPendingMessageId);
+            mUiThreadHandler.post(() -> mMessageAckNackListener.onMessageTimedOut(mPendingMessageId));
         }
     }
 }

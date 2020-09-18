@@ -6,15 +6,17 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class StatusTabViewModel extends ChannelStatusViewModel implements ChannelTracker.UpdateListener,
+public class StatusTabViewModel extends ChannelStatusViewModel implements ChannelTracker.ChannelMembersUpdateListener,
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
         MeshtasticCommHardware.MessageAckNackListener,
@@ -57,8 +59,11 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
     }
 
     @Override
-    public void onUpdated(List<UserInfo> userInfoList) {
-        mUserInfoList.setValue(userInfoList);
+    public void onChannelMembersUpdated(List<UserInfo> atakUsers, List<NonAtakUserInfo> nonAtakStations) {
+        List<UserInfo> allStations = new ArrayList<>(atakUsers.size() + nonAtakStations.size());
+        allStations.addAll(atakUsers);
+        allStations.addAll(nonAtakStations);
+        mUserInfoList.setValue(allStations);
     }
 
     @Override

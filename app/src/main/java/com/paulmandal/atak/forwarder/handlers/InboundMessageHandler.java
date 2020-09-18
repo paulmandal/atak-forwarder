@@ -44,20 +44,24 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
                 return;
             }
 
-            String cotEventString = cotEvent.toString();
-            byte[] cotEventBytes = cotEventString.getBytes();
-
-            Log.d(TAG, "onMessageReceived(): " + cotEventString);
-            try (DatagramSocket socket = new DatagramSocket(INBOUND_MESSAGE_SRC_PORT)) {
-                InetAddress serverAddr = InetAddress.getLocalHost();
-                DatagramPacket packet = new DatagramPacket(cotEventBytes, cotEventBytes.length, serverAddr, INBOUND_MESSAGE_DEST_PORT);
-                socket.send(packet);
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.e(TAG, "IOException while trying to send message to UDP");
-            }
+            retransmitCotToLocalhost(cotEvent);
         });
         messageConversionAndDispatchThread.setName("InboundMessageHandler.onMessageReceived");
         messageConversionAndDispatchThread.start();
+    }
+
+    public void retransmitCotToLocalhost(CotEvent cotEvent) {
+        String cotEventString = cotEvent.toString();
+        byte[] cotEventBytes = cotEventString.getBytes();
+
+        Log.d(TAG, "retransmitCotToLocalhost(): " + cotEventString);
+        try (DatagramSocket socket = new DatagramSocket(INBOUND_MESSAGE_SRC_PORT)) {
+            InetAddress serverAddr = InetAddress.getLocalHost();
+            DatagramPacket packet = new DatagramPacket(cotEventBytes, cotEventBytes.length, serverAddr, INBOUND_MESSAGE_DEST_PORT);
+            socket.send(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "IOException while trying to send message to UDP");
+        }
     }
 }

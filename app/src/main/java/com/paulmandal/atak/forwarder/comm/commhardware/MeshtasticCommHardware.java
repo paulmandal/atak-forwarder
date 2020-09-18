@@ -18,14 +18,16 @@ import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
+import com.geeksville.mesh.Position;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
-import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface ChannelListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-        void onChannelMembersUpdated(List<UserInfo> userInfoList);
+        void onChannelMembersUpdated(List<NonAtakUserInfo> userInfoList);
     }
 
     public interface ChannelSettingsListener {
@@ -354,10 +356,20 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void updateChannelMembers() {
         try {
             List<NodeInfo> nodes = mMeshService.getNodes();
-            List<UserInfo> userInfoList = new ArrayList<>();
+            List<NonAtakUserInfo> userInfoList = new ArrayList<>();
             for (NodeInfo nodeInfoItem : nodes) {
                 MeshUser meshUser = nodeInfoItem.getUser();
-                userInfoList.add(new UserInfo(meshUser.getLongName(), meshUser.getId(), null, true, nodeInfoItem.getBatteryPctLevel()));
+
+                double lat = 0.0;
+                double lon = 0.0;
+                int altitude = 0;
+                Position position = nodeInfoItem.getValidPosition();
+                if (position != null) {
+                    lat = position.getLatitude();
+                    lon = position.getLongitude();
+                    altitude = position.getAltitude();
+                }
+                userInfoList.add(new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), true, nodeInfoItem.getBatteryPctLevel(), lat, lon, altitude));
             }
             mChannelListener.onChannelMembersUpdated(userInfoList);
         } catch (RemoteException e) {

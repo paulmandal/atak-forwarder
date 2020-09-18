@@ -2,6 +2,8 @@ package com.paulmandal.atak.forwarder.plugin;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
@@ -25,19 +27,22 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
+import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
+import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 import transapps.maps.plugin.lifecycle.Lifecycle;
+
+import static com.atakmap.android.util.ATAKConstants.getPackageName;
 
 public class ForwarderLifecycle implements Lifecycle {
     private final static String TAG = Config.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
@@ -77,12 +82,21 @@ public class ForwarderLifecycle implements Lifecycle {
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, new ArrayList<>());
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory);
-        MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, (MeshtasticCommHardware) mCommHardware, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+
+        String pluginVersion = "0.0";
+        try {
+            PackageInfo pInfo = activity.getPackageManager().getPackageInfo(getPackageName(), 0);
+            pluginVersion = pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion);
 
         Context atakContext = mMapView.getContext();
 

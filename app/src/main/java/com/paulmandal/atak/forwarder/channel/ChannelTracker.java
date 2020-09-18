@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
-
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 
@@ -16,8 +14,8 @@ import java.util.Objects;
 public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTracker.class.getSimpleName();
 
-    public interface UpdateListener {
-        void onUpdated(List<UserInfo> userInfoList);
+    public interface ChannelMembersUpdateListener {
+        void onChannelMembersUpdated(List<UserInfo> atakUsers, List<NonAtakUserInfo> nonAtakStations);
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -25,44 +23,53 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private Context mAtakContext;
     private Handler mUiThreadHandler;
 
-    private List<UserInfo> mUserInfoList;
+    private final List<UserInfo> mAtakUsers = new ArrayList<>();
+    private final List<NonAtakUserInfo> mNonAtatkStations = new ArrayList<>();
 
-    private List<UpdateListener> mUpdateListeners = new ArrayList<>();
+    private List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new ArrayList<>();
 
     public ChannelTracker(Context atakContext,
-                          Handler uiThreadHandler,
-                          @Nullable List<UserInfo> userInfoList) {
+                          Handler uiThreadHandler) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
-
-        if (userInfoList == null) {
-            userInfoList = new ArrayList<>();
-        }
-
-        mUserInfoList = userInfoList;
     }
 
-    public List<UserInfo> getUsers() {
-        return mUserInfoList;
+    public List<UserInfo> getAtakUsers() {
+        return mAtakUsers;
     }
+    public List<NonAtakUserInfo> getNonAtakStations() { return mNonAtatkStations; }
 
     @Override
     public void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid) {
         // Check for user
-        boolean found = false;
-        for (UserInfo user : mUserInfoList) {
+        boolean foundInAtakUsers = false;
+        for (UserInfo user : mAtakUsers) {
             if (user.meshId.equals(meshId)) {
                 if (user.atakUid == null || !user.atakUid.equals(atakUid)) {
                     user.callsign = callsign;
                     user.atakUid = atakUid;
                 }
-                found = true;
+                foundInAtakUsers = true;
                 break;
             }
         }
 
-        if (!found) {
-            mUserInfoList.add(new UserInfo(callsign, meshId, atakUid, false, null));
+        // Remove user from non-ATAK stations list if present
+        UserInfo nonAtakStationUserInfo = null;
+        for (UserInfo user : mNonAtatkStations) {
+            if (user.meshId.equals(meshId)) {
+                nonAtakStationUserInfo = user;
+                break;
+            }
+        }
+
+        if (nonAtakStationUserInfo != null) {
+            mNonAtatkStations.remove(nonAtakStationUserInfo);
+        }
+
+        // Add user to ATAK users list and notify listeners
+        if (!foundInAtakUsers) {
+            mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, false, null));
 
             notifyListeners();
         }
@@ -71,12 +78,12 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     }
 
     @Override
-    public void onChannelMembersUpdated(List<UserInfo> userInfoList) {
-        List<UserInfo> newUsers = new ArrayList<>();
+    public void onChannelMembersUpdated(List<NonAtakUserInfo> userInfoList) {
+        List<NonAtakUserInfo> newUsers = new ArrayList<>();
 
-        for (UserInfo possiblyNewUser : userInfoList) {
+        for (NonAtakUserInfo possiblyNewUser : userInfoList) {
             boolean found = false;
-            for (UserInfo user : mUserInfoList) {
+            for (UserInfo user : mAtakUsers) {
                 if (user.meshId.equals(possiblyNewUser.meshId)) {
                     found = true;
 
@@ -88,20 +95,22 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
                 }
             }
 
-            if (!found && !newUsers.contains(possiblyNewUser)) {
+            boolean repeatedUserEntry = newUsers.contains(possiblyNewUser);
+            boolean alreadyKnowAboutStation = mNonAtatkStations.contains(possiblyNewUser);
+            if (!found && !repeatedUserEntry && !alreadyKnowAboutStation) {
                 newUsers.add(possiblyNewUser);
             }
         }
 
         if (newUsers.size() > 0) {
-            mUserInfoList.addAll(newUsers);
+            mNonAtatkStations.addAll(newUsers);
 
             notifyListeners();
         }
     }
 
     public String getMeshIdForUid(String atakUid) {
-        for (UserInfo userInfo : mUserInfoList) {
+        for (UserInfo userInfo : mAtakUsers) {
             if (userInfo.atakUid != null && userInfo.atakUid.equals(atakUid)) {
                 return userInfo.meshId;
             }
@@ -109,22 +118,22 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         return USER_NOT_FOUND;
     }
 
-    public void addUpdateListener(UpdateListener listener) {
-        mUpdateListeners.add(listener);
+    public void addUpdateListener(ChannelMembersUpdateListener listener) {
+        mChannelMembersUpdateListeners.add(listener);
     }
 
-    public void removeUpdateListener(UpdateListener listener) {
-        mUpdateListeners.remove(listener);
+    public void removeUpdateListener(ChannelMembersUpdateListener listener) {
+        mChannelMembersUpdateListeners.remove(listener);
     }
 
     public void clearData() {
-        mUserInfoList = new ArrayList<>();
+        mAtakUsers.clear();
         notifyListeners();
     }
 
     private void notifyListeners() {
-        for (UpdateListener updateListener : mUpdateListeners) {
-            mUiThreadHandler.post(() -> updateListener.onUpdated(mUserInfoList));
+        for (ChannelMembersUpdateListener channelMembersUpdateListener : mChannelMembersUpdateListeners) {
+            mUiThreadHandler.post(() -> channelMembersUpdateListener.onChannelMembersUpdated(mAtakUsers, mNonAtatkStations));
         }
     }
 }

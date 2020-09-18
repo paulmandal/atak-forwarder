@@ -31,8 +31,8 @@
 
     <string name="short_range">Short Range / Fast</string>
     <string name="medium_range">Medium Range / Fast</string>
-    <string name="long_range">Long Range / Slower</string>
-    <string name="very_long_range">Very Long Range / Slow</string>
+    <string name="long_range">Long Range / Slower (Not Recommended)</string>
+    <string name="very_long_range">Very Long Range / Slow (Not Recommended)</string>
 
     <string name="generate_new_psk">Gen New PSK</string>
 

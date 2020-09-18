@@ -42,7 +42,7 @@ public class ContactProtobufConverter {
         return builder.build();
     }
 
-    public void maybeAddContact(CotDetail cotDetail, ProtobufContact.Contact contact, boolean isPli) {
+    public void maybeAddContact(CotDetail cotDetail, ProtobufContact.Contact contact, boolean addFakeEndpointIfMissing) {
         if (contact == null || contact == ProtobufContact.Contact.getDefaultInstance()) {
             return;
         }
@@ -61,7 +61,7 @@ public class ContactProtobufConverter {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             }
-        } else if (isPli) {
+        } else if (addFakeEndpointIfMissing) {
             // PLI without endpoint -- sent by client that doesn't have an IP address, add a fake endpoint so that GeoChat works
             contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS + DEFAULT_CHAT_PORT_AND_PROTO);
         }

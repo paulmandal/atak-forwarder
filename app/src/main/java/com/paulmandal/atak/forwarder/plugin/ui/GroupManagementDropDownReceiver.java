@@ -16,8 +16,10 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.StatusTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
@@ -33,6 +35,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
                                            final Context atakContext,
                                            final StatusTabViewModel statusTabViewModel,
                                            final ChannelTabViewModel channelTabViewModel,
+                                           final DevicesTabViewModel devicesTabViewModel,
                                            final AdvancedTab advancedTab) {
         super(mapView);
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
@@ -54,16 +57,24 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         spec.setIndicator("Channel");
         tabs.addTab(spec);
 
+        spec = tabs.newTabSpec("tab_devices");
+        spec.setContent(R.id.tab_devices);
+        spec.setIndicator("Devices");
+        tabs.addTab(spec);
+
         spec = tabs.newTabSpec("tab_advanced");
         spec.setContent(R.id.tab_advanced);
         spec.setIndicator("Advanced");
         tabs.addTab(spec);
 
         // Set up the rest of the UI
+        LifecycleOwner lifecycleOwner = (LifecycleOwner) atakContext;
         StatusTab statusTab = mTemplateView.findViewById(R.id.tab_status);
-        statusTab.bind((LifecycleOwner) atakContext, statusTabViewModel, pluginContext, atakContext);
+        statusTab.bind(lifecycleOwner, statusTabViewModel, pluginContext, atakContext);
         ChannelTab channelTab = mTemplateView.findViewById(R.id.tab_channel);
-        channelTab.bind((LifecycleOwner) atakContext, channelTabViewModel, pluginContext, atakContext);
+        channelTab.bind(lifecycleOwner, channelTabViewModel, pluginContext, atakContext);
+        DevicesTab devicesTab = mTemplateView.findViewById(R.id.tab_devices);
+        devicesTab.bind(lifecycleOwner, devicesTabViewModel);
         advancedTab.bind(mTemplateView);
     }
 

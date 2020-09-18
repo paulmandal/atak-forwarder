@@ -14,6 +14,7 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 public class GroupManagementMapComponent extends DropDownMapComponent {
@@ -27,19 +28,22 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
     private CommandQueue mCommandQueue;
     private StatusTabViewModel mStatusTabViewModel;
     private ChannelTabViewModel mChannelTabViewModel;
+    private DevicesTabViewModel mDevicesTabViewModel;
 
     public GroupManagementMapComponent(ChannelTracker channelTracker,
                                        CommHardware commHardware,
                                        CotMessageCache cotMessageCache,
                                        CommandQueue commandQueue,
                                        StatusTabViewModel statusTabViewModel,
-                                       ChannelTabViewModel channelTabViewModel) {
+                                       ChannelTabViewModel channelTabViewModel,
+                                       DevicesTabViewModel devicesTabViewModel) {
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
         mCommandQueue = commandQueue;
         mStatusTabViewModel= statusTabViewModel;
         mChannelTabViewModel = channelTabViewModel;
+        mDevicesTabViewModel = devicesTabViewModel;
     }
 
     public void onCreate(final Context pluginContext, Intent intent,
@@ -56,6 +60,7 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
                 atakContext,
                 mStatusTabViewModel,
                 mChannelTabViewModel,
+                mDevicesTabViewModel,
                 advancedTab);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();

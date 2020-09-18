@@ -1,9 +1,12 @@
 package com.paulmandal.atak.forwarder.nonatak;
 
+import android.util.Log;
+
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
@@ -15,11 +18,15 @@ import com.paulmandal.atak.forwarder.protobufs.ProtobufTakv;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembersUpdateListener {
-    private static final int DELAY_BETWEEN_GENERATING_COTS_MS = 60000;
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + NonAtakStationCotGenerator.class.getSimpleName();
+
+    private static final long DELAY_BETWEEN_GENERATING_COTS_MS = 60000;
 
     private static final int STALE_TIME_OFFSET_MS = 75000;
     private static final double UNKNOWN_LE_CE = 9999999.0;
@@ -47,6 +54,7 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
 
     private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
     private final String mPluginVersion;
+    private CountDownLatch mCountDownLatch;
 
     public NonAtakStationCotGenerator(ChannelTracker channelTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion) {
         mInboundMessageHandler = inboundMessageHandler;
@@ -56,8 +64,9 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             while (true) {
                 generateNonAtakStationCots();
 
+                mCountDownLatch = new CountDownLatch(1);
                 try {
-                    Thread.sleep(DELAY_BETWEEN_GENERATING_COTS_MS);
+                    mCountDownLatch.await(DELAY_BETWEEN_GENERATING_COTS_MS, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -82,6 +91,7 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             spoofedPli.setStart(nowCoordinatedTime);
             spoofedPli.setStale(staleCoordinatedTime);
             spoofedPli.setHow("h-e");
+            Log.e(TAG, "cs: " + userInfo.callsign + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon);
             spoofedPli.setPoint(new CotPoint(userInfo.lat, userInfo.lon, userInfo.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
 
             CotDetail cotDetail = new CotDetail(TAG_DETAIL);
@@ -137,6 +147,8 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
         mNonAtakStations.clear();
         mNonAtakStations.addAll(nonAtakStations);
 
-        generateNonAtakStationCots();
+        if (mCountDownLatch != null) {
+            mCountDownLatch.countDown();
+        }
     }
 }

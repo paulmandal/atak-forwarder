@@ -52,5 +52,13 @@
     <string name="clear_data">Clear Data</string>
     <string name="clear_message_queue">Clear MsgQ</string>
     <string name="clear_message_cache">Clear Msg Cache</string>
+    <string name="configure_non_atak_device">Cfg Non-ATAK Dvc</string>
+
+    <!-- Configure Non-ATAK Device Activity -->
+    <string name="callsign">Callsign</string>
+    <string name="gps_update_frequency">Position Bcast Frequency (s)</string>
+    <string name="active_device">Active Device</string>
+    <string name="write_to_device">Write to Device</string>
+    <string name="close">Close</string>
 
 </resources>

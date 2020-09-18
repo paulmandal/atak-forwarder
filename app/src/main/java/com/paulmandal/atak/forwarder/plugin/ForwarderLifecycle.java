@@ -34,6 +34,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 import java.util.Collection;
@@ -102,10 +103,12 @@ public class ForwarderLifecycle implements Lifecycle {
 
         HashHelper hashHelper = new HashHelper();
         // TODO: clean up ugly unchecked casts to MeshstaticCommHardware
-        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, (MeshtasticCommHardware) mCommHardware, commandQueue, hashHelper);
-        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, (MeshtasticCommHardware) mCommHardware, channelTracker, new QrHelper(), hashHelper);
+        MeshtasticCommHardware meshtasticCommHardware = (MeshtasticCommHardware) mCommHardware;
+        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, meshtasticCommHardware, commandQueue, hashHelper);
+        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, channelTracker, new QrHelper(), hashHelper);
+        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(meshtasticCommHardware, hashHelper);
 
-        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel));
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

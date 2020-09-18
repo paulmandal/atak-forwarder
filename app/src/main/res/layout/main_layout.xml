@@ -36,6 +36,12 @@
                     android:layout_height="match_parent"
                     android:layout_margin="8dp" />
 
+                <com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab
+                    android:id="@+id/tab_devices"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="8dp" />
+
                 <include layout="@layout/advanced_layout" />
 
             </FrameLayout>

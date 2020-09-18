@@ -31,6 +31,7 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -82,7 +83,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private ChannelTracker mChannelTracker;
     private ChannelListener mChannelListener;
-    private List<ChannelSettingsListener> mChannelSettingsListeners = new ArrayList<>();
+    private final List<ChannelSettingsListener> mChannelSettingsListeners = new CopyOnWriteArrayList<>();
     private MessageAckNackListener mMessageAckNackListener;
     private Activity mActivity;
     private Handler mUiThreadHandler;

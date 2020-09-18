@@ -10,6 +10,7 @@ import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTracker.class.getSimpleName();
@@ -23,10 +24,10 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private Context mAtakContext;
     private Handler mUiThreadHandler;
 
-    private final List<UserInfo> mAtakUsers = new ArrayList<>();
-    private final List<NonAtakUserInfo> mNonAtatkStations = new ArrayList<>();
+    private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
+    private final List<NonAtakUserInfo> mNonAtatkStations = new CopyOnWriteArrayList<>();
 
-    private List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new ArrayList<>();
+    private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
 
     public ChannelTracker(Context atakContext,
                           Handler uiThreadHandler) {
@@ -128,6 +129,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public void clearData() {
         mAtakUsers.clear();
+        mNonAtatkStations.clear();
         notifyListeners();
     }
 

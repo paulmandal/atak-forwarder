@@ -42,8 +42,8 @@ public abstract class CommHardware {
     private final CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
 
-    private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
-    private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
+    private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
+    private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private Thread mMessageWorkerThread;
 

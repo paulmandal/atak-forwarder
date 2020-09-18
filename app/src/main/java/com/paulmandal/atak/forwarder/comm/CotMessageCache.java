@@ -14,7 +14,7 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
     private StateStorage mStateStorage;
     private CotComparer mCotComparer;
 
-    private List<CachedCotEvent> mCachedEvents;
+    private final List<CachedCotEvent> mCachedEvents = new ArrayList<>();
     private int mPliCachePurgeTimeMs;
     private int mDefaultCachePurgeTimeMs;
     private int mDataRateAwarePliCachePurgeTimeMs;
@@ -27,7 +27,6 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
         mStateStorage = stateStorage;
         mCotComparer = cotComparer;
 
-        mCachedEvents = new ArrayList<>();
         mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
         mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
         mDataRateAwarePliCachePurgeTimeMs = pliCachePurgeTimeMs;
@@ -45,12 +44,14 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
 
         boolean isPli = cotEvent.getType().equals(CotMessageTypes.TYPE_PLI);
 
-        for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-            if (isPli && cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                // Don't compare PLIs
-                return true;
-            } else if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
-                return true;
+        synchronized (mCachedEvents) {
+            for (CachedCotEvent cachedCotEvent : mCachedEvents) {
+                if (isPli && cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                    // Don't compare PLIs
+                    return true;
+                } else if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
+                    return true;
+                }
             }
         }
 
@@ -58,11 +59,15 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
     }
 
     public void cacheEvent(CotEvent cotEvent) {
-        mCachedEvents.add(new CachedCotEvent(cotEvent, System.currentTimeMillis()));
+        synchronized (mCachedEvents) {
+            mCachedEvents.add(new CachedCotEvent(cotEvent, System.currentTimeMillis()));
+        }
     }
 
     public void clearData() {
-        mCachedEvents.clear();
+        synchronized (mCachedEvents) {
+            mCachedEvents.clear();
+        }
     }
 
     public void setDefaultCachePurgeTimeMs(int defaultCachePurgeTimeMs) {
@@ -88,18 +93,21 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
 
         List<CachedCotEvent> purgeEvents = new ArrayList<>();
 
-        for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-            int purgeTime = mDefaultCachePurgeTimeMs;
-            if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                purgeTime = mDataRateAwarePliCachePurgeTimeMs;
-            }
-            if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
-                purgeEvents.add(cachedCotEvent);
-            }
-        }
+        synchronized (mCachedEvents) {
 
-        for (CachedCotEvent purgeableCotEvent : purgeEvents) {
-            mCachedEvents.remove(purgeableCotEvent);
+            for (CachedCotEvent cachedCotEvent : mCachedEvents) {
+                int purgeTime = mDefaultCachePurgeTimeMs;
+                if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                    purgeTime = mDataRateAwarePliCachePurgeTimeMs;
+                }
+                if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
+                    purgeEvents.add(cachedCotEvent);
+                }
+            }
+
+            for (CachedCotEvent purgeableCotEvent : purgeEvents) {
+                mCachedEvents.remove(purgeableCotEvent);
+            }
         }
     }
 

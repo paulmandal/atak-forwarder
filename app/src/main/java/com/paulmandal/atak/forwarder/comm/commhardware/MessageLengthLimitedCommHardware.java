@@ -52,14 +52,17 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     }
 
     private void handleMessageChunk(int messageId, String meshId, int messageIndex, int messageCount, byte[] messageChunk) {
-        synchronized (mIncomingMessages) { // TODO: better sync block?
-            List<MessageChunk> incomingMessagesFromUser = mIncomingMessages.get(meshId);
+        List<MessageChunk> incomingMessagesFromUser;
+        synchronized (mIncomingMessages) {
+            incomingMessagesFromUser = mIncomingMessages.get(meshId);
             if (incomingMessagesFromUser == null) {
                 incomingMessagesFromUser = new ArrayList<>();
                 mIncomingMessages.put(meshId, incomingMessagesFromUser);
             }
             incomingMessagesFromUser.add(new MessageChunk(messageIndex, messageCount, messageChunk));
+        }
 
+        synchronized (incomingMessagesFromUser) {
             if (messageIndex == messageCount - 1) {
                 // Message complete!
                 byte[][] messagePieces = new byte[messageCount][];

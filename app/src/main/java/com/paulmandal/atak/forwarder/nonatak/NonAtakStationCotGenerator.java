@@ -13,8 +13,8 @@ import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
 import com.paulmandal.atak.forwarder.protobufs.ProtobufTakv;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
@@ -45,7 +45,7 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
 
     private InboundMessageHandler mInboundMessageHandler;
 
-    private final List<NonAtakUserInfo> mNonAtakStations = new ArrayList<>();
+    private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
     private final String mPluginVersion;
 
     public NonAtakStationCotGenerator(ChannelTracker channelTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion) {
@@ -70,77 +70,73 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
     }
 
     private void generateNonAtakStationCots() {
-        synchronized (mNonAtakStations) {
-            for (NonAtakUserInfo userInfo : mNonAtakStations) {
-                CotEvent spoofedPli = new CotEvent();
+        for (NonAtakUserInfo userInfo : mNonAtakStations) {
+            CotEvent spoofedPli = new CotEvent();
 
-                CoordinatedTime nowCoordinatedTime = new CoordinatedTime(System.currentTimeMillis());
-                CoordinatedTime staleCoordinatedTime = new CoordinatedTime(nowCoordinatedTime.getMilliseconds() + STALE_TIME_OFFSET_MS);
+            CoordinatedTime nowCoordinatedTime = new CoordinatedTime(System.currentTimeMillis());
+            CoordinatedTime staleCoordinatedTime = new CoordinatedTime(nowCoordinatedTime.getMilliseconds() + STALE_TIME_OFFSET_MS);
 
-                spoofedPli.setUID(userInfo.callsign);
-                spoofedPli.setType(TYPE_PLI);
-                spoofedPli.setTime(nowCoordinatedTime);
-                spoofedPli.setStart(nowCoordinatedTime);
-                spoofedPli.setStale(staleCoordinatedTime);
-                spoofedPli.setHow("h-e");
-                spoofedPli.setPoint(new CotPoint(userInfo.lat, userInfo.lon, userInfo.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
+            spoofedPli.setUID(userInfo.callsign);
+            spoofedPli.setType(TYPE_PLI);
+            spoofedPli.setTime(nowCoordinatedTime);
+            spoofedPli.setStart(nowCoordinatedTime);
+            spoofedPli.setStale(staleCoordinatedTime);
+            spoofedPli.setHow("h-e");
+            spoofedPli.setPoint(new CotPoint(userInfo.lat, userInfo.lon, userInfo.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
 
-                CotDetail cotDetail = new CotDetail(TAG_DETAIL);
+            CotDetail cotDetail = new CotDetail(TAG_DETAIL);
 
-                TakvProtobufConverter mTakvProtobufConverter = new TakvProtobufConverter();
+            TakvProtobufConverter mTakvProtobufConverter = new TakvProtobufConverter();
 
-                ProtobufTakv.Takv.Builder takv = ProtobufTakv.Takv.newBuilder();
-                takv.setOs(1);
-                takv.setVersion(mPluginVersion);
-                takv.setDevice(VALUE_MESHTASTIC_DEVICE);
-                takv.setPlatform(VALUE_ATAK_FORWARDER);
-                mTakvProtobufConverter.maybeAddTakv(cotDetail, takv.build());
+            ProtobufTakv.Takv.Builder takv = ProtobufTakv.Takv.newBuilder();
+            takv.setOs(1);
+            takv.setVersion(mPluginVersion);
+            takv.setDevice(VALUE_MESHTASTIC_DEVICE);
+            takv.setPlatform(VALUE_ATAK_FORWARDER);
+            mTakvProtobufConverter.maybeAddTakv(cotDetail, takv.build());
 
-                ProtobufContact.Contact.Builder contact = ProtobufContact.Contact.newBuilder();
-                contact.setCallsign(userInfo.callsign);
-                ContactProtobufConverter mContactProtobufConverter = new ContactProtobufConverter();
-                mContactProtobufConverter.maybeAddContact(cotDetail, contact.build(), false);
+            ProtobufContact.Contact.Builder contact = ProtobufContact.Contact.newBuilder();
+            contact.setCallsign(userInfo.callsign);
+            ContactProtobufConverter mContactProtobufConverter = new ContactProtobufConverter();
+            mContactProtobufConverter.maybeAddContact(cotDetail, contact.build(), false);
 
-                CotDetail uidDetail = new CotDetail(TAG_UID);
-                uidDetail.setAttribute(TAG_DROID, userInfo.callsign);
-                cotDetail.addChild(uidDetail);
+            CotDetail uidDetail = new CotDetail(TAG_UID);
+            uidDetail.setAttribute(TAG_DROID, userInfo.callsign);
+            cotDetail.addChild(uidDetail);
 
-                CotDetail precisionLocationDetail = new CotDetail(TAG_PRECISION_LOCATION);
-                precisionLocationDetail.setAttribute(TAG_ALTSRC, VALUE_DTED0);
-                precisionLocationDetail.setAttribute(TAG_GEOPOINTSRC, VALUE_USER);
-                cotDetail.addChild(precisionLocationDetail);
+            CotDetail precisionLocationDetail = new CotDetail(TAG_PRECISION_LOCATION);
+            precisionLocationDetail.setAttribute(TAG_ALTSRC, VALUE_DTED0);
+            precisionLocationDetail.setAttribute(TAG_GEOPOINTSRC, VALUE_USER);
+            cotDetail.addChild(precisionLocationDetail);
 
-                CotDetail groupDetail = new CotDetail(TAG_GROUP);
-                groupDetail.setAttribute(TAG_ROLE, VALUE_RTO);
-                groupDetail.setAttribute(TAG_NAME, VALUE_WHITE);
-                cotDetail.addChild(groupDetail);
+            CotDetail groupDetail = new CotDetail(TAG_GROUP);
+            groupDetail.setAttribute(TAG_ROLE, VALUE_RTO);
+            groupDetail.setAttribute(TAG_NAME, VALUE_WHITE);
+            cotDetail.addChild(groupDetail);
 
-                if (userInfo.batteryPercentage != null) {
-                    CotDetail statusDetail = new CotDetail(TAG_STATUS);
-                    statusDetail.setAttribute(TAG_BATTERY, Integer.toString(userInfo.batteryPercentage));
-                    cotDetail.addChild(statusDetail);
-                }
+            if (userInfo.batteryPercentage != null) {
+                CotDetail statusDetail = new CotDetail(TAG_STATUS);
+                statusDetail.setAttribute(TAG_BATTERY, Integer.toString(userInfo.batteryPercentage));
+                cotDetail.addChild(statusDetail);
+            }
 
-                // TODO: remove this
+            // TODO: remove this
 //                CotDetail trackDetail = new CotDetail(TAG_TRACK);
 //                trackDetail.setAttribute(TAG_COURSE, VALUE_ZERO_POINT_ZERO);
 //                trackDetail.setAttribute(TAG_SPEED, VALUE_ZERO_POINT_ZERO);
 //                cotDetail.addChild(trackDetail);
 
-                spoofedPli.setDetail(cotDetail);
+            spoofedPli.setDetail(cotDetail);
 
-                mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
-            }
+            mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
         }
     }
 
     @Override
     public void onChannelMembersUpdated(List<UserInfo> atakUsers, List<NonAtakUserInfo> nonAtakStations) {
-        synchronized (mNonAtakStations) {
-            mNonAtakStations.clear();
-            mNonAtakStations.addAll(nonAtakStations);
+        mNonAtakStations.clear();
+        mNonAtakStations.addAll(nonAtakStations);
 
-            generateNonAtakStationCots();
-        }
+        generateNonAtakStationCots();
     }
 }

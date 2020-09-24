@@ -69,12 +69,16 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
 
         // Set up the rest of the UI
         LifecycleOwner lifecycleOwner = (LifecycleOwner) atakContext;
+
         StatusTab statusTab = mTemplateView.findViewById(R.id.tab_status);
         statusTab.bind(lifecycleOwner, statusTabViewModel, pluginContext, atakContext);
+
         ChannelTab channelTab = mTemplateView.findViewById(R.id.tab_channel);
         channelTab.bind(lifecycleOwner, channelTabViewModel, pluginContext, atakContext);
+
         DevicesTab devicesTab = mTemplateView.findViewById(R.id.tab_devices);
-        devicesTab.bind(lifecycleOwner, devicesTabViewModel);
+        devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext);
+
         advancedTab.bind(mTemplateView);
     }
 

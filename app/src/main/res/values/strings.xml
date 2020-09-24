@@ -62,6 +62,7 @@
     <string name="set_comm_device">Set Comm Device</string>
     <string name="write_to_non_atak">Write to non-ATAK</string>
     <string name="close">Close</string>
+    <string name="comm_device_switch_text">Comm</string>
     <string name="refresh_connected_devices">Refresh</string>
 
 </resources>

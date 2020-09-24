@@ -27,7 +27,9 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private MeshtasticCommHardware mMeshtasticCommHardware;
     private HashHelper mHashHelper;
 
-    private MutableLiveData<List<String>> mMeshDevices = new MutableLiveData<>();
+    private MutableLiveData<List<BluetoothDevice>> mBluetoothDevices = new MutableLiveData<>();
+    private MutableLiveData<String> mCommDeviceAddress = new MutableLiveData<>();
+
     private MutableLiveData<String> mChannelName = new MutableLiveData<>();
     private MutableLiveData<String> mPskHash = new MutableLiveData<>();
     private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
@@ -41,6 +43,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         mHashHelper = hashHelper;
 
         commHardware.addChannelSettingsListener(this);
+        mCommDeviceAddress.setValue(commHardware.getDeviceAddress());
     }
 
     @Nullable
@@ -62,11 +65,16 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     public LiveData<Byte[]> getPsk() { return mPsk; }
 
     @Nullable
-    public LiveData<List<String>> getMeshDevices() {
-        return mMeshDevices;
+    public LiveData<List<BluetoothDevice>> getBluetoothDevices() {
+        return mBluetoothDevices;
     }
 
-    public void scanForDevices() {
+    @Nullable
+    public LiveData<String> getCommDeviceAddress() {
+        return mCommDeviceAddress;
+    }
+
+    public void refreshDevices() {
 //        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
         BluetoothManager bm = (BluetoothManager) mAtakContext.getSystemService(Context.BLUETOOTH_SERVICE);
@@ -88,19 +96,8 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
             //   BluetoothProfile.STATE_DISCONNECTING
         }
 
-//        Set<BluetoothDevice> pairedDevicesList = btAdapter.getBondedDevices();
-//        for (BluetoothDevice pairedDevice : pairedDevicesList) {
-//            String deviceName = pairedDevice.getName();
-//            if (deviceName.startsWith(MARKER_MESHTASTIC)) {
-//                String address = pairedDevice.getAddress();
-//                Log.e(TAG, "pairedDevice.getName(): " + deviceName);
-//                Log.e(TAG, "pairedDevice.getAddress(): " + address);
-//                Log.e(TAG, "type: " + pairedDevice.getType());
-//                Log.e(TAG, "address: " + pairedDevice.getAddress());
-//                Log.e(TAG, "bond state: " + pairedDevice.getBondState());
-//            }
-//        }
-
+        Log.e(TAG, "setting bluetooth devices size: " + devices.size());
+        mBluetoothDevices.setValue(devices);
         Log.e(TAG, "getDeviceAddress: " + mMeshtasticCommHardware.getDeviceAddress());
     }
 

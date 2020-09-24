@@ -238,7 +238,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public boolean setDeviceAddress(String deviceAddress) {
         boolean success = false;
         try {
-            mMeshService.setDeviceAddress(deviceAddress);
+            mMeshService.setDeviceAddress(String.format("x%s", deviceAddress));
             mBondedDeviceAddress = deviceAddress;
 
             mStateStorage.storeBondedDeviceAddress(deviceAddress);

@@ -65,4 +65,7 @@
     <string name="comm_device_switch_text">Comm</string>
     <string name="refresh_connected_devices">Refresh</string>
 
+    <string name="set_comm_device_dialog">Do you want to set your comm device to the one in the Target Device field for real?</string>
+    <string name="write_to_non_atak_dialog">Do you want to write to the non-ATAK device in the Target Device field?</string>
+
 </resources>

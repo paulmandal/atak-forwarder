@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettingsListener {
@@ -75,38 +76,30 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void refreshDevices() {
-//        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-
         BluetoothManager bm = (BluetoothManager) mAtakContext.getSystemService(Context.BLUETOOTH_SERVICE);
         List<BluetoothDevice> devices = bm.getConnectedDevices(BluetoothGatt.GATT);
-        int status = -1;
+
+        List<BluetoothDevice> filteredDevices = new ArrayList<>(devices.size());
 
         for (BluetoothDevice device : devices) {
-            status = bm.getConnectionState(device, BluetoothGatt.GATT);
-            Log.e(TAG, "pairedDevice.getName(): " + device.getName());
-            Log.e(TAG, "pairedDevice.getAddress(): " + device.getAddress());
-            Log.e(TAG, "type: " + device.getType());
-            Log.e(TAG, "address: " + device.getAddress());
-            Log.e(TAG, "bond state: " + device.getBondState());
-            Log.e(TAG, "status: " + status);
-            // compare status to:
-            //   BluetoothProfile.STATE_CONNECTED
-            //   BluetoothProfile.STATE_CONNECTING
-            //   BluetoothProfile.STATE_DISCONNECTED
-            //   BluetoothProfile.STATE_DISCONNECTING
+            if (device.getName().startsWith(MARKER_MESHTASTIC)) {
+                filteredDevices.add(device);
+            }
         }
 
-        Log.e(TAG, "setting bluetooth devices size: " + devices.size());
         mBluetoothDevices.setValue(devices);
-        Log.e(TAG, "getDeviceAddress: " + mMeshtasticCommHardware.getDeviceAddress());
     }
 
-    public void connectToDevice() {
-        // Connect to a new device
+    public void setCommDeviceAddress(String deviceAddress) {
+        if (mMeshtasticCommHardware.setDeviceAddress(deviceAddress)) {
+            mCommDeviceAddress.setValue(deviceAddress);
+        }
     }
 
-    public void writeToDevice() {
+    public void writeToNonAtak(String deviceAddress) {
         // Write settings to device
+        // TODO: tell MeshtasticCommHardware shit has started
+        // TODO: set async finished listener to tell MeshtasticCommhardware we're done
     }
 
     @Override

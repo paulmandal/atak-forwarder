@@ -77,7 +77,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         channelTab.bind(lifecycleOwner, channelTabViewModel, pluginContext, atakContext);
 
         DevicesTab devicesTab = mTemplateView.findViewById(R.id.tab_devices);
-        devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext);
+        devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext, atakContext);
 
         advancedTab.bind(mTemplateView);
     }

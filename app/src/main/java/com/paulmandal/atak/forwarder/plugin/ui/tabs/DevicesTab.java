@@ -8,15 +8,19 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 import java.util.List;
@@ -57,14 +61,19 @@ public class DevicesTab extends RelativeLayout {
             alertDialog.show();
         });
 
+        EditText pliIntervalSEditText = findViewById(R.id.edittext_pli_interval_s);
+        EditText deviceCallsignEditText = findViewById(R.id.edittext_device_callsign);
+
+        EditText teamIndexEditText = findViewById(R.id.edittext_team_index);
+        EditText roleIndexEditText = findViewById(R.id.edittext_role_index);
+
         Button writeToNonAtakButton = findViewById(R.id.button_write_to_non_atak);
         writeToNonAtakButton.setOnClickListener(v -> {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.write_to_non_atak_dialog))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> devicesTabViewModel.writeToNonAtak(mTargetDeviceAddress))
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDeviceAddress, deviceCallsignEditText.getText().toString(), Integer.parseInt(teamIndexEditText.getText().toString()), Integer.parseInt(roleIndexEditText.getText().toString()), Integer.parseInt(pliIntervalSEditText.getText().toString())))
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
-
             alertDialog.show();
         });
 
@@ -72,7 +81,6 @@ public class DevicesTab extends RelativeLayout {
         TextView commDevice = findViewById(R.id.textview_comm_device);
         TextView targetDevice = findViewById(R.id.textview_target_device);
 
-//        devicesListView.setClickable(true);
         devicesListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             Log.e(TAG, "onItemClickListener: " + position);
             BluetoothDevice bluetoothDevice = (BluetoothDevice) devicesListView.getAdapter().getItem(position);
@@ -115,5 +123,9 @@ public class DevicesTab extends RelativeLayout {
     private void updateDevicesAdapter(ListView devicesListView, Context pluginContext, List<BluetoothDevice> bluetoothDevices, String commDeviceAddress) {
         DevicesDataAdapter devicesDataAdapter = new DevicesDataAdapter(pluginContext, bluetoothDevices, commDeviceAddress);
         devicesListView.setAdapter(devicesDataAdapter);
+    }
+
+    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+        devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS);
     }
 }

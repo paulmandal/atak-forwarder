@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothManager;
@@ -18,6 +19,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettingsListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTabViewModel.class.getSimpleName();
@@ -76,18 +78,30 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void refreshDevices() {
-        BluetoothManager bm = (BluetoothManager) mAtakContext.getSystemService(Context.BLUETOOTH_SERVICE);
-        List<BluetoothDevice> devices = bm.getConnectedDevices(BluetoothGatt.GATT);
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        Set<BluetoothDevice> devices = bluetoothAdapter.getBondedDevices();
         List<BluetoothDevice> filteredDevices = new ArrayList<>(devices.size());
-
         for (BluetoothDevice device : devices) {
+            Log.e(TAG, "bonded device: " + device.getName());
             if (device.getName().startsWith(MARKER_MESHTASTIC)) {
                 filteredDevices.add(device);
             }
         }
 
-        mBluetoothDevices.setValue(devices);
+//        BluetoothManager bm = (BluetoothManager) mAtakContext.getSystemService(Context.BLUETOOTH_SERVICE);
+//        List<BluetoothDevice> devices = bm.getConnectedDevices(BluetoothGatt.GATT);
+//
+//        List<BluetoothDevice> filteredDevices = new ArrayList<>(devices.size());
+//
+//        for (BluetoothDevice device : devices) {
+//            Log.e(TAG, "device: " + device.getName() + ", " + device.getAddress());
+//            if (device.getName().startsWith(MARKER_MESHTASTIC)) {
+//                filteredDevices.add(device);
+//            }
+//        }
+
+        mBluetoothDevices.setValue(filteredDevices);
     }
 
     public void setCommDeviceAddress(String deviceAddress) {
@@ -96,8 +110,10 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
     }
 
-    public void writeToNonAtak(String deviceAddress) {
+    public void writeToNonAtak(String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+        Log.e(TAG, "Writing to device: " + deviceAddress + " callsign: " + deviceCallsign + " teamIndex: " + teamIndex + " roleIn: " + roleIndex + " refresh(s): " + refreshIntervalS);
         // Write settings to device
+        // TODO: safety to not write to Comm Device
         // TODO: tell MeshtasticCommHardware shit has started
         // TODO: set async finished listener to tell MeshtasticCommhardware we're done
     }

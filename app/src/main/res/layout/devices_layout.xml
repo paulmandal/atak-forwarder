@@ -35,7 +35,7 @@
         android:id="@+id/label_target_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_refresh_connected_devices"
+        android:layout_above="@id/label_non_atak_settings"
         android:layout_alignParentStart="true"
         android:paddingEnd="8dp"
         android:text="@string/target_device" />
@@ -44,8 +44,54 @@
         android:id="@+id/textview_target_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_refresh_connected_devices"
+        android:layout_above="@id/label_non_atak_settings"
         android:layout_toEndOf="@id/label_target_device" />
+
+    <TextView
+        android:id="@+id/label_non_atak_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/edittext_team_index"
+        android:layout_alignParentStart="true"
+        android:paddingStart="16dp"
+        android:paddingEnd="8dp"
+        android:text="@string/non_atak_device_settings" />
+
+    <EditText
+        android:id="@+id/edittext_device_callsign"
+        android:layout_width="128dp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/edittext_team_index"
+        android:layout_alignParentEnd="true"
+        android:hint="@string/device_callsign"
+        android:inputType="textNoSuggestions" />
+
+    <EditText
+        android:id="@+id/edittext_pli_interval_s"
+        android:layout_width="128dp"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/edittext_role_index"
+        android:layout_alignParentEnd="true"
+        android:hint="@string/pli_interval"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/edittext_team_index"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/edittext_role_index"
+        android:layout_alignParentStart="true"
+        android:hint="Team Index"
+        android:inputType="number" />
+
+    <EditText
+        android:id="@+id/edittext_role_index"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/button_refresh_connected_devices"
+        android:layout_alignParentStart="true"
+        android:hint="Role Index"
+        android:inputType="number" />
 
     <Button
         android:id="@+id/button_refresh_connected_devices"

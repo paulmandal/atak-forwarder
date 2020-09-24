@@ -47,8 +47,37 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
     private static final String VALUE_ATAK_FORWARDER = "ATAK Forwarder";
     private static final String VALUE_DTED0 = "DTED0";
     private static final String VALUE_USER = "USER";
-    private static final String VALUE_RTO = "RTO";
-    private static final String VALUE_WHITE = "White";
+
+    private static final int WHITE_INDEX = 0;
+    private static final int RTO_INDEX = 6;
+
+    public static String[] TEAMS = {
+            "White",
+            "Yellow",
+            "Orange",
+            "Magenta",
+            "Red",
+            "Maroon",
+            "Purple",
+            "Dark Blue",
+            "Blue",
+            "Cyan",
+            "Teal",
+            "Green",
+            "Dark Green",
+            "Brown"
+    };
+
+    public static String[] ROLES = {
+            "Team Member",
+            "Team Lead",
+            "HQ",
+            "Sniper",
+            "Medic",
+            "Forward Observer",
+            "RTO",
+            "K9"
+    };
 
     private InboundMessageHandler mInboundMessageHandler;
 
@@ -119,9 +148,29 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             precisionLocationDetail.setAttribute(TAG_GEOPOINTSRC, VALUE_USER);
             cotDetail.addChild(precisionLocationDetail);
 
+            String team = TEAMS[WHITE_INDEX];
+            String role = ROLES[RTO_INDEX];
+            if (userInfo.shortName != null && userInfo.shortName.length() == 2) {
+                try {
+                    // Try to split the shortname and get team/role values
+                    int teamIndex = Integer.parseInt(userInfo.shortName.substring(0, 1));
+                    int roleIndex = Integer.parseInt(userInfo.shortName.substring(1, 2));
+
+                    if (teamIndex > -1 && teamIndex < TEAMS.length) {
+                        team = TEAMS[teamIndex];
+                    }
+
+                    if (roleIndex > -1 && roleIndex < ROLES.length) {
+                        role = ROLES[roleIndex];
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+            }
+
             CotDetail groupDetail = new CotDetail(TAG_GROUP);
-            groupDetail.setAttribute(TAG_ROLE, VALUE_RTO);
-            groupDetail.setAttribute(TAG_NAME, VALUE_WHITE);
+            groupDetail.setAttribute(TAG_ROLE, role);
+            groupDetail.setAttribute(TAG_NAME, team);
             cotDetail.addChild(groupDetail);
 
             if (userInfo.batteryPercentage != null) {

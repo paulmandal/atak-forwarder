@@ -8,26 +8,64 @@
     tools:parentTag="android.widget.RelativeLayout">
 
     <TextView
+        android:id="@+id/label_comm_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="@string/active_device" />
+        android:text="@string/comm_device" />
 
-
-    <Button
-        android:id="@+id/button_write_to_device"
+    <TextView
+        android:id="@+id/textview_comm_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/write_to_device" />
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/label_comm_device" />
+
+    <ListView
+        android:id="@+id/listview_bonded_devices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/label_target_device"
+        android:layout_below="@id/label_comm_device"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:id="@+id/label_target_device"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/button_refresh_connected_devices"
+        android:layout_alignParentStart="true"
+        android:text="@string/target_device" />
+
+    <TextView
+        android:id="@+id/textview_target_device"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/button_refresh_connected_devices"
+        android:layout_toEndOf="@id/label_target_device" />
 
     <Button
-        android:id="@+id/button_scan_for_devices"
+        android:id="@+id/button_refresh_connected_devices"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:text="@string/scan_for_devices" />
+        android:text="@string/refresh_connected_devices" />
+
+    <Button
+        android:id="@+id/button_write_to_non_atak"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/write_to_non_atak" />
+
+    <Button
+        android:id="@+id/button_set_comm_device"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="@string/set_comm_device" />
 </merge>

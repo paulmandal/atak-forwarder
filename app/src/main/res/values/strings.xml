@@ -57,9 +57,11 @@
     <!-- DevicesTab -->
     <string name="callsign">Callsign</string>
     <string name="gps_update_frequency">Position Bcast Frequency (s)</string>
-    <string name="active_device">Active Device</string>
-    <string name="write_to_device">Write to Device</string>
+    <string name="comm_device">Comm Device</string>
+    <string name="target_device">Target Device</string>
+    <string name="set_comm_device">Set Comm Device</string>
+    <string name="write_to_non_atak">Write to non-ATAK</string>
     <string name="close">Close</string>
-    <string name="scan_for_devices">Scan</string>
+    <string name="refresh_connected_devices">Refresh</string>
 
 </resources>

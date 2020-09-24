@@ -88,7 +88,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private Handler mUiThreadHandler;
     private StateStorage mStateStorage;
 
-    IMeshService mMeshService;
+    private IntentFilter mIntentFilter;
+
+    private IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
 
     private final List<ChannelSettingsListener> mChannelSettingsListeners = new CopyOnWriteArrayList<>();
@@ -104,7 +106,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     boolean mRadioSetupCalled = false;
 
     private int mDataRate;
-    private String mBondedDeviceAddress;
+    private String mCommDeviceAddress;
 
     public MeshtasticCommHardware(Handler uiThreadHandler,
                                   ChannelListener channelListener,
@@ -114,7 +116,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                                   Activity activity,
                                   UserInfo selfInfo,
                                   StateStorage stateStorage,
-                                  String bondedDeviceAddress) {
+                                  String commDeviceAddress) {
         super(uiThreadHandler, commandQueue, queuedCommandFactory, channelTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
         mUiThreadHandler = uiThreadHandler;
@@ -122,7 +124,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         mChannelListener = channelListener;
         mChannelTracker = channelTracker;
         mStateStorage = stateStorage;
-        mBondedDeviceAddress = bondedDeviceAddress;
+        mCommDeviceAddress = commDeviceAddress;
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -144,7 +146,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         };
 
         mServiceIntent = new Intent();
-        mServiceIntent.setClassName("com.geeksville.mesh","com.geeksville.mesh.service.MeshService");
+        mServiceIntent.setClassName("com.geeksville.mesh", "com.geeksville.mesh.service.MeshService");
 
         bindToService();
 
@@ -153,6 +155,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         filter.addAction(ACTION_NODE_CHANGE);
         filter.addAction(ACTION_RECEIVED_DATA);
         filter.addAction(ACTION_MESSAGE_STATUS);
+
+        mIntentFilter = filter;
 
         mActivity.registerReceiver(mBroadcastReceiver, filter);
     }
@@ -236,22 +240,35 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     public boolean setDeviceAddress(String deviceAddress) {
+        Log.e(TAG, "setDeviceAddress: " + deviceAddress);
         boolean success = false;
         try {
             mMeshService.setDeviceAddress(String.format("x%s", deviceAddress));
-            mBondedDeviceAddress = deviceAddress;
+            mCommDeviceAddress = deviceAddress;
 
-            mStateStorage.storeBondedDeviceAddress(deviceAddress);
+            mStateStorage.storeCommDeviceAddress(deviceAddress);
 
             success = true;
+            Log.e(TAG, "setDeviceAddress success: " + success);
+            connect();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
         return success;
     }
 
+    public void suspendResume(boolean suspended) { // TODO: rename
+        if (suspended) {
+            mActivity.unregisterReceiver(mBroadcastReceiver);
+            setConnectionState(ConnectionState.DISCONNECTED);
+        } else {
+            mActivity.registerReceiver(mBroadcastReceiver, mIntentFilter);
+            setConnectionState(ConnectionState.CONNECTED);
+        }
+    }
+
     public String getDeviceAddress() {
-        return mBondedDeviceAddress;
+        return mCommDeviceAddress;
     }
 
     @Override
@@ -288,6 +305,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private void maybeInitialConnection() {
         ConnectionState oldConnectionState = getConnectionState();
+
+        try {
+            mMeshService.setDeviceAddress(String.format("x%s", mCommDeviceAddress)); // TODO: we need to do this?
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
 
         updateConnectionState();
 

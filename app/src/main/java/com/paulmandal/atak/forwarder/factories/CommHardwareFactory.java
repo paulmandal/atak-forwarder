@@ -26,7 +26,7 @@ public class CommHardwareFactory {
 
         CommHardware commHardware;
         UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
-        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getBondedDeviceAddress());
+        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
         return commHardware;
     }
 

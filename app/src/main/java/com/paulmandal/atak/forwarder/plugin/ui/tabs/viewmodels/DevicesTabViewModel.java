@@ -1,9 +1,8 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothGatt;
-import android.bluetooth.BluetoothManager;
 import android.content.Context;
 import android.util.Log;
 
@@ -15,6 +14,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.nonatak.NonAtakMeshtasticConfigurator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
 import java.util.ArrayList;
@@ -26,6 +26,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
     private static final String MARKER_MESHTASTIC = "Meshtastic";
 
+    private Activity mActivity;
     private Context mAtakContext;
     private MeshtasticCommHardware mMeshtasticCommHardware;
     private HashHelper mHashHelper;
@@ -38,9 +39,11 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
     private MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
 
-    public DevicesTabViewModel(Context atakContext,
+    public DevicesTabViewModel(Activity activity,
+                               Context atakContext,
                                MeshtasticCommHardware commHardware,
                                HashHelper hashHelper) {
+        mActivity = activity;
         mAtakContext = atakContext;
         mMeshtasticCommHardware = commHardware;
         mHashHelper = hashHelper;
@@ -113,6 +116,16 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     public void writeToNonAtak(String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
         Log.e(TAG, "Writing to device: " + deviceAddress + " callsign: " + deviceCallsign + " teamIndex: " + teamIndex + " roleIn: " + roleIndex + " refresh(s): " + refreshIntervalS);
         // Write settings to device
+        Byte[] pskBytes = mPsk.getValue();
+        byte[] pskBytesPrimitive = new byte[pskBytes.length];
+        for (int i = 0 ; i < pskBytes.length ; i++) {
+            pskBytesPrimitive[i] = pskBytes[i];
+        }
+        mMeshtasticCommHardware.suspendResume(true);
+        NonAtakMeshtasticConfigurator nonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName.getValue(), pskBytesPrimitive, mModemConfig.getValue(), teamIndex, roleIndex, refreshIntervalS);
+        nonAtakMeshtasticConfigurator.writeToDevice();
+        mMeshtasticCommHardware.suspendResume(false);
+
         // TODO: safety to not write to Comm Device
         // TODO: tell MeshtasticCommHardware shit has started
         // TODO: set async finished listener to tell MeshtasticCommhardware we're done

@@ -28,6 +28,7 @@ import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,13 +84,15 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private ChannelTracker mChannelTracker;
     private ChannelListener mChannelListener;
-    private final List<ChannelSettingsListener> mChannelSettingsListeners = new CopyOnWriteArrayList<>();
-    private MessageAckNackListener mMessageAckNackListener;
     private Activity mActivity;
     private Handler mUiThreadHandler;
+    private StateStorage mStateStorage;
 
     IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
+
+    private final List<ChannelSettingsListener> mChannelSettingsListeners = new CopyOnWriteArrayList<>();
+    private MessageAckNackListener mMessageAckNackListener;
 
     private CountDownLatch mPendingMessageCountdownLatch; // TODO: maybe move this up to MessageLengthLimitedCommHardware
     private int mPendingMessageId;
@@ -101,6 +104,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     boolean mRadioSetupCalled = false;
 
     private int mDataRate;
+    private String mBondedDeviceAddress;
 
     public MeshtasticCommHardware(Handler uiThreadHandler,
                                   ChannelListener channelListener,
@@ -108,13 +112,17 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   Activity activity,
-                                  UserInfo selfInfo) {
+                                  UserInfo selfInfo,
+                                  StateStorage stateStorage,
+                                  String bondedDeviceAddress) {
         super(uiThreadHandler, commandQueue, queuedCommandFactory, channelTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
         mUiThreadHandler = uiThreadHandler;
         mActivity = activity;
         mChannelListener = channelListener;
         mChannelTracker = channelTracker;
+        mStateStorage = stateStorage;
+        mBondedDeviceAddress = bondedDeviceAddress;
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -225,6 +233,25 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
         unbindAndStopService();
         bindToService();
+    }
+
+    public boolean setDeviceAddress(String deviceAddress) {
+        boolean success = false;
+        try {
+            mMeshService.setDeviceAddress(deviceAddress);
+            mBondedDeviceAddress = deviceAddress;
+
+            mStateStorage.storeBondedDeviceAddress(deviceAddress);
+
+            success = true;
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+    public String getDeviceAddress() {
+        return mBondedDeviceAddress;
     }
 
     @Override

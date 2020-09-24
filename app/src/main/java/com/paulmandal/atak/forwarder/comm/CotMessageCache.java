@@ -5,7 +5,7 @@ import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
-import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 
 import java.util.ArrayList;
 import java.util.List;

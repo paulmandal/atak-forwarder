@@ -1,7 +1,9 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothManager;
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.CallSuper;
@@ -15,11 +17,14 @@ import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
 import java.util.List;
-import java.util.Set;
 
 public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettingsListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTabViewModel.class.getSimpleName();
 
+    private static final String MARKER_MESHTASTIC = "Meshtastic";
+
+    private Context mAtakContext;
+    private MeshtasticCommHardware mMeshtasticCommHardware;
     private HashHelper mHashHelper;
 
     private MutableLiveData<List<String>> mMeshDevices = new MutableLiveData<>();
@@ -28,9 +33,11 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
     private MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
 
-    public DevicesTabViewModel(MeshtasticCommHardware commHardware,
+    public DevicesTabViewModel(Context atakContext,
+                               MeshtasticCommHardware commHardware,
                                HashHelper hashHelper) {
-
+        mAtakContext = atakContext;
+        mMeshtasticCommHardware = commHardware;
         mHashHelper = hashHelper;
 
         commHardware.addChannelSettingsListener(this);
@@ -60,15 +67,41 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void scanForDevices() {
-        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
-        Set<BluetoothDevice> pairedDevicesList = btAdapter.getBondedDevices();
+//        BluetoothAdapter btAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        BluetoothManager bm = (BluetoothManager) mAtakContext.getSystemService(Context.BLUETOOTH_SERVICE);
+        List<BluetoothDevice> devices = bm.getConnectedDevices(BluetoothGatt.GATT);
+        int status = -1;
 
-        for (BluetoothDevice pairedDevice : pairedDevicesList) {
-            Log.e(TAG, "pairedDevice.getName(): " + pairedDevice.getName());
-            Log.e(TAG, "pairedDevice.getAddress(): " + pairedDevice.getAddress());
-            Log.e(TAG, "type: " + pairedDevice.getType());
+        for (BluetoothDevice device : devices) {
+            status = bm.getConnectionState(device, BluetoothGatt.GATT);
+            Log.e(TAG, "pairedDevice.getName(): " + device.getName());
+            Log.e(TAG, "pairedDevice.getAddress(): " + device.getAddress());
+            Log.e(TAG, "type: " + device.getType());
+            Log.e(TAG, "address: " + device.getAddress());
+            Log.e(TAG, "bond state: " + device.getBondState());
+            Log.e(TAG, "status: " + status);
+            // compare status to:
+            //   BluetoothProfile.STATE_CONNECTED
+            //   BluetoothProfile.STATE_CONNECTING
+            //   BluetoothProfile.STATE_DISCONNECTED
+            //   BluetoothProfile.STATE_DISCONNECTING
         }
+
+//        Set<BluetoothDevice> pairedDevicesList = btAdapter.getBondedDevices();
+//        for (BluetoothDevice pairedDevice : pairedDevicesList) {
+//            String deviceName = pairedDevice.getName();
+//            if (deviceName.startsWith(MARKER_MESHTASTIC)) {
+//                String address = pairedDevice.getAddress();
+//                Log.e(TAG, "pairedDevice.getName(): " + deviceName);
+//                Log.e(TAG, "pairedDevice.getAddress(): " + address);
+//                Log.e(TAG, "type: " + pairedDevice.getType());
+//                Log.e(TAG, "address: " + pairedDevice.getAddress());
+//                Log.e(TAG, "bond state: " + pairedDevice.getBondState());
+//            }
+//        }
+
+        Log.e(TAG, "getDeviceAddress: " + mMeshtasticCommHardware.getDeviceAddress());
     }
 
     public void connectToDevice() {

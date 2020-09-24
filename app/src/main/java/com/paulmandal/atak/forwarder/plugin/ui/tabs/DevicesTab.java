@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.Button;
 import android.widget.RelativeLayout;
 
 import androidx.lifecycle.LifecycleOwner;
@@ -25,6 +26,7 @@ public class DevicesTab extends RelativeLayout {
 
     public void bind(LifecycleOwner lifecycleOwner,
                      DevicesTabViewModel devicesTabViewModel) {
-
+        Button scanButton = findViewById(R.id.button_scan_for_devices);
+        scanButton.setOnClickListener(v -> devicesTabViewModel.scanForDevices());
     }
 }

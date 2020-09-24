@@ -15,7 +15,7 @@ import com.paulmandal.atak.forwarder.BuildConfig;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.HackyTests;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
-import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
@@ -84,7 +84,7 @@ public class ForwarderLifecycle implements Lifecycle {
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
         ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory);
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory, stateStorage);
         InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, (MeshtasticCommHardware) mCommHardware, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
@@ -106,7 +106,7 @@ public class ForwarderLifecycle implements Lifecycle {
         MeshtasticCommHardware meshtasticCommHardware = (MeshtasticCommHardware) mCommHardware;
         StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, meshtasticCommHardware, commandQueue, hashHelper);
         ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, channelTracker, new QrHelper(), hashHelper);
-        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(meshtasticCommHardware, hashHelper);
+        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(atakContext, meshtasticCommHardware, hashHelper);
 
         mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 

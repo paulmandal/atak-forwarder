@@ -14,11 +14,20 @@
         android:layout_alignParentTop="true"
         android:text="@string/active_device" />
 
+
     <Button
         android:id="@+id/button_write_to_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/write_to_device" />
+
+    <Button
+        android:id="@+id/button_scan_for_devices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/scan_for_devices" />
 </merge>

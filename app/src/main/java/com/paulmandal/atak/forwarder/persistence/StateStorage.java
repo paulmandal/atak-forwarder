@@ -1,7 +1,9 @@
-package com.paulmandal.atak.forwarder.channel.persistence;
+package com.paulmandal.atak.forwarder.persistence;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
+import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.Config;
 
@@ -13,6 +15,7 @@ public class StateStorage {
 
     private static final String KEY_PLI_CACHE_PURGE_TIME = "pliCachePurgeTime";
     private static final String KEY_DEFAULT_CACHE_PURGE_TIME = "defaultCachePurgeTime";
+    private static final String KEY_BONDED_DEVICE_ADDRESS = "bondedDeviceAddress";
 
     private Context mContext;
 
@@ -28,6 +31,19 @@ public class StateStorage {
     public int getPliCachePurgeTimeMs() {
         SharedPreferences sharedPref = mContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
         return sharedPref.getInt(KEY_PLI_CACHE_PURGE_TIME, DEFAULT_PLI_CACHE_PURGE_TIME_MS);
+    }
+
+    @Nullable
+    public String getBondedDeviceAddress() {
+        SharedPreferences sharedPreferences = mContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        return sharedPreferences.getString(KEY_BONDED_DEVICE_ADDRESS, null);
+    }
+
+    public void storeBondedDeviceAddress(String deviceAddress) {
+        SharedPreferences sharedPref = mContext.getSharedPreferences(SHARED_PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(KEY_BONDED_DEVICE_ADDRESS, deviceAddress);
+        editor.apply();
     }
 
     public void storeDefaultCachePurgeTime(int shapeCachePurgeTimeMs) {

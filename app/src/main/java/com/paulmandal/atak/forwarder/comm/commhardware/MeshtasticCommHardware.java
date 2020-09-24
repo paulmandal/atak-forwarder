@@ -9,6 +9,7 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -444,7 +445,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             mDataRate = channelSettings.getModemConfig().getNumber();
 
             for (ChannelSettingsListener listener : mChannelSettingsListeners) {
-                listener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig());
+                mUiThreadHandler.post(() -> listener.onChannelSettingsUpdated(channelSettings.getName(), channelSettings.getPsk().toByteArray(), channelSettings.getModemConfig()));
             }
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in updateChannelStatus(): " + e.getMessage());

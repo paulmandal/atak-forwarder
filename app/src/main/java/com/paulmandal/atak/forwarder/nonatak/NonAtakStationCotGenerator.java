@@ -179,12 +179,6 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
                 cotDetail.addChild(statusDetail);
             }
 
-            // TODO: remove this
-//                CotDetail trackDetail = new CotDetail(TAG_TRACK);
-//                trackDetail.setAttribute(TAG_COURSE, VALUE_ZERO_POINT_ZERO);
-//                trackDetail.setAttribute(TAG_SPEED, VALUE_ZERO_POINT_ZERO);
-//                cotDetail.addChild(trackDetail);
-
             spoofedPli.setDetail(cotDetail);
 
             mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);

@@ -106,7 +106,7 @@ public class ForwarderLifecycle implements Lifecycle {
         MeshtasticCommHardware meshtasticCommHardware = (MeshtasticCommHardware) mCommHardware;
         StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, meshtasticCommHardware, commandQueue, hashHelper);
         ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, channelTracker, new QrHelper(), hashHelper);
-        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, atakContext, meshtasticCommHardware, hashHelper);
+        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, uiThreadHandler, atakContext, meshtasticCommHardware, hashHelper);
 
         mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 

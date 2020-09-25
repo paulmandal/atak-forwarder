@@ -1,7 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
 import androidx.annotation.CallSuper;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -32,17 +31,14 @@ public class ChannelStatusViewModel implements MeshtasticCommHardware.ChannelSet
         mPskHash.setValue(mHashHelper.hashFromBytes(psk));
     }
 
-    @Nullable
     public LiveData<String> getChannelName() {
         return mChannelName;
     }
 
-    @Nullable
     public LiveData<MeshProtos.ChannelSettings.ModemConfig> getModemConfig() {
         return mModemConfig;
     }
 
-    @Nullable
     public LiveData<String> getPskHash() {
         return mPskHash;
     }

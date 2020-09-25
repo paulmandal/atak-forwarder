@@ -39,10 +39,10 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private MutableLiveData<List<BluetoothDevice>> mBluetoothDevices = new MutableLiveData<>();
     private MutableLiveData<String> mCommDeviceAddress = new MutableLiveData<>();
 
-    private MutableLiveData<String> mChannelName = new MutableLiveData<>();
-    private MutableLiveData<String> mPskHash = new MutableLiveData<>();
-    private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
-    private MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
+    private String mChannelName;
+    private String mPskHash;
+    private byte[] mPsk;
+    private MeshProtos.ChannelSettings.ModemConfig mModemConfig;
 
     private MutableLiveData<Boolean> mNonAtakDeviceWriteInProgress = new MutableLiveData<>();
 
@@ -62,30 +62,10 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         mNonAtakDeviceWriteInProgress.setValue(false);
     }
 
-    @Nullable
-    public LiveData<String> getChannelName() {
-        return mChannelName;
-    }
-
-    @Nullable
-    public LiveData<MeshProtos.ChannelSettings.ModemConfig> getModemConfig() {
-        return mModemConfig;
-    }
-
-    @Nullable
-    public LiveData<String> getPskHash() {
-        return mPskHash;
-    }
-
-    @Nullable
-    public LiveData<Byte[]> getPsk() { return mPsk; }
-
-    @Nullable
     public LiveData<List<BluetoothDevice>> getBluetoothDevices() {
         return mBluetoothDevices;
     }
 
-    @Nullable
     public LiveData<String> getCommDeviceAddress() {
         return mCommDeviceAddress;
     }
@@ -106,18 +86,6 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
             }
         }
 
-//        BluetoothManager bm = (BluetoothManager) mAtakContext.getSystemService(Context.BLUETOOTH_SERVICE);
-//        List<BluetoothDevice> devices = bm.getConnectedDevices(BluetoothGatt.GATT);
-//
-//        List<BluetoothDevice> filteredDevices = new ArrayList<>(devices.size());
-//
-//        for (BluetoothDevice device : devices) {
-//            Log.e(TAG, "device: " + device.getName() + ", " + device.getAddress());
-//            if (device.getName().startsWith(MARKER_MESHTASTIC)) {
-//                filteredDevices.add(device);
-//            }
-//        }
-
         mBluetoothDevices.setValue(filteredDevices);
     }
 
@@ -128,8 +96,10 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void writeToNonAtak(String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
-        if (deviceAddress.equals(mCommDeviceAddress)) {
-            Log.e(TAG, "Attempt to write to CommDevice address!");
+        if (deviceAddress.equals(mCommDeviceAddress.getValue())
+                || mChannelName == null
+                || mModemConfig == null) {
+            Log.e(TAG, "Attempt to write to CommDevice address or write without channel settings!");
             return;
         }
 
@@ -145,27 +115,17 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
 
         // Write settings to device
-        Byte[] pskBytes = mPsk.getValue();
-        byte[] pskBytesPrimitive = new byte[pskBytes.length];
-        for (int i = 0 ; i < pskBytes.length ; i++) {
-            pskBytesPrimitive[i] = pskBytes[i];
-        }
-        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName.getValue(), pskBytesPrimitive, mModemConfig.getValue(), teamIndex, roleIndex, refreshIntervalS, this);
+        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, this);
         mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 
     @Override
     @CallSuper
     public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mChannelName.setValue(channelName);
-        mModemConfig.setValue(modemConfig);
-        mPskHash.setValue(mHashHelper.hashFromBytes(psk));
-
-        Byte[] pskBytes = new Byte[psk.length];
-        for (int i = 0 ; i < psk.length ; i++) {
-            pskBytes[i] = psk[i];
-        }
-        mPsk.setValue(pskBytes);
+        mChannelName = channelName;
+        mModemConfig = modemConfig;
+        mPskHash = mHashHelper.hashFromBytes(psk);
+        mPsk = psk;
     }
 
     @Override

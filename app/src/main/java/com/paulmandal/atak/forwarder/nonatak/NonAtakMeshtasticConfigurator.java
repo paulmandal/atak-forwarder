@@ -72,6 +72,7 @@ public class NonAtakMeshtasticConfigurator {
     private boolean mWroteToDevice = false;
 
     private Runnable mTimeoutRunnable = this::cancel;
+    private Runnable mPostWriteDelayRunnable;
 
     public NonAtakMeshtasticConfigurator(Activity activity,
                                          Handler uiThreadHandler,
@@ -131,6 +132,8 @@ public class NonAtakMeshtasticConfigurator {
     }
 
     public void cancel() {
+        mUiThreadHandler.removeCallbacks(mTimeoutRunnable);
+        mUiThreadHandler.removeCallbacks(mPostWriteDelayRunnable);
         unbind();
     }
 
@@ -226,7 +229,7 @@ public class NonAtakMeshtasticConfigurator {
 
             Log.e(TAG, "post-set node Info: " + mMeshService.getMyNodeInfo());
 
-            mUiThreadHandler.postDelayed(() -> {
+            mPostWriteDelayRunnable = () -> {
                 try {
                     Log.e(TAG, "setting address back to: " + mCommDeviceAddress);
                     setDeviceAddress(mCommDeviceAddress); // TODO: verify this changed back
@@ -236,7 +239,8 @@ public class NonAtakMeshtasticConfigurator {
                 mWroteToDevice = true;
                 Log.e(TAG, "Done writing to device: " + mTargetDeviceAddress);
 
-            }, WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE);
+            };
+            mUiThreadHandler.postDelayed(mPostWriteDelayRunnable, WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE);
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
             e.printStackTrace();

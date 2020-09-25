@@ -25,7 +25,7 @@ public class CommHardwareFactory {
         String atakUid = mapView.getSelfMarker().getUID();
 
         CommHardware commHardware;
-        UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
+        UserInfo selfInfo = new UserInfo(callsign, null, atakUid, null);
         commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
         return commHardware;
     }

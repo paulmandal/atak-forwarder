@@ -70,7 +70,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
-            mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, false, null));
+            mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
             notifyListeners();
         }

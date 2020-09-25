@@ -8,8 +8,8 @@ public class NonAtakUserInfo extends UserInfo {
     public final int altitude;
     public final String shortName;
 
-    public NonAtakUserInfo(String callsign, String meshId, boolean isInGroup, @Nullable Integer batteryPercentage, double lat, double lon, int altitude, String shortName) {
-        super(callsign, meshId, null, isInGroup, batteryPercentage);
+    public NonAtakUserInfo(String callsign, String meshId, @Nullable Integer batteryPercentage, double lat, double lon, int altitude, String shortName) {
+        super(callsign, meshId, null, batteryPercentage);
 
         this.lat = lat;
         this.lon = lon;

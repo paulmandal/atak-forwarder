@@ -11,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,6 +106,9 @@ public class DevicesTab extends RelativeLayout {
             maybeUpdateCommDevice(commDevice, commDeviceAddress, bluetoothDevices);
             updateDevicesAdapter(devicesListView, pluginContext, bluetoothDevices, commDeviceAddress);
         });
+
+        ProgressBar deviceWriteProgressBar = findViewById(R.id.progressbar_writing_to_device);
+        devicesTabViewModel.getNonAtakDeviceWriteInProgress().observe(lifecycleOwner, nonAtakDeviceWriteInProgress -> deviceWriteProgressBar.setVisibility(nonAtakDeviceWriteInProgress ? View.VISIBLE : View.GONE));
     }
 
     private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<BluetoothDevice> bluetoothDevices) {

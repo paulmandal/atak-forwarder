@@ -90,6 +90,10 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         return mCommDeviceAddress;
     }
 
+    public LiveData<Boolean> getNonAtakDeviceWriteInProgress() {
+        return mNonAtakDeviceWriteInProgress;
+    }
+
     public void refreshDevices() {
         BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -129,6 +133,8 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
             return;
         }
 
+        mNonAtakDeviceWriteInProgress.setValue(true);
+
         // TODO: remove
         Log.e(TAG, "Writing to device: " + deviceAddress + " callsign: " + deviceCallsign + " teamIndex: " + teamIndex + " roleIn: " + roleIndex + " refresh(s): " + refreshIntervalS);
 
@@ -166,5 +172,6 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     public void onDoneWritingToDevice() {
         mMeshtasticCommHardware.suspendResume(false);
         mNonAtakMeshtasticConfigurator = null;
+        mNonAtakDeviceWriteInProgress.setValue(false);
     }
 }

@@ -53,12 +53,12 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
     @Override
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
-        Log.d(TAG, "processCotEvent: " + cotEvent);
+//        Log.d(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
         if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.CONNECTED
             && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this
+//                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this
                 return;
             }
             mCotMessageCache.cacheEvent(cotEvent);
@@ -85,8 +85,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
             } catch (MappingNotFoundException | UnknownDetailFieldException e) {
                 Log.e(TAG, e.getMessage());
             }
-            Log.d(TAG, "l protobuf len: " + cotProtobufOriginal.length);
-            Log.d(TAG, "m protobuf len: " + minimalProtobuf.length);
+//            Log.d(TAG, "l protobuf len: " + cotProtobufOriginal.length);
+//            Log.d(TAG, "m protobuf len: " + minimalProtobuf.length);
 
             CotEvent minimalCotEvent = mCotEventProtobufConverter.toCotEvent(minimalProtobuf);
 
@@ -95,8 +95,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
                 return;
             }
 
-            Log.d(TAG, "o: " + cotEvent.toString());
-            Log.d(TAG, "m: " + minimalCotEvent.toString());
+//            Log.d(TAG, "o: " + cotEvent.toString());
+//            Log.d(TAG, "m: " + minimalCotEvent.toString());
         }
     }
 

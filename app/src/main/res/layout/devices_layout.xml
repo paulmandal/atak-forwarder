@@ -31,12 +31,21 @@
         android:layout_below="@id/label_comm_device"
         android:layout_alignParentStart="true" />
 
+    <ProgressBar
+        android:id="@+id/progressbar_writing_to_device"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_above="@id/label_non_atak_settings"
+        android:layout_alignParentStart="true"
+        android:visibility="gone"
+        android:paddingEnd="8dp" />
+
     <TextView
         android:id="@+id/label_target_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/label_non_atak_settings"
-        android:layout_alignParentStart="true"
+        android:layout_toEndOf="@id/progressbar_writing_to_device"
         android:paddingEnd="8dp"
         android:text="@string/target_device" />
 

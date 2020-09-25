@@ -421,7 +421,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     lon = position.getLongitude();
                     altitude = position.getAltitude();
                 }
-                userInfoList.add(new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), true, nodeInfoItem.getBatteryPctLevel(), lat, lon, altitude, meshUser.getShortName()));
+                userInfoList.add(new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfoItem.getBatteryPctLevel(), lat, lon, altitude, meshUser.getShortName()));
             }
             mChannelListener.onChannelMembersUpdated(userInfoList);
         } catch (RemoteException e) {

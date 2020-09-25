@@ -13,6 +13,7 @@ public class ContactProtobufConverter {
 
     private static final String KEY_CALLSIGN = "callsign";
     private static final String KEY_ENDPOINT = "endpoint";
+    private static final String KEY_PHONE = "phone";
 
     private static final String FAKE_ENDPOINT_ADDRESS = "0.0.0.0";
     private static final String DEFAULT_CHAT_PORT_AND_PROTO = ":4242:tcp";
@@ -34,6 +35,9 @@ public class ContactProtobufConverter {
                     } catch (UnknownHostException e) {
                         e.printStackTrace();
                     }
+                    break;
+                case KEY_PHONE:
+                    builder.setPhone(attribute.getValue());
                     break;
                 default:
                     throw new UnknownDetailFieldException("Don't know how to handle detail field: contact." + attribute.getName());
@@ -64,6 +68,10 @@ public class ContactProtobufConverter {
         } else if (addFakeEndpointIfMissing) {
             // PLI without endpoint -- sent by client that doesn't have an IP address, add a fake endpoint so that GeoChat works
             contactDetail.setAttribute(KEY_ENDPOINT, FAKE_ENDPOINT_ADDRESS + DEFAULT_CHAT_PORT_AND_PROTO);
+        }
+
+        if (!StringUtils.isNullOrEmpty(contact.getPhone())) {
+            contactDetail.setAttribute(KEY_PHONE, contact.getPhone());
         }
 
         cotDetail.addChild(contactDetail);

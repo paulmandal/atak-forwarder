@@ -97,7 +97,7 @@ public class ForwarderLifecycle implements Lifecycle {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion);
+        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion, mMapView.getDeviceCallsign());
 
         Context atakContext = mMapView.getContext();
 

@@ -83,11 +83,13 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
 
     private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
     private final String mPluginVersion;
+    private final String mLocalCallsign;
     private CountDownLatch mCountDownLatch;
 
-    public NonAtakStationCotGenerator(ChannelTracker channelTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion) {
+    public NonAtakStationCotGenerator(ChannelTracker channelTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion, String localCallsign) {
         mInboundMessageHandler = inboundMessageHandler;
         mPluginVersion = pluginVersion;
+        mLocalCallsign = localCallsign;
 
         Thread thread = new Thread(() -> {
             while (true) {
@@ -109,6 +111,10 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
 
     private void generateNonAtakStationCots() {
         for (NonAtakUserInfo userInfo : mNonAtakStations) {
+            if (userInfo.callsign.equals(mLocalCallsign)) {
+                continue;
+            }
+
             CotEvent spoofedPli = new CotEvent();
 
             CoordinatedTime nowCoordinatedTime = new CoordinatedTime(System.currentTimeMillis());

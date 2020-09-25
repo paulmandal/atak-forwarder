@@ -25,7 +25,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private Handler mUiThreadHandler;
 
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
-    private final List<NonAtakUserInfo> mNonAtatkStations = new CopyOnWriteArrayList<>();
+    private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
 
     private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
 
@@ -38,7 +38,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     public List<UserInfo> getAtakUsers() {
         return mAtakUsers;
     }
-    public List<NonAtakUserInfo> getNonAtakStations() { return mNonAtatkStations; }
+    public List<NonAtakUserInfo> getNonAtakStations() { return mNonAtakStations; }
 
     @Override
     public void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid) {
@@ -57,7 +57,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
         // Remove user from non-ATAK stations list if present
         UserInfo nonAtakStationUserInfo = null;
-        for (UserInfo user : mNonAtatkStations) {
+        for (UserInfo user : mNonAtakStations) {
             if (user.meshId.equals(meshId)) {
                 nonAtakStationUserInfo = user;
                 break;
@@ -65,7 +65,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         }
 
         if (nonAtakStationUserInfo != null) {
-            mNonAtatkStations.remove(nonAtakStationUserInfo);
+            mNonAtakStations.remove(nonAtakStationUserInfo);
         }
 
         // Add user to ATAK users list and notify listeners
@@ -97,14 +97,14 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             }
 
             boolean repeatedUserEntry = newUsers.contains(possiblyNewUser);
-            boolean alreadyKnowAboutStation = mNonAtatkStations.contains(possiblyNewUser);
+            boolean alreadyKnowAboutStation = mNonAtakStations.contains(possiblyNewUser);
             if (!found && !repeatedUserEntry && !alreadyKnowAboutStation) {
                 newUsers.add(possiblyNewUser);
             }
         }
 
         if (newUsers.size() > 0) {
-            mNonAtatkStations.addAll(newUsers);
+            mNonAtakStations.addAll(newUsers);
 
             notifyListeners();
         }
@@ -129,13 +129,13 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
     public void clearData() {
         mAtakUsers.clear();
-        mNonAtatkStations.clear();
+        mNonAtakStations.clear();
         notifyListeners();
     }
 
     private void notifyListeners() {
         for (ChannelMembersUpdateListener channelMembersUpdateListener : mChannelMembersUpdateListeners) {
-            mUiThreadHandler.post(() -> channelMembersUpdateListener.onChannelMembersUpdated(mAtakUsers, mNonAtatkStations));
+            mUiThreadHandler.post(() -> channelMembersUpdateListener.onChannelMembersUpdated(mAtakUsers, mNonAtakStations));
         }
     }
 }

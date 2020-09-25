@@ -5,8 +5,8 @@ import android.util.Log;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

@@ -328,7 +328,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             broadcastDiscoveryMessage(true);
         }
 
-        notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED);
+        notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.UNPAIRED);
     }
 
     private void updateConnectionState() {
@@ -339,7 +339,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 connectionState = ConnectionState.UNPAIRED;
             } else {
                 boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
-                connectionState = connected ? ConnectionState.CONNECTED : ConnectionState.DISCONNECTED;
+                connectionState = connected ? ConnectionState.CONNECTED : ConnectionState.UNPAIRED;
             }
 
             setConnectionState(connectionState);

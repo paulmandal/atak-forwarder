@@ -9,6 +9,7 @@
 
     <TextView
         android:id="@+id/label_comm_device"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -18,6 +19,7 @@
 
     <TextView
         android:id="@+id/textview_comm_device"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -37,11 +39,12 @@
         android:layout_height="16dp"
         android:layout_above="@id/label_non_atak_settings"
         android:layout_alignParentStart="true"
-        android:visibility="gone"
-        android:paddingEnd="8dp" />
+        android:paddingEnd="8dp"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/label_target_device"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/label_non_atak_settings"
@@ -51,6 +54,7 @@
 
     <TextView
         android:id="@+id/textview_target_device"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/label_non_atak_settings"
@@ -58,6 +62,7 @@
 
     <TextView
         android:id="@+id/label_non_atak_settings"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/edittext_team_index"
@@ -68,6 +73,7 @@
 
     <EditText
         android:id="@+id/edittext_device_callsign"
+        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/edittext_team_index"
@@ -77,6 +83,7 @@
 
     <EditText
         android:id="@+id/edittext_pli_interval_s"
+        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/edittext_role_index"
@@ -86,6 +93,7 @@
 
     <EditText
         android:id="@+id/edittext_team_index"
+        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/edittext_role_index"
@@ -95,6 +103,7 @@
 
     <EditText
         android:id="@+id/edittext_role_index"
+        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/button_refresh_connected_devices"
@@ -104,25 +113,29 @@
 
     <Button
         android:id="@+id/button_refresh_connected_devices"
+        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/refresh_connected_devices" />
 
+
+    <Button
+        android:id="@+id/button_set_comm_device"
+        style="@style/SmallTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_toStartOf="@id/button_write_to_non_atak"
+        android:text="@string/set_comm_device" />
+
     <Button
         android:id="@+id/button_write_to_non_atak"
+        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/write_to_non_atak" />
-
-    <Button
-        android:id="@+id/button_set_comm_device"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/set_comm_device" />
 </merge>

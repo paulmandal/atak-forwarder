@@ -34,6 +34,8 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private MeshtasticCommHardware mMeshtasticCommHardware;
     private HashHelper mHashHelper;
 
+    private NonAtakMeshtasticConfigurator mNonAtakMeshtasticConfigurator;
+
     private MutableLiveData<List<BluetoothDevice>> mBluetoothDevices = new MutableLiveData<>();
     private MutableLiveData<String> mCommDeviceAddress = new MutableLiveData<>();
 
@@ -41,6 +43,8 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private MutableLiveData<String> mPskHash = new MutableLiveData<>();
     private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
     private MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
+
+    private MutableLiveData<Boolean> mNonAtakDeviceWriteInProgress = new MutableLiveData<>();
 
     public DevicesTabViewModel(Activity activity,
                                Handler uiThreadHandler,
@@ -55,6 +59,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
         commHardware.addChannelSettingsListener(this);
         mCommDeviceAddress.setValue(commHardware.getDeviceAddress());
+        mNonAtakDeviceWriteInProgress.setValue(false);
     }
 
     @Nullable
@@ -119,20 +124,28 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void writeToNonAtak(String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+        if (deviceAddress.equals(mCommDeviceAddress)) {
+            Log.e(TAG, "Attempt to write to CommDevice address!");
+            return;
+        }
+
+        // TODO: remove
         Log.e(TAG, "Writing to device: " + deviceAddress + " callsign: " + deviceCallsign + " teamIndex: " + teamIndex + " roleIn: " + roleIndex + " refresh(s): " + refreshIntervalS);
+
+        if (mNonAtakMeshtasticConfigurator != null) {
+            mNonAtakMeshtasticConfigurator.cancel();
+        } else {
+            mMeshtasticCommHardware.suspendResume(true);
+        }
+
         // Write settings to device
         Byte[] pskBytes = mPsk.getValue();
         byte[] pskBytesPrimitive = new byte[pskBytes.length];
         for (int i = 0 ; i < pskBytes.length ; i++) {
             pskBytesPrimitive[i] = pskBytes[i];
         }
-        mMeshtasticCommHardware.suspendResume(true);
-        NonAtakMeshtasticConfigurator nonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName.getValue(), pskBytesPrimitive, mModemConfig.getValue(), teamIndex, roleIndex, refreshIntervalS, this);
-        nonAtakMeshtasticConfigurator.writeToDevice();
-
-        // TODO: safety to not write to Comm Device
-        // TODO: tell MeshtasticCommHardware shit has started
-        // TODO: set async finished listener to tell MeshtasticCommhardware we're done
+        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName.getValue(), pskBytesPrimitive, mModemConfig.getValue(), teamIndex, roleIndex, refreshIntervalS, this);
+        mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 
     @Override
@@ -152,5 +165,6 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     @Override
     public void onDoneWritingToDevice() {
         mMeshtasticCommHardware.suspendResume(false);
+        mNonAtakMeshtasticConfigurator = null;
     }
 }

@@ -122,6 +122,10 @@ public class NonAtakMeshtasticConfigurator {
         mActivity.registerReceiver(mBroadcastReceiver, filter);
     }
 
+    public void cancel() {
+        unbind();
+    }
+
     private void onConnected() {
         try {
             Log.e(TAG, "Setting non-ATAK address: " + mTargetDeviceAddress);
@@ -237,7 +241,12 @@ public class NonAtakMeshtasticConfigurator {
 
         Log.e(TAG, "got reconnect after writing");
 
-        mActivity.unregisterReceiver(mBroadcastReceiver);
+        unbind();
         mListener.onDoneWritingToDevice();
+    }
+
+    private void unbind() {
+        mActivity.unregisterReceiver(mBroadcastReceiver);
+        mActivity.unbindService(mServiceConnection);
     }
 }

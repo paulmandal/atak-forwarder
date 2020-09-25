@@ -8,19 +8,17 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 import java.util.List;
@@ -126,6 +124,7 @@ public class DevicesTab extends RelativeLayout {
     }
 
     private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+        Toast.makeText(getContext(), "Writing to non-ATAK device", Toast.LENGTH_SHORT).show();
         devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS);
     }
 }

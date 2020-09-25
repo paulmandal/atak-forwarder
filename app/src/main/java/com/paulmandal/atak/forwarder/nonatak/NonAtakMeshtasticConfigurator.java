@@ -26,6 +26,9 @@ public class NonAtakMeshtasticConfigurator {
         void onDoneWritingToDevice();
     }
 
+    public static final int WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE = Config.WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE;
+    public static final int DEVICE_CONNECTION_TIMEOUT = Config.DEVICE_CONNECTION_TIMEOUT;
+
     private static final int POSITION_BROADCAST_INTERVAL_S = Config.POSITION_BROADCAST_INTERVAL_S;
     private static final int LCD_SCREEN_ON_S = Config.LCD_SCREEN_ON_S;
 
@@ -43,6 +46,7 @@ public class NonAtakMeshtasticConfigurator {
     private static final String STATE_CONNECTED = "CONNECTED";
 
     private final Activity mActivity;
+    private final Handler mUiThreadHandler;
 
     private final String mCommDeviceAddress;
     private final String mTargetDeviceAddress;
@@ -67,7 +71,10 @@ public class NonAtakMeshtasticConfigurator {
     private boolean mStartedWritingToDevice = false;
     private boolean mWroteToDevice = false;
 
+    private Runnable mTimeoutRunnable = this::cancel;
+
     public NonAtakMeshtasticConfigurator(Activity activity,
+                                         Handler uiThreadHandler,
                                          String commDeviceAddress,
                                          String targetDeviceAddress,
                                          String deviceCallsign,
@@ -79,6 +86,7 @@ public class NonAtakMeshtasticConfigurator {
                                          int pliIntervalS,
                                          Listener listener) {
         mActivity = activity;
+        mUiThreadHandler = uiThreadHandler;
         mCommDeviceAddress = commDeviceAddress;
         mTargetDeviceAddress = targetDeviceAddress;
         mDeviceCallsign = deviceCallsign;
@@ -129,6 +137,7 @@ public class NonAtakMeshtasticConfigurator {
     private void onConnected() {
         try {
             Log.e(TAG, "Setting non-ATAK address: " + mTargetDeviceAddress);
+            mUiThreadHandler.postDelayed(mTimeoutRunnable, DEVICE_CONNECTION_TIMEOUT);
             setDeviceAddress(mTargetDeviceAddress);
         } catch (RemoteException e) {
             e.printStackTrace();
@@ -157,6 +166,7 @@ public class NonAtakMeshtasticConfigurator {
                     boolean connected = extraConnected.equals(STATE_CONNECTED);
 
                     if (connected) {
+                        mUiThreadHandler.removeCallbacks(mTimeoutRunnable);
                         maybeWriteToDevice();
                         maybeDoneWriting();
                     }
@@ -216,7 +226,7 @@ public class NonAtakMeshtasticConfigurator {
 
             Log.e(TAG, "post-set node Info: " + mMeshService.getMyNodeInfo());
 
-            new Handler().postDelayed(() -> {
+            mUiThreadHandler.postDelayed(() -> {
                 try {
                     Log.e(TAG, "setting address back to: " + mCommDeviceAddress);
                     setDeviceAddress(mCommDeviceAddress); // TODO: verify this changed back
@@ -226,8 +236,7 @@ public class NonAtakMeshtasticConfigurator {
                 mWroteToDevice = true;
                 Log.e(TAG, "Done writing to device: " + mTargetDeviceAddress);
 
-            }, 60000);
-
+            }, WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE);
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
             e.printStackTrace();

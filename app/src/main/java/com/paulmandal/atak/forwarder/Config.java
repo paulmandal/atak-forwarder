@@ -16,6 +16,8 @@ public class Config {
      */
     public static final int POSITION_BROADCAST_INTERVAL_S = 3600;
     public static final int LCD_SCREEN_ON_S = 1;
+    public static final int WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE = 60000;
+    public static final int DEVICE_CONNECTION_TIMEOUT = 30000;
 
     /**
      * Tweaks to message handling

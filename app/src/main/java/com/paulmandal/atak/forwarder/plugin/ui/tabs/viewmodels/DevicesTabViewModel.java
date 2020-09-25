@@ -144,7 +144,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         for (int i = 0 ; i < pskBytes.length ; i++) {
             pskBytesPrimitive[i] = pskBytes[i];
         }
-        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName.getValue(), pskBytesPrimitive, mModemConfig.getValue(), teamIndex, roleIndex, refreshIntervalS, this);
+        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName.getValue(), pskBytesPrimitive, mModemConfig.getValue(), teamIndex, roleIndex, refreshIntervalS, this);
         mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 

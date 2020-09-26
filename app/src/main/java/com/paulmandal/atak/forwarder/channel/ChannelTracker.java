@@ -84,6 +84,8 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     public void onChannelMembersUpdated(List<NonAtakUserInfo> userInfoList) {
         List<NonAtakUserInfo> newUsers = new ArrayList<>();
 
+        boolean updatedNonAtakStation = false;
+
         for (NonAtakUserInfo possiblyNewUser : userInfoList) {
             boolean found = false;
             for (UserInfo user : mAtakUsers) {
@@ -105,8 +107,10 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             }
 
             if (alreadyKnowAboutStation) {
-                Log.e(TAG, "Updating non-ATAK station");
+                updatedNonAtakStation = true;
                 NonAtakUserInfo userInfo = mNonAtakStations.get(mNonAtakStations.indexOf(possiblyNewUser));
+
+                Log.e(TAG, "Updating non-ATAK station: " + userInfo.callsign);
 
                 if (!Objects.equals(userInfo.lat, possiblyNewUser.lat)) {
                     userInfo.lat = possiblyNewUser.lat;
@@ -131,7 +135,9 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
                 Log.d(TAG, "Adding new non-ATAK user from Meshtastic: " + user.callsign);
             }
             mNonAtakStations.addAll(newUsers);
+        }
 
+        if (newUsers.size() > 0 || updatedNonAtakStation) {
             notifyListeners();
         }
     }

@@ -153,11 +153,11 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
 
             String team = TEAMS[WHITE_INDEX];
             String role = ROLES[RTO_INDEX];
-            if (userInfo.shortName != null && userInfo.shortName.length() == 2) {
+            if (userInfo.shortName != null && userInfo.shortName.length() > 1) {
                 try {
                     // Try to split the shortname and get team/role values
-                    int teamIndex = Integer.parseInt(userInfo.shortName.substring(0, 1));
-                    int roleIndex = Integer.parseInt(userInfo.shortName.substring(1, 2));
+                    int roleIndex = Integer.parseInt(userInfo.shortName.substring(0, 1));
+                    int teamIndex = Integer.parseInt(userInfo.shortName.substring(1));
 
                     if (teamIndex > -1 && teamIndex < TEAMS.length) {
                         team = TEAMS[teamIndex];

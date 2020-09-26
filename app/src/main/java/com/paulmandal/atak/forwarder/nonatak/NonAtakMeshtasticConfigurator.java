@@ -74,6 +74,7 @@ public class NonAtakMeshtasticConfigurator {
     private Runnable mTimeoutRunnable = () -> {
         Log.e(TAG, "Timed out writing to non-ATAK device!");
         cancel();
+        mListener.onDoneWritingToDevice();
     };
 
     private Runnable mPostWriteDelayRunnable;
@@ -227,9 +228,13 @@ public class NonAtakMeshtasticConfigurator {
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
 
+            if (NonAtakStationCotGenerator.ROLES.length > 9) {
+                throw new RuntimeException("NonAtakStationCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
+            }
+
             Log.e(TAG, "Node Info: " + mMeshService.getMyNodeInfo());
-            Log.e(TAG, "setting owner: " + mDeviceCallsign + ", " + String.format("%d%d", mTeamIndex, mRoleIndex));
-            mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mTeamIndex, mRoleIndex));
+            Log.e(TAG, "setting owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
+            mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex));
 
             Log.e(TAG, "post-set node Info: " + mMeshService.getMyNodeInfo());
 

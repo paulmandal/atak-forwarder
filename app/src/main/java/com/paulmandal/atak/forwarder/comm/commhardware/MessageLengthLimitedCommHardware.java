@@ -42,7 +42,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         int messageIndex = messageChunk[0] >> 4 & 0x0f;
         int messageCount = messageChunk[0] & 0x0f;
 
-        Log.d(TAG, "<---  messageChunk: " + messageIndex + "/" + messageCount + " from: " + meshId);
+        Log.d(TAG, "<---  messageChunk: " + (messageIndex + 1) + "/" + messageCount + " from: " + meshId);
 
         byte[] chunk = new byte[messageChunk.length - 1];
         for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {

@@ -48,7 +48,7 @@ public abstract class CommHardware {
 
     private Thread mMessageWorkerThread;
 
-    private ConnectionState mConnectionState;
+    private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mDestroyed = false;
 
     private UserInfo mSelfInfo;

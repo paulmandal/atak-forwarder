@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm;
 
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.geeksville.mesh.MeshProtos;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
@@ -11,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsListener {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
+
     private StateStorage mStateStorage;
     private CotComparer mCotComparer;
 
@@ -36,7 +39,7 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
 
     @Override
     public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mDataRateAwarePliCachePurgeTimeMs = mPliCachePurgeTimeMs * modemConfig.getNumber();
+        mDataRateAwarePliCachePurgeTimeMs = mPliCachePurgeTimeMs * (modemConfig.getNumber() + 1);
     }
 
     public boolean checkIfRecentlySent(CotEvent cotEvent) {

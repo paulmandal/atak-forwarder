@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.nonatak;
 
-import android.util.Log;
-
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -126,7 +124,6 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             spoofedPli.setStart(nowCoordinatedTime);
             spoofedPli.setStale(staleCoordinatedTime);
             spoofedPli.setHow("h-e");
-            Log.e(TAG, "cs: " + userInfo.callsign + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon);
             spoofedPli.setPoint(new CotPoint(userInfo.lat, userInfo.lon, userInfo.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
 
             CotDetail cotDetail = new CotDetail(TAG_DETAIL);

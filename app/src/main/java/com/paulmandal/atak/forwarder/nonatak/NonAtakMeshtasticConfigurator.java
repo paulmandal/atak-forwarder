@@ -71,7 +71,11 @@ public class NonAtakMeshtasticConfigurator {
     private boolean mStartedWritingToDevice = false;
     private boolean mWroteToDevice = false;
 
-    private Runnable mTimeoutRunnable = this::cancel;
+    private Runnable mTimeoutRunnable = () -> {
+        Log.e(TAG, "Timed out writing to non-ATAK device!");
+        cancel();
+    };
+
     private Runnable mPostWriteDelayRunnable;
 
     public NonAtakMeshtasticConfigurator(Activity activity,

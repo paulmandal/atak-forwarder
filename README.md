@@ -4,11 +4,20 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 ![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/master/images/plugin-disconnected-indicator.png)
 <br>
-![Group Management](https://github.com/paulmandal/atak-forwarder/raw/master/images/group-management.png)
+![Status View](https://github.com/paulmandal/atak-forwarder/raw/master/images/status-view.png)
 <br>
-![Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/master/images/direct-messaging.png)
+![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/master/images/channel-management.png)
+<br>
+![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/master/images/qr-configuration.png)
+<br>
+![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/master/images/integrated-direct-messaging.png)
 <br>
 ![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/master/images/transmit-map-markers.png)
+<br>
+Supports Meshtastic devices without an ATAK EUD attached
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/master/images/non-atak-devices.png)
+<br>
+![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/master/images/example-usage.png)
 
 # Features
 

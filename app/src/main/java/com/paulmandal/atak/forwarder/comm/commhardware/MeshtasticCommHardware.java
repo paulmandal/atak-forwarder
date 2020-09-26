@@ -459,8 +459,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "onReceive: " + action);
-
             if (action == null) {
                 Log.e(TAG, "onReceive, action was null");
                 return;
@@ -470,26 +468,19 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_MESH_CONNECTED:
                     String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
                     boolean connected = extraConnected.equals(STATE_CONNECTED);
-                    Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
-
                     maybeInitialConnection();
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
-                    Log.d(TAG, "ACTION_NODE_CHANGE: " + nodeInfo);
-
                     updateChannelMembers();
                     updateChannelStatus();
                     break;
                 case ACTION_MESSAGE_STATUS:
-                    Log.d(TAG, "ACTION_MESSAGE_STATUS");
                     int id = intent.getIntExtra(EXTRA_PACKET_ID, 0);
                     MessageStatus status = intent.getParcelableExtra(EXTRA_STATUS);
                     handleMessageStatusChange(id, status);
                     break;
                 case ACTION_RECEIVED_DATA:
-                    Log.d(TAG, "ACTION_RECEIVED_DATA");
-
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
                     if (payload.getDataType() == MeshProtos.Data.Type.CLEAR_TEXT_VALUE) {

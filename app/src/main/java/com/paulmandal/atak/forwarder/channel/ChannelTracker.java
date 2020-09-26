@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.Config;
@@ -70,6 +71,7 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
+            Log.d(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
             notifyListeners();
@@ -104,6 +106,9 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         }
 
         if (newUsers.size() > 0) {
+            for (NonAtakUserInfo user : newUsers) {
+                Log.d(TAG, "Adding new non-ATAK user from Meshtastic: " + user.callsign);
+            }
             mNonAtakStations.addAll(newUsers);
 
             notifyListeners();

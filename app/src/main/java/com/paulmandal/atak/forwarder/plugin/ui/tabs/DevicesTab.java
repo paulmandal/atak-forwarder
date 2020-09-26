@@ -20,6 +20,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 import java.util.List;
@@ -61,11 +62,75 @@ public class DevicesTab extends RelativeLayout {
             alertDialog.show();
         });
 
-        EditText pliIntervalSEditText = findViewById(R.id.edittext_pli_interval_s);
         EditText deviceCallsignEditText = findViewById(R.id.edittext_device_callsign);
+        deviceCallsignEditText.addTextChangedListener(new EditTextValidator(deviceCallsignEditText) {
+            @Override
+            public void validate(TextView textView, String text) {
+                if (text == null || text.isEmpty()) {
+                    textView.setError("You must enter a device callsign");
+                    return;
+                }
+
+                textView.setError(null);
+            }
+        });
+
+        EditText pliIntervalSEditText = findViewById(R.id.edittext_pli_interval_s);
+        pliIntervalSEditText.addTextChangedListener(new EditTextValidator(pliIntervalSEditText) {
+            @Override
+            public void validate(TextView textView, String text) {
+                try {
+                    int pliIntervalS = Integer.parseInt(text);
+
+                    if (pliIntervalS > 0) {
+                        textView.setError(null);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+                textView.setError("PLI Interval must be > 0s");
+            }
+        });
 
         EditText teamIndexEditText = findViewById(R.id.edittext_team_index);
+        teamIndexEditText.addTextChangedListener(new EditTextValidator(teamIndexEditText) {
+            @Override
+            public void validate(TextView textView, String text) {
+                try {
+                    int teamIndex = Integer.parseInt(text);
+
+                    if (teamIndex > -1 && teamIndex < 14) {
+                        textView.setError(null);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+                textView.setError("Index must be between 0 and 13");
+            }
+        });
+
         EditText roleIndexEditText = findViewById(R.id.edittext_role_index);
+        roleIndexEditText.addTextChangedListener(new EditTextValidator(roleIndexEditText) {
+            @Override
+            public void validate(TextView textView, String text) {
+                try {
+                    int roleIndex = Integer.parseInt(text);
+
+                    if (roleIndex > -1 && roleIndex < 8) {
+                        textView.setError(null);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+                textView.setError("Index must be between 0 and 7");
+            }
+        });
 
         Button writeToNonAtakButton = findViewById(R.id.button_write_to_non_atak);
         writeToNonAtakButton.setOnClickListener(v -> {
@@ -131,6 +196,31 @@ public class DevicesTab extends RelativeLayout {
     }
 
     private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+        if (deviceAddress == null || deviceAddress.isEmpty()) {
+            Toast.makeText(mAtakContext, "You must select a device to write to", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (deviceCallsign == null || deviceCallsign.isEmpty()) {
+            Toast.makeText(mAtakContext, "You must enter a device callsign", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (teamIndex < 0 || teamIndex > 13) {
+            Toast.makeText(mAtakContext, "Team index must be > 0 and < 14", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (roleIndex < 0 || roleIndex > 7) {
+            Toast.makeText(mAtakContext, "Role index must be > 0 and < 14", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (refreshIntervalS < 1) {
+            Toast.makeText(mAtakContext, "Refresh interval must be > 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Toast.makeText(mAtakContext, "Writing to non-ATAK device", Toast.LENGTH_SHORT).show();
         devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS);
     }

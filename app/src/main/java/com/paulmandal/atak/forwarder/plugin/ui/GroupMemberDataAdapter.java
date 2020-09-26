@@ -18,11 +18,11 @@ import eo.view.batterymeter.BatteryMeterView;
 
 public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
     private final List<UserInfo> mUsers;
-    private final Context mContext;
+    private final Context mPluginContext;
 
-    public GroupMemberDataAdapter(Context context, List<UserInfo> users) {
-        super(context, R.layout.group_member_list_view_item, users);
-        mContext = context;
+    public GroupMemberDataAdapter(Context pluginContext, List<UserInfo> users) {
+        super(pluginContext, R.layout.group_member_list_view_item, users);
+        mPluginContext = pluginContext;
         mUsers = users;
     }
 
@@ -36,7 +36,7 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View view;
         if (convertView == null) {
-            LayoutInflater inflator = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflator = (LayoutInflater) mPluginContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = inflator.inflate(R.layout.group_member_list_view_item, parent, false);
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.callsign = view.findViewById(R.id.textview_callsign);

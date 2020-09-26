@@ -103,6 +103,27 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             if (!found && !repeatedUserEntry && !alreadyKnowAboutStation) {
                 newUsers.add(possiblyNewUser);
             }
+
+            if (alreadyKnowAboutStation) {
+                Log.e(TAG, "Updating non-ATAK station");
+                NonAtakUserInfo userInfo = mNonAtakStations.get(mNonAtakStations.indexOf(possiblyNewUser));
+
+                if (!Objects.equals(userInfo.lat, possiblyNewUser.lat)) {
+                    userInfo.lat = possiblyNewUser.lat;
+                }
+
+                if (!Objects.equals(userInfo.lon, possiblyNewUser.lon)) {
+                    userInfo.lon = possiblyNewUser.lon;
+                }
+
+                if (!Objects.equals(userInfo.altitude, possiblyNewUser.altitude)) {
+                    userInfo.altitude = possiblyNewUser.altitude;
+                }
+
+                if (!Objects.equals(userInfo.batteryPercentage, possiblyNewUser.batteryPercentage)) {
+                    userInfo.batteryPercentage = possiblyNewUser.batteryPercentage;
+                }
+            }
         }
 
         if (newUsers.size() > 0) {

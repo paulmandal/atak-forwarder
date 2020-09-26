@@ -15,7 +15,8 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 ![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/master/images/transmit-map-markers.png)
 <br>
 Supports Meshtastic devices without an ATAK EUD attached
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/master/images/non-atak-devices.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/master/images/non-atak-devices-configuration.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/master/images/non-atak-devices-map-marker.png)
 <br>
 ![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/master/images/example-usage.png)
 
@@ -123,7 +124,7 @@ The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but n
 * After the spinning progress bar disappears check the devices channel on its LCD, if the channel is updated reset the device by pressing the reset button for a second or two
 * You should see your device appear on the map after it boots back up, its location should start updating once it has a GPS lock
 
-# Architecture Diagram (somewhat outdated)
+# Architecture Diagram
 
 ![alt text](https://github.com/paulmandal/atak-forwarder/raw/master/images/arch-diagram.png "Architecture Diagram")
 

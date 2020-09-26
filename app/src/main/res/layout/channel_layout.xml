@@ -164,6 +164,16 @@
         android:text="@string/scan_channel_qr" />
 
     <Button
+        android:id="@+id/button_abort_scan_qr"
+        style="@style/SmallTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:text="@string/abort_scan_qr" />
+
+    <Button
         android:id="@+id/button_edit_channel"
         style="@style/SmallTextButton"
         android:layout_width="wrap_content"

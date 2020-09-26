@@ -47,6 +47,8 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
     private QrHelper mQrHelper;
     private HashHelper mHashHelper;
 
+    private ZXingScannerView mScannerView;
+
     private MutableLiveData<ScreenMode> mScreenMode = new MutableLiveData<>();
     private MutableLiveData<Byte[]> mPsk = new MutableLiveData<>();
     private MutableLiveData<Boolean> mIsPskFresh = new MutableLiveData<>();
@@ -153,6 +155,15 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
         });
         qrScannerContainer.addView(scannerView);
         scannerView.startCamera();
+
+        mScannerView = scannerView;
+    }
+
+    public void abortQrScan(FrameLayout qrScannerContainer) {
+        mScreenMode.setValue(ScreenMode.DEFAULT);
+
+        mScannerView.stopCamera();
+        qrScannerContainer.removeView(mScannerView);
     }
 
     public void hideQr() {

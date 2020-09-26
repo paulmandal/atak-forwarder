@@ -5,7 +5,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.AttributeSet;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -42,6 +41,7 @@ public class ChannelTab extends RelativeLayout {
     private FrameLayout mQrScannerContainer;
 
     private Button mScanQrButton;
+    private Button mAbortQrScanButton;
     private Button mEditChannelButton;
     private Button mSaveChannelButton;
     private Button mShowQrButton;
@@ -80,6 +80,7 @@ public class ChannelTab extends RelativeLayout {
         mModemSettingRadioGroup = findViewById(R.id.radio_group_modem_setting);
 
         mScanQrButton = findViewById(R.id.button_scan_channel_qr);
+        mAbortQrScanButton = findViewById(R.id.button_abort_scan_qr);
         mEditChannelButton = findViewById(R.id.button_edit_channel);
         mSaveChannelButton = findViewById(R.id.button_save_channel);
         mShowQrButton = findViewById(R.id.button_show_qr);
@@ -118,11 +119,9 @@ public class ChannelTab extends RelativeLayout {
             mPskStatusTextView.setText(textResId);
             mPskStatusTextView.setTextColor(textColor);
         });
-        channelTabViewModel.getChannelQr().observe(lifecycleOwner, channelQr -> {
-            mChannelQr.setImageBitmap(channelQr);
-        });
+        channelTabViewModel.getChannelQr().observe(lifecycleOwner, channelQr -> mChannelQr.setImageBitmap(channelQr));
 
-        mShowQrButton.setOnClickListener((View v) -> {
+        mShowQrButton.setOnClickListener(v -> {
             if (mChannelName.getText().toString().equals("null")) {
                 Toast.makeText(atakContext, "Channel settings not yet available, check in the Settings tab", Toast.LENGTH_SHORT).show();
                 return;
@@ -131,7 +130,7 @@ public class ChannelTab extends RelativeLayout {
             channelTabViewModel.showQr();
         });
 
-        mScanQrButton.setOnClickListener((View v) -> {
+        mScanQrButton.setOnClickListener(v -> {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.start_qr_scan_dialog))
@@ -141,9 +140,11 @@ public class ChannelTab extends RelativeLayout {
             alertDialog.show();
         });
 
-        mHideQrButton.setOnClickListener((View v) -> channelTabViewModel.hideQr());
+        mAbortQrScanButton.setOnClickListener(v -> channelTabViewModel.abortQrScan(mQrScannerContainer));
+        
+        mHideQrButton.setOnClickListener(v -> channelTabViewModel.hideQr());
 
-        mEditChannelButton.setOnClickListener((View v) -> {
+        mEditChannelButton.setOnClickListener(v -> {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.start_channel_edit_dialog))
@@ -153,9 +154,9 @@ public class ChannelTab extends RelativeLayout {
             alertDialog.show();
         });
 
-        mGenPskButton.setOnClickListener((View v) -> channelTabViewModel.genPsk());
+        mGenPskButton.setOnClickListener(v -> channelTabViewModel.genPsk());
 
-        mSaveChannelButton.setOnClickListener((View v) -> {
+        mSaveChannelButton.setOnClickListener(v -> {
             String channelName = mChannelNameEditText.getText().toString();
             MeshProtos.ChannelSettings.ModemConfig modemConfig = mRadioButtonToModemSettingMap.get(mModemSettingRadioGroup.getCheckedRadioButtonId());
 
@@ -167,50 +168,53 @@ public class ChannelTab extends RelativeLayout {
     private void setScreenMode(ChannelTabViewModel.ScreenMode screenMode) {
         switch (screenMode) {
             case DEFAULT:
-                mChannelNameLabel.setVisibility(View.INVISIBLE);
-                mChannelNameEditText.setVisibility(View.INVISIBLE);
-                mChannelQr.setVisibility(View.INVISIBLE);
-                mModemSettingRadioGroup.setVisibility(View.INVISIBLE);
-                mPskStatusTextView.setVisibility(View.INVISIBLE);
-                mHideQrButton.setVisibility(View.INVISIBLE);
-                mSaveChannelButton.setVisibility(View.INVISIBLE);
-                mGenPskButton.setVisibility(View.INVISIBLE);
+                mAbortQrScanButton.setVisibility(INVISIBLE);
+                mChannelNameLabel.setVisibility(INVISIBLE);
+                mChannelNameEditText.setVisibility(INVISIBLE);
+                mChannelQr.setVisibility(INVISIBLE);
+                mModemSettingRadioGroup.setVisibility(INVISIBLE);
+                mPskStatusTextView.setVisibility(INVISIBLE);
+                mHideQrButton.setVisibility(INVISIBLE);
+                mSaveChannelButton.setVisibility(INVISIBLE);
+                mGenPskButton.setVisibility(INVISIBLE);
 
-                mChannelName.setVisibility(View.VISIBLE);
-                mPskHash.setVisibility(View.VISIBLE);
-                mModemConfig.setVisibility(View.VISIBLE);
+                mChannelName.setVisibility(VISIBLE);
+                mPskHash.setVisibility(VISIBLE);
+                mModemConfig.setVisibility(VISIBLE);
 
-                mShowQrButton.setVisibility(View.VISIBLE);
-                mScanQrButton.setVisibility(View.VISIBLE);
-                mEditChannelButton.setVisibility(View.VISIBLE);
+                mShowQrButton.setVisibility(VISIBLE);
+                mScanQrButton.setVisibility(VISIBLE);
+                mEditChannelButton.setVisibility(VISIBLE);
                 break;
             case SCAN_QR:
-                mShowQrButton.setVisibility(View.INVISIBLE);
-                mHideQrButton.setVisibility(View.INVISIBLE);
-                mEditChannelButton.setVisibility(View.INVISIBLE);
-                mSaveChannelButton.setVisibility(View.INVISIBLE);
+                mAbortQrScanButton.setVisibility(VISIBLE);
+                
+                mShowQrButton.setVisibility(INVISIBLE);
+                mHideQrButton.setVisibility(INVISIBLE);
+                mEditChannelButton.setVisibility(INVISIBLE);
+                mSaveChannelButton.setVisibility(INVISIBLE);
                 break;
             case SHOW_QR:
-                mChannelQr.setVisibility(View.VISIBLE);
-                mHideQrButton.setVisibility(View.VISIBLE);
+                mChannelQr.setVisibility(VISIBLE);
+                mHideQrButton.setVisibility(VISIBLE);
 
-                mShowQrButton.setVisibility(View.INVISIBLE);
-                mScanQrButton.setVisibility(View.INVISIBLE);
-                mEditChannelButton.setVisibility(View.INVISIBLE);
-                mSaveChannelButton.setVisibility(View.INVISIBLE);
+                mShowQrButton.setVisibility(INVISIBLE);
+                mScanQrButton.setVisibility(INVISIBLE);
+                mEditChannelButton.setVisibility(INVISIBLE);
+                mSaveChannelButton.setVisibility(INVISIBLE);
                 break;
             case EDIT_CHANNEL:
-                mChannelNameLabel.setVisibility(View.VISIBLE);
-                mChannelNameEditText.setVisibility(View.VISIBLE);
-                mModemSettingRadioGroup.setVisibility(View.VISIBLE);
-                mPskStatusTextView.setVisibility(View.VISIBLE);
-                mGenPskButton.setVisibility(View.VISIBLE);
-                mSaveChannelButton.setVisibility(View.VISIBLE);
+                mChannelNameLabel.setVisibility(VISIBLE);
+                mChannelNameEditText.setVisibility(VISIBLE);
+                mModemSettingRadioGroup.setVisibility(VISIBLE);
+                mPskStatusTextView.setVisibility(VISIBLE);
+                mGenPskButton.setVisibility(VISIBLE);
+                mSaveChannelButton.setVisibility(VISIBLE);
 
                 mEditChannelButton.setVisibility(INVISIBLE);
-                mShowQrButton.setVisibility(View.INVISIBLE);
-                mHideQrButton.setVisibility(View.INVISIBLE);
-                mScanQrButton.setVisibility(View.INVISIBLE);
+                mShowQrButton.setVisibility(INVISIBLE);
+                mHideQrButton.setVisibility(INVISIBLE);
+                mScanQrButton.setVisibility(INVISIBLE);
                 break;
         }
     }

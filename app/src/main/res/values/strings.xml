@@ -4,9 +4,10 @@
     <string name="app_desc">Forwards CoT messages to/from ATAK via a hardware layer</string>
 
     <!-- SettingsTab  -->
-    <string name="connection_status_connected">Connected</string>
-    <string name="connection_status_disconnected">Disconnected</string>
-    <string name="connection_status_unpaired">Unpaired</string>
+    <string name="connection_status_no_service_connected">Svc Disconnected</string>
+    <string name="connection_status_no_device_configured">No Dvc Cfg</string>
+    <string name="connection_status_device_disconnected">Disconnected</string>
+    <string name="connection_status_device_connected">Connected</string>
 
     <string name="message_queue_length">MsgQ Len</string>
 
@@ -17,7 +18,7 @@
     <string name="total_messages">Total</string>
 
     <string name="broadcast_discovery">Broadcast Discovery</string>
-    <string name="paired">Paired</string>
+    <string name="connect_to_service">Connect to Svc</string>
 
     <!-- ChannelTab -->
     <string name="channel_psk_modem_seperator">/</string>

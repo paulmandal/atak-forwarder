@@ -80,19 +80,24 @@ public class CommandQueue {
 
     @Nullable
     public QueuedCommand popHighestPriorityCommand(boolean isConnected) {
+        // All commands currently require connectivity
+        if (!isConnected) {
+            return null;
+        }
+
         QueuedCommand highestPriorityCommand = null;
         int messageQueueSize = 0;
         boolean messageQueueSizeChanged = false;
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 
-                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
-                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL)) {
-                    // Ignore commands that require connectivity
-                    continue;
-                }
-
+//                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
+//                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
+//                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL)) {
+//                    // Ignore commands that require connectivity
+//                    continue;
+//                }
+//
                 if (highestPriorityCommand == null
                         || queuedCommand.priority > highestPriorityCommand.priority
                         || (queuedCommand.priority == highestPriorityCommand.priority

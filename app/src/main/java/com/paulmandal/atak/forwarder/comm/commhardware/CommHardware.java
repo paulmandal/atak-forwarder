@@ -24,9 +24,10 @@ public abstract class CommHardware {
     private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS;
 
     public enum ConnectionState {
-        UNPAIRED,
-        DISCONNECTED,
-        CONNECTED
+        NO_SERVICE_CONNECTION,
+        NO_DEVICE_CONFIGURED,
+        DEVICE_DISCONNECTED,
+        DEVICE_CONNECTED
     }
 
     public interface MessageListener {
@@ -104,7 +105,7 @@ public abstract class CommHardware {
             while (!mDestroyed) {
                 sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS);
 
-                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.CONNECTED);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
                 if (queuedCommand == null) {
                     continue;

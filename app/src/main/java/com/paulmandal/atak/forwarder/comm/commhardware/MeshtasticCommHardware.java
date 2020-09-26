@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.RemoteException;
 import android.util.Log;
 
@@ -103,7 +102,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private Intent mServiceIntent;
 
-    boolean mBound = false;
+    boolean mConnectedToService = false;
     boolean mRadioSetupCalled = false;
 
     private int mDataRate;
@@ -131,7 +130,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             public void onServiceConnected(ComponentName className, IBinder service) {
                 Log.d(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
-                mBound = true;
+                mConnectedToService = true;
 
                 maybeInitialConnection();
             }
@@ -140,9 +139,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Log.e(TAG, "Service has unexpectedly disconnected");
                 mMeshService = null;
 
-                setConnectionState(ConnectionState.DISCONNECTED);
-                notifyConnectionStateListeners(ConnectionState.DISCONNECTED);
-                mBound = false;
+                setConnectionState(ConnectionState.NO_SERVICE_CONNECTION);
+                notifyConnectionStateListeners(ConnectionState.NO_SERVICE_CONNECTION);
+                mConnectedToService = false;
             }
         };
 
@@ -232,7 +231,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     public void connect() {
-        if (getConnectionState() == ConnectionState.CONNECTED) {
+        if (getConnectionState() == ConnectionState.DEVICE_CONNECTED) {
             Log.d(TAG, "connect: already connected");
             return;
         }
@@ -261,10 +260,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public void suspendResume(boolean suspended) { // TODO: rename
         if (suspended) {
             mActivity.unregisterReceiver(mBroadcastReceiver);
-            setConnectionState(ConnectionState.DISCONNECTED);
+            setConnectionState(ConnectionState.DEVICE_DISCONNECTED);
         } else {
             mActivity.registerReceiver(mBroadcastReceiver, mIntentFilter);
-            setConnectionState(ConnectionState.CONNECTED);
+            setConnectionState(ConnectionState.DEVICE_CONNECTED);
         }
     }
 
@@ -285,7 +284,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         super.destroy();
         mActivity.unbindService(mServiceConnection);
         mActivity.unregisterReceiver(mBroadcastReceiver);
-        mBound = false;
+        mConnectedToService = false;
     }
 
     private void bindToService() {
@@ -293,9 +292,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void unbindAndStopService() {
+        if (!mConnectedToService) {
+            return;
+        }
+
         mActivity.unbindService(mServiceConnection);
         mActivity.stopService(mServiceIntent);
-
 
         try {
             Thread.sleep(DELAY_AFTER_STOPPING_SERVICE);
@@ -307,15 +309,17 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void maybeInitialConnection() {
         ConnectionState oldConnectionState = getConnectionState();
 
-        try {
-            mMeshService.setDeviceAddress(String.format("x%s", mCommDeviceAddress)); // TODO: we need to do this?
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        if (mCommDeviceAddress != null) {
+            try {
+                mMeshService.setDeviceAddress(String.format("x%s", mCommDeviceAddress));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
         }
 
         updateConnectionState();
 
-        boolean connected = getConnectionState() == ConnectionState.CONNECTED;
+        boolean connected = getConnectionState() == ConnectionState.DEVICE_CONNECTED;
 
         if (connected) {
             maybeSetupRadio();
@@ -327,19 +331,17 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         if (oldConnectionState != getConnectionState() && connected) {
             broadcastDiscoveryMessage(true);
         }
-
-        notifyConnectionStateListeners(connected ? ConnectionState.CONNECTED : ConnectionState.UNPAIRED);
     }
 
     private void updateConnectionState() {
         try {
             String meshId = mMeshService.getMyId();
             ConnectionState connectionState;
-            if (meshId == null) {
-                connectionState = ConnectionState.UNPAIRED;
+            if (mCommDeviceAddress == null) {
+                connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
             } else {
                 boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
-                connectionState = connected ? ConnectionState.CONNECTED : ConnectionState.UNPAIRED;
+                connectionState = connected ? ConnectionState.DEVICE_CONNECTED : ConnectionState.DEVICE_DISCONNECTED;
             }
 
             setConnectionState(connectionState);

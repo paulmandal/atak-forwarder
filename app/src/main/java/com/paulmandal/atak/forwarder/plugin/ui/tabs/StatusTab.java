@@ -31,7 +31,7 @@ public class StatusTab extends RelativeLayout {
     private TextView mErroredTextView;
     private TextView mTotalTextView;
     private ListView mGroupMembersListView;
-    private Button PairedButton;
+    private Button mConnectToServiceButton;
 
     public StatusTab(Context context) {
         this(context, null);
@@ -59,7 +59,7 @@ public class StatusTab extends RelativeLayout {
         mTotalTextView = findViewById(R.id.textview_total_messages);
         mGroupMembersListView = findViewById(R.id.listview_channel_members);
 
-        PairedButton = findViewById(R.id.button_paired);
+        mConnectToServiceButton = findViewById(R.id.button_connect_to_service);
     }
 
     @SuppressLint("DefaultLocale")
@@ -69,7 +69,7 @@ public class StatusTab extends RelativeLayout {
                      Context atakContext) {
         mAtakContext = atakContext;
 
-        PairedButton.setOnClickListener((View v) -> statusTabViewModel.connect());
+        mConnectToServiceButton.setOnClickListener((View v) -> statusTabViewModel.connect());
 
         Button broadcastDiscovery = findViewById(R.id.button_broadcast_discovery);
         broadcastDiscovery.setOnClickListener((View v) -> {
@@ -81,14 +81,17 @@ public class StatusTab extends RelativeLayout {
         statusTabViewModel.getMessageQueueSize().observe(lifecycleOwner, messageQueueSize -> mMessageQueueLengthTextView.setText(String.format("%d", messageQueueSize)));
         statusTabViewModel.getConnectionState().observe(lifecycleOwner, connectionState -> {
             switch (connectionState) {
-                case UNPAIRED:
-                    handleUnpaired();
+                case NO_SERVICE_CONNECTION:
+                    handleNoServiceConnected();
                     break;
-                case CONNECTED:
-                    handleDeviceConnected();
+                case NO_DEVICE_CONFIGURED:
+                    handleNoDeviceConfigured();
                     break;
-                case DISCONNECTED:
+                case DEVICE_DISCONNECTED:
                     handleDeviceDisconnected();
+                    break;
+                case DEVICE_CONNECTED:
+                    handleDeviceConnected();
                     break;
             }
         });
@@ -113,21 +116,27 @@ public class StatusTab extends RelativeLayout {
         statusTabViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
     }
 
-    public void handleUnpaired() {
-        Toast.makeText(mAtakContext, "Comm device is not paired -- pair with it in the Android Settings > Connected Devices menu and then click Paired", Toast.LENGTH_LONG).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_unpaired);
-        PairedButton.setVisibility(View.VISIBLE);
+    private void handleNoServiceConnected() {
+        Toast.makeText(mAtakContext, "Meshtastic Service not connected, if the icon remains red click the 'Connect Svc' button in the status tab", Toast.LENGTH_LONG).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_no_service_connected);
+        mConnectToServiceButton.setVisibility(VISIBLE);
     }
 
-    public void handleDeviceConnected() {
+    private void handleNoDeviceConfigured() {
+        Toast.makeText(mAtakContext, "No Comm device configured, select one in the Devices tab and tap Set Comm Device", Toast.LENGTH_LONG).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_no_device_configured);
+        mConnectToServiceButton.setVisibility(INVISIBLE);
+    }
+
+    private void handleDeviceDisconnected() {
+        Toast.makeText(mAtakContext, "Comm Device disconnected, check that it is turned on and paired", Toast.LENGTH_LONG).show();
+        mConnectionStatusTextView.setText(R.string.connection_status_device_disconnected);
+        mConnectToServiceButton.setVisibility(INVISIBLE);
+    }
+
+    private void handleDeviceConnected() {
         Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_connected);
-        PairedButton.setVisibility(View.GONE);
-    }
-
-    public void handleDeviceDisconnected() {
-        Toast.makeText(mAtakContext, "Comm device disconnected -- or maybe unpaired -- pair with it in the Android Settings > Connected Devices menu and then click Paired", Toast.LENGTH_SHORT).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
-        PairedButton.setVisibility(View.VISIBLE);
+        mConnectionStatusTextView.setText(R.string.connection_status_device_connected);
+        mConnectToServiceButton.setVisibility(INVISIBLE);
     }
 }

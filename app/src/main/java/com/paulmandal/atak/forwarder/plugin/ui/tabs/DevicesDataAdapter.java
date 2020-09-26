@@ -13,7 +13,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.List;
 

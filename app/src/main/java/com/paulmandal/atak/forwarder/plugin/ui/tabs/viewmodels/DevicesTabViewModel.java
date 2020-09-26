@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.CallSuper;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -104,9 +103,6 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
 
         mNonAtakDeviceWriteInProgress.setValue(true);
-
-        // TODO: remove
-        Log.e(TAG, "Writing to device: " + deviceAddress + " callsign: " + deviceCallsign + " teamIndex: " + teamIndex + " roleIn: " + roleIndex + " refresh(s): " + refreshIntervalS);
 
         if (mNonAtakMeshtasticConfigurator != null) {
             mNonAtakMeshtasticConfigurator.cancel();

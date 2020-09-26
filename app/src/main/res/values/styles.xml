@@ -83,6 +83,14 @@
         <item name="android:textSize">12sp</item>
     </style>
 
+    <style name="SmallSpinner" parent="android:Widget.TextView">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="SmallSpinnerItem" parent="android:Widget.TextView">
+        <item name="android:textSize">12sp</item>
+    </style>
+
     <style name="SmallSwitchText" parent="android:Widget.TextView">
         <item name="android:textSize">6sp</item>
     </style>

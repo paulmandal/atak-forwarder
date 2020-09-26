@@ -31,7 +31,6 @@
         android:clickable="false"
         android:focusable="false"
         android:focusableInTouchMode="false"
-        android:paddingStart="8dp"
         android:showText="true"
         android:textOn="@string/comm_device_switch_text" />
 </RelativeLayout>

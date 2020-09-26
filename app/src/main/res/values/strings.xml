@@ -28,6 +28,7 @@
     <string name="show_channel_qr">Show QR</string>
     <string name="hide_channel_qr">Hide QR</string>
     <string name="scan_channel_qr">Scan QR</string>
+    <string name="abort_scan_qr">Abort Scan</string>
 
     <string name="short_range">Short Range / Fast</string>
     <string name="medium_range">Medium Range / Fast</string>

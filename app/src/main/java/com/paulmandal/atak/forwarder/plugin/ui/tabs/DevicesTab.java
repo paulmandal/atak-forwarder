@@ -8,6 +8,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -18,11 +19,14 @@ import android.widget.Toast;
 
 import androidx.lifecycle.LifecycleOwner;
 
+import com.atakmap.android.gui.PluginSpinner;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class DevicesTab extends RelativeLayout {
@@ -94,50 +98,22 @@ public class DevicesTab extends RelativeLayout {
             }
         });
 
-        EditText teamIndexEditText = findViewById(R.id.edittext_team_index);
-        teamIndexEditText.addTextChangedListener(new EditTextValidator(teamIndexEditText) {
-            @Override
-            public void validate(TextView textView, String text) {
-                try {
-                    int teamIndex = Integer.parseInt(text);
+        PluginSpinner teamSpinner = findViewById(R.id.spinner_team);
+        ArrayAdapter<String> teamArrayAdapter = new ArrayAdapter<>(pluginContext, R.layout.plugin_spinner_item, Arrays.asList(NonAtakStationCotGenerator.TEAMS));
+        teamArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        teamSpinner.setAdapter(teamArrayAdapter);
 
-                    if (teamIndex > -1 && teamIndex < 14) {
-                        textView.setError(null);
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-
-                textView.setError("Index must be between 0 and 13");
-            }
-        });
-
-        EditText roleIndexEditText = findViewById(R.id.edittext_role_index);
-        roleIndexEditText.addTextChangedListener(new EditTextValidator(roleIndexEditText) {
-            @Override
-            public void validate(TextView textView, String text) {
-                try {
-                    int roleIndex = Integer.parseInt(text);
-
-                    if (roleIndex > -1 && roleIndex < 8) {
-                        textView.setError(null);
-                        return;
-                    }
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                }
-
-                textView.setError("Index must be between 0 and 7");
-            }
-        });
+        PluginSpinner roleSpinner = findViewById(R.id.spinner_role);
+        ArrayAdapter<String> roleArrayAdapter = new ArrayAdapter<>(pluginContext, R.layout.plugin_spinner_item, Arrays.asList(NonAtakStationCotGenerator.ROLES));
+        roleArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        roleSpinner.setAdapter(roleArrayAdapter);
 
         Button writeToNonAtakButton = findViewById(R.id.button_write_to_non_atak);
         writeToNonAtakButton.setOnClickListener(v -> {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.write_to_non_atak_dialog))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDeviceAddress, deviceCallsignEditText.getText().toString(), Integer.parseInt(teamIndexEditText.getText().toString()), Integer.parseInt(roleIndexEditText.getText().toString()), Integer.parseInt(pliIntervalSEditText.getText().toString())))
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDeviceAddress, deviceCallsignEditText.getText().toString(), teamSpinner.getSelectedItemPosition(), roleSpinner.getSelectedItemPosition(), Integer.parseInt(pliIntervalSEditText.getText().toString())))
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
             alertDialog.show();
         });
@@ -203,16 +179,6 @@ public class DevicesTab extends RelativeLayout {
 
         if (deviceCallsign == null || deviceCallsign.isEmpty()) {
             Toast.makeText(mAtakContext, "You must enter a device callsign", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (teamIndex < 0 || teamIndex > 13) {
-            Toast.makeText(mAtakContext, "Team index must be > 0 and < 14", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        if (roleIndex < 0 || roleIndex > 7) {
-            Toast.makeText(mAtakContext, "Role index must be > 0 and < 14", Toast.LENGTH_SHORT).show();
             return;
         }
 

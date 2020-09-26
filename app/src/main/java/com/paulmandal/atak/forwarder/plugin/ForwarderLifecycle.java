@@ -83,7 +83,9 @@ public class ForwarderLifecycle implements Lifecycle {
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
+        String localCallsign = mMapView.getDeviceCallsign();
+
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, localCallsign);
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory, stateStorage);
         InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
@@ -97,7 +99,7 @@ public class ForwarderLifecycle implements Lifecycle {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion, mMapView.getDeviceCallsign());
+        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion, localCallsign);
 
         Context atakContext = mMapView.getContext();
 

@@ -25,15 +25,19 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private Context mAtakContext;
     private Handler mUiThreadHandler;
 
+    private String mLocalCallsign;
+
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
     private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
 
     private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
 
     public ChannelTracker(Context atakContext,
-                          Handler uiThreadHandler) {
+                          Handler uiThreadHandler,
+                          String callsign) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
+        mLocalCallsign = callsign;
     }
 
     public List<UserInfo> getAtakUsers() {
@@ -87,6 +91,10 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         boolean updatedNonAtakStation = false;
 
         for (NonAtakUserInfo possiblyNewUser : userInfoList) {
+            if (mLocalCallsign.equals(possiblyNewUser.callsign)) {
+                continue;
+            }
+
             boolean found = false;
             for (UserInfo user : mAtakUsers) {
                 if (user.meshId.equals(possiblyNewUser.meshId)) {
@@ -109,8 +117,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             if (alreadyKnowAboutStation) {
                 updatedNonAtakStation = true;
                 NonAtakUserInfo userInfo = mNonAtakStations.get(mNonAtakStations.indexOf(possiblyNewUser));
-
-                Log.e(TAG, "Updating non-ATAK station: " + userInfo.callsign);
 
                 if (!Objects.equals(userInfo.lat, possiblyNewUser.lat)) {
                     userInfo.lat = possiblyNewUser.lat;

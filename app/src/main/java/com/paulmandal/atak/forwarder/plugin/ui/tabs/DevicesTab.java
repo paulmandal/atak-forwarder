@@ -27,6 +27,7 @@ import java.util.List;
 public class DevicesTab extends RelativeLayout {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTab.class.getSimpleName();
 
+    private Context mAtakContext;
     private String mTargetDeviceAddress;
 
     public DevicesTab(Context context) {
@@ -109,6 +110,8 @@ public class DevicesTab extends RelativeLayout {
 
         ProgressBar deviceWriteProgressBar = findViewById(R.id.progressbar_writing_to_device);
         devicesTabViewModel.getNonAtakDeviceWriteInProgress().observe(lifecycleOwner, nonAtakDeviceWriteInProgress -> deviceWriteProgressBar.setVisibility(nonAtakDeviceWriteInProgress ? View.VISIBLE : View.GONE));
+
+        mAtakContext = atakContext;
     }
 
     private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<BluetoothDevice> bluetoothDevices) {
@@ -128,7 +131,7 @@ public class DevicesTab extends RelativeLayout {
     }
 
     private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
-        Toast.makeText(getContext(), "Writing to non-ATAK device", Toast.LENGTH_SHORT).show();
+        Toast.makeText(mAtakContext, "Writing to non-ATAK device", Toast.LENGTH_SHORT).show();
         devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS);
     }
 }

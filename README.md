@@ -120,7 +120,8 @@ The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but n
 * Enter the settings for your non-ATAK device
 * Click on `Write to non-ATAK`
 * You will see a small spinning progress bar appear on the screen, wait until it disappears before doing anything else with the plugin
-* You should see your device appear on the map after the process is complete
+* After the spinning progress bar disappears check the devices channel on its LCD, if the channel is updated reset the device by pressing the reset button for a second or two
+* You should see your device appear on the map after it boots back up, its location should start updating once it has a GPS lock
 
 # Architecture Diagram (somewhat outdated)
 

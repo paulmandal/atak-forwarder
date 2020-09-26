@@ -502,7 +502,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     };
 
-    private void handleDiscoveryMessage(String message) {
+    protected void handleDiscoveryMessage(String message) {
         String messageWithoutMarker = message.replace(BCAST_MARKER + ",", "");
         String[] messageSplit = messageWithoutMarker.split(",");
         String meshId = messageSplit[0];

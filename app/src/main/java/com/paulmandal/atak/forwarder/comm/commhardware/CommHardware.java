@@ -148,6 +148,10 @@ public abstract class CommHardware {
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
         String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+
+        String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
+        handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
+
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 
@@ -180,4 +184,5 @@ public abstract class CommHardware {
     public abstract void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
+    protected abstract void handleDiscoveryMessage(String message);
 }

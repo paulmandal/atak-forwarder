@@ -25,19 +25,15 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private Context mAtakContext;
     private Handler mUiThreadHandler;
 
-    private String mLocalCallsign;
-
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
     private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
 
     private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
 
     public ChannelTracker(Context atakContext,
-                          Handler uiThreadHandler,
-                          String callsign) {
+                          Handler uiThreadHandler) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
-        mLocalCallsign = callsign;
     }
 
     public List<UserInfo> getAtakUsers() {
@@ -91,10 +87,6 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         boolean updatedNonAtakStation = false;
 
         for (NonAtakUserInfo possiblyNewUser : userInfoList) {
-            if (mLocalCallsign.equals(possiblyNewUser.callsign)) {
-                continue;
-            }
-
             boolean found = false;
             for (UserInfo user : mAtakUsers) {
                 if (user.meshId.equals(possiblyNewUser.meshId)) {

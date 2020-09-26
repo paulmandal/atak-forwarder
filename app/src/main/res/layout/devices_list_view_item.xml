@@ -25,7 +25,7 @@
         android:id="@+id/switch_comm_device"
         android:switchTextAppearance="@style/SmallSwitchText"
         android:layout_width="wrap_content"
-        android:layout_height="12dp"
+        android:layout_height="8dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         android:clickable="false"

@@ -12,6 +12,11 @@ public class Config {
     public static final int DELAY_AFTER_STOPPING_SERVICE = 5000;
 
     /**
+     * How long to wait for radioConfig to be available when writing to a non-ATAK device
+     */
+    public static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = 10000;
+
+    /**
      * Meshtastic Radio Config
      */
     public static final int POSITION_BROADCAST_INTERVAL_S = 3600;

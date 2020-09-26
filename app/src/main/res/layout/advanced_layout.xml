@@ -3,7 +3,7 @@
     android:id="@+id/tab_advanced"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp">
+    android:padding="4dp">
 
     <EditText
         android:id="@+id/edittext_default_purge_time_mins"

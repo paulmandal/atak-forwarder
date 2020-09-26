@@ -98,6 +98,25 @@ public class DevicesTab extends RelativeLayout {
             }
         });
 
+        EditText screenShutoffDelaySEditText = findViewById(R.id.edittext_screen_shutoff_delay_s);
+        screenShutoffDelaySEditText.addTextChangedListener(new EditTextValidator(screenShutoffDelaySEditText) {
+            @Override
+            public void validate(TextView textView, String text) {
+                try {
+                    int screenShutoffDelayS = Integer.parseInt(text);
+
+                    if (screenShutoffDelayS > 0) {
+                        textView.setError(null);
+                        return;
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                }
+
+                textView.setError("Screen shutoff delay must be > 0s");
+            }
+        });
+
         PluginSpinner teamSpinner = findViewById(R.id.spinner_team);
         ArrayAdapter<String> teamArrayAdapter = new ArrayAdapter<>(pluginContext, R.layout.plugin_spinner_item, Arrays.asList(NonAtakStationCotGenerator.TEAMS));
         teamArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -113,7 +132,7 @@ public class DevicesTab extends RelativeLayout {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.write_to_non_atak_dialog))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDeviceAddress, deviceCallsignEditText.getText().toString(), teamSpinner.getSelectedItemPosition(), roleSpinner.getSelectedItemPosition(), Integer.parseInt(pliIntervalSEditText.getText().toString())))
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDeviceAddress, deviceCallsignEditText.getText().toString(), teamSpinner.getSelectedItemPosition(), roleSpinner.getSelectedItemPosition(), Integer.parseInt(pliIntervalSEditText.getText().toString()), Integer.parseInt(screenShutoffDelaySEditText.getText().toString())))
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
             alertDialog.show();
         });
@@ -171,7 +190,7 @@ public class DevicesTab extends RelativeLayout {
         devicesListView.setAdapter(devicesDataAdapter);
     }
 
-    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
         if (deviceAddress == null || deviceAddress.isEmpty()) {
             Toast.makeText(mAtakContext, "You must select a device to write to", Toast.LENGTH_SHORT).show();
             return;
@@ -187,7 +206,12 @@ public class DevicesTab extends RelativeLayout {
             return;
         }
 
+        if (screenShutoffDelayS < 1) {
+            Toast.makeText(mAtakContext, "Screen shutoff delay must be > 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Toast.makeText(mAtakContext, "Writing to non-ATAK device", Toast.LENGTH_SHORT).show();
-        devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS);
+        devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS);
     }
 }

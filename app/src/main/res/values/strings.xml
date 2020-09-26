@@ -64,6 +64,7 @@
     <string name="non_atak_device_settings">non-ATAK device cfg</string>
     <string name="device_callsign">Dvc Callsign</string>
     <string name="pli_interval">PLI interval (s)</string>
+    <string name="screen_shutoff_time">Screen Off (s)</string>
     <string name="set_comm_device">Set Comm Device</string>
     <string name="write_to_non_atak">Write to non-ATAK</string>
     <string name="close">Close</string>

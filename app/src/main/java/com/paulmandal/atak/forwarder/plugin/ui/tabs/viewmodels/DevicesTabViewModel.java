@@ -94,7 +94,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
     }
 
-    public void writeToNonAtak(String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS) {
+    public void writeToNonAtak(String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
         if (deviceAddress.equals(mCommDeviceAddress.getValue())
                 || mChannelName == null
                 || mModemConfig == null) {
@@ -111,7 +111,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
 
         // Write settings to device
-        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, this);
+        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mCommDeviceAddress.getValue(), deviceAddress, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
         mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 

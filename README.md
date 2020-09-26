@@ -13,7 +13,7 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 # Features
 
 * Peer discovery
-* In-app channel management
+* In-app device and channel management
 * Broadcast messages are sent to the channel (e.g. map markers, PLI)
 * Direct messages to other users (e.g. chat messages)
 * Efficient comm. using protobufs -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
@@ -23,6 +23,8 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 
 # To Do
 
+* Use `ChatManagerMapComponent` for incoming chats instead of turning them into CoTs
+* Remote channel management
 * Automatically adjust link speed / range based on # of lost messages
 * Use T-Beam as a GPS source (if it proves to be more accurate than the phone's)
 * Message IDs and receipt confirmation
@@ -32,25 +34,84 @@ An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardwar
 * Needs more real-world stability testing
 * Re-add GoTenna support with a proper abstraction for communication layer
 
-# Setup
+# Building the Plugin
 
-To use this plugin you will need to build your own copy of ATAK-CIV and copy some files, to do that first:
+The below instructions assume that you are cloning everything side-by-side in the same directory, so you should end up with a directory tree like:
 
-* install Meshtastic-Android: https://play.google.com/store/apps/details?id=com.geeksville.mesh or https://github.com/meshtastic/Meshtastic-Android
-* clone the ATAK-CIV repo: https://github.com/deptofdefense/AndroidTacticalAssaultKit-CIV
-* clone this repo into the same parent directory that you cloned the DoD's ATAK repo to (i.e. not into the `AndroidTacticalAssaultKit-CIV` directory)
-* follow the instructions for building ATAK in the ATAK repo's `BULIDING.md` file, load the application onto your devices using the `installCivDebug` Gradle task
+```
+workspace/
+  |
+  \--- Meshtastic-Android/
+  |
+  \--- AndroidTacticalAssaultKit-CIV/
+  |
+  \--- atak-forwarder/
+```
+
+## Build + Install Meshtastic
+
+* Clone my fork of Meshtastic-Android: `git clone git@github.com:paulmandal/Meshtastic-Android.git`
+    * This contains a change to make `MeshService.setDeviceAddress()` work for external callers
+* Enter the `Meshtastic-Android` directory: `cd Meshtastic-Android`
+* Run the commands in `Meshtastic-Android/README.md` under "Build Instructions"
+* Open `Meshtastic-Android` in Android Studio, build and run the project, you can close the Meshtastic app
+
+## Build + Install ATAK
+
+It is currently not possible or at least not easy to get a 3rd party plugin signed, so you will need to build your own copy of ATAK. ATAK checks the signature on any plugins it loads against a whitelist and will not load any plugin that is not signed with a whitelisted key.
+
+* Clone the ATAK-CIV repo: `git clone git@github.com:deptofdefense/AndroidTacticalAssaultKit-CIV.git`
+* Follow the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
     * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
     * Note: if you would like to use `installCivRelease` instead, you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
-* Run `git submodule init` in the `atak-forwarder` directory
-* Pair your device with your Meshtastic radio in Android Settings > Connected Devices
+
+## Build + Install ATAK Forwarder
+
+* Clone the ATAK Forwarder repo: `git clone git@github.com:paulmandal/atak-forwarder.git`
+* Run `git submodule update --init --recursive`
 * Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`
 * Build the `atak-forwarder` plugin and install it on your devices
-* Open ATAK, the red @ sign in the lower right corner should turn green soon after opening the app, if it does not something is wrong with your BLE pairing, try re-pairing your Meshtastic device, then clicking on the red @ sign and clicking `Paired`
-* Set up your channel in the Channel tab on one device, then show the QR code and scan it on your other device(s)
-* You should see notifications about "discovery broadcasts" once all devices are on the same channel, if you do not check the channel name, hash, and try clicking `Broadcast Discovery` in the plugin settings menu (click the @)
-* You should soon see map markers for each of your devices
-* Note: this plugin will configure your Meshtastic device to send out position updates once per hour and to turn the LCD off after 1 second, you can tweak those values in `Config.java`
+
+# Setting up the Plugin
+
+## Setting up your Comm Device
+
+* In the Android Settings / Connected Devices or Bluetooth Settings tap `Pair a new device`
+* Pair with your Meshtastic device
+* Start ATAK, you should see an orange icon in the lower right corner of the screen
+* Tap on the icon, the plugin menu should open
+* Tap on the `Devices` tab
+* Tap on the `Refresh` button in the lower left corner of the plugin screen
+* Tap on your Meshtastic device when it shows up in the list of devices
+* Tap on the `Set Comm Device` button, this will set your primary comm device
+* The orange icon in the lower right corner of the ATAK map should turn green soon
+
+## Setting up your Channel
+
+* On one device, tap on the `Channel` tab
+* Tap on the `Edit Channel` button
+* Pick your range/speed settings, recommended to start with the fastest / lowest range setting and work from there
+* Pick a good name for your channel
+* Tap on the `Gen PSK` button
+* Tap on the `Save` button
+* Wait until your new channel settings show up in the `Status` or `Channel` tab, if they do not show up after a minute retry the edit channel steps
+* Once the channel settings are updated, click on the `Show QR` button to show a scannable QR code that you can use to configure your other devices
+* On your other devices, click on th `Scan QR` button in the `Channel` tab to scan a channel QR
+    * You should see notifications about "discovery broadcasts" once all devices are on the same channel, if you do not check the channel name, hash, and try clicking `Broadcast Discovery` in the plugin settings menu (click the @)
+    * You should soon see map markers for each of your devices
+    * Note: this plugin will configure your Meshtastic device to send out position updates once per hour and to turn the LCD off after 1 second, you can tweak those values in `Config.java`
+
+## Setting up a non-ATAK Device
+
+The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but no phone controlling them to show up on the map with a configurable callsign, team, and icon. This can be useful for retrieving relay devices or use cases that only need to output location data (e.g. animal tracking)
+
+* Pair your extra Meshtastic devices with your phone as normal
+* In the `Devices` tab, click the `Refresh` button
+* Click on a device that is not your primary comm device, it will show up in the `Target` textview
+* Enter the settings for your non-ATAK device
+* Click on `Write to non-ATAK`
+* You will see a small spinning progress bar appear on the screen, wait until it disappears before doing anything else with the plugin
+* You should see your device appear on the map after the process is complete
 
 # Architecture Diagram (somewhat outdated)
 

@@ -179,6 +179,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
 
     public void saveChannelSettings(String channelName, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
         mScreenMode.setValue(ScreenMode.DEFAULT);
+        mIsPskFresh.setValue(false);
 
         Byte[] pskByte = mPsk.getValue();
         byte[] psk = new byte[pskByte.length];

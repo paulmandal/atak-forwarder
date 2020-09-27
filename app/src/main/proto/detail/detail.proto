@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+option optimize_for = LITE_RUNTIME;
+
+package com.paulmandal.atak.forwarder.protobufs;
+
+option java_outer_classname = "ProtobufDetail";
+
+import "detail/contact.proto";
+import "detail/takv.proto";
+import "detail/underscore_group.proto";
+import "detail/track.proto";
+import "detail/remarks.proto";
+import "detail/complex_link.proto";
+import "detail/freehand_link.proto";
+import "detail/server_destination.proto";
+import "detail/model.proto";
+import "detail/detail_style.proto"; // TODO: rename this?
+import "detail/height.proto";
+import "detail/shape/shape.proto";
+import "detail/drawn_shape.proto";
+import "detail/sensor.proto";
+
+import "detail/route/route.proto";
+
+import "detail/geochat/chat.proto";
+import "detail/geochat/chat_link.proto";
+
+import "detail/video/video.proto";
+
+import "detail/shape/geofence.proto";
+
+import "detail/medevac/flow_tags.proto";
+import "detail/medevac/medevac.proto";
+
+message Detail {
+  Contact contact = 1;
+  Takv takv = 2;
+  UnderscoreGroup group = 3;
+  Track track = 4;
+  Remarks remarks = 5;
+  ComplexLink complexLink = 6;
+  ChatLink chatLink = 7;
+  Chat chat = 8;
+  ServerDestination serverDestination = 9;
+  Model model = 10;
+  DetailStyle detailStyle = 11;
+  Height height = 12;
+  string iconSetPath = 13;
+  Shape shape = 14;
+  DrawnShape drawnShape = 15;
+  Route route = 16;
+  Sensor sensor = 17;
+  Video video = 18;
+  GeoFence geoFence = 19;
+  FreehandLink freehandLink = 20;
+  FlowTags flowTags = 21;
+  Medevac medevac = 22;
+}

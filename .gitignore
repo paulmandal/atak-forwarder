@@ -14,9 +14,7 @@
 .externalNativeBuild
 .cxx
 build
-
-# GoTenna SDK
-libs/gotenna-public-sdk.aar
+corpus/
 
 # ATAK SDK
 libs/main.jar

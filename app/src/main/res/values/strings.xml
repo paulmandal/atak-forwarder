@@ -3,26 +3,75 @@
     <string name="app_name">ATAK Forwarder</string>
     <string name="app_desc">Forwards CoT messages to/from ATAK via a hardware layer</string>
 
-    <string name="shared_prefs_filename">atak-forwarder</string>
+    <!-- SettingsTab  -->
+    <string name="connection_status_no_service_connected">Svc Disconnected</string>
+    <string name="connection_status_no_device_configured">No Dvc Cfg</string>
+    <string name="connection_status_device_disconnected">Disconnected</string>
+    <string name="connection_status_device_connected">Connected</string>
 
-    <string name="group_id">Group Id</string>
     <string name="message_queue_length">MsgQ Len</string>
-    <string name="create_group">Create Group</string>
-    <string name="add_to_group">Add to Group</string>
+
+    <string name="delivered_messages">Dlvd</string>
+    <string name="received_messages">Rcvd</string>
+    <string name="timed_out_messages">T/O</string>
+    <string name="errored_messages">Err</string>
+    <string name="total_messages">Total</string>
+
     <string name="broadcast_discovery">Broadcast Discovery</string>
+    <string name="connect_to_service">Connect to Svc</string>
 
-    <string name="connection_status_scanning">Scanning</string>
-    <string name="connection_status_connected">Connected</string>
-    <string name="connection_status_disconnected">Disconnected</string>
-    <string name="connection_status_timeout">Timeout</string>
+    <!-- ChannelTab -->
+    <string name="channel_psk_modem_seperator">/</string>
+    <string name="channel_name">Channel Name</string>
 
-    <string name="group_in_text">In</string>
-    <string name="group_out_text">Out</string>
+    <string name="edit_channel">Edit Channel</string>
+    <string name="save">Save</string>
+    <string name="show_channel_qr">Show QR</string>
+    <string name="hide_channel_qr">Hide QR</string>
+    <string name="scan_channel_qr">Scan QR</string>
+    <string name="abort_scan_qr">Abort Scan</string>
 
-    <string name="set_message_cache_purge_time_mins">Set Msg Cache TTL Mins</string>
+    <string name="short_range">Short Range / Fast</string>
+    <string name="medium_range">Medium Range / Fast</string>
+    <string name="long_range">Long Range / Slower (Not Recommended)</string>
+    <string name="very_long_range">Very Long Range / Slow (Not Recommended)</string>
+
+    <string name="generate_new_psk">Gen New PSK</string>
+
+    <string name="reusing_old_psk">Reusing old PSK!</string>
+    <string name="using_new_psk">Using new PSK!</string>
+
+    <string name="warning">Warning</string>
+    <string name="start_channel_edit_dialog">Warning if you make any changes here you will lose your current channel settings!</string>
+    <string name="start_qr_scan_dialog">Warning if you start this scan you will lose your current channel settings!</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- AdvancedTab -->
+    <string name="set_msg_block_ttl_mins">Repeat Msg Block TTL (mins)</string>
+    <string name="set_pli_block_ttl_s">PLI max. freq. (s)</string>
     <string name="clear_data">Clear Data</string>
     <string name="clear_message_queue">Clear MsgQ</string>
     <string name="clear_message_cache">Clear Msg Cache</string>
-    <string name="unpair">Unpair</string>
-    <string name="scan">Scan</string>
+    <string name="configure_non_atak_device">Cfg Non-ATAK Dvc</string>
+
+    <!-- DevicesTab -->
+    <string name="callsign">Callsign</string>
+    <string name="gps_update_frequency">Position Bcast Frequency (s)</string>
+    <string name="comm_device">Comm Device</string>
+    <string name="target_device">Target Device</string>
+    <string name="non_atak_device_settings">non-ATAK device cfg</string>
+    <string name="device_callsign">Dvc Callsign</string>
+    <string name="pli_interval">PLI interval (s)</string>
+    <string name="screen_shutoff_time">Screen Off (s)</string>
+    <string name="set_comm_device">Set Comm Device</string>
+    <string name="write_to_non_atak">Write to non-ATAK</string>
+    <string name="close">Close</string>
+    <string name="comm_device_switch_text">Comm</string>
+    <string name="refresh_connected_devices">Refresh</string>
+
+    <string name="set_comm_device_dialog">Do you want to set your comm device to the one in the Target Device field for real?</string>
+    <string name="write_to_non_atak_dialog">Do you want to write to the non-ATAK device in the Target Device field?</string>
+
 </resources>

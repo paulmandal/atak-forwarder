@@ -1,8 +1,9 @@
-
 package com.paulmandal.atak.forwarder.plugin;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,20 +11,31 @@ import android.os.Looper;
 import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
+import com.paulmandal.atak.forwarder.BuildConfig;
+import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.HackyTests;
+import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFactory;
+import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.group.persistence.JsonHelper;
-import com.paulmandal.atak.forwarder.group.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
+import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
+import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,19 +43,17 @@ import java.util.LinkedList;
 
 import transapps.maps.plugin.lifecycle.Lifecycle;
 
+import static com.atakmap.android.util.ATAKConstants.getPackageName;
+
 public class ForwarderLifecycle implements Lifecycle {
-    private final static String TAG = "ATAKDBG." + ForwarderLifecycle.class.getSimpleName();
+    private final static String TAG = Config.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
 
     private Context mPluginContext;
-    private Activity mActivity;
     private MapView mMapView;
     private final Collection<MapComponent> mOverlays;
 
     private CommHardware mCommHardware;
-    private InboundMessageHandler mInboundMessageHandler;
     private OutboundMessageHandler mOutboundMessageHandler;
-
-    private GroupTracker mGroupTracker;
 
     public ForwarderLifecycle(Context context) {
         mPluginContext = context;
@@ -56,25 +66,49 @@ public class ForwarderLifecycle implements Lifecycle {
             Log.e(TAG, "This plugin is only compatible with ATAK MapView");
             return;
         }
-        mActivity = activity;
         mMapView = (MapView)transappsMapView.getView();
 
-        // TODO: this is kinda a mess, move to a Factory and clean this up
+        if (BuildConfig.DEBUG) {
+            HackyTests hackyTests = new HackyTests();
+            hackyTests.runAllTests();
+        }
+
+        // TODO: this is kinda a mess, move to a Factory and clean this up (or use Dagger 2)
+
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
-        JsonHelper jsonHelper = new JsonHelper();
-        StateStorage stateStorage = new StateStorage(mActivity, jsonHelper);
-        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getCachePurgeTimeMs());
+        StateStorage stateStorage = new StateStorage(activity);
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
-        CotProtobufConverter cotProtobufConverter = new CotProtobufConverter();
+        CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
+        FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        mGroupTracker = new GroupTracker(mActivity, uiThreadHandler, stateStorage, stateStorage.getUsers(), stateStorage.getGroupInfo());
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(mActivity, mMapView, uiThreadHandler, mGroupTracker, mGroupTracker, commandQueue, queuedCommandFactory);
-        mInboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotProtobufConverter);
-        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotProtobufConverter);
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory, stateStorage);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
+        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, (MeshtasticCommHardware) mCommHardware, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
+        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(mGroupTracker, mCommHardware, cotMessageCache, commandQueue));
+        String pluginVersion = "0.0";
+        try {
+            PackageInfo pInfo = activity.getPackageManager().getPackageInfo(getPackageName(), 0);
+            pluginVersion = pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion, mMapView.getDeviceCallsign());
+
+        Context atakContext = mMapView.getContext();
+
+        HashHelper hashHelper = new HashHelper();
+        // TODO: clean up ugly unchecked casts to MeshstaticCommHardware
+        MeshtasticCommHardware meshtasticCommHardware = (MeshtasticCommHardware) mCommHardware;
+        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, meshtasticCommHardware, commandQueue, hashHelper);
+        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, channelTracker, new QrHelper(), hashHelper);
+        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, uiThreadHandler, atakContext, meshtasticCommHardware, hashHelper);
+
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

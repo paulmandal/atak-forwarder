@@ -1,60 +1,54 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
-import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.annotation.CallSuper;
-import androidx.annotation.NonNull;
 
+import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.group.UserInfo;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class CommHardware {
-    private static final String TAG = "ATAKDBG." + CommHardware.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
 
     protected static final String BCAST_MARKER = "ATAKBCAST";
 
-    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES;
+    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS;
 
     public enum ConnectionState {
-        SCANNING,
-        TIMEOUT,
-        DISCONNECTED,
-        CONNECTED
+        NO_SERVICE_CONNECTION,
+        NO_DEVICE_CONFIGURED,
+        DEVICE_DISCONNECTED,
+        DEVICE_CONNECTED
     }
 
     public interface MessageListener {
-        void onMessageReceived(byte[] message);
+        void onMessageReceived(int messageId, byte[] message);
     }
 
     public interface ConnectionStateListener {
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
-    private Handler mHandler;
+    private Handler mUiThreadHandler;
 
     private final CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
-    private GroupTracker mGroupTracker;
 
-    private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
-    private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
+    private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
+    private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private Thread mMessageWorkerThread;
 
-    private boolean mConnected = false;
+    private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mDestroyed = false;
 
     private UserInfo mSelfInfo;
@@ -62,11 +56,11 @@ public abstract class CommHardware {
     public CommHardware(Handler uiThreadHandler,
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
-                        GroupTracker groupTracker) {
-        mHandler = uiThreadHandler;
+                        UserInfo selfInfo) {
+        mUiThreadHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
-        mGroupTracker = groupTracker;
+        mSelfInfo = selfInfo;
 
         startWorkerThreads();
     }
@@ -74,67 +68,13 @@ public abstract class CommHardware {
     /**
      * External API
      */
-    @CallSuper
-    public void init(@NonNull Context context, @NonNull String callsign, long gId, String atakUid) {
-        mSelfInfo = new UserInfo(callsign, gId, atakUid, mGroupTracker.getGroup() != null);
-    }
-
     public void broadcastDiscoveryMessage() {
         broadcastDiscoveryMessage(false);
-    }
-
-    public void createGroup(List<Long> memberGids) {
-        if (!mConnected) {
-            Log.d(TAG, "createGroup: not connected yet");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createCreateGroupCommand(memberGids));
-    }
-
-    public void addToGroup(List<Long> allMemberGids, List<Long> newMemberGids) {
-        if (!mConnected) {
-            Log.d(TAG, "addToGroup: not connected yet");
-            return;
-        }
-
-        if (mGroupTracker.getGroup() == null) {
-            Log.d(TAG, "addToGroup: not in a group yet");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createAddToGroupCommand(mGroupTracker.getGroup().groupId, allMemberGids, newMemberGids));
-    }
-
-    public void connect() {
-        if (mConnected) {
-            Log.d(TAG, "connect: already connected");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
-    }
-
-    public void disconnect() {
-        if (!mConnected) {
-            Log.d(TAG, "forgetDevice: already disconnected");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createDisconnectFromCommDeviceCommand());
     }
 
     @CallSuper
     public void destroy() {
         mDestroyed = true;
-    }
-
-    public boolean isConnected() {
-        return mConnected;
-    }
-
-    public boolean isInGroup() {
-        return mGroupTracker.getGroup() != null;
     }
 
     /**
@@ -163,31 +103,19 @@ public abstract class CommHardware {
     protected void startWorkerThreads() {
         mMessageWorkerThread = new Thread(() -> {
             while (!mDestroyed) {
-                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES);
+                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS);
 
-                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnected, mGroupTracker.getGroup() != null);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
                 if (queuedCommand == null) {
                     continue;
                 }
 
                 switch (queuedCommand.commandType) {
-                    case SCAN_FOR_COMM_DEVICE:
-                        handleScanForCommDevice();
-                        break;
-                    case DISCONNECT_FROM_COMM_DEVICE:
-                        handleDisconnectFromCommDevice();
-                        break;
                     case BROADCAST_DISCOVERY_MSG:
                         handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
                         break;
-                    case CREATE_GROUP:
-                        handleCreateGroup((CreateGroupCommand) queuedCommand);
-                        break;
-                    case ADD_TO_GROUP:
-                        handleAddToGroup((AddToGroupCommand) queuedCommand);
-                        break;
-                    case SEND_TO_GROUP:
+                    case SEND_TO_CHANNEL:
                     case SEND_TO_INDIVIDUAL:
                         handleSendMessage((SendMessageCommand) queuedCommand);
                         break;
@@ -202,8 +130,12 @@ public abstract class CommHardware {
         return mDestroyed;
     }
 
-    protected void setConnected(boolean isConnected) {
-        mConnected = isConnected;
+    protected void setConnectionState(ConnectionState connectionState) {
+        mConnectionState = connectionState;
+    }
+
+    public ConnectionState getConnectionState() {
+        return mConnectionState;
     }
 
     protected UserInfo getSelfInfo() {
@@ -215,19 +147,23 @@ public abstract class CommHardware {
     }
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = BCAST_MARKER + "," + getSelfInfo().gId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+
+        String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
+        handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
+
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 
-    protected void notifyMessageListeners(byte[] message) {
+    protected void notifyMessageListeners(int messageId, byte[] message) {
         for (MessageListener listener : mMessageListeners) {
-            mHandler.post(() -> listener.onMessageReceived(message));
+            mUiThreadHandler.post(() -> listener.onMessageReceived(messageId, message));
         }
     }
 
     protected void notifyConnectionStateListeners(ConnectionState connectionState) {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
-            mHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
+            mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
         }
     }
     /**
@@ -244,10 +180,9 @@ public abstract class CommHardware {
     /**
      * For subclasses to implement
      */
-    protected abstract void handleScanForCommDevice();
-    protected abstract void handleDisconnectFromCommDevice();
+    public abstract void connect();
+    public abstract void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
-    protected abstract void handleCreateGroup(CreateGroupCommand createGroupCommand);
-    protected abstract void handleAddToGroup(AddToGroupCommand addToGroupCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
+    protected abstract void handleDiscoveryMessage(String message);
 }

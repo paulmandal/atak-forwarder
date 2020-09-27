@@ -4,150 +4,82 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
+
+import androidx.lifecycle.LifecycleOwner;
 
 import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.dropdown.DropDown;
 import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.group.GroupInfo;
-import com.paulmandal.atak.forwarder.group.GroupTracker;
-import com.paulmandal.atak.forwarder.group.UserInfo;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.StatusTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-
-public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener,
-        GroupTracker.UpdateListener,
-        CommandQueue.Listener,
-        CommHardware.ConnectionStateListener {
-    public static final String TAG = "ATAKDBG." + GroupManagementDropDownReceiver.class.getSimpleName();
+public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
+    public static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
-    private final Context mPluginContext;
-    private final Context mAtakContext;
-
-    private GroupTracker mGroupTracker;
-    private CommHardware mCommHardware;
-    private CotMessageCache mCotMessageCache;
-    private CommandQueue mCommandQueue;
-
     private final View mTemplateView;
-    private EditMode mEditMode;
-
-    private List<UserInfo> mUsers;
-    private List<UserInfo> mModifiedUsers;
-
-    private TextView mGroupIdTextView;
-    private TextView mMessageQueueLengthTextView;
-    private ListView mGroupMembersListView;
-    private Button mCreateGroupButton;
-    private Button mScanOrUnpair;
-    private TextView mConnectionStatusTextView;
 
     private boolean mIsDropDownOpen;
 
     public GroupManagementDropDownReceiver(final MapView mapView,
-                                           final Context context,
+                                           final Context pluginContext,
                                            final Context atakContext,
-                                           final GroupTracker groupTracker,
-                                           final CommHardware commHardware,
-                                           final CotMessageCache cotMessageCache,
-                                           final CommandQueue commandQueue) {
+                                           final StatusTabViewModel statusTabViewModel,
+                                           final ChannelTabViewModel channelTabViewModel,
+                                           final DevicesTabViewModel devicesTabViewModel,
+                                           final AdvancedTab advancedTab) {
         super(mapView);
-        mPluginContext = context;
-        mAtakContext = atakContext;
-        mGroupTracker = groupTracker;
-        mCommHardware = commHardware;
-        mCotMessageCache = cotMessageCache;
-        mCommandQueue = commandQueue;
-
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
         // In this case, using it is not necessary - but I am putting it here to remind
         // developers to look at this Inflator
-        mTemplateView = PluginLayoutInflater.inflate(context, R.layout.main_layout, null);
+        mTemplateView = PluginLayoutInflater.inflate(pluginContext, R.layout.main_layout, null);
 
         // Set up tabs
-        TabHost tabs = (TabHost) mTemplateView.findViewById(R.id.tab_host);
+        TabHost tabs = mTemplateView.findViewById(R.id.tab_host);
         tabs.setup();
-        TabHost.TabSpec spec = tabs.newTabSpec("tab_settings");
-        spec.setContent(R.id.tab_settings);
-        spec.setIndicator("Settings");
+
+        TabHost.TabSpec spec = tabs.newTabSpec("tab_status");
+        spec.setContent(R.id.tab_status);
+        spec.setIndicator("Status");
         tabs.addTab(spec);
+
+        spec = tabs.newTabSpec("tab_channel");
+        spec.setContent(R.id.tab_channel);
+        spec.setIndicator("Channel");
+        tabs.addTab(spec);
+
+        spec = tabs.newTabSpec("tab_devices");
+        spec.setContent(R.id.tab_devices);
+        spec.setIndicator("Devices");
+        tabs.addTab(spec);
+
         spec = tabs.newTabSpec("tab_advanced");
         spec.setContent(R.id.tab_advanced);
         spec.setIndicator("Advanced");
         tabs.addTab(spec);
 
         // Set up the rest of the UI
+        LifecycleOwner lifecycleOwner = (LifecycleOwner) atakContext;
 
-        mGroupIdTextView = (TextView) mTemplateView.findViewById(R.id.textview_group_id);
-        mMessageQueueLengthTextView = (TextView)mTemplateView.findViewById(R.id.textview_message_queue_length);
-        mCreateGroupButton = (Button) mTemplateView.findViewById(R.id.button_create_group);
-        mGroupMembersListView = (ListView) mTemplateView.findViewById(R.id.listview_group_members);
+        StatusTab statusTab = mTemplateView.findViewById(R.id.tab_status);
+        statusTab.bind(lifecycleOwner, statusTabViewModel, pluginContext, atakContext);
 
-        mConnectionStatusTextView = (TextView) mTemplateView.findViewById(R.id.textview_connection_status);
+        ChannelTab channelTab = mTemplateView.findViewById(R.id.tab_channel);
+        channelTab.bind(lifecycleOwner, channelTabViewModel, pluginContext, atakContext);
 
-        Button clearData = (Button) mTemplateView.findViewById(R.id.button_clear_data);
-        Button broadcastDiscovery = (Button) mTemplateView.findViewById(R.id.button_broadcast_discovery);
-        Button clearMessageCache = (Button) mTemplateView.findViewById(R.id.button_clear_message_cache);
-        Button clearMessageQueue = (Button) mTemplateView.findViewById(R.id.button_clear_message_queue);
-        Button setCachePurgeTime = (Button) mTemplateView.findViewById(R.id.button_set_message_purge_time_ms);
-        mScanOrUnpair = (Button) mTemplateView.findViewById(R.id.button_scan_or_unpair);
+        DevicesTab devicesTab = mTemplateView.findViewById(R.id.tab_devices);
+        devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext, atakContext);
 
-        EditText cachePurgeTimeMins = (EditText) mTemplateView.findViewById(R.id.edittext_purge_time_mins);
-
-        mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", commandQueue.getQueueSize()));
-        cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getCachePurgeTimeMs() / 60000));
-
-        broadcastDiscovery.setOnClickListener((View v) -> {
-            Toast.makeText(mAtakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
-            commHardware.broadcastDiscoveryMessage();
-        });
-
-        clearData.setOnClickListener((View v) -> {
-            Toast.makeText(mAtakContext, "Clearing all plugin data", Toast.LENGTH_LONG).show();
-            mGroupTracker.clearData();
-            mCotMessageCache.clearData();
-            mCommandQueue.clearData();
-            updateUi();
-        });
-
-        clearMessageCache.setOnClickListener((View v) -> {
-            Toast.makeText(mAtakContext, "Clearing duplicate message cache", Toast.LENGTH_SHORT).show();
-            mCotMessageCache.clearData();
-        });
-
-        clearMessageQueue.setOnClickListener((View v) -> {
-            Toast.makeText(mAtakContext, "Clearing outgoing message queue", Toast.LENGTH_SHORT).show();
-            mCommandQueue.clearData();
-        });
-
-        setCachePurgeTime.setOnClickListener((View v) -> {
-            Toast.makeText(mAtakContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
-            String cachePurgeTimeMinsStr = cachePurgeTimeMins.getText().toString();
-            if (cachePurgeTimeMinsStr.equals("")) {
-                return;
-            }
-            int cachePurgeTimeMs = Integer.parseInt(cachePurgeTimeMinsStr) * 60000;
-            mCotMessageCache.setCachePurgeTimeMs(cachePurgeTimeMs);
-        });
-
-        mScanOrUnpair.setOnClickListener(mScanClickListener);
-
-        mGroupTracker.setUpdateListener(this);
-        commandQueue.setListener(this);
-        commHardware.addConnectionStateListener(this);
+        advancedTab.bind(mTemplateView);
     }
 
     public void disposeImpl() {
@@ -161,51 +93,6 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
             return;
 
         if (action.equals(SHOW_PLUGIN)) {
-            updateUi();
-
-            List<Long> gIdsForGroup = new ArrayList<>();
-            mCreateGroupButton.setOnClickListener((View v) -> {
-                if (mEditMode == EditMode.ADD_USERS) {
-                    List<Long> newGidsForGroup = new ArrayList<>();
-
-                    StringBuilder usernamesForOutput = new StringBuilder();
-                    boolean first = true;
-
-                    for (int i = 0; i < mUsers.size(); i++) {
-                        UserInfo originalUser = mUsers.get(i);
-                        UserInfo modifiedUser = mModifiedUsers.get(i);
-                        if (originalUser.isInGroup) {
-                            gIdsForGroup.add(originalUser.gId);
-                        }
-                        if (!originalUser.isInGroup && modifiedUser.isInGroup) {
-                            gIdsForGroup.add(originalUser.gId);
-                            newGidsForGroup.add(originalUser.gId);
-
-                            usernamesForOutput.append(first ? "" : ", ");
-                            usernamesForOutput.append(originalUser.callsign);
-                            first = false;
-                        }
-                    }
-
-                    Toast.makeText(mAtakContext, "Adding users to group: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
-                    mCommHardware.addToGroup(gIdsForGroup, newGidsForGroup);
-                } else {
-                    StringBuilder usernamesForOutput = new StringBuilder();
-                    boolean first = true;
-
-                    for (UserInfo user : mModifiedUsers) {
-                        if (user.isInGroup) {
-                            gIdsForGroup.add(user.gId);
-
-                            usernamesForOutput.append(first ? "" : ", ");
-                            usernamesForOutput.append(user.callsign);
-                            first = false;
-                        }
-                    }
-                    Toast.makeText(mAtakContext, "Creating group with users: " + usernamesForOutput, Toast.LENGTH_SHORT).show();
-                    mCommHardware.createGroup(gIdsForGroup);
-                }
-            });
             showDropDown(mTemplateView, HALF_WIDTH, FULL_HEIGHT, FULL_WIDTH, HALF_HEIGHT, false, this);
         }
     }
@@ -215,7 +102,7 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
     }
 
     @Override
-    public void onDropDownVisible(boolean v) {
+    public void onDropDownVisible(boolean isVisible) {
         mIsDropDownOpen = true;
     }
 
@@ -228,100 +115,9 @@ public class GroupManagementDropDownReceiver extends DropDownReceiver implements
         mIsDropDownOpen = false;
     }
 
-    @Override
-    public void onUsersUpdated() {
-        Toast.makeText(mAtakContext, "User list updated", Toast.LENGTH_SHORT).show();
-        updateUi();
-    }
-
-    @Override
-    public void onGroupUpdated() {
-        Toast.makeText(mAtakContext, "Group membership updated", Toast.LENGTH_SHORT).show();
-        updateUi();
-    }
 
     public boolean isDropDownOpen() {
         return mIsDropDownOpen;
     }
 
-    private View.OnClickListener mScanClickListener = (View v) -> mCommHardware.connect();
-
-    private View.OnClickListener mUnpairClickListener = (View v) -> mCommHardware.disconnect();
-
-    private void updateUi() {
-        setEditModeAndUiForGroup();
-        setupListView();
-    }
-
-    private void setEditModeAndUiForGroup() {
-        GroupInfo groupInfo = mGroupTracker.getGroup();
-        if (groupInfo != null) {
-            mGroupIdTextView.setText(String.format(Locale.getDefault(), "%d", groupInfo.groupId));
-            mCreateGroupButton.setText(R.string.add_to_group);
-            mEditMode = EditMode.ADD_USERS;
-        } else {
-            mEditMode = EditMode.NEW_GROUP;
-        }
-    }
-
-    private void setupListView() {
-        mUsers = mGroupTracker.getUsers();
-        mModifiedUsers = new ArrayList<>(mUsers.size());
-        for (UserInfo user : mUsers) {
-            mModifiedUsers.add(user.clone());
-        }
-
-        GroupMemberDataAdapter groupMemberDataAdapter = new GroupMemberDataAdapter(mPluginContext, mModifiedUsers, mEditMode);
-        mGroupMembersListView.setAdapter(groupMemberDataAdapter);
-    }
-
-    @Override
-    public void onMessageQueueSizeChanged(int size) {
-        mMessageQueueLengthTextView.setText(String.format(Locale.getDefault(), "%d", size));
-    }
-
-    @Override
-    public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
-        switch (connectionState) {
-            case SCANNING:
-                handleScanStarted();
-                break;
-            case TIMEOUT:
-                handleScanTimeout();
-                break;
-            case CONNECTED:
-                handleDeviceConnected();
-                break;
-            case DISCONNECTED:
-                handleDeviceDisconnected();
-                break;
-        }
-    }
-
-    public void handleScanStarted() {
-        Toast.makeText(mAtakContext, "Scanning for comm device", Toast.LENGTH_SHORT).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_scanning);
-        mScanOrUnpair.setOnClickListener(null);
-    }
-
-    public void handleScanTimeout() {
-        Toast.makeText(mAtakContext, "Scanning for comm device timed out, ready device and then rescan in settings menu!", Toast.LENGTH_LONG).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_timeout);
-        mScanOrUnpair.setOnClickListener(mScanClickListener);
-        mScanOrUnpair.setText(R.string.scan);
-    }
-
-    public void handleDeviceConnected() {
-        Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_connected);
-        mScanOrUnpair.setOnClickListener(mUnpairClickListener);
-        mScanOrUnpair.setText(R.string.unpair);
-    }
-
-    public void handleDeviceDisconnected() {
-        Toast.makeText(mAtakContext, "Comm device disconnected", Toast.LENGTH_SHORT).show();
-        mConnectionStatusTextView.setText(R.string.connection_status_disconnected);
-        mScanOrUnpair.setOnClickListener(mScanClickListener);
-        mScanOrUnpair.setText(R.string.scan);
-    }
 }

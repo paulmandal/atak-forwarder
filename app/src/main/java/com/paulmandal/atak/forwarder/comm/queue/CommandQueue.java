@@ -1,21 +1,22 @@
 package com.paulmandal.atak.forwarder.comm.queue;
 
 import android.os.Handler;
-import android.support.annotation.Nullable;
 
-import com.paulmandal.atak.forwarder.comm.queue.commands.AddToGroupCommand;
+import androidx.annotation.Nullable;
+
+import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;
-import com.paulmandal.atak.forwarder.comm.queue.commands.CreateGroupCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
-import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
+
 public class CommandQueue {
-    private static final String TAG = "ATAKDBG." + CommandQueue.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CommandQueue.class.getSimpleName();
 
     public interface Listener {
         void onMessageQueueSizeChanged(int size);
@@ -42,30 +43,8 @@ public class CommandQueue {
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
                 if (commandToQueue.commandType == queuedCommand.commandType) {
-                    // Do not create duplicates for broadcasting discovery, and connect/disconnect from device
-                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                            || commandToQueue.commandType == CommandType.DISCONNECT_FROM_COMM_DEVICE
-                            || commandToQueue.commandType == CommandType.SCAN_FOR_COMM_DEVICE) {
-                        return;
-                    }
-
-                    if (commandToQueue.commandType == CommandType.CREATE_GROUP) {
-                        CreateGroupCommand queuedCommandAsCreateGroup = (CreateGroupCommand)queuedCommand;
-                        CreateGroupCommand commandToQueueAsCreateGroup = (CreateGroupCommand)commandToQueue;
-
-                        // Overwrite just in case anything changed
-                        queuedCommandAsCreateGroup.memberGids = commandToQueueAsCreateGroup.memberGids;
-                        return;
-                    }
-
-                    if (commandToQueue.commandType == CommandType.ADD_TO_GROUP) {
-                        AddToGroupCommand queuedCommandAsAddToGroup = (AddToGroupCommand)queuedCommand;
-                        AddToGroupCommand commandToQueueAsAddToGroup = (AddToGroupCommand)commandToQueue;
-
-                        // Overwrite just in case anything changed
-                        queuedCommandAsAddToGroup.groupId = commandToQueueAsAddToGroup.groupId;
-                        queuedCommandAsAddToGroup.allMemberGids = commandToQueueAsAddToGroup.allMemberGids;
-                        queuedCommandAsAddToGroup.newMemberGids = commandToQueueAsAddToGroup.newMemberGids;
+                    // Do not create duplicates for broadcasting discovery
+                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG) {
                         return;
                     }
                 }
@@ -76,14 +55,14 @@ public class CommandQueue {
     }
 
     public void queueSendMessage(SendMessageCommand sendMessageCommand, boolean overwriteSimilar) {
-        int messageQueueSize = 0;
+        int messageQueueSize;
         synchronized (mQueuedCommands) {
             if (overwriteSimilar) {
                 for (QueuedCommand queuedCommand : mQueuedCommands) {
                     if (queuedCommand instanceof SendMessageCommand) {
                         SendMessageCommand queuedSendMessageCommand = (SendMessageCommand)queuedCommand;
                         if (mCotComparer.areCotEventsEqual(sendMessageCommand.cotEvent, queuedSendMessageCommand.cotEvent)
-                                || queuedSendMessageCommand.cotEvent.getType().equals(OutboundMessageHandler.MSG_TYPE_SELF_PLI)
+                                || queuedSendMessageCommand.cotEvent.getType().equals(TYPE_PLI)
                                 && mCotComparer.areUidsEqual(sendMessageCommand.toUIDs, queuedSendMessageCommand.toUIDs)) {
                             queuedSendMessageCommand.takeStateFrom(sendMessageCommand);
                             return;
@@ -100,26 +79,25 @@ public class CommandQueue {
     }
 
     @Nullable
-    public QueuedCommand popHighestPriorityCommand(boolean isConnected, boolean isInGroup) {
+    public QueuedCommand popHighestPriorityCommand(boolean isConnected) {
+        // All commands currently require connectivity
+        if (!isConnected) {
+            return null;
+        }
+
         QueuedCommand highestPriorityCommand = null;
         int messageQueueSize = 0;
+        boolean messageQueueSizeChanged = false;
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 
-                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
-                        || queuedCommand.commandType == CommandType.SEND_TO_GROUP
-                        || queuedCommand.commandType == CommandType.ADD_TO_GROUP
-                        || queuedCommand.commandType == CommandType.CREATE_GROUP)) {
-                    // Ignore commands that require connectivity
-                    continue;
-                }
-
-                if (!isInGroup && queuedCommand.commandType == CommandType.SEND_TO_GROUP) {
-                    // Ignore group messages for now
-                    continue;
-                }
-
+//                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
+//                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
+//                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL)) {
+//                    // Ignore commands that require connectivity
+//                    continue;
+//                }
+//
                 if (highestPriorityCommand == null
                         || queuedCommand.priority > highestPriorityCommand.priority
                         || (queuedCommand.priority == highestPriorityCommand.priority
@@ -130,26 +108,25 @@ public class CommandQueue {
 
             if (highestPriorityCommand != null) {
                 mQueuedCommands.remove(highestPriorityCommand);
+                messageQueueSize = mQueuedCommands.size();
+                messageQueueSizeChanged = true;
             }
-
-            messageQueueSize = mQueuedCommands.size();
         }
 
-        notifyListener(messageQueueSize);
+        if (messageQueueSizeChanged) {
+            notifyListener(messageQueueSize);
+        }
 
         return highestPriorityCommand;
     }
 
-    public int getQueueSize() {
-        synchronized (mQueuedCommands) {
-            return mQueuedCommands.size();
-        }
-    }
-
     public void clearData() {
+        int messageQueueSize;
         synchronized (mQueuedCommands) {
             mQueuedCommands.clear();
+            messageQueueSize = mQueuedCommands.size();
         }
+        notifyListener(messageQueueSize);
     }
 
     public void setListener(Listener listener) {

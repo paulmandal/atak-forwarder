@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.cotutils;
 
-import android.support.annotation.Nullable;
+
+import androidx.annotation.Nullable;
 
 import com.atakmap.coremap.cot.event.CotAttribute;
 import com.atakmap.coremap.cot.event.CotDetail;

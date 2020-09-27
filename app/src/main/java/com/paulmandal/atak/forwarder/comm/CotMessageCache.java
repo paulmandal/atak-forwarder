@@ -1,28 +1,45 @@
 package com.paulmandal.atak.forwarder.comm;
 
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.geeksville.mesh.MeshProtos;
+import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
-import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CotMessageCache {
+public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsListener {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
+
     private StateStorage mStateStorage;
     private CotComparer mCotComparer;
 
-    private List<CachedCotEvent> mCachedEvents;
+    private final List<CachedCotEvent> mCachedEvents = new ArrayList<>();
     private int mPliCachePurgeTimeMs;
     private int mDefaultCachePurgeTimeMs;
+    private int mDataRateAwarePliCachePurgeTimeMs;
 
-    public CotMessageCache(StateStorage stateStorage, CotComparer cotComparer, int defaultCachePurgeTimeMs, int pliCachePurgeTimeMs) {
+    public CotMessageCache(StateStorage stateStorage,
+                           CotComparer cotComparer,
+                           MeshtasticCommHardware commHardware,
+                           int defaultCachePurgeTimeMs,
+                           int pliCachePurgeTimeMs) {
         mStateStorage = stateStorage;
         mCotComparer = cotComparer;
 
-        mCachedEvents = new ArrayList<>();
         mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
         mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
+        mDataRateAwarePliCachePurgeTimeMs = pliCachePurgeTimeMs;
+
+        commHardware.addChannelSettingsListener(this);
+    }
+
+    @Override
+    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
+        mDataRateAwarePliCachePurgeTimeMs = mPliCachePurgeTimeMs * (modemConfig.getNumber() + 1);
     }
 
     public boolean checkIfRecentlySent(CotEvent cotEvent) {
@@ -30,12 +47,14 @@ public class CotMessageCache {
 
         boolean isPli = cotEvent.getType().equals(CotMessageTypes.TYPE_PLI);
 
-        for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-            if (isPli && cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                // Don't compare PLIs
-                return true;
-            } else if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
-                return true;
+        synchronized (mCachedEvents) {
+            for (CachedCotEvent cachedCotEvent : mCachedEvents) {
+                if (isPli && cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                    // Don't compare PLIs
+                    return true;
+                } else if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
+                    return true;
+                }
             }
         }
 
@@ -43,11 +62,15 @@ public class CotMessageCache {
     }
 
     public void cacheEvent(CotEvent cotEvent) {
-        mCachedEvents.add(new CachedCotEvent(cotEvent, System.currentTimeMillis()));
+        synchronized (mCachedEvents) {
+            mCachedEvents.add(new CachedCotEvent(cotEvent, System.currentTimeMillis()));
+        }
     }
 
     public void clearData() {
-        mCachedEvents.clear();
+        synchronized (mCachedEvents) {
+            mCachedEvents.clear();
+        }
     }
 
     public void setDefaultCachePurgeTimeMs(int defaultCachePurgeTimeMs) {
@@ -73,18 +96,21 @@ public class CotMessageCache {
 
         List<CachedCotEvent> purgeEvents = new ArrayList<>();
 
-        for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-            int purgeTime = mDefaultCachePurgeTimeMs;
-            if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                purgeTime = mPliCachePurgeTimeMs;
-            }
-            if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
-                purgeEvents.add(cachedCotEvent);
-            }
-        }
+        synchronized (mCachedEvents) {
 
-        for (CachedCotEvent purgeableCotEvent : purgeEvents) {
-            mCachedEvents.remove(purgeableCotEvent);
+            for (CachedCotEvent cachedCotEvent : mCachedEvents) {
+                int purgeTime = mDefaultCachePurgeTimeMs;
+                if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                    purgeTime = mDataRateAwarePliCachePurgeTimeMs;
+                }
+                if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
+                    purgeEvents.add(cachedCotEvent);
+                }
+            }
+
+            for (CachedCotEvent purgeableCotEvent : purgeEvents) {
+                mCachedEvents.remove(purgeableCotEvent);
+            }
         }
     }
 

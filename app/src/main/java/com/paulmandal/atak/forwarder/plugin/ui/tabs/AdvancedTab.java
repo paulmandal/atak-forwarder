@@ -24,15 +24,15 @@ public class AdvancedTab {
         mCotMessageCache = cotMessageCache;
     }
 
-    public void init(View templateView) {
-        Button setDefaultCachePurgeTime = (Button) templateView.findViewById(R.id.button_set_default_purge_time_ms);
-        Button setPliCachePurgeTime = (Button) templateView.findViewById(R.id.button_set_pli_purge_time_ms);
-        Button clearMessageCache = (Button) templateView.findViewById(R.id.button_clear_message_cache);
-        Button clearMessageQueue = (Button) templateView.findViewById(R.id.button_clear_message_queue);
-        Button clearData = (Button) templateView.findViewById(R.id.button_clear_data);
+    public void bind(View templateView) {
+        Button setDefaultCachePurgeTime = templateView.findViewById(R.id.button_set_default_purge_time_ms);
+        Button setPliCachePurgeTime = templateView.findViewById(R.id.button_set_pli_purge_time_ms);
+        Button clearMessageCache = templateView.findViewById(R.id.button_clear_message_cache);
+        Button clearMessageQueue = templateView.findViewById(R.id.button_clear_message_queue);
+        Button clearData = templateView.findViewById(R.id.button_clear_data);
 
-        EditText cachePurgeTimeMins = (EditText) templateView.findViewById(R.id.edittext_default_purge_time_mins);
-        EditText pliPurgeTimeS = (EditText) templateView.findViewById(R.id.edittext_pli_purge_time_s);
+        EditText cachePurgeTimeMins = templateView.findViewById(R.id.edittext_default_purge_time_mins);
+        EditText pliPurgeTimeS = templateView.findViewById(R.id.edittext_pli_purge_time_s);
 
         cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
         pliPurgeTimeS.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs() / 1000));

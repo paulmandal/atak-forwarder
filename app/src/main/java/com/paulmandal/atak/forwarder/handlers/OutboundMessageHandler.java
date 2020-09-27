@@ -55,10 +55,9 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
         Log.d(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
-        if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.CONNECTED
-            && !eventType.equals(TYPE_CHAT)) {
+        if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString()); // TODO: remove this
+                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString());
                 return;
             }
             mCotMessageCache.cacheEvent(cotEvent);
@@ -77,27 +76,27 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotProtobuf, toUIDs), overwriteSimilar);
 
         // TODO: remove this debugging
-        if (marshalledAsMinimal) {
-            byte[] cotProtobufOriginal = mFallbackCotEventProtobufConverter.toByteArray(cotEvent);
-            byte[] minimalProtobuf = new byte[1];
-            try {
-                 minimalProtobuf = mCotEventProtobufConverter.toByteArray(cotEvent);
-            } catch (MappingNotFoundException | UnknownDetailFieldException e) {
-                Log.e(TAG, e.getMessage());
-            }
-            Log.d(TAG, "l protobuf len: " + cotProtobufOriginal.length);
-            Log.d(TAG, "m protobuf len: " + minimalProtobuf.length);
-
-            CotEvent minimalCotEvent = mCotEventProtobufConverter.toCotEvent(minimalProtobuf);
-
-            if (minimalCotEvent == null) {
-                Log.e(TAG, "cotEvent could not be parsed from protobuf for comparison!");
-                return;
-            }
-
-            Log.d(TAG, "o: " + cotEvent.toString());
-            Log.d(TAG, "m: " + minimalCotEvent.toString());
-        }
+//        if (marshalledAsMinimal) {
+//            byte[] cotProtobufOriginal = mFallbackCotEventProtobufConverter.toByteArray(cotEvent);
+//            byte[] minimalProtobuf = new byte[1];
+//            try {
+//                 minimalProtobuf = mCotEventProtobufConverter.toByteArray(cotEvent);
+//            } catch (MappingNotFoundException | UnknownDetailFieldException e) {
+//                Log.e(TAG, e.getMessage());
+//            }
+//            Log.d(TAG, "l protobuf len: " + cotProtobufOriginal.length);
+//            Log.d(TAG, "m protobuf len: " + minimalProtobuf.length);
+//
+//            CotEvent minimalCotEvent = mCotEventProtobufConverter.toCotEvent(minimalProtobuf);
+//
+//            if (minimalCotEvent == null) {
+//                Log.e(TAG, "cotEvent could not be parsed from protobuf for comparison!");
+//                return;
+//            }
+//
+//            Log.d(TAG, "o: " + cotEvent.toString());
+//            Log.d(TAG, "m: " + minimalCotEvent.toString());
+//        }
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {

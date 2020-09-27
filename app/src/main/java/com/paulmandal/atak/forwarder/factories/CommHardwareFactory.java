@@ -10,6 +10,7 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 
 public class CommHardwareFactory {
     public static CommHardware createAndInitCommHardware(Activity activity,
@@ -18,13 +19,14 @@ public class CommHardwareFactory {
                                                          MeshtasticCommHardware.ChannelListener channelListener,
                                                          ChannelTracker channelTracker,
                                                          CommandQueue commandQueue,
-                                                         QueuedCommandFactory queuedCommandFactory) {
+                                                         QueuedCommandFactory queuedCommandFactory,
+                                                         StateStorage stateStorage) {
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
 
         CommHardware commHardware;
-        UserInfo selfInfo = new UserInfo(callsign, null, atakUid, false, null);
-        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo);
+        UserInfo selfInfo = new UserInfo(callsign, null, atakUid, null);
+        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
         return commHardware;
     }
 

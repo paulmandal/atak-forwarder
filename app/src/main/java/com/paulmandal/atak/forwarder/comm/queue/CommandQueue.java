@@ -8,7 +8,6 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 
 import java.util.ArrayList;
@@ -44,18 +43,8 @@ public class CommandQueue {
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
                 if (commandToQueue.commandType == queuedCommand.commandType) {
-                    // Do not create duplicates for broadcasting discovery, and connect/disconnect from device
-                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                            || commandToQueue.commandType == CommandType.SCAN_FOR_COMM_DEVICE) {
-                        return;
-                    }
-
-                    if (commandToQueue.commandType == CommandType.UPDATE_CHANNEL) {
-                        UpdateChannelCommand queuedCommandAsUpdateChannel = (UpdateChannelCommand) queuedCommand;
-                        UpdateChannelCommand commandToQueueAsUpdateChannel = (UpdateChannelCommand) commandToQueue;
-
-                        queuedCommandAsUpdateChannel.channelName = commandToQueueAsUpdateChannel.channelName;
-                        queuedCommandAsUpdateChannel.psk = commandToQueueAsUpdateChannel.psk;
+                    // Do not create duplicates for broadcasting discovery
+                    if (commandToQueue.commandType == CommandType.BROADCAST_DISCOVERY_MSG) {
                         return;
                     }
                 }
@@ -91,19 +80,24 @@ public class CommandQueue {
 
     @Nullable
     public QueuedCommand popHighestPriorityCommand(boolean isConnected) {
+        // All commands currently require connectivity
+        if (!isConnected) {
+            return null;
+        }
+
         QueuedCommand highestPriorityCommand = null;
-        int messageQueueSize;
+        int messageQueueSize = 0;
+        boolean messageQueueSizeChanged = false;
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 
-                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
-                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
-                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL
-                        || queuedCommand.commandType == CommandType.UPDATE_CHANNEL)) {
-                    // Ignore commands that require connectivity
-                    continue;
-                }
-
+//                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
+//                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
+//                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL)) {
+//                    // Ignore commands that require connectivity
+//                    continue;
+//                }
+//
                 if (highestPriorityCommand == null
                         || queuedCommand.priority > highestPriorityCommand.priority
                         || (queuedCommand.priority == highestPriorityCommand.priority
@@ -114,20 +108,16 @@ public class CommandQueue {
 
             if (highestPriorityCommand != null) {
                 mQueuedCommands.remove(highestPriorityCommand);
+                messageQueueSize = mQueuedCommands.size();
+                messageQueueSizeChanged = true;
             }
-
-            messageQueueSize = mQueuedCommands.size();
         }
 
-        notifyListener(messageQueueSize);
+        if (messageQueueSizeChanged) {
+            notifyListener(messageQueueSize);
+        }
 
         return highestPriorityCommand;
-    }
-
-    public int getQueueSize() {
-        synchronized (mQueuedCommands) {
-            return mQueuedCommands.size();
-        }
     }
 
     public void clearData() {

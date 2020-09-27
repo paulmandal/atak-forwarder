@@ -12,17 +12,24 @@ public class Config {
     public static final int DELAY_AFTER_STOPPING_SERVICE = 5000;
 
     /**
+     * How long to wait for radioConfig to be available when writing to a non-ATAK device
+     */
+    public static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = 10000;
+
+    /**
      * Meshtastic Radio Config
      */
     public static final int POSITION_BROADCAST_INTERVAL_S = 3600;
-    public static final int LCD_SCREEN_ON_S = 1;
+    public static final int LCD_SCREEN_ON_S = 5;
+    public static final int WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE = 60000;
+    public static final int DEVICE_CONNECTION_TIMEOUT = 30000;
 
     /**
      * Tweaks to message handling
      */
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;
     public static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = 2000;
-    public static final int MESSAGE_AWAIT_TIMEOUT_MS = 20000; // TODO: how do to this better?
+    public static final int MESSAGE_AWAIT_TIMEOUT_MS = 60000;
 
     /**
      * How long shape/PLI messages live in the cache CotMessageCache (preventing them being resent)

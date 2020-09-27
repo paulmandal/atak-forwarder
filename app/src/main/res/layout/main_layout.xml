@@ -24,9 +24,23 @@
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent">
 
-                <include layout="@layout/settings_layout" />
+                <com.paulmandal.atak.forwarder.plugin.ui.tabs.StatusTab
+                    android:id="@+id/tab_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="4dp" />
 
-                <include layout="@layout/channel_layout" />
+                <com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab
+                    android:id="@+id/tab_channel"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="4dp" />
+
+                <com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab
+                    android:id="@+id/tab_devices"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="4dp" />
 
                 <include layout="@layout/advanced_layout" />
 

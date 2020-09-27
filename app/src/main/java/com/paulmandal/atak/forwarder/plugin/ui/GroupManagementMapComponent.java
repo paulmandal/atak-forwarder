@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
@@ -14,8 +13,9 @@ import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.SettingsTab;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
 public class GroupManagementMapComponent extends DropDownMapComponent {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementMapComponent.class.getSimpleName();
@@ -26,15 +26,24 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
+    private StatusTabViewModel mStatusTabViewModel;
+    private ChannelTabViewModel mChannelTabViewModel;
+    private DevicesTabViewModel mDevicesTabViewModel;
 
     public GroupManagementMapComponent(ChannelTracker channelTracker,
                                        CommHardware commHardware,
                                        CotMessageCache cotMessageCache,
-                                       CommandQueue commandQueue) {
+                                       CommandQueue commandQueue,
+                                       StatusTabViewModel statusTabViewModel,
+                                       ChannelTabViewModel channelTabViewModel,
+                                       DevicesTabViewModel devicesTabViewModel) {
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
         mCommandQueue = commandQueue;
+        mStatusTabViewModel= statusTabViewModel;
+        mChannelTabViewModel = channelTabViewModel;
+        mDevicesTabViewModel = devicesTabViewModel;
     }
 
     public void onCreate(final Context pluginContext, Intent intent,
@@ -44,14 +53,14 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
 
         Context atakContext = mapView.getContext();
 
-        SettingsTab settingsTab = new SettingsTab(pluginContext, atakContext, mChannelTracker, mCommHardware, mCommandQueue);
-        ChannelTab channelTab = new ChannelTab(pluginContext, atakContext, mCommHardware, mChannelTracker, new QrHelper());
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
 
         GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,
                 pluginContext,
-                settingsTab,
-                channelTab,
+                atakContext,
+                mStatusTabViewModel,
+                mChannelTabViewModel,
+                mDevicesTabViewModel,
                 advancedTab);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();

@@ -2,6 +2,8 @@ package com.paulmandal.atak.forwarder.plugin;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Handler;
 import android.os.Looper;
@@ -13,9 +15,10 @@ import com.paulmandal.atak.forwarder.BuildConfig;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.HackyTests;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
-import com.paulmandal.atak.forwarder.channel.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFactory;
 import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
@@ -24,15 +27,23 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
+import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
+import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
+import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 import transapps.maps.plugin.lifecycle.Lifecycle;
+
+import static com.atakmap.android.util.ATAKConstants.getPackageName;
 
 public class ForwarderLifecycle implements Lifecycle {
     private final static String TAG = Config.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
@@ -67,18 +78,37 @@ public class ForwarderLifecycle implements Lifecycle {
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
         StateStorage stateStorage = new StateStorage(activity);
-        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
         CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
         FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
 
-        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler, new ArrayList<>());
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory);
-        MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory, stateStorage);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
+        CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, (MeshtasticCommHardware) mCommHardware, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
         mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
 
-        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue));
+        String pluginVersion = "0.0";
+        try {
+            PackageInfo pInfo = activity.getPackageManager().getPackageInfo(getPackageName(), 0);
+            pluginVersion = pInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            e.printStackTrace();
+        }
+        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(channelTracker, inboundMessageHandler, pluginVersion, mMapView.getDeviceCallsign());
+
+        Context atakContext = mMapView.getContext();
+
+        HashHelper hashHelper = new HashHelper();
+        // TODO: clean up ugly unchecked casts to MeshstaticCommHardware
+        MeshtasticCommHardware meshtasticCommHardware = (MeshtasticCommHardware) mCommHardware;
+        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(channelTracker, meshtasticCommHardware, commandQueue, hashHelper);
+        ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, channelTracker, new QrHelper(), hashHelper);
+        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, uiThreadHandler, atakContext, meshtasticCommHardware, hashHelper);
+
+        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

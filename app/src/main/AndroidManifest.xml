@@ -3,6 +3,7 @@
     package="com.paulmandal.atak.forwarder"
     tools:ignore="GoogleAppIndexingWarning">
 
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <application
         android:allowBackup="false"
         android:description="@string/app_desc"
@@ -10,6 +11,7 @@
         android:label="@string/app_name"
 
         android:theme="@style/AppTheme">
+
         <meta-data
             android:name="plugin-api"
             android:value="${atakApiVersion}" />

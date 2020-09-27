@@ -1,19 +1,17 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.annotation.CallSuper;
 
 import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.UpdateChannelCommand;
-import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -26,30 +24,31 @@ public abstract class CommHardware {
     private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS;
 
     public enum ConnectionState {
-        UNPAIRED,
-        DISCONNECTED,
-        CONNECTED
+        NO_SERVICE_CONNECTION,
+        NO_DEVICE_CONFIGURED,
+        DEVICE_DISCONNECTED,
+        DEVICE_CONNECTED
     }
 
     public interface MessageListener {
-        void onMessageReceived(byte[] message);
+        void onMessageReceived(int messageId, byte[] message);
     }
 
     public interface ConnectionStateListener {
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
-    private Handler mHandler;
+    private Handler mUiThreadHandler;
 
     private final CommandQueue mCommandQueue;
     private QueuedCommandFactory mQueuedCommandFactory;
 
-    private List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
-    private List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
+    private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
+    private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private Thread mMessageWorkerThread;
 
-    private ConnectionState mConnectionState;
+    private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mDestroyed = false;
 
     private UserInfo mSelfInfo;
@@ -58,7 +57,7 @@ public abstract class CommHardware {
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
                         UserInfo selfInfo) {
-        mHandler = uiThreadHandler;
+        mUiThreadHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mSelfInfo = selfInfo;
@@ -73,23 +72,11 @@ public abstract class CommHardware {
         broadcastDiscoveryMessage(false);
     }
 
-    public void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createUpdateChannelCommand(channelName, psk, modemConfig));
-    }
-
-    public void connect() {
-        if (mConnectionState == ConnectionState.CONNECTED) {
-            Log.d(TAG, "connect: already connected");
-            return;
-        }
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createScanForCommDeviceCommand());
-    }
-
     @CallSuper
     public void destroy() {
         mDestroyed = true;
     }
+
     /**
      * Listener Management
      */
@@ -118,21 +105,15 @@ public abstract class CommHardware {
             while (!mDestroyed) {
                 sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS);
 
-                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.CONNECTED);
+                QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
                 if (queuedCommand == null) {
                     continue;
                 }
 
                 switch (queuedCommand.commandType) {
-                    case SCAN_FOR_COMM_DEVICE:
-                        handleScanForCommDevice();
-                        break;
                     case BROADCAST_DISCOVERY_MSG:
                         handleBroadcastDiscoveryMessage((BroadcastDiscoveryCommand) queuedCommand);
-                        break;
-                    case UPDATE_CHANNEL:
-                        handleUpdateChannel((UpdateChannelCommand) queuedCommand);
                         break;
                     case SEND_TO_CHANNEL:
                     case SEND_TO_INDIVIDUAL:
@@ -167,18 +148,22 @@ public abstract class CommHardware {
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
         String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+
+        String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
+        handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
+
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 
-    protected void notifyMessageListeners(byte[] message) {
+    protected void notifyMessageListeners(int messageId, byte[] message) {
         for (MessageListener listener : mMessageListeners) {
-            mHandler.post(() -> listener.onMessageReceived(message));
+            mUiThreadHandler.post(() -> listener.onMessageReceived(messageId, message));
         }
     }
 
     protected void notifyConnectionStateListeners(ConnectionState connectionState) {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
-            mHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
+            mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
         }
     }
     /**
@@ -195,8 +180,9 @@ public abstract class CommHardware {
     /**
      * For subclasses to implement
      */
-    protected abstract void handleScanForCommDevice();
+    public abstract void connect();
+    public abstract void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
-    protected abstract void handleUpdateChannel(UpdateChannelCommand updateChannelCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
+    protected abstract void handleDiscoveryMessage(String message);
 }

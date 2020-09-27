@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
+
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
@@ -36,28 +38,31 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         sendMessageToUserOrGroup(sendMessageCommand);
     }
 
-    protected void handleMessageChunk(String meshId, byte[] messageChunk) {
+    protected void handleMessageChunk(int messageId, String meshId, byte[] messageChunk) {
         int messageIndex = messageChunk[0] >> 4 & 0x0f;
         int messageCount = messageChunk[0] & 0x0f;
 
-        Log.d(TAG, "<---  messageChunk: " + messageIndex + "/" + messageCount + " from: " + meshId);
+        Log.d(TAG, "<---  messageChunk: " + (messageIndex + 1) + "/" + messageCount + " from: " + meshId);
 
         byte[] chunk = new byte[messageChunk.length - 1];
         for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {
             chunk[idx] = messageChunk[i];
         }
-        handleMessageChunk(meshId, messageIndex, messageCount, chunk);
+        handleMessageChunk(messageId, meshId, messageIndex, messageCount, chunk);
     }
 
-    private void handleMessageChunk(String meshId, int messageIndex, int messageCount, byte[] messageChunk) {
-        synchronized (mIncomingMessages) { // TODO: better sync block?
-            List<MessageChunk> incomingMessagesFromUser = mIncomingMessages.get(meshId);
+    private void handleMessageChunk(int messageId, String meshId, int messageIndex, int messageCount, byte[] messageChunk) {
+        List<MessageChunk> incomingMessagesFromUser;
+        synchronized (mIncomingMessages) {
+            incomingMessagesFromUser = mIncomingMessages.get(meshId);
             if (incomingMessagesFromUser == null) {
                 incomingMessagesFromUser = new ArrayList<>();
                 mIncomingMessages.put(meshId, incomingMessagesFromUser);
             }
             incomingMessagesFromUser.add(new MessageChunk(messageIndex, messageCount, messageChunk));
+        }
 
+        synchronized (incomingMessagesFromUser) {
             if (messageIndex == messageCount - 1) {
                 // Message complete!
                 byte[][] messagePieces = new byte[messageCount][];
@@ -84,7 +89,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
                         message[idx] = messagePieces[i][j];
                     }
                 }
-                notifyMessageListeners(message);
+                notifyMessageListeners(messageId, message);
             }
         }
     }
@@ -120,20 +125,27 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         }
 
         if (toUIDs == null) {
-            sendMessagesToGroup(messages);
+            sendMessagesToGroup(messages, sendMessageCommand.cotEvent.getType().equals(TYPE_PLI));
         } else {
             sendMessagesToUsers(messages, toUIDs);
         }
     }
 
-    private void sendMessagesToGroup(byte[][] messages) {
+    private void sendMessagesToGroup(byte[][] messages, boolean isPli) {
         for (int i = 0; i < messages.length; i++) {
             byte[] message = messages[i];
             String groupId = DataPacket.ID_BROADCAST;
 
             Log.d(TAG, "---> sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
 
-            if (!sendMessageSegment(message, groupId)) {
+            boolean messageSent = sendMessageSegment(message, groupId);
+
+            if (!messageSent && isPli) {
+                // Do not attempt to re-send PLIs
+                return;
+            }
+
+            if (!messageSent) {
                 i--;
             }
 

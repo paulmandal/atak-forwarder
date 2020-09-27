@@ -37,7 +37,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.addWidget(this);
 
-        updateIcon(commHardware.getConnectionState() == CommHardware.ConnectionState.CONNECTED);
+        updateIcon(commHardware.getConnectionState());
     }
 
     @Override
@@ -55,15 +55,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
 
     @Override
     public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
-        switch (connectionState) {
-            case UNPAIRED:
-            case DISCONNECTED:
-                updateIcon(false);
-                break;
-            case CONNECTED:
-                updateIcon(true);
-                break;
-        }
+        updateIcon(connectionState);
     }
 
     public void onDestroy() {
@@ -72,8 +64,23 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
         brLayout.removeWidget(this);
     }
 
-    private void updateIcon(boolean connected) {
-        int drawableId = connected ? R.drawable.ic_connected : R.drawable.ic_disconnected;
+    private void updateIcon(CommHardware.ConnectionState connectionState) {
+        int drawableId = R.drawable.ic_no_service_connected;
+        switch (connectionState) {
+            case NO_SERVICE_CONNECTION:
+                drawableId = R.drawable.ic_no_service_connected;
+                break;
+            case NO_DEVICE_CONFIGURED:
+                drawableId = R.drawable.ic_no_device_configured;
+                break;
+            case DEVICE_DISCONNECTED:
+                drawableId = R.drawable.ic_device_disconnected;
+                break;
+            case DEVICE_CONNECTED:
+                drawableId = R.drawable.ic_device_connected;
+                break;
+        }
+
         String imageUri = "android.resource://com.paulmandal.atak.forwarder/" + drawableId;
 
         Icon.Builder builder = new Icon.Builder();

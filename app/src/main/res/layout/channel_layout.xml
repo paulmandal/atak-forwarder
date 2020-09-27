@@ -1,24 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/tab_channel"
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="8dp">
+    tools:parentTag="android.widget.RelativeLayout">
 
     <TextView
-        android:id="@+id/label_channel_name"
+        android:id="@+id/channel_name"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true" />
+
+    <TextView
+        android:id="@+id/channel_name_psk_seperator"
+        style="@style/SmallTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/channel_name"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/channel_psk_modem_seperator" />
+
+    <TextView
+        android:id="@+id/psk_hash"
+        style="@style/SmallTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/channel_name_psk_seperator" />
+
+    <TextView
+        android:id="@+id/psk_modem_seperator"
+        style="@style/SmallTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/psk_hash"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/channel_psk_modem_seperator" />
+
+    <TextView
+        android:id="@+id/modem_config"
+        style="@style/SmallTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/psk_modem_seperator" />
+
+    <TextView
+        android:id="@+id/label_channel_name"
+        style="@style/SmallTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/channel_name"
+        android:layout_alignParentStart="true"
         android:text="@string/channel_name"
         android:visibility="gone" />
 
     <EditText
         android:id="@+id/edittext_channel_name"
+        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@id/channel_name"
         android:layout_toEndOf="@id/label_channel_name"
         android:lines="1"
         android:maxLines="1"
@@ -36,24 +84,28 @@
 
         <RadioButton
             android:id="@+id/radio_button_short_range"
+            style="@style/SmallTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/short_range" />
 
         <RadioButton
             android:id="@+id/radio_button_medium_range"
+            style="@style/SmallTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/medium_range" />
 
         <RadioButton
             android:id="@+id/radio_button_long_range"
+            style="@style/SmallTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/long_range" />
 
         <RadioButton
             android:id="@+id/radio_button_very_long_range"
+            style="@style/SmallTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
@@ -62,6 +114,7 @@
 
     <TextView
         android:id="@+id/textview_psk_status"
+        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/radio_group_modem_setting"
@@ -77,13 +130,15 @@
 
     <FrameLayout
         android:id="@+id/qr_scanner_container"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/button_scan_channel_qr"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
     <Button
-        android:id="@+id/button_show_or_hide_channel_qr"
+        android:id="@+id/button_show_qr"
+        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -91,7 +146,17 @@
         android:text="@string/show_channel_qr" />
 
     <Button
+        android:id="@+id/button_hide_qr"
+        style="@style/SmallTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/hide_channel_qr" />
+
+    <Button
         android:id="@+id/button_scan_channel_qr"
+        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -99,7 +164,18 @@
         android:text="@string/scan_channel_qr" />
 
     <Button
-        android:id="@+id/button_edit_or_save_channel"
+        android:id="@+id/button_abort_scan_qr"
+        style="@style/SmallTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:visibility="invisible"
+        android:text="@string/abort_scan_qr" />
+
+    <Button
+        android:id="@+id/button_edit_channel"
+        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -107,11 +183,21 @@
         android:text="@string/edit_channel" />
 
     <Button
+        android:id="@+id/button_save_channel"
+        style="@style/SmallTextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:text="@string/save" />
+
+    <Button
         android:id="@+id/button_gen_psk"
+        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/generate_new_psk"
         android:visibility="gone" />
-</RelativeLayout>
+</merge>

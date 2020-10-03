@@ -41,13 +41,15 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
     private static final String TAG_STATUS = "status";
     private static final String TAG_BATTERY = "battery";
 
+    private static final String VALUE_UID_PREFIX = "MESHTASTIC-";
     private static final String VALUE_MESHTASTIC_DEVICE = "Meshtastic Device";
     private static final String VALUE_ATAK_FORWARDER = "ATAK Forwarder";
-    private static final String VALUE_DTED0 = "DTED0";
-    private static final String VALUE_USER = "USER";
+    private static final String VALUE_HOW_GPS = "m-g";
+    private static final String VALUE_UNKNOWN = "???";
+    private static final String VALUE_GPS = "GPS";
 
     private static final int WHITE_INDEX = 0;
-    private static final int RTO_INDEX = 6;
+    private static final int TEAM_MEMBER_INDEX = 0;
 
     public static String[] TEAMS = {
             "White",
@@ -118,12 +120,12 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             CoordinatedTime nowCoordinatedTime = new CoordinatedTime(System.currentTimeMillis());
             CoordinatedTime staleCoordinatedTime = new CoordinatedTime(nowCoordinatedTime.getMilliseconds() + STALE_TIME_OFFSET_MS);
 
-            spoofedPli.setUID(userInfo.callsign);
+            spoofedPli.setUID(String.format("%s-%s", VALUE_UID_PREFIX, userInfo.meshId));
             spoofedPli.setType(TYPE_PLI);
             spoofedPli.setTime(nowCoordinatedTime);
             spoofedPli.setStart(nowCoordinatedTime);
             spoofedPli.setStale(staleCoordinatedTime);
-            spoofedPli.setHow("h-e");
+            spoofedPli.setHow(VALUE_HOW_GPS);
             spoofedPli.setPoint(new CotPoint(userInfo.lat, userInfo.lon, userInfo.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
 
             CotDetail cotDetail = new CotDetail(TAG_DETAIL);
@@ -147,12 +149,12 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             cotDetail.addChild(uidDetail);
 
             CotDetail precisionLocationDetail = new CotDetail(TAG_PRECISION_LOCATION);
-            precisionLocationDetail.setAttribute(TAG_ALTSRC, VALUE_DTED0);
-            precisionLocationDetail.setAttribute(TAG_GEOPOINTSRC, VALUE_USER);
+            precisionLocationDetail.setAttribute(TAG_ALTSRC, VALUE_UNKNOWN);
+            precisionLocationDetail.setAttribute(TAG_GEOPOINTSRC, VALUE_GPS);
             cotDetail.addChild(precisionLocationDetail);
 
             String team = TEAMS[WHITE_INDEX];
-            String role = ROLES[RTO_INDEX];
+            String role = ROLES[TEAM_MEMBER_INDEX];
             if (userInfo.shortName != null && userInfo.shortName.length() > 1) {
                 try {
                     // Try to split the shortname and get team/role values

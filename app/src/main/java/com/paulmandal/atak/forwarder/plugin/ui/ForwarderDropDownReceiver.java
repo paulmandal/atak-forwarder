@@ -22,21 +22,21 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewMod
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
-public class GroupManagementDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
-    public static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementDropDownReceiver.class.getSimpleName();
+public class ForwarderDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
+    public static final String TAG = Config.DEBUG_TAG_PREFIX + ForwarderDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
     private final View mTemplateView;
 
     private boolean mIsDropDownOpen;
 
-    public GroupManagementDropDownReceiver(final MapView mapView,
-                                           final Context pluginContext,
-                                           final Context atakContext,
-                                           final StatusTabViewModel statusTabViewModel,
-                                           final ChannelTabViewModel channelTabViewModel,
-                                           final DevicesTabViewModel devicesTabViewModel,
-                                           final AdvancedTab advancedTab) {
+    public ForwarderDropDownReceiver(final MapView mapView,
+                                     final Context pluginContext,
+                                     final Context atakContext,
+                                     final StatusTabViewModel statusTabViewModel,
+                                     final ChannelTabViewModel channelTabViewModel,
+                                     final DevicesTabViewModel devicesTabViewModel,
+                                     final AdvancedTab advancedTab) {
         super(mapView);
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
         // In this case, using it is not necessary - but I am putting it here to remind

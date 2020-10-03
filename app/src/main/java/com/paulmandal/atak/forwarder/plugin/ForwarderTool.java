@@ -9,18 +9,18 @@ import android.view.ViewGroup;
 
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementDropDownReceiver;
+import com.paulmandal.atak.forwarder.plugin.ui.ForwarderDropDownReceiver;
 
 import transapps.mapi.MapView;
 import transapps.maps.plugin.tool.Group;
 import transapps.maps.plugin.tool.Tool;
 import transapps.maps.plugin.tool.ToolDescriptor;
 
-public class GroupManagementTool extends Tool implements ToolDescriptor {
+public class ForwarderTool extends Tool implements ToolDescriptor {
 
     private final Context context;
 
-    public GroupManagementTool(Context context) {
+    public ForwarderTool(Context context) {
         this.context = context;
     }
 
@@ -61,7 +61,7 @@ public class GroupManagementTool extends Tool implements ToolDescriptor {
             toolCallback.onToolDeactivated(this);
         }
         // Intent to launch the dropdown or tool
-        Intent i = new Intent(GroupManagementDropDownReceiver.SHOW_PLUGIN);
+        Intent i = new Intent(ForwarderDropDownReceiver.SHOW_PLUGIN);
         AtakBroadcast.getInstance().sendBroadcast(i);
     }
 

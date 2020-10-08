@@ -17,8 +17,8 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewMod
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
-public class GroupManagementMapComponent extends DropDownMapComponent {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + GroupManagementMapComponent.class.getSimpleName();
+public class ForwarderMapComponent extends DropDownMapComponent {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + ForwarderMapComponent.class.getSimpleName();
 
     private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
@@ -30,13 +30,13 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
     private ChannelTabViewModel mChannelTabViewModel;
     private DevicesTabViewModel mDevicesTabViewModel;
 
-    public GroupManagementMapComponent(ChannelTracker channelTracker,
-                                       CommHardware commHardware,
-                                       CotMessageCache cotMessageCache,
-                                       CommandQueue commandQueue,
-                                       StatusTabViewModel statusTabViewModel,
-                                       ChannelTabViewModel channelTabViewModel,
-                                       DevicesTabViewModel devicesTabViewModel) {
+    public ForwarderMapComponent(ChannelTracker channelTracker,
+                                 CommHardware commHardware,
+                                 CotMessageCache cotMessageCache,
+                                 CommandQueue commandQueue,
+                                 StatusTabViewModel statusTabViewModel,
+                                 ChannelTabViewModel channelTabViewModel,
+                                 DevicesTabViewModel devicesTabViewModel) {
         mChannelTracker = channelTracker;
         mCommHardware = commHardware;
         mCotMessageCache = cotMessageCache;
@@ -55,7 +55,7 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
 
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
 
-        GroupManagementDropDownReceiver groupManagementDropDownReceiver = new GroupManagementDropDownReceiver(mapView,
+        ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,
                 pluginContext,
                 atakContext,
                 mStatusTabViewModel,
@@ -64,10 +64,10 @@ public class GroupManagementMapComponent extends DropDownMapComponent {
                 advancedTab);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
-        ddFilter.addAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);
-        registerDropDownReceiver(groupManagementDropDownReceiver, ddFilter);
+        ddFilter.addAction(ForwarderDropDownReceiver.SHOW_PLUGIN);
+        registerDropDownReceiver(forwarderDropDownReceiver, ddFilter);
 
-        mForwarderMarkerIconWidget = new ForwarderMarkerIconWidget(mapView, groupManagementDropDownReceiver, mCommHardware);
+        mForwarderMarkerIconWidget = new ForwarderMarkerIconWidget(mapView, forwarderDropDownReceiver, mCommHardware);
     }
 
     @Override

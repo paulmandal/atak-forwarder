@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.factories;
 
+import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.comms.CommsMapComponent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
@@ -14,7 +15,7 @@ public class MessageHandlerFactory {
     public static InboundMessageHandler getInboundMessageHandler(CommHardware commHardware,
                                                                  CotEventProtobufConverter cotEventProtobufConverter,
                                                                  FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter) {
-        return new InboundMessageHandler(commHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        return new InboundMessageHandler(CotMapComponent.getInternalDispatcher(), commHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
     }
 
     public static OutboundMessageHandler getOutboundMessageHandler(CommHardware commHardware,

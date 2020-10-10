@@ -8,7 +8,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
-import com.paulmandal.atak.forwarder.cotutils.RetransmittedCotEvent;
+import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
 
 public class InboundMessageHandler implements CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
@@ -51,8 +51,8 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
     }
 
     public void retransmitCotToLocalhost(CotEvent cotEvent) {
-        RetransmittedCotEvent retransmittedCotEvent = new RetransmittedCotEvent(cotEvent);
-        mInternalCotDispatcher.dispatch(retransmittedCotEvent);
-        mExternalCotDispatcher.dispatch(retransmittedCotEvent);
+        MeshtasticCotEvent meshtasticCotEvent = new MeshtasticCotEvent(cotEvent);
+        mInternalCotDispatcher.dispatch(meshtasticCotEvent);
+        mExternalCotDispatcher.dispatch(meshtasticCotEvent);
     }
 }

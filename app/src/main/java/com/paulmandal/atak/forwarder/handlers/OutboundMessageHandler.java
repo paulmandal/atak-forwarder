@@ -14,7 +14,7 @@ import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProt
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.cotutils.RetransmittedCotEvent;
+import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
@@ -54,7 +54,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
     @Override
     public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
-        if (cotEvent instanceof RetransmittedCotEvent) {
+        if (cotEvent instanceof MeshtasticCotEvent) {
             // Drop CotEvents that we have retransmitted from Meshtastic
             return;
         }

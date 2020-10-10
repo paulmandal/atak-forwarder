@@ -8,19 +8,23 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
+import com.paulmandal.atak.forwarder.cotutils.RetransmittedCotEvent;
 
 public class InboundMessageHandler implements CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
 
-    private CotDispatcher mCotDispatcher;
+    private CotDispatcher mInternalCotDispatcher;
+    private CotDispatcher mExternalCotDispatcher;
     private CotEventProtobufConverter mCotEventProtobufConverter;
     private FallbackCotEventProtobufConverter mFallbackCotEventProtobufConverter;
 
-    public InboundMessageHandler(CotDispatcher cotDispatcher,
+    public InboundMessageHandler(CotDispatcher internalCotDispatcher,
+                                 CotDispatcher externalCotDispatcher,
                                  CommHardware commHardware,
                                  CotEventProtobufConverter cotEventProtobufConverter,
                                  FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter) {
-        mCotDispatcher = cotDispatcher;
+        mInternalCotDispatcher = internalCotDispatcher;
+        mExternalCotDispatcher = externalCotDispatcher;
         mCotEventProtobufConverter = cotEventProtobufConverter;
         mFallbackCotEventProtobufConverter = fallbackCotEventProtobufConverter;
 
@@ -47,6 +51,8 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
     }
 
     public void retransmitCotToLocalhost(CotEvent cotEvent) {
-        mCotDispatcher.dispatch(cotEvent);
+        RetransmittedCotEvent retransmittedCotEvent = new RetransmittedCotEvent(cotEvent);
+        mInternalCotDispatcher.dispatch(retransmittedCotEvent);
+        mExternalCotDispatcher.dispatch(retransmittedCotEvent);
     }
 }

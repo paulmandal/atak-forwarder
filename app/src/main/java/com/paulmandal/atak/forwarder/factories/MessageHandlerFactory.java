@@ -15,7 +15,7 @@ public class MessageHandlerFactory {
     public static InboundMessageHandler getInboundMessageHandler(CommHardware commHardware,
                                                                  CotEventProtobufConverter cotEventProtobufConverter,
                                                                  FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter) {
-        return new InboundMessageHandler(CotMapComponent.getInternalDispatcher(), commHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        return new InboundMessageHandler(CotMapComponent.getInternalDispatcher(), CotMapComponent.getExternalDispatcher(), commHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
     }
 
     public static OutboundMessageHandler getOutboundMessageHandler(CommHardware commHardware,

@@ -41,7 +41,7 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
     private static final String TAG_STATUS = "status";
     private static final String TAG_BATTERY = "battery";
 
-    private static final String VALUE_UID_PREFIX = "MESHTASTIC-";
+    private static final String VALUE_UID_PREFIX = "MESHTASTIC";
     private static final String VALUE_MESHTASTIC_DEVICE = "Meshtastic Device";
     private static final String VALUE_ATAK_FORWARDER = "ATAK Forwarder";
     private static final String VALUE_HOW_GPS = "m-g";
@@ -120,7 +120,7 @@ public class NonAtakStationCotGenerator implements ChannelTracker.ChannelMembers
             CoordinatedTime nowCoordinatedTime = new CoordinatedTime(System.currentTimeMillis());
             CoordinatedTime staleCoordinatedTime = new CoordinatedTime(nowCoordinatedTime.getMilliseconds() + STALE_TIME_OFFSET_MS);
 
-            spoofedPli.setUID(String.format("%s-%s", VALUE_UID_PREFIX, userInfo.meshId));
+            spoofedPli.setUID(String.format("%s-%s", VALUE_UID_PREFIX, userInfo.meshId.replaceAll("!", "")));
             spoofedPli.setType(TYPE_PLI);
             spoofedPli.setTime(nowCoordinatedTime);
             spoofedPli.setStart(nowCoordinatedTime);

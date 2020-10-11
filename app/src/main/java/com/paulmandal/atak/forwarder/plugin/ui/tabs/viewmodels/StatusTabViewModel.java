@@ -35,7 +35,7 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements UserTr
     private MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
-    public StatusTabViewModel(UserTracker channelTracker,
+    public StatusTabViewModel(UserTracker userTracker,
                               MeshtasticCommHardware commHardware,
                               CommandQueue commandQueue,
                               HashHelper hashHelper) {
@@ -51,7 +51,7 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements UserTr
         mTimedOutMessages.setValue(0);
         mReceivedMessages.setValue(0);
 
-        channelTracker.addUpdateListener(this);
+        userTracker.addUpdateListener(this);
         commandQueue.setListener(this);
         commHardware.addConnectionStateListener(this);
         commHardware.setMessageAckNackListener(this);

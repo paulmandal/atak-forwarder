@@ -17,7 +17,7 @@ public class CommHardwareFactory {
                                                          MapView mapView,
                                                          Handler handler,
                                                          MeshtasticCommHardware.UserListener userListener,
-                                                         UserTracker channelTracker,
+                                                         UserTracker userTracker,
                                                          CommandQueue commandQueue,
                                                          QueuedCommandFactory queuedCommandFactory,
                                                          StateStorage stateStorage) {
@@ -26,7 +26,7 @@ public class CommHardwareFactory {
 
         CommHardware commHardware;
         UserInfo selfInfo = new UserInfo(callsign, null, atakUid, null);
-        commHardware = new MeshtasticCommHardware(handler, userListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
+        commHardware = new MeshtasticCommHardware(handler, userListener, userTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
         return commHardware;
     }
 

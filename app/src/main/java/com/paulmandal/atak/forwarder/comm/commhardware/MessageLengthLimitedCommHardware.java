@@ -21,15 +21,15 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
-    private UserTracker mChannelTracker;
+    private UserTracker mUserTracker;
     private final int mMessageChunkLength;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
 
-    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, UserTracker channelTracker, int messageChunkLength, UserInfo selfInfo) {
+    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, UserTracker userTracker, int messageChunkLength, UserInfo selfInfo) {
         super(uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
 
-        mChannelTracker = channelTracker;
+        mUserTracker = userTracker;
         mMessageChunkLength = messageChunkLength;
     }
 
@@ -159,7 +159,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         for (String uId : toUIDs) {
             for (int i = 0; i < messages.length; i++) {
                 byte[] message = messages[i];
-                String meshId = mChannelTracker.getMeshIdForUid(uId);
+                String meshId = mUserTracker.getMeshIdForUid(uId);
                 if (meshId.equals(UserTracker.USER_NOT_FOUND)) {
                     Log.d(TAG, "msg can't find user: " + uId);
                     continue;

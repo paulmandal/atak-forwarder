@@ -83,7 +83,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final String STATE_CONNECTED = "CONNECTED";
 
-    private UserTracker mChannelTracker;
+    private UserTracker mUserTracker;
     private UserListener mUserListener;
     private Activity mActivity;
     private Handler mUiThreadHandler;
@@ -111,19 +111,19 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     public MeshtasticCommHardware(Handler uiThreadHandler,
                                   UserListener userListener,
-                                  UserTracker channelTracker,
+                                  UserTracker userTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   Activity activity,
                                   UserInfo selfInfo,
                                   StateStorage stateStorage,
                                   String commDeviceAddress) {
-        super(uiThreadHandler, commandQueue, queuedCommandFactory, channelTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
+        super(uiThreadHandler, commandQueue, queuedCommandFactory, userTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
         mUiThreadHandler = uiThreadHandler;
         mActivity = activity;
         mUserListener = userListener;
-        mChannelTracker = channelTracker;
+        mUserTracker = userTracker;
         mStateStorage = stateStorage;
         mCommDeviceAddress = commDeviceAddress;
 
@@ -199,7 +199,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 return;
             }
 
-            mChannelTracker.clearData();
+            mUserTracker.clearData();
 
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
             MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();

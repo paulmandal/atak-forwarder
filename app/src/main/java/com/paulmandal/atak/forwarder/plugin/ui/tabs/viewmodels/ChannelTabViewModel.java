@@ -43,7 +43,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
 
     private CommHardware mCommHardware;
 
-    private UserTracker mChannelTracker;
+    private UserTracker mUserTracker;
     private QrHelper mQrHelper;
     private HashHelper mHashHelper;
 
@@ -57,7 +57,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
     public ChannelTabViewModel(Context pluginContext,
                                Context atakContext,
                                MeshtasticCommHardware commHardware,
-                               UserTracker channelTracker,
+                               UserTracker userTracker,
                                QrHelper qrHelper,
                                HashHelper hashHelper) {
         super(commHardware, hashHelper);
@@ -65,7 +65,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mCommHardware = commHardware;
-        mChannelTracker = channelTracker;
+        mUserTracker = userTracker;
         mQrHelper = qrHelper;
         mHashHelper = hashHelper;
 
@@ -198,7 +198,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
             psk[i] = pskByte[i];
         }
 
-        mChannelTracker.clearData();
+        mUserTracker.clearData();
         mCommHardware.updateChannelSettings(channelName, psk, modemConfig);
         mCommHardware.broadcastDiscoveryMessage();
     }

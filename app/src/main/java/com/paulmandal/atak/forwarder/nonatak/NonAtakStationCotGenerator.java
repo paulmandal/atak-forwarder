@@ -168,6 +168,6 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
         String uidOrWhat = contactDetail != null ? contactDetail.getAttribute("callsign") : spoofedPli.getUID();
         Log.e(TAG, "drawing non-ATAK: " + uidOrWhat);
 
-        mInboundMessageHandler.sneakyStuff(spoofedPli);
+        mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }
 }

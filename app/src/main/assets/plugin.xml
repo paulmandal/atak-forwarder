@@ -7,7 +7,7 @@
 
     <extension
         type="transapps.maps.plugin.tool.ToolDescriptor"
-        impl="com.paulmandal.atak.forwarder.plugin.GroupManagementTool"
+        impl="com.paulmandal.atak.forwarder.plugin.ForwarderTool"
         singleton="true" />
 
 </plugin>

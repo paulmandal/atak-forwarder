@@ -30,7 +30,7 @@ import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
-import com.paulmandal.atak.forwarder.plugin.ui.GroupManagementMapComponent;
+import com.paulmandal.atak.forwarder.plugin.ui.ForwarderMapComponent;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
@@ -108,7 +108,7 @@ public class ForwarderLifecycle implements Lifecycle {
         ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, channelTracker, new QrHelper(), hashHelper);
         DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, uiThreadHandler, atakContext, meshtasticCommHardware, hashHelper);
 
-        mOverlays.add(new GroupManagementMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
+        mOverlays.add(new ForwarderMapComponent(channelTracker, mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 
         // create components
         Iterator<MapComponent> iter = mOverlays.iterator();

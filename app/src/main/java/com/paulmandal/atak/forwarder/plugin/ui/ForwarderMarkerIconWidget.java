@@ -19,13 +19,13 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
-    private GroupManagementDropDownReceiver mGroupManagementDropDownReceiver;
+    private ForwarderDropDownReceiver mForwarderDropDownReceiver;
     private MapView mMapView;
 
     public ForwarderMarkerIconWidget(MapView mapView,
-                                     GroupManagementDropDownReceiver groupManagementDropDownReceiver,
+                                     ForwarderDropDownReceiver forwarderDropDownReceiver,
                                      CommHardware commHardware) {
-        mGroupManagementDropDownReceiver = groupManagementDropDownReceiver;
+        mForwarderDropDownReceiver = forwarderDropDownReceiver;
         mMapView = mapView;
 
         commHardware.addConnectionStateListener(this);
@@ -43,9 +43,9 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
     @Override
     public void onMapWidgetClick(MapWidget widget, MotionEvent event) {
         if (widget == this) {
-            if (!mGroupManagementDropDownReceiver.isDropDownOpen()) {
+            if (!mForwarderDropDownReceiver.isDropDownOpen()) {
                 Intent intent = new Intent();
-                intent.setAction(GroupManagementDropDownReceiver.SHOW_PLUGIN);
+                intent.setAction(ForwarderDropDownReceiver.SHOW_PLUGIN);
                 AtakBroadcast.getInstance().sendBroadcast(intent);
             } else {
                 DropDownManager.getInstance().unHidePane();

@@ -1,15 +1,13 @@
 package com.paulmandal.atak.forwarder.plugin;
 
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.MappingNotFoundException;
-import com.paulmandal.atak.forwarder.comm.protobuf.UnknownDetailFieldException;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
+import com.paulmandal.atak.libcotshrink.api.CotShrinker;
 
 public class CotSpammer {
-    public static void spamCots(CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, CotEventProtobufConverter cotEventProtobufConverter) {
+    public static void spamCots(CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, CotShrinker cotShrinker) {
         CotEvent cotEvent[] = new CotEvent[20];
         cotEvent[0] = CotEvent.parse("<?xml version='1.0' encoding='UTF-8' standalone='yes'?><event version='2.0' uid='533e2070-77b6-4bab-8cab-98fb0ce5edd9' type='a-u-G' time='2020-09-17T16:21:57.721Z' start='2020-09-17T16:21:57.721Z' stale='2020-09-17T16:26:57.721Z' how='h-g-i-g-o'><point lat='39.726013960131404' lon='-105.10299605546003' hae='1668.9554962738666' ce='9999999.0' le='9999999.0' /><detail><status readiness='true'/><archive/><contact callsign='U.17.102107'/><usericon iconsetpath='COT_MAPPING_2525B/a-u/a-u-G'/><link uid='ANDROID-53af0912586418dc' production_time='2020-09-17T16:21:07.332Z' type='a-f-G-U-C' parent_callsign='dasuberdog' relation='p-p'/><archive/><precisionlocation altsrc='DTED2'/><remarks></remarks><color argb='-1'/></detail></event>");
         cotEvent[1] = CotEvent.parse("<?xml version='1.0' encoding='UTF-8' standalone='yes'?><event version='2.0' uid='5b917ac7-2edd-4f6a-970e-0f9c32f149e5' type='a-u-G' time='2020-09-17T16:21:59.564Z' start='2020-09-17T16:21:59.564Z' stale='2020-09-17T16:26:59.564Z' how='h-g-i-g-o'><point lat='39.728009981984385' lon='-105.08680430338087' hae='1643.464449255349' ce='9999999.0' le='9999999.0' /><detail><status readiness='true'/><archive/><contact callsign='U.17.102108'/><usericon iconsetpath='COT_MAPPING_2525B/a-u/a-u-G'/><link uid='ANDROID-53af0912586418dc' production_time='2020-09-17T16:21:08.177Z' type='a-f-G-U-C' parent_callsign='dasuberdog' relation='p-p'/><archive/><precisionlocation altsrc='DTED2'/><remarks></remarks><color argb='-1'/></detail></event>");
@@ -33,12 +31,8 @@ public class CotSpammer {
         cotEvent[19] = CotEvent.parse("<?xml version='1.0' encoding='UTF-8' standalone='yes'?><event version='2.0' uid='24caba2d-faa9-4088-8950-7aa8968a7b7c' type='a-u-G' time='2020-09-17T16:22:35.246Z' start='2020-09-17T16:22:35.246Z' stale='2020-09-17T16:27:35.246Z' how='h-g-i-g-o'><point lat='39.68150267280998' lon='-105.09447060232448' hae='1688.3471296883324' ce='9999999.0' le='9999999.0' /><detail><status readiness='true'/><archive/><contact callsign='U.17.102120'/><usericon iconsetpath='COT_MAPPING_2525B/a-u/a-u-G'/><link uid='ANDROID-53af0912586418dc' production_time='2020-09-17T16:21:20.195Z' type='a-f-G-U-C' parent_callsign='dasuberdog' relation='p-p'/><archive/><precisionlocation altsrc='DTED2'/><remarks></remarks><color argb='-1'/></detail></event>");
 
         for (int i = 0 ; i < cotEvent.length ; i++) {
-            try {
-                byte[] cotProtobuf = cotEventProtobufConverter.toByteArray(cotEvent[i]);
-                commandQueue.queueSendMessage(queuedCommandFactory.createSendMessageCommand(QueuedCommand.PRIORITY_HIGH, cotEvent[i], cotProtobuf, null), false);
-            } catch (MappingNotFoundException | UnknownDetailFieldException e) {
-                e.printStackTrace();
-            }
+            byte[] cotProtobuf = cotShrinker.toByteArray(cotEvent[i]);
+            commandQueue.queueSendMessage(queuedCommandFactory.createSendMessageCommand(QueuedCommand.PRIORITY_HIGH, cotEvent[i], cotProtobuf, null), false);
         }
     }
 }

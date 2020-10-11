@@ -58,7 +58,6 @@ android {
         // by a similar customization.
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
-
     }
 
     packagingOptions {
@@ -180,8 +179,20 @@ dependencies {
 
     compileOnly fileTree(dir: '../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs/4.1.0.CIV/main.jar', include: '*.jar')
 
+    implementation project(':libcotshrink')
+
     testImplementation 'junit:junit:4.13'
 }
+
+task updateSubmodules(type: Exec) {
+    executable "bash"
+    args "-c", """
+            echo "Updating submodules" &&
+            git submodule update --init --recursive
+        """
+}
+
+preBuild.dependsOn updateSubmodules
 
 protobuf {
     protoc {

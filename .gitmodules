@@ -4,4 +4,3 @@
 [submodule "libcotshrink"]
 	path = libcotshrink
 	url = git@github.com:paulmandal/libcotshrink.git
-	branch = task/add-initial-library

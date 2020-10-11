@@ -16,7 +16,7 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
@@ -43,7 +43,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
 
     private CommHardware mCommHardware;
 
-    private ChannelTracker mChannelTracker;
+    private UserTracker mChannelTracker;
     private QrHelper mQrHelper;
     private HashHelper mHashHelper;
 
@@ -57,7 +57,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
     public ChannelTabViewModel(Context pluginContext,
                                Context atakContext,
                                MeshtasticCommHardware commHardware,
-                               ChannelTracker channelTracker,
+                               UserTracker channelTracker,
                                QrHelper qrHelper,
                                HashHelper hashHelper) {
         super(commHardware, hashHelper);

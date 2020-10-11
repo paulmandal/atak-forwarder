@@ -13,11 +13,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTracker.class.getSimpleName();
+public class UserTracker implements MeshtasticCommHardware.UserListener {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
 
     public interface ChannelMembersUpdateListener {
         void onChannelMembersUpdated(List<UserInfo> atakUsers, List<NonAtakUserInfo> nonAtakStations);
+    }
+
+    public interface NonAtakStationUpdateListener {
+        void onNonAtakStationUpdated(NonAtakUserInfo nonAtakUserInfo);
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -29,9 +33,10 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
     private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
 
     private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
+    private final List<NonAtakStationUpdateListener> mNonAtakStationUpdateListener = new CopyOnWriteArrayList<>();
 
-    public ChannelTracker(Context atakContext,
-                          Handler uiThreadHandler) {
+    public UserTracker(Context atakContext,
+                       Handler uiThreadHandler) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
     }
@@ -74,57 +79,30 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
             Log.d(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
-            notifyListeners();
+            notifyChannelMembersUpdateListeners();
         }
 
         Toast.makeText(mAtakContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void onChannelMembersUpdated(List<NonAtakUserInfo> userInfoList) {
+    public void onChannelUsersUpdated(List<NonAtakUserInfo> userInfoList) {
         List<NonAtakUserInfo> newUsers = new ArrayList<>();
 
         boolean updatedNonAtakStation = false;
 
         for (NonAtakUserInfo possiblyNewUser : userInfoList) {
-            boolean found = false;
-            for (UserInfo user : mAtakUsers) {
-                if (user.meshId.equals(possiblyNewUser.meshId)) {
-                    found = true;
-
-                    if (!Objects.equals(user.batteryPercentage, possiblyNewUser.batteryPercentage)) {
-                        user.batteryPercentage = possiblyNewUser.batteryPercentage;
-                    }
-
-                    break;
-                }
-            }
+            boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(possiblyNewUser);
 
             boolean repeatedUserEntry = newUsers.contains(possiblyNewUser);
             boolean alreadyKnowAboutStation = mNonAtakStations.contains(possiblyNewUser);
-            if (!found && !repeatedUserEntry && !alreadyKnowAboutStation) {
+            if (!userExistsInAtakUserList && !repeatedUserEntry && !alreadyKnowAboutStation) {
                 newUsers.add(possiblyNewUser);
             }
 
             if (alreadyKnowAboutStation) {
                 updatedNonAtakStation = true;
-                NonAtakUserInfo userInfo = mNonAtakStations.get(mNonAtakStations.indexOf(possiblyNewUser));
-
-                if (!Objects.equals(userInfo.lat, possiblyNewUser.lat)) {
-                    userInfo.lat = possiblyNewUser.lat;
-                }
-
-                if (!Objects.equals(userInfo.lon, possiblyNewUser.lon)) {
-                    userInfo.lon = possiblyNewUser.lon;
-                }
-
-                if (!Objects.equals(userInfo.altitude, possiblyNewUser.altitude)) {
-                    userInfo.altitude = possiblyNewUser.altitude;
-                }
-
-                if (!Objects.equals(userInfo.batteryPercentage, possiblyNewUser.batteryPercentage)) {
-                    userInfo.batteryPercentage = possiblyNewUser.batteryPercentage;
-                }
+                updateNonAtakStation(possiblyNewUser);
             }
         }
 
@@ -136,8 +114,28 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         }
 
         if (newUsers.size() > 0 || updatedNonAtakStation) {
-            notifyListeners();
+            notifyChannelMembersUpdateListeners();
         }
+    }
+
+    @Override
+    public void onUserUpdated(NonAtakUserInfo nonAtakUserInfo) {
+        boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(nonAtakUserInfo);
+
+        if (userExistsInAtakUserList) {
+            // Nothing else to do
+            return;
+        }
+
+        boolean alreadyKnowAboutStation = mNonAtakStations.contains(nonAtakUserInfo);
+        if (alreadyKnowAboutStation) {
+            updateNonAtakStation(nonAtakUserInfo);
+        } else {
+            mNonAtakStations.add(nonAtakUserInfo);
+        }
+
+        // Notify listeners
+        notifyNonAtakStationUpdateListeners(nonAtakUserInfo);
     }
 
     public String getMeshIdForUid(String atakUid) {
@@ -157,13 +155,64 @@ public class ChannelTracker implements MeshtasticCommHardware.ChannelListener {
         mChannelMembersUpdateListeners.remove(listener);
     }
 
+    public void addNonAtakStationUpdateListener(NonAtakStationUpdateListener listener) {
+        mNonAtakStationUpdateListener.add(listener);
+    }
+
+    public void removeNonAtakStationUpdateListener(NonAtakStationUpdateListener listener) {
+        mNonAtakStationUpdateListener.remove(listener);
+    }
+
     public void clearData() {
         mAtakUsers.clear();
         mNonAtakStations.clear();
-        notifyListeners();
+        notifyChannelMembersUpdateListeners();
     }
 
-    private void notifyListeners() {
+    private boolean maybeUpdateUserBatteryPercentage(NonAtakUserInfo nonAtakUserInfo) {
+        boolean userExistsInAtakUserList = false;
+
+        for (UserInfo user : mAtakUsers) {
+            if (user.meshId.equals(nonAtakUserInfo.meshId)) {
+                userExistsInAtakUserList = true;
+
+                if (!Objects.equals(user.batteryPercentage, nonAtakUserInfo.batteryPercentage)) {
+                    user.batteryPercentage = nonAtakUserInfo.batteryPercentage;
+                }
+
+                break;
+            }
+        }
+
+        return userExistsInAtakUserList;
+    }
+
+    private void updateNonAtakStation(NonAtakUserInfo nonAtakUserInfo) {
+        NonAtakUserInfo userInfo = mNonAtakStations.get(mNonAtakStations.indexOf(nonAtakUserInfo));
+
+        if (!Objects.equals(userInfo.lat, nonAtakUserInfo.lat)) {
+            userInfo.lat = nonAtakUserInfo.lat;
+        }
+
+        if (!Objects.equals(userInfo.lon, nonAtakUserInfo.lon)) {
+            userInfo.lon = nonAtakUserInfo.lon;
+        }
+
+        if (!Objects.equals(userInfo.altitude, nonAtakUserInfo.altitude)) {
+            userInfo.altitude = nonAtakUserInfo.altitude;
+        }
+
+        if (!Objects.equals(userInfo.batteryPercentage, nonAtakUserInfo.batteryPercentage)) {
+            userInfo.batteryPercentage = nonAtakUserInfo.batteryPercentage;
+        }
+    }
+
+    private void notifyNonAtakStationUpdateListeners(NonAtakUserInfo nonAtakUserInfo) {
+        for (NonAtakStationUpdateListener listener : mNonAtakStationUpdateListener) {
+            mUiThreadHandler.post(() -> listener.onNonAtakStationUpdated(nonAtakUserInfo));
+        }
+    }
+    private void notifyChannelMembersUpdateListeners() {
         for (ChannelMembersUpdateListener channelMembersUpdateListener : mChannelMembersUpdateListeners) {
             mUiThreadHandler.post(() -> channelMembersUpdateListener.onChannelMembersUpdated(mAtakUsers, mNonAtakStations));
         }

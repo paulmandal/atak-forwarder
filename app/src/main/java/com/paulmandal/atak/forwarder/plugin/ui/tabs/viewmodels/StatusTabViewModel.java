@@ -5,7 +5,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
@@ -16,7 +16,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatusTabViewModel extends ChannelStatusViewModel implements ChannelTracker.ChannelMembersUpdateListener,
+public class StatusTabViewModel extends ChannelStatusViewModel implements UserTracker.ChannelMembersUpdateListener,
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
         MeshtasticCommHardware.MessageAckNackListener,
@@ -35,7 +35,7 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements Channe
     private MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
-    public StatusTabViewModel(ChannelTracker channelTracker,
+    public StatusTabViewModel(UserTracker channelTracker,
                               MeshtasticCommHardware commHardware,
                               CommandQueue commandQueue,
                               HashHelper hashHelper) {

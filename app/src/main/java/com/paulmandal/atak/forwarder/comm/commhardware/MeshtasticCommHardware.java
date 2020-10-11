@@ -22,7 +22,7 @@ import com.geeksville.mesh.Position;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -37,9 +37,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
-    public interface ChannelListener {
+    public interface UserListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-        void onChannelMembersUpdated(List<NonAtakUserInfo> userInfoList);
+        void onChannelUsersUpdated(List<NonAtakUserInfo> userInfoList);
+        void onUserUpdated(NonAtakUserInfo nonAtakUserInfo);
     }
 
     public interface ChannelSettingsListener {
@@ -82,8 +83,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final String STATE_CONNECTED = "CONNECTED";
 
-    private ChannelTracker mChannelTracker;
-    private ChannelListener mChannelListener;
+    private UserTracker mChannelTracker;
+    private UserListener mUserListener;
     private Activity mActivity;
     private Handler mUiThreadHandler;
     private StateStorage mStateStorage;
@@ -109,8 +110,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private String mCommDeviceAddress;
 
     public MeshtasticCommHardware(Handler uiThreadHandler,
-                                  ChannelListener channelListener,
-                                  ChannelTracker channelTracker,
+                                  UserListener userListener,
+                                  UserTracker channelTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   Activity activity,
@@ -121,7 +122,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         mUiThreadHandler = uiThreadHandler;
         mActivity = activity;
-        mChannelListener = channelListener;
+        mUserListener = userListener;
         mChannelTracker = channelTracker;
         mStateStorage = stateStorage;
         mCommDeviceAddress = commDeviceAddress;
@@ -411,25 +412,31 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         try {
             List<NodeInfo> nodes = mMeshService.getNodes();
             List<NonAtakUserInfo> userInfoList = new ArrayList<>();
-            for (NodeInfo nodeInfoItem : nodes) {
-                MeshUser meshUser = nodeInfoItem.getUser();
+            for (NodeInfo nodeInfo : nodes) {
 
-                double lat = 0.0;
-                double lon = 0.0;
-                int altitude = 0;
-                Position position = nodeInfoItem.getValidPosition();
-                if (position != null) {
-                    lat = position.getLatitude();
-                    lon = position.getLongitude();
-                    altitude = position.getAltitude();
-                }
-                userInfoList.add(new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfoItem.getBatteryPctLevel(), lat, lon, altitude, meshUser.getShortName()));
+                NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
+                userInfoList.add(nonAtakUserInfo);
             }
-            mChannelListener.onChannelMembersUpdated(userInfoList);
+            mUserListener.onChannelUsersUpdated(userInfoList);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in updateChannelMembers(): " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private NonAtakUserInfo nonAtakUserInfoFromNodeInfo(NodeInfo nodeInfo) {
+        MeshUser meshUser = nodeInfo.getUser();
+
+        double lat = 0.0;
+        double lon = 0.0;
+        int altitude = 0;
+        Position position = nodeInfo.getValidPosition();
+        if (position != null) {
+            lat = position.getLatitude();
+            lon = position.getLongitude();
+            altitude = position.getAltitude();
+        }
+        return new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, meshUser.getShortName());
     }
 
     private void updateChannelStatus() {
@@ -472,8 +479,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
-                    updateChannelMembers();
-                    updateChannelStatus();
+                    NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
+                    Log.e(TAG, "Node Change: " + nodeInfo.toString());
+                    mUserListener.onUserUpdated(nonAtakUserInfo);
                     break;
                 case ACTION_MESSAGE_STATUS:
                     int id = intent.getIntExtra(EXTRA_PACKET_ID, 0);
@@ -513,7 +521,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         if (initialDiscoveryMessage) {
             broadcastDiscoveryMessage(false);
         }
-        mChannelListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
+        mUserListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {

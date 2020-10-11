@@ -13,7 +13,7 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.paulmandal.atak.forwarder.BuildConfig;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
@@ -82,7 +82,7 @@ public class ForwarderLifecycle implements Lifecycle {
         CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();
         CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
 
-        ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
+        UserTracker channelTracker = new UserTracker(activity, uiThreadHandler);
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory, stateStorage);
         InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotShrinker);
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware

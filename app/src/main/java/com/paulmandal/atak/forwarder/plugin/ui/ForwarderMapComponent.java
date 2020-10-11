@@ -8,7 +8,7 @@ import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -22,7 +22,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
     private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
-    private ChannelTracker mChannelTracker;
+    private UserTracker mChannelTracker;
     private CommHardware mCommHardware;
     private CotMessageCache mCotMessageCache;
     private CommandQueue mCommandQueue;
@@ -30,7 +30,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
     private ChannelTabViewModel mChannelTabViewModel;
     private DevicesTabViewModel mDevicesTabViewModel;
 
-    public ForwarderMapComponent(ChannelTracker channelTracker,
+    public ForwarderMapComponent(UserTracker channelTracker,
                                  CommHardware commHardware,
                                  CotMessageCache cotMessageCache,
                                  CommandQueue commandQueue,

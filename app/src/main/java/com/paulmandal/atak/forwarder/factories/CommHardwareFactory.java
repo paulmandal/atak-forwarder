@@ -8,7 +8,7 @@ import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.persistence.StateStorage;
 
@@ -16,8 +16,8 @@ public class CommHardwareFactory {
     public static CommHardware createAndInitCommHardware(Activity activity,
                                                          MapView mapView,
                                                          Handler handler,
-                                                         MeshtasticCommHardware.ChannelListener channelListener,
-                                                         ChannelTracker channelTracker,
+                                                         MeshtasticCommHardware.UserListener userListener,
+                                                         UserTracker channelTracker,
                                                          CommandQueue commandQueue,
                                                          QueuedCommandFactory queuedCommandFactory,
                                                          StateStorage stateStorage) {
@@ -26,7 +26,7 @@ public class CommHardwareFactory {
 
         CommHardware commHardware;
         UserInfo selfInfo = new UserInfo(callsign, null, atakUid, null);
-        commHardware = new MeshtasticCommHardware(handler, channelListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
+        commHardware = new MeshtasticCommHardware(handler, userListener, channelTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
         return commHardware;
     }
 

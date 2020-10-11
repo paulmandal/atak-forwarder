@@ -1,3 +1,7 @@
 [submodule "app/src/main/proto/meshtastic"]
 	path = app/src/main/proto/meshtastic
 	url = https://github.com/meshtastic/Meshtastic-protobufs.git
+[submodule "libcotshrink"]
+	path = libcotshrink
+	url = git@github.com:paulmandal/libcotshrink.git
+	branch = task/add-initial-library

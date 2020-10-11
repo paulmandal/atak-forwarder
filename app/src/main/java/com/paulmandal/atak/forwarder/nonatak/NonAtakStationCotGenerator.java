@@ -8,11 +8,11 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
-import com.paulmandal.atak.forwarder.comm.protobuf.ContactProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.TakvProtobufConverter;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
-import com.paulmandal.atak.forwarder.protobufs.ProtobufContact;
-import com.paulmandal.atak.forwarder.protobufs.ProtobufTakv;
+import com.paulmandal.atak.libcotshrink.protobuf.ContactProtobufConverter;
+import com.paulmandal.atak.libcotshrink.protobuf.TakvProtobufConverter;
+import com.paulmandal.atak.libcotshrink.protobufs.ProtobufContact;
+import com.paulmandal.atak.libcotshrink.protobufs.ProtobufTakv;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

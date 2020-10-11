@@ -13,15 +13,10 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.paulmandal.atak.forwarder.BuildConfig;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.HackyTests;
 import com.paulmandal.atak.forwarder.channel.ChannelTracker;
-import com.paulmandal.atak.forwarder.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverter;
-import com.paulmandal.atak.forwarder.comm.protobuf.CotEventProtobufConverterFactory;
-import com.paulmandal.atak.forwarder.comm.protobuf.fallback.FallbackCotEventProtobufConverter;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
@@ -30,12 +25,16 @@ import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
+import com.paulmandal.atak.forwarder.persistence.StateStorage;
 import com.paulmandal.atak.forwarder.plugin.ui.ForwarderMapComponent;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
+import com.paulmandal.atak.libcotshrink.api.CotShrinker;
+import com.paulmandal.atak.libcotshrink.api.CotShrinkerFactory;
+import com.paulmandal.atak.libcotshrink.hackytests.HackyTests;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -80,15 +79,15 @@ public class ForwarderLifecycle implements Lifecycle {
         StateStorage stateStorage = new StateStorage(activity);
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
-        CotEventProtobufConverter cotEventProtobufConverter = CotEventProtobufConverterFactory.createCotEventProtobufConverter();
-        FallbackCotEventProtobufConverter fallbackCotEventProtobufConverter = new FallbackCotEventProtobufConverter();
+        CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();
+        CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
 
         ChannelTracker channelTracker = new ChannelTracker(activity, uiThreadHandler);
         mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, channelTracker, channelTracker, commandQueue, queuedCommandFactory, stateStorage);
-        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotShrinker);
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, (MeshtasticCommHardware) mCommHardware, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
-        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotEventProtobufConverter, fallbackCotEventProtobufConverter);
+        mOutboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(mCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker);
 
         String pluginVersion = "0.0";
         try {

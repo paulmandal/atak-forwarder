@@ -21,8 +21,6 @@ public abstract class CommHardware {
 
     protected static final String BCAST_MARKER = "ATAKBCAST";
 
-    private static final int DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS = Config.DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS;
-
     public enum ConnectionState {
         NO_SERVICE_CONNECTION,
         NO_DEVICE_CONFIGURED,
@@ -103,8 +101,6 @@ public abstract class CommHardware {
     protected void startWorkerThreads() {
         mMessageWorkerThread = new Thread(() -> {
             while (!mDestroyed) {
-                sleepForDelay(DELAY_BETWEEN_POLLING_FOR_MESSAGES_MS);
-
                 QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
                 if (queuedCommand == null) {
@@ -164,16 +160,6 @@ public abstract class CommHardware {
     protected void notifyConnectionStateListeners(ConnectionState connectionState) {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
             mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
-        }
-    }
-    /**
-     * Utils
-     */
-    protected void sleepForDelay(int delayMs) {
-        try {
-            Thread.sleep(delayMs);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
         }
     }
 

@@ -12,6 +12,7 @@ import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
@@ -28,6 +29,8 @@ public class CommandQueue {
 
     private final List<QueuedCommand> mQueuedCommands;
     private Listener mListener;
+
+    private CountDownLatch mCountDownLatch;
 
     public CommandQueue(Handler uiThreadHandler, CotComparer cotComparer) {
         mHandler = uiThreadHandler;
@@ -52,6 +55,8 @@ public class CommandQueue {
 
             mQueuedCommands.add(commandToQueue);
         }
+
+        releaseLatch();
     }
 
     public void queueSendMessage(SendMessageCommand sendMessageCommand, boolean overwriteSimilar) {
@@ -74,6 +79,8 @@ public class CommandQueue {
             mQueuedCommands.add(sendMessageCommand);
             messageQueueSize = mQueuedCommands.size();
         }
+
+        releaseLatch();
 
         notifyListener(messageQueueSize);
     }
@@ -117,6 +124,18 @@ public class CommandQueue {
             notifyListener(messageQueueSize);
         }
 
+        if (highestPriorityCommand == null) {
+            if (mCountDownLatch == null) {
+                mCountDownLatch = new CountDownLatch(1);
+            }
+
+            try {
+                mCountDownLatch.await();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
         return highestPriorityCommand;
     }
 
@@ -131,6 +150,13 @@ public class CommandQueue {
 
     public void setListener(Listener listener) {
         mListener = listener;
+    }
+
+    private void releaseLatch() {
+        if (mCountDownLatch != null) {
+            mCountDownLatch.countDown();
+            mCountDownLatch = null;
+        }
     }
 
     private void notifyListener(int messageQueueSize) {

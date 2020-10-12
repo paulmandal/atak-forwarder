@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.nonatak;
 
-import android.util.Log;
-
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -163,10 +161,6 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
         }
 
         spoofedPli.setDetail(cotDetail);
-
-        CotDetail contactDetail = spoofedPli.getDetail().getChildrenByName("contact").get(0);
-        String uidOrWhat = contactDetail != null ? contactDetail.getAttribute("callsign") : spoofedPli.getUID();
-        Log.e(TAG, "drawing non-ATAK: " + uidOrWhat);
 
         mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }

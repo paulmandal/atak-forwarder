@@ -8,7 +8,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.ArrayList;
@@ -21,15 +21,15 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
-    private ChannelTracker mChannelTracker;
+    private UserTracker mUserTracker;
     private final int mMessageChunkLength;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
 
-    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, ChannelTracker channelTracker, int messageChunkLength, UserInfo selfInfo) {
+    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, UserTracker userTracker, int messageChunkLength, UserInfo selfInfo) {
         super(uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
 
-        mChannelTracker = channelTracker;
+        mUserTracker = userTracker;
         mMessageChunkLength = messageChunkLength;
     }
 
@@ -159,8 +159,8 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         for (String uId : toUIDs) {
             for (int i = 0; i < messages.length; i++) {
                 byte[] message = messages[i];
-                String meshId = mChannelTracker.getMeshIdForUid(uId);
-                if (meshId.equals(ChannelTracker.USER_NOT_FOUND)) {
+                String meshId = mUserTracker.getMeshIdForUid(uId);
+                if (meshId.equals(UserTracker.USER_NOT_FOUND)) {
                     Log.d(TAG, "msg can't find user: " + uId);
                     continue;
                 }

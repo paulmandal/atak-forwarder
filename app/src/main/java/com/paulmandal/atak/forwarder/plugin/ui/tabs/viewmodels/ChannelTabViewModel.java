@@ -16,7 +16,7 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.ChannelTracker;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
@@ -43,7 +43,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
 
     private CommHardware mCommHardware;
 
-    private ChannelTracker mChannelTracker;
+    private UserTracker mUserTracker;
     private QrHelper mQrHelper;
     private HashHelper mHashHelper;
 
@@ -57,7 +57,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
     public ChannelTabViewModel(Context pluginContext,
                                Context atakContext,
                                MeshtasticCommHardware commHardware,
-                               ChannelTracker channelTracker,
+                               UserTracker userTracker,
                                QrHelper qrHelper,
                                HashHelper hashHelper) {
         super(commHardware, hashHelper);
@@ -65,7 +65,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
         mPluginContext = pluginContext;
         mAtakContext = atakContext;
         mCommHardware = commHardware;
-        mChannelTracker = channelTracker;
+        mUserTracker = userTracker;
         mQrHelper = qrHelper;
         mHashHelper = hashHelper;
 
@@ -198,7 +198,7 @@ public class ChannelTabViewModel extends ChannelStatusViewModel {
             psk[i] = pskByte[i];
         }
 
-        mChannelTracker.clearData();
+        mUserTracker.clearData();
         mCommHardware.updateChannelSettings(channelName, psk, modemConfig);
         mCommHardware.broadcastDiscoveryMessage();
     }

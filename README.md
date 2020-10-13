@@ -1,6 +1,6 @@
 # ATAK Packet Forwarder 
 
-An ~~application/service~~ ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
+An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
 ![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/plugin-disconnected-indicator.png)
 <br>
@@ -60,8 +60,7 @@ workspace/
 
 ## Build + Install Meshtastic
 
-* Clone my fork of Meshtastic-Android: `git clone git@github.com:paulmandal/Meshtastic-Android.git`
-    * This contains a change to make `MeshService.setDeviceAddress()` work for external callers
+* Clone Meshtastic-Android: `git clone git@github.com:meshtastic/Meshtastic-Android.git`
 * Enter the `Meshtastic-Android` directory: `cd Meshtastic-Android`
 * Run the commands in `Meshtastic-Android/README.md` under "Build Instructions"
 * Open `Meshtastic-Android` in Android Studio, build and run the project, you can close the Meshtastic app

@@ -209,13 +209,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
             MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
 
-            // Begin Updates TODO: remove
-
             channelSettingsBuilder.setName(channelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(psk));
             channelSettingsBuilder.setModemConfig(modemConfig);
-
-            // End Updates TODO: remove
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder);
             radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
@@ -360,8 +356,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
 
         try {
+            String meshId = mMeshService.getMyId();
             UserInfo selfInfo = getSelfInfo();
-            mMeshService.setOwner(null, selfInfo.callsign, selfInfo.callsign.substring(0, 1));
+            String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
+            mMeshService.setOwner(null, String.format("%s-MX-%s", selfInfo.callsign, shortMeshId), selfInfo.callsign.substring(0, 1));
 
             // Set up radio / channel settings
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
@@ -480,7 +478,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
-                    Log.e(TAG, "Node Change: " + nodeInfo.toString());
+                    Log.d(TAG, "NODE_CHANGE: " + nodeInfo);
                     mUserListener.onUserUpdated(nonAtakUserInfo);
                     break;
                 case ACTION_MESSAGE_STATUS:

@@ -358,8 +358,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         try {
             String meshId = mMeshService.getMyId();
             UserInfo selfInfo = getSelfInfo();
-            int meshIdLen = meshId.length();
-            String shortMeshId = meshId.replaceAll("!", "").substring(meshIdLen - 5);
+            String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
             mMeshService.setOwner(null, String.format("%s-MX-%s", selfInfo.callsign, shortMeshId), selfInfo.callsign.substring(0, 1));
 
             // Set up radio / channel settings

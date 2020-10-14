@@ -2,39 +2,38 @@
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
-![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/plugin-disconnected-indicator.png)
+![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/main/images/plugin-disconnected-indicator.png)
 <br>
-![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/status-view.png)
+![Status View](https://github.com/paulmandal/atak-forwarder/raw/main/images/status-view.png)
 <br>
-![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/channel-management.png)
+![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/main/images/channel-management.png)
 <br>
-![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/qr-configuration.png)
+![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/main/images/qr-configuration.png)
 <br>
-![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/integrated-direct-messaging.png)
+![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/main/images/integrated-direct-messaging.png)
 <br>
-![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/transmit-map-markers.png)
+![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/main/images/transmit-map-markers.png)
 <br>
 Supports Meshtastic devices without an ATAK EUD attached
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/non-atak-devices-configuration.png)
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/non-atak-devices-map-marker.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/main/images/non-atak-devices-configuration.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/main/images/non-atak-devices-map-marker.png)
 <br>
-![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/example-usage.png)
+![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/main/images/example-usage.png)
 
 # Features
 
-* Peer discovery
 * In-app device and channel management
 * Broadcast messages are sent to the channel (e.g. map markers, PLI)
 * Direct messages to other users (e.g. chat messages)
-* Efficient comm. using protobufs -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
+* Support for Meshtastic devices without an ATAK EUD attached
+* Efficient comm. using libcotshrink -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
 * Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~380 bytes, group chat ~400 bytes
 * Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
 * Message queue with priority (chat = pli > markers)
 
 # To Do
 
-* Use `ChatManagerMapComponent` for incoming chats instead of turning them into CoTs
-* Remote channel management
+* Remote channel management / updating
 * Automatically adjust link speed / range based on # of lost messages
 * Use T-Beam as a GPS source (if it proves to be more accurate than the phone's)
 * Message IDs and receipt confirmation
@@ -43,6 +42,8 @@ Supports Meshtastic devices without an ATAK EUD attached
 * Smarter sending -- Send a list of map markers to group, other clients can reply with which marker they are missing, build up a list of missing markers if more than 1 person is missing send to group, otherwise send to individuals
 * Needs more real-world stability testing
 * Re-add GoTenna support with a proper abstraction for communication layer
+* Bridge between multiple comm. devices? E.g. Meshtastic + goTenna on one device. Alternative is to break that into more than one plugin instance since their preSendProcessors will see each other's messages.
+* Use Dagger 2
 
 # Building the Plugin
 
@@ -125,7 +126,8 @@ The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but n
 
 # Architecture Diagram
 
-![alt text](https://github.com/paulmandal/atak-forwarder/raw/0.6.0/images/arch-diagram.png "Architecture Diagram")
+![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/main/images/arch-diagram.png)
+![Architecture Diagram Non-ATAK Devicess](https://github.com/paulmandal/atak-forwarder/raw/main/images/arch-diagram-non-atak-devices.png)
 
 # Notes on Message Handling
 
@@ -144,8 +146,9 @@ Message handling follows a few simple rules:
 
 Areas I'd especially like help are: 
 
-* reducing the message sizes without affecting features in ATAK (e.g. removing `detail.contact.endpoint` kills chat)
+* reducing the message sizes without affecting features in ATAK (e.g. removing `detail.contact.endpoint` kills chat) -- check out https://github.com/paulmandal/libcotshrink for this effort
 * increasing resilience of this plugin, it is basically fire-and-forget (and maybe lose your message) right now
+* re-introducing goTenna Mesh support
 
 The hardware/communication layer is (kinda) abstracted behind a `CommHardware` interface, this interface can be implemented against other hardware -- if you would like to give it a shot with another hardware layer please reach out to me and let me know how it goes.
 

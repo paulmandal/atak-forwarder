@@ -175,7 +175,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         prepareToSendMessage(message.length);
 
         DataPacket dataPacket = new DataPacket(targetId, message,
-                MeshProtos.Data.Type.OPAQUE_VALUE, "^local",
+                MeshProtos.Data.Type.OPAQUE_VALUE, DataPacket.ID_LOCAL,
                 System.currentTimeMillis(), 0, MessageStatus.UNKNOWN);
         try {
             mMeshService.send(dataPacket);

@@ -174,7 +174,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     protected boolean sendMessageSegment(byte[] message, String targetId) {
         prepareToSendMessage(message.length);
 
-        DataPacket dataPacket = new DataPacket(targetId, message);
+        DataPacket dataPacket = new DataPacket(targetId, message,
+                MeshProtos.Data.Type.OPAQUE_VALUE, DataPacket.ID_LOCAL,
+                System.currentTimeMillis(), 0, MessageStatus.UNKNOWN);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
@@ -489,7 +491,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_RECEIVED_DATA:
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
-                    if (payload.getDataType() == MeshProtos.Data.Type.CLEAR_TEXT_VALUE) {
+                    if (payload.getDataType() == MeshProtos.Data.Type.OPAQUE_VALUE) {
                         String message = new String(payload.getBytes());
                         Log.d(TAG, "data: " + message);
                         if (message.startsWith(BCAST_MARKER)) {

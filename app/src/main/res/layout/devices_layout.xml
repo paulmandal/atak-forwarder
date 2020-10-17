@@ -8,7 +8,6 @@
 
     <TextView
         android:id="@+id/label_comm_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -18,7 +17,6 @@
 
     <TextView
         android:id="@+id/textview_comm_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -43,7 +41,6 @@
 
     <TextView
         android:id="@+id/label_target_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/label_non_atak_settings"
@@ -53,7 +50,6 @@
 
     <TextView
         android:id="@+id/textview_target_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/label_non_atak_settings"
@@ -61,7 +57,6 @@
 
     <TextView
         android:id="@+id/label_non_atak_settings"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/edittext_device_callsign"
@@ -72,7 +67,6 @@
 
     <EditText
         android:id="@+id/edittext_device_callsign"
-        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/edittext_pli_interval_s"
@@ -82,7 +76,6 @@
 
     <EditText
         android:id="@+id/edittext_pli_interval_s"
-        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/edittext_screen_shutoff_delay_s"
@@ -92,7 +85,6 @@
 
     <EditText
         android:id="@+id/edittext_screen_shutoff_delay_s"
-        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
         android:layout_above="@id/button_write_to_non_atak"
@@ -102,7 +94,6 @@
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_team"
-        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/spinner_role"
@@ -110,7 +101,6 @@
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_role"
-        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/button_refresh_connected_devices"
@@ -118,7 +108,6 @@
 
     <Button
         android:id="@+id/button_refresh_connected_devices"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
         android:layout_alignParentStart="true"
@@ -127,7 +116,6 @@
 
     <Button
         android:id="@+id/button_set_comm_device"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
         android:layout_alignParentBottom="true"
@@ -136,7 +124,6 @@
 
     <Button
         android:id="@+id/button_write_to_non_atak"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
         android:layout_alignParentEnd="true"

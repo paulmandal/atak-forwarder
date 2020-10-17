@@ -7,7 +7,6 @@
 
     <TextView
         android:id="@+id/textview_connection_status"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -15,7 +14,6 @@
 
     <TextView
         android:id="@+id/channel_name"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -23,7 +21,6 @@
 
     <TextView
         android:id="@+id/channel_name_psk_seperator"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -34,7 +31,6 @@
 
     <TextView
         android:id="@+id/psk_hash"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -42,7 +38,6 @@
 
     <TextView
         android:id="@+id/psk_modem_seperator"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -53,7 +48,6 @@
 
     <TextView
         android:id="@+id/modem_config"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -61,7 +55,6 @@
 
     <TextView
         android:id="@+id/label_message_queue_length"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_message_queue_length"
@@ -71,7 +64,6 @@
 
     <TextView
         android:id="@+id/textview_message_queue_length"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/channel_name"
@@ -80,7 +72,6 @@
 
     <TextView
         android:id="@+id/textview_total_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_message_queue_length"
@@ -89,7 +80,6 @@
 
     <TextView
         android:id="@+id/label_total_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -99,7 +89,6 @@
 
     <TextView
         android:id="@+id/textview_errored_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -108,7 +97,6 @@
 
     <TextView
         android:id="@+id/label_errored_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -118,7 +106,6 @@
 
     <TextView
         android:id="@+id/textview_timed_out_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -127,7 +114,6 @@
 
     <TextView
         android:id="@+id/label_timed_out_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -137,7 +123,6 @@
 
     <TextView
         android:id="@+id/textview_delivered_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -146,7 +131,6 @@
 
     <TextView
         android:id="@+id/label_delivered_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -156,7 +140,6 @@
 
     <TextView
         android:id="@+id/textview_received_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -165,7 +148,6 @@
 
     <TextView
         android:id="@+id/label_received_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/textview_total_messages"
@@ -185,7 +167,6 @@
 
     <Button
         android:id="@+id/button_connect_to_service"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -194,7 +175,6 @@
 
     <Button
         android:id="@+id/button_broadcast_discovery"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"

@@ -7,7 +7,6 @@
 
     <EditText
         android:id="@+id/edittext_default_purge_time_mins"
-        style="@style/SmallEditText"
         android:layout_width="64dp"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -16,7 +15,6 @@
 
     <Button
         android:id="@+id/button_set_default_purge_time_ms"
-        style="@style/SmallTextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -25,7 +23,6 @@
 
     <EditText
         android:id="@+id/edittext_pli_purge_time_s"
-        style="@style/SmallEditText"
         android:layout_width="64dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/button_set_default_purge_time_ms"
@@ -34,7 +31,6 @@
 
     <Button
         android:id="@+id/button_set_pli_purge_time_ms"
-        style="@style/SmallTextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/edittext_pli_purge_time_s"
@@ -43,7 +39,6 @@
 
     <Button
         android:id="@+id/button_clear_message_cache"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/button_set_pli_purge_time_ms"
@@ -53,7 +48,6 @@
 
     <Button
         android:id="@+id/button_clear_message_queue"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/button_clear_message_cache"
@@ -63,7 +57,6 @@
 
     <Button
         android:id="@+id/button_clear_data"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"

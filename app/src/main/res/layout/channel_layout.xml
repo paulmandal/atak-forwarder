@@ -7,7 +7,6 @@
 
     <TextView
         android:id="@+id/channel_name"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -15,7 +14,6 @@
 
     <TextView
         android:id="@+id/channel_name_psk_seperator"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -26,7 +24,6 @@
 
     <TextView
         android:id="@+id/psk_hash"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -34,7 +31,6 @@
 
     <TextView
         android:id="@+id/psk_modem_seperator"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -45,7 +41,6 @@
 
     <TextView
         android:id="@+id/modem_config"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -53,7 +48,6 @@
 
     <TextView
         android:id="@+id/label_channel_name"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/channel_name"
@@ -63,7 +57,6 @@
 
     <EditText
         android:id="@+id/edittext_channel_name"
-        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/channel_name"
@@ -84,29 +77,25 @@
 
         <RadioButton
             android:id="@+id/radio_button_short_range"
-            style="@style/SmallTextView"
-            android:layout_width="wrap_content"
+                android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/short_range" />
 
         <RadioButton
             android:id="@+id/radio_button_medium_range"
-            style="@style/SmallTextView"
-            android:layout_width="wrap_content"
+                android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/medium_range" />
 
         <RadioButton
             android:id="@+id/radio_button_long_range"
-            style="@style/SmallTextView"
-            android:layout_width="wrap_content"
+                android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/long_range" />
 
         <RadioButton
             android:id="@+id/radio_button_very_long_range"
-            style="@style/SmallTextView"
-            android:layout_width="wrap_content"
+                android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:text="@string/very_long_range" />
@@ -114,7 +103,6 @@
 
     <TextView
         android:id="@+id/textview_psk_status"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/radio_group_modem_setting"
@@ -138,7 +126,6 @@
 
     <Button
         android:id="@+id/button_show_qr"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -147,7 +134,6 @@
 
     <Button
         android:id="@+id/button_hide_qr"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -156,7 +142,6 @@
 
     <Button
         android:id="@+id/button_scan_channel_qr"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -165,7 +150,6 @@
 
     <Button
         android:id="@+id/button_abort_scan_qr"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
@@ -175,7 +159,6 @@
 
     <Button
         android:id="@+id/button_edit_channel"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -184,7 +167,6 @@
 
     <Button
         android:id="@+id/button_save_channel"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
@@ -193,7 +175,6 @@
 
     <Button
         android:id="@+id/button_gen_psk"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"

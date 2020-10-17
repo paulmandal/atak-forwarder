@@ -2,12 +2,14 @@
 
     <!-- Application theme. -->
     <style name="ATAKPluginTheme" parent="@android:style/Theme.Holo">
-        <item name="android:buttonStyle">@android:style/Widget.Button</item>
-        <item name="android:imageButtonStyle">@android:style/Widget.Button</item>
-        <item name="android:buttonStyleToggle">@android:style/Widget.Button</item>
+        <item name="android:buttonStyle">@style/SmallTextButton</item>
+        <item name="android:imageButtonStyle">@style/SmallTextButton</item>
+        <item name="android:buttonStyleToggle">@style/SmallTextButton</item>
         <item name="android:spinnerStyle">@style/ATAKSpinner</item>
         <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
         <item name="android:editTextStyle">@style/SmallEditText</item>
+        <item name="android:textViewStyle">@style/SmallTextView</item>
+        <item name="android:tabWidgetStyle">@style/SmallTabWidget</item>
     </style>
 
     <style name="ATAKTheme" parent="@android:style/Theme.Holo">
@@ -51,16 +53,6 @@
     </style>
 
     <!-- Application theme. -->
-    <style name="AppTheme" parent="@android:style/Theme.Holo">
-        <item name="android:buttonStyle">@style/SmallTextButton</item>
-        <item name="android:imageButtonStyle">@style/SmallTextButton</item>
-        <item name="android:buttonStyleToggle">@style/SmallTextButton</item>
-        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
-        <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
-        <item name="android:editTextStyle">@style/SmallEditText</item>
-        <item name="android:textViewStyle">@style/SmallTextView</item>
-    </style>
-
 
     <style name="ATAKSpinner" parent="@android:style/Widget.Spinner">
         <item name="android:spinnerMode">dialog</item>
@@ -95,6 +87,15 @@
         <item name="android:textSize">6sp</item>
     </style>
 
+    <style name="SmallTabWidget" parent="@android:style/Widget.TabWidget">
+        <item name="android:textAppearance">@style/SmallTabWidgetText</item>
+    </style>
+
+    <style name="SmallTabWidgetText" parent="@android:style/TextAppearance.Widget.TabWidget">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
     <!-- ====== Style for use in 9-line and other dropdowns that have very restricted space. ====== -->
     <style name="FullDropdownStyle" parent="@style/ATAKTheme">
         <item name="android:buttonStyle">@style/unpaddedButton</item>
@@ -104,7 +105,7 @@
 
 
     <!-- In the new theme, sometimes the spinner text color is turning white. -->
-    <style name="ATAKSpinnerItem" parent="@style/AppTheme">
+    <style name="ATAKSpinnerItem" parent="@style/ATAKPluginTheme">
         <item name="android:textColor">@android:color/black</item>
     </style>
 

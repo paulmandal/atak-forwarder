@@ -5,7 +5,7 @@
         <item name="android:buttonStyle">@style/SmallTextButton</item>
         <item name="android:imageButtonStyle">@style/SmallTextButton</item>
         <item name="android:buttonStyleToggle">@style/SmallTextButton</item>
-        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
+        <item name="android:spinnerStyle">@style/SmallEditText</item>
         <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
         <item name="android:editTextStyle">@style/SmallEditText</item>
         <item name="android:textViewStyle">@style/SmallTextView</item>
@@ -68,6 +68,7 @@
     </style>
 
     <style name="SmallTextButton" parent="@android:style/Widget.Button">
+        <item name="android:layout_height">32dp</item>
         <item name="android:textSize">12sp</item>
     </style>
 
@@ -79,15 +80,12 @@
         <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="SmallSpinnerItem" parent="android:Widget.TextView">
-        <item name="android:textSize">12sp</item>
-    </style>
-
     <style name="SmallSwitchText" parent="android:Widget.TextView">
         <item name="android:textSize">6sp</item>
     </style>
 
     <style name="SmallTabWidget" parent="@android:style/Widget.TabWidget">
+        <item name="android:layout_height">wrap_content</item>
         <item name="android:textAppearance">@style/SmallTabWidgetText</item>
     </style>
 
@@ -106,7 +104,8 @@
 
     <!-- In the new theme, sometimes the spinner text color is turning white. -->
     <style name="ATAKSpinnerItem" parent="@style/ATAKPluginTheme">
-        <item name="android:textColor">@android:color/black</item>
+        <item name="android:imeOptions">flagNoFullscreen</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="unpaddedButton" parent="@android:style/Widget.Button">

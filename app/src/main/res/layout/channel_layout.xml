@@ -127,7 +127,7 @@
     <Button
         android:id="@+id/button_show_qr"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/show_channel_qr" />
@@ -135,7 +135,7 @@
     <Button
         android:id="@+id/button_hide_qr"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/hide_channel_qr" />
@@ -143,7 +143,7 @@
     <Button
         android:id="@+id/button_scan_channel_qr"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:text="@string/scan_channel_qr" />
@@ -151,7 +151,7 @@
     <Button
         android:id="@+id/button_abort_scan_qr"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:visibility="invisible"
@@ -160,7 +160,7 @@
     <Button
         android:id="@+id/button_edit_channel"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/edit_channel" />
@@ -168,7 +168,7 @@
     <Button
         android:id="@+id/button_save_channel"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         android:text="@string/save" />
@@ -176,7 +176,7 @@
     <Button
         android:id="@+id/button_gen_psk"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="32dp"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
         android:text="@string/generate_new_psk"

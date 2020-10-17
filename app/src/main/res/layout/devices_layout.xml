@@ -94,6 +94,7 @@
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_team"
+        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/spinner_role"
@@ -101,6 +102,7 @@
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_role"
+        style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@id/button_refresh_connected_devices"

@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -86,6 +87,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         return mNonAtakDeviceWriteInProgress;
     }
 
+    @SuppressLint("MissingPermission")
     public void refreshDevices() {
         List<MeshtasticDevice> meshtasticDevices = new ArrayList<>();
 

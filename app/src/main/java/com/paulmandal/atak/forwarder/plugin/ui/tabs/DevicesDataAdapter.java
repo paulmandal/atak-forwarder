@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
+import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,6 +40,7 @@ public class DevicesDataAdapter extends ArrayAdapter<MeshtasticDevice> {
 
     @Override
     @NonNull
+    @SuppressLint("MissingPermission")
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         View view;
         if (convertView == null) {

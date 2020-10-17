@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -48,6 +49,7 @@ public class DevicesTab extends RelativeLayout {
         inflate(context, R.layout.devices_layout, this);
     }
 
+    @SuppressLint("MissingPermission")
     public void bind(LifecycleOwner lifecycleOwner,
                      DevicesTabViewModel devicesTabViewModel,
                      Context pluginContext,
@@ -173,6 +175,7 @@ public class DevicesTab extends RelativeLayout {
         mAtakContext = atakContext;
     }
 
+    @SuppressLint("MissingPermission")
     private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<MeshtasticDevice> meshtasticDevices) {
         if (commDeviceAddress != null) {
             for (MeshtasticDevice device : meshtasticDevices) {

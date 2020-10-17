@@ -65,6 +65,11 @@ public class MeshtasticDeviceSwitcher {
             HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
             UsbDevice device = deviceList.get(meshtasticDevice.address);
 
+            if (device == null) {
+                Log.e(TAG, "USB device was not connected: " + meshtasticDevice.address);
+                return;
+            }
+
             mAtakContext.registerReceiver(usbReceiver, filter);
             usbManager.requestPermission(device, permissionIntent);
             return;

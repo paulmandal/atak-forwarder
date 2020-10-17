@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.atakmap.android.gui.PluginSpinner;
@@ -30,7 +31,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewMod
 import java.util.Arrays;
 import java.util.List;
 
-public class DevicesTab extends RelativeLayout {
+public class DevicesTab extends ConstraintLayout {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTab.class.getSimpleName();
 
     private Context mAtakContext;
@@ -139,23 +140,26 @@ public class DevicesTab extends RelativeLayout {
             alertDialog.show();
         });
 
-        ListView devicesListView = findViewById(R.id.listview_bonded_devices);
+        PluginSpinner devicesSpinner = findViewById(R.id.spinner_devices);
         TextView commDevice = findViewById(R.id.textview_comm_device);
-        TextView targetDevice = findViewById(R.id.textview_target_device);
 
-        devicesListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
-            Log.e(TAG, "onItemClickListener: " + position);
-            MeshtasticDevice meshtasticDevice = (MeshtasticDevice) devicesListView.getAdapter().getItem(position);
+        devicesSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                mTargetDevice = (MeshtasticDevice) devicesSpinner.getAdapter().getItem(position);
+            }
 
-            targetDevice.setText(String.format("%s %s", meshtasticDevice.name,  meshtasticDevice.address));
-            mTargetDevice = meshtasticDevice;
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
         });
 
         devicesTabViewModel.getMeshtasticDevices().observe(lifecycleOwner, meshtasticDevices -> {
             String commDeviceAddress = devicesTabViewModel.getCommDeviceAddress().getValue();
 
             maybeUpdateCommDevice(commDevice, commDeviceAddress, meshtasticDevices);
-            updateDevicesAdapter(devicesListView, pluginContext, meshtasticDevices, commDeviceAddress);
+            updateDevicesAdapter(devicesSpinner, pluginContext, meshtasticDevices);
         });
 
         devicesTabViewModel.getCommDeviceAddress().observe(lifecycleOwner, commDeviceAddress -> {
@@ -166,7 +170,6 @@ public class DevicesTab extends RelativeLayout {
             }
 
             maybeUpdateCommDevice(commDevice, commDeviceAddress, meshtasticDevices);
-            updateDevicesAdapter(devicesListView, pluginContext, meshtasticDevices, commDeviceAddress);
         });
 
         ProgressBar deviceWriteProgressBar = findViewById(R.id.progressbar_writing_to_device);
@@ -187,9 +190,10 @@ public class DevicesTab extends RelativeLayout {
         }
     }
 
-    private void updateDevicesAdapter(ListView devicesListView, Context pluginContext, List<MeshtasticDevice> meshtasticDevices, String commDeviceAddress) {
-        DevicesDataAdapter devicesDataAdapter = new DevicesDataAdapter(pluginContext, meshtasticDevices, commDeviceAddress);
-        devicesListView.setAdapter(devicesDataAdapter);
+    private void updateDevicesAdapter(PluginSpinner devicesSpinner, Context pluginContext, List<MeshtasticDevice> meshtasticDevices) {
+        ArrayAdapter<MeshtasticDevice> devicesDataAdapter = new ArrayAdapter<>(pluginContext, R.layout.plugin_spinner_item, meshtasticDevices);
+        devicesDataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        devicesSpinner.setAdapter(devicesDataAdapter);
     }
 
     private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, MeshtasticDevice targetDevice, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {

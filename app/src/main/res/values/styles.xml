@@ -10,6 +10,7 @@
         <item name="android:editTextStyle">@style/SmallEditText</item>
         <item name="android:textViewStyle">@style/SmallTextView</item>
         <item name="android:tabWidgetStyle">@style/SmallTabWidget</item>
+        <item name="android:radioButtonStyle">@style/SmallRadioButton</item>
     </style>
 
     <style name="ATAKTheme" parent="@android:style/Theme.Holo">
@@ -76,7 +77,7 @@
         <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="SmallSpinner" parent="android:Widget.TextView">
+    <style name="SmallSpinner" parent="@android:style/Widget.EditText">
         <item name="android:textSize">12sp</item>
     </style>
 
@@ -87,6 +88,10 @@
     <style name="SmallTabWidget" parent="@android:style/Widget.TabWidget">
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textAppearance">@style/SmallTabWidgetText</item>
+    </style>
+
+    <style name="SmallRadioButton" parent="android:Widget.CompoundButton.RadioButton">
+        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="SmallTabWidgetText" parent="@android:style/TextAppearance.Widget.TabWidget">

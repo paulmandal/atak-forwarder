@@ -107,8 +107,9 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
             meshtasticDevices.add(new MeshtasticDevice(device.getProductName(), device.getDeviceName(), MeshtasticDevice.DeviceType.USB));
         }
 
+        String commDeviceAddress = mCommDeviceAddress.getValue();
         for (MeshtasticDevice device : meshtasticDevices) {
-            if (device.address.equals(mCommDeviceAddress)) {
+            if (device.address.equals(commDeviceAddress)) {
                 mCommDevice = device;
             }
         }

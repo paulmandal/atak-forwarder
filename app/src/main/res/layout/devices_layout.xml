@@ -21,7 +21,7 @@
         android:id="@+id/textview_comm_device"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@+id/label_comm_device"
+        app:layout_constraintStart_toEndOf="@+id/label_comm_device"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -35,11 +35,12 @@
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_devices"
-        style="@style/SmallEditText"
+        style="@style/SmallSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toEndOf="@+id/label_target_device"
-        app:layout_constraintTop_toBottomOf="@+id/label_comm_device" />
+        app:layout_constraintTop_toBottomOf="@+id/label_comm_device"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/label_non_atak_settings"

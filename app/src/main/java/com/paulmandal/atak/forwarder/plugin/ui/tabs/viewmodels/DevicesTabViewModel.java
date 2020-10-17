@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
@@ -17,6 +16,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.nonatak.NonAtakMeshtasticConfigurator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
@@ -35,6 +36,8 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     private Activity mActivity;
     private Handler mUiThreadHandler;
     private Context mAtakContext;
+
+    private MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private MeshtasticCommHardware mMeshtasticCommHardware;
     private HashHelper mHashHelper;
 
@@ -55,16 +58,19 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     public DevicesTabViewModel(Activity activity,
                                Handler uiThreadHandler,
                                Context atakContext,
+                               MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                MeshtasticCommHardware commHardware,
                                HashHelper hashHelper) {
         mActivity = activity;
         mUiThreadHandler = uiThreadHandler;
         mAtakContext = atakContext;
+        mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mMeshtasticCommHardware = commHardware;
         mHashHelper = hashHelper;
 
         commHardware.addChannelSettingsListener(this);
-        mCommDeviceAddress.setValue(commHardware.getDeviceAddress());
+        MeshtasticDevice commDevice = commHardware.getDevice();
+        mCommDeviceAddress.setValue(commDevice != null ? commDevice.address : null);
         mNonAtakDeviceWriteInProgress.setValue(false);
     }
 
@@ -88,7 +94,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         Set<BluetoothDevice> bluetoothDevices = bluetoothAdapter.getBondedDevices();
         for (BluetoothDevice device : bluetoothDevices) {
             if (device.getName().startsWith(MARKER_MESHTASTIC)) {
-                meshtasticDevices.add(new MeshtasticDevice(device.getName(), device.getAddress(), DeviceType.BLUETOOTH));
+                meshtasticDevices.add(new MeshtasticDevice(device.getName(), device.getAddress(), MeshtasticDevice.DeviceType.BLUETOOTH));
             }
         }
 
@@ -96,7 +102,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         HashMap<String, UsbDevice> usbDevicesMap = usbManager.getDeviceList();
         Collection<UsbDevice> usbDevices = usbDevicesMap.values();
         for (UsbDevice device : usbDevices) {
-            meshtasticDevices.add(new MeshtasticDevice(device.getDeviceName(), device.getProductName(), DeviceType.USB));
+            meshtasticDevices.add(new MeshtasticDevice(device.getDeviceName(), device.getProductName(), MeshtasticDevice.DeviceType.USB));
         }
 
         for (MeshtasticDevice device : meshtasticDevices) {
@@ -131,7 +137,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
 
         // Write settings to device
-        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
+        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mMeshtasticDeviceSwitcher, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
         mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 
@@ -149,22 +155,5 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         mMeshtasticCommHardware.suspendResume(false);
         mNonAtakMeshtasticConfigurator = null;
         mNonAtakDeviceWriteInProgress.setValue(false);
-    }
-
-    public enum DeviceType {
-        BLUETOOTH,
-        USB
-    }
-
-    public class MeshtasticDevice {
-        public final String name;
-        public final String address;
-        public final DeviceType deviceType;
-
-        public MeshtasticDevice(String name, String address, DeviceType deviceType) {
-            this.name = name;
-            this.address = address;
-            this.deviceType = deviceType;
-        }
     }
 }

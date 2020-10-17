@@ -17,6 +17,7 @@ import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
@@ -66,6 +67,7 @@ public class ForwarderLifecycle implements Lifecycle {
             return;
         }
         mMapView = (MapView)transappsMapView.getView();
+        Context atakContext = mMapView.getContext();
 
         if (BuildConfig.DEBUG) {
             HackyTests hackyTests = new HackyTests();
@@ -82,8 +84,9 @@ public class ForwarderLifecycle implements Lifecycle {
         CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();
         CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
 
+        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext);
         UserTracker userTracker = new UserTracker(activity, uiThreadHandler);
-        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, userTracker, userTracker, commandQueue, queuedCommandFactory, stateStorage);
+        mCommHardware = CommHardwareFactory.createAndInitCommHardware(activity, mMapView, uiThreadHandler, meshtasticDeviceSwitcher, userTracker, userTracker, commandQueue, queuedCommandFactory, stateStorage);
         InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(mCommHardware, cotShrinker);
         // TODO: clean up ugly unchecked cast to MeshstaticCommHardware
         CotMessageCache cotMessageCache = new CotMessageCache(stateStorage, cotComparer, (MeshtasticCommHardware) mCommHardware, stateStorage.getDefaultCachePurgeTimeMs(), stateStorage.getPliCachePurgeTimeMs());
@@ -98,14 +101,12 @@ public class ForwarderLifecycle implements Lifecycle {
         }
         NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(userTracker, inboundMessageHandler, pluginVersion, mMapView.getDeviceCallsign());
 
-        Context atakContext = mMapView.getContext();
-
         HashHelper hashHelper = new HashHelper();
         // TODO: clean up ugly unchecked casts to MeshstaticCommHardware
         MeshtasticCommHardware meshtasticCommHardware = (MeshtasticCommHardware) mCommHardware;
         StatusTabViewModel statusTabViewModel = new StatusTabViewModel(userTracker, meshtasticCommHardware, commandQueue, hashHelper);
         ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, userTracker, new QrHelper(), hashHelper);
-        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, uiThreadHandler, atakContext, meshtasticCommHardware, hashHelper);
+        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(activity, uiThreadHandler, atakContext, meshtasticDeviceSwitcher, meshtasticCommHardware, hashHelper);
 
         mOverlays.add(new ForwarderMapComponent(mCommHardware, cotMessageCache, commandQueue, statusTabViewModel, channelTabViewModel, devicesTabViewModel));
 

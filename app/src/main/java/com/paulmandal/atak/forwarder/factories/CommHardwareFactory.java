@@ -6,6 +6,7 @@ import android.os.Handler;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
@@ -16,6 +17,7 @@ public class CommHardwareFactory {
     public static CommHardware createAndInitCommHardware(Activity activity,
                                                          MapView mapView,
                                                          Handler handler,
+                                                         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                                          MeshtasticCommHardware.UserListener userListener,
                                                          UserTracker userTracker,
                                                          CommandQueue commandQueue,
@@ -26,7 +28,7 @@ public class CommHardwareFactory {
 
         CommHardware commHardware;
         UserInfo selfInfo = new UserInfo(callsign, null, atakUid, null);
-        commHardware = new MeshtasticCommHardware(handler, userListener, userTracker, commandQueue, queuedCommandFactory, activity, selfInfo, stateStorage, stateStorage.getCommDeviceAddress());
+        commHardware = new MeshtasticCommHardware(activity, handler, meshtasticDeviceSwitcher, userListener, userTracker, commandQueue, queuedCommandFactory, selfInfo, stateStorage, stateStorage.getCommDevice());
         return commHardware;
     }
 

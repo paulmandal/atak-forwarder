@@ -12,18 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 
 import java.util.List;
 
-public class DevicesDataAdapter extends ArrayAdapter<DevicesTabViewModel.MeshtasticDevice> {
-    private final List<DevicesTabViewModel.MeshtasticDevice> mDevices;
+public class DevicesDataAdapter extends ArrayAdapter<MeshtasticDevice> {
+    private final List<MeshtasticDevice> mDevices;
     private final Context mContext;
 
     @Nullable
     private final String mCommDeviceAddress;
 
-    public DevicesDataAdapter(Context context, List<DevicesTabViewModel.MeshtasticDevice> devices, String commDeviceAddress) {
+    public DevicesDataAdapter(Context context, List<MeshtasticDevice> devices, String commDeviceAddress) {
         super(context, R.layout.devices_list_view_item, devices);
         mContext = context;
         mDevices = devices;
@@ -52,7 +52,7 @@ public class DevicesDataAdapter extends ArrayAdapter<DevicesTabViewModel.Meshtas
             view = convertView;
         }
 
-        DevicesTabViewModel.MeshtasticDevice device = mDevices.get(position);
+        MeshtasticDevice device = mDevices.get(position);
 
         ViewHolder holder = (ViewHolder) view.getTag();
         String deviceAddress = device.address;

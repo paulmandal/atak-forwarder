@@ -25,6 +25,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -84,6 +85,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final String STATE_CONNECTED = "CONNECTED";
 
+    private MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private UserTracker mUserTracker;
     private UserListener mUserListener;
     private Activity mActivity;
@@ -108,25 +110,27 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     boolean mRadioSetupCalled = false;
 
     private int mDataRate;
-    private String mCommDeviceAddress;
+    private MeshtasticDevice mCommDevice;
 
-    public MeshtasticCommHardware(Handler uiThreadHandler,
+    public MeshtasticCommHardware(Activity activity,
+                                  Handler uiThreadHandler,
+                                  MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                   UserListener userListener,
                                   UserTracker userTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
-                                  Activity activity,
                                   UserInfo selfInfo,
                                   StateStorage stateStorage,
-                                  String commDeviceAddress) {
+                                  MeshtasticDevice commDevice) {
         super(uiThreadHandler, commandQueue, queuedCommandFactory, userTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
-        mUiThreadHandler = uiThreadHandler;
         mActivity = activity;
+        mUiThreadHandler = uiThreadHandler;
+        mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mUserListener = userListener;
         mUserTracker = userTracker;
         mStateStorage = stateStorage;
-        mCommDeviceAddress = commDeviceAddress;
+        mCommDevice = commDevice;
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -239,20 +243,18 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         bindToService();
     }
 
-    public boolean setDeviceAddress(DevicesTabViewModel.MeshtasticDevice meshtasticDevice) {
+    public boolean setDeviceAddress(MeshtasticDevice meshtasticDevice) {
         Log.e(TAG, "setDeviceAddress: " + meshtasticDevice.address);
         boolean success = false;
         try {
-            String deviceAddressBase = meshtasticDevice.deviceType == DevicesTabViewModel.DeviceType.USB ? "s%s" : "x%s";
-            String deviceAddress = String.format(deviceAddressBase, meshtasticDevice.address);
-            mMeshService.setDeviceAddress(deviceAddress);
-            mCommDeviceAddress = meshtasticDevice.address;
+            mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
+            mCommDevice = meshtasticDevice;
 
-            mStateStorage.storeCommDeviceAddress(meshtasticDevice.address);
+            mStateStorage.storeCommDevice(meshtasticDevice);
 
             success = true;
             Log.e(TAG, "setDeviceAddress success: " + success);
-            connect();
+//            connect();
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -269,8 +271,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
-    public String getDeviceAddress() {
-        return mCommDeviceAddress;
+    public MeshtasticDevice getDevice() {
+        return mCommDevice;
     }
 
     @Override
@@ -311,9 +313,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void maybeInitialConnection() {
         ConnectionState oldConnectionState = getConnectionState();
 
-        if (mCommDeviceAddress != null) {
+        if (mCommDevice != null) {
             try {
-                mMeshService.setDeviceAddress(String.format("x%s", mCommDeviceAddress));
+                mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
@@ -339,7 +341,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         try {
             String meshId = mMeshService.getMyId();
             ConnectionState connectionState;
-            if (mCommDeviceAddress == null) {
+            if (mCommDevice == null) {
                 connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
             } else {
                 boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);

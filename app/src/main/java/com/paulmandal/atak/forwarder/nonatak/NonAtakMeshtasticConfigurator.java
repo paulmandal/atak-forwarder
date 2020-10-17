@@ -17,8 +17,9 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 public class NonAtakMeshtasticConfigurator {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + NonAtakMeshtasticConfigurator.class.getSimpleName();
@@ -47,8 +48,9 @@ public class NonAtakMeshtasticConfigurator {
     private final Activity mActivity;
     private final Handler mUiThreadHandler;
 
-    private final DevicesTabViewModel.MeshtasticDevice mCommDevice;
-    private final DevicesTabViewModel.MeshtasticDevice mTargetDevice;
+    private final MeshtasticDevice mCommDevice;
+    private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
+    private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
     private final String mChannelName;
     private final byte[] mPsk;
@@ -81,8 +83,9 @@ public class NonAtakMeshtasticConfigurator {
 
     public NonAtakMeshtasticConfigurator(Activity activity,
                                          Handler uiThreadHandler,
-                                         DevicesTabViewModel.MeshtasticDevice commDevice,
-                                         DevicesTabViewModel.MeshtasticDevice targetDevice,
+                                         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
+                                         MeshtasticDevice commDevice,
+                                         MeshtasticDevice targetDevice,
                                          String deviceCallsign,
                                          String channelName,
                                          byte[] psk,
@@ -95,6 +98,7 @@ public class NonAtakMeshtasticConfigurator {
         mActivity = activity;
         mUiThreadHandler = uiThreadHandler;
         mCommDevice = commDevice;
+        mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;
         mChannelName = channelName;
@@ -148,17 +152,11 @@ public class NonAtakMeshtasticConfigurator {
         try {
             Log.d(TAG, "Setting service to use non-ATAK device address: " + mTargetDevice);
             mUiThreadHandler.postDelayed(mTimeoutRunnable, DEVICE_CONNECTION_TIMEOUT);
-            setDeviceAddress(mTargetDevice);
+            mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mTargetDevice);
         } catch (RemoteException e) {
             e.printStackTrace();
             Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
         }
-    }
-
-    private void setDeviceAddress(DevicesTabViewModel.MeshtasticDevice meshtasticDevice) throws RemoteException {
-        String deviceAddressBase = meshtasticDevice.deviceType == DevicesTabViewModel.DeviceType.USB ? "s%s" : "x%s";
-        String deviceAddress = String.format(deviceAddressBase, meshtasticDevice.address);
-        mMeshService.setDeviceAddress(String.format("x%s", deviceAddress));
     }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -244,7 +242,7 @@ public class NonAtakMeshtasticConfigurator {
             mPostWriteDelayRunnable = () -> {
                 try {
                     Log.d(TAG, "Setting mesh service back to Comm Device address: " + mCommDevice.address);
-                    setDeviceAddress(mCommDevice); // TODO: verify this changed back
+                    mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice); // TODO: verify this changed back
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

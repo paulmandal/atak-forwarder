@@ -21,6 +21,7 @@ import androidx.lifecycle.LifecycleOwner;
 import com.atakmap.android.gui.PluginSpinner;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
@@ -32,7 +33,7 @@ public class DevicesTab extends RelativeLayout {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTab.class.getSimpleName();
 
     private Context mAtakContext;
-    private DevicesTabViewModel.MeshtasticDevice mTargetDevice;
+    private MeshtasticDevice mTargetDevice;
 
     public DevicesTab(Context context) {
         this(context, null);
@@ -142,7 +143,7 @@ public class DevicesTab extends RelativeLayout {
 
         devicesListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             Log.e(TAG, "onItemClickListener: " + position);
-            DevicesTabViewModel.MeshtasticDevice meshtasticDevice = (DevicesTabViewModel.MeshtasticDevice) devicesListView.getAdapter().getItem(position);
+            MeshtasticDevice meshtasticDevice = (MeshtasticDevice) devicesListView.getAdapter().getItem(position);
 
             targetDevice.setText(String.format("%s %s", meshtasticDevice.name,  meshtasticDevice.address));
             mTargetDevice = meshtasticDevice;
@@ -156,7 +157,7 @@ public class DevicesTab extends RelativeLayout {
         });
 
         devicesTabViewModel.getCommDeviceAddress().observe(lifecycleOwner, commDeviceAddress -> {
-            List<DevicesTabViewModel.MeshtasticDevice> meshtasticDevices = devicesTabViewModel.getMeshtasticDevices().getValue();
+            List<MeshtasticDevice> meshtasticDevices = devicesTabViewModel.getMeshtasticDevices().getValue();
 
             if (meshtasticDevices == null) {
                 return;
@@ -172,9 +173,9 @@ public class DevicesTab extends RelativeLayout {
         mAtakContext = atakContext;
     }
 
-    private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<DevicesTabViewModel.MeshtasticDevice> meshtasticDevices) {
+    private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<MeshtasticDevice> meshtasticDevices) {
         if (commDeviceAddress != null) {
-            for (DevicesTabViewModel.MeshtasticDevice device : meshtasticDevices) {
+            for (MeshtasticDevice device : meshtasticDevices) {
                 String deviceAddress = device.address;
                 if (deviceAddress.equals(commDeviceAddress)) {
                     commDevice.setText(String.format("%s - %s", device.name, deviceAddress));
@@ -183,12 +184,12 @@ public class DevicesTab extends RelativeLayout {
         }
     }
 
-    private void updateDevicesAdapter(ListView devicesListView, Context pluginContext, List<DevicesTabViewModel.MeshtasticDevice> meshtasticDevices, String commDeviceAddress) {
+    private void updateDevicesAdapter(ListView devicesListView, Context pluginContext, List<MeshtasticDevice> meshtasticDevices, String commDeviceAddress) {
         DevicesDataAdapter devicesDataAdapter = new DevicesDataAdapter(pluginContext, meshtasticDevices, commDeviceAddress);
         devicesListView.setAdapter(devicesDataAdapter);
     }
 
-    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, DevicesTabViewModel.MeshtasticDevice targetDevice, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
+    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, MeshtasticDevice targetDevice, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
         if (targetDevice == null) {
             Toast.makeText(mAtakContext, "You must select a device to write to", Toast.LENGTH_SHORT).show();
             return;

@@ -18,6 +18,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 public class NonAtakMeshtasticConfigurator {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + NonAtakMeshtasticConfigurator.class.getSimpleName();
@@ -46,8 +47,8 @@ public class NonAtakMeshtasticConfigurator {
     private final Activity mActivity;
     private final Handler mUiThreadHandler;
 
-    private final String mCommDeviceAddress;
-    private final String mTargetDeviceAddress;
+    private final DevicesTabViewModel.MeshtasticDevice mCommDevice;
+    private final DevicesTabViewModel.MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
     private final String mChannelName;
     private final byte[] mPsk;
@@ -80,8 +81,8 @@ public class NonAtakMeshtasticConfigurator {
 
     public NonAtakMeshtasticConfigurator(Activity activity,
                                          Handler uiThreadHandler,
-                                         String commDeviceAddress,
-                                         String targetDeviceAddress,
+                                         DevicesTabViewModel.MeshtasticDevice commDevice,
+                                         DevicesTabViewModel.MeshtasticDevice targetDevice,
                                          String deviceCallsign,
                                          String channelName,
                                          byte[] psk,
@@ -93,8 +94,8 @@ public class NonAtakMeshtasticConfigurator {
                                          Listener listener) {
         mActivity = activity;
         mUiThreadHandler = uiThreadHandler;
-        mCommDeviceAddress = commDeviceAddress;
-        mTargetDeviceAddress = targetDeviceAddress;
+        mCommDevice = commDevice;
+        mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;
         mChannelName = channelName;
         mPsk = psk;
@@ -145,16 +146,18 @@ public class NonAtakMeshtasticConfigurator {
 
     private void onConnected() {
         try {
-            Log.d(TAG, "Setting service to use non-ATAK device address: " + mTargetDeviceAddress);
+            Log.d(TAG, "Setting service to use non-ATAK device address: " + mTargetDevice);
             mUiThreadHandler.postDelayed(mTimeoutRunnable, DEVICE_CONNECTION_TIMEOUT);
-            setDeviceAddress(mTargetDeviceAddress);
+            setDeviceAddress(mTargetDevice);
         } catch (RemoteException e) {
             e.printStackTrace();
             Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
         }
     }
 
-    private void setDeviceAddress(String deviceAddress) throws RemoteException {
+    private void setDeviceAddress(DevicesTabViewModel.MeshtasticDevice meshtasticDevice) throws RemoteException {
+        String deviceAddressBase = meshtasticDevice.deviceType == DevicesTabViewModel.DeviceType.USB ? "s%s" : "x%s";
+        String deviceAddress = String.format(deviceAddressBase, meshtasticDevice.address);
         mMeshService.setDeviceAddress(String.format("x%s", deviceAddress));
     }
 
@@ -240,13 +243,13 @@ public class NonAtakMeshtasticConfigurator {
 
             mPostWriteDelayRunnable = () -> {
                 try {
-                    Log.d(TAG, "Setting mesh service back to Comm Device address: " + mCommDeviceAddress);
-                    setDeviceAddress(mCommDeviceAddress); // TODO: verify this changed back
+                    Log.d(TAG, "Setting mesh service back to Comm Device address: " + mCommDevice.address);
+                    setDeviceAddress(mCommDevice); // TODO: verify this changed back
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
                 mWroteToDevice = true;
-                Log.e(TAG, "Done writing to non-ATAK device: " + mTargetDeviceAddress);
+                Log.e(TAG, "Done writing to non-ATAK device: " + mTargetDevice);
 
             };
             mUiThreadHandler.postDelayed(mPostWriteDelayRunnable, WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE);

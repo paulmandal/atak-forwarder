@@ -1,6 +1,5 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,17 +12,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 import java.util.List;
 
-public class DevicesDataAdapter extends ArrayAdapter<BluetoothDevice> {
-    private final List<BluetoothDevice> mDevices;
+public class DevicesDataAdapter extends ArrayAdapter<DevicesTabViewModel.MeshtasticDevice> {
+    private final List<DevicesTabViewModel.MeshtasticDevice> mDevices;
     private final Context mContext;
 
     @Nullable
     private final String mCommDeviceAddress;
 
-    public DevicesDataAdapter(Context context, List<BluetoothDevice> devices, String commDeviceAddress) {
+    public DevicesDataAdapter(Context context, List<DevicesTabViewModel.MeshtasticDevice> devices, String commDeviceAddress) {
         super(context, R.layout.devices_list_view_item, devices);
         mContext = context;
         mDevices = devices;
@@ -52,11 +52,11 @@ public class DevicesDataAdapter extends ArrayAdapter<BluetoothDevice> {
             view = convertView;
         }
 
-        BluetoothDevice device = mDevices.get(position);
+        DevicesTabViewModel.MeshtasticDevice device = mDevices.get(position);
 
         ViewHolder holder = (ViewHolder) view.getTag();
-        String deviceAddress = device.getAddress();
-        holder.deviceName.setText(device.getName());
+        String deviceAddress = device.address;
+        holder.deviceName.setText(device.name);
         holder.deviceAddress.setText(deviceAddress);
         holder.commDevice.setChecked(deviceAddress.equals(mCommDeviceAddress));
         return view;

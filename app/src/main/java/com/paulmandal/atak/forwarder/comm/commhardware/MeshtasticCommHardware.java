@@ -29,6 +29,7 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -238,14 +239,16 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         bindToService();
     }
 
-    public boolean setDeviceAddress(String deviceAddress) {
-        Log.e(TAG, "setDeviceAddress: " + deviceAddress);
+    public boolean setDeviceAddress(DevicesTabViewModel.MeshtasticDevice meshtasticDevice) {
+        Log.e(TAG, "setDeviceAddress: " + meshtasticDevice.address);
         boolean success = false;
         try {
-            mMeshService.setDeviceAddress(String.format("x%s", deviceAddress));
-            mCommDeviceAddress = deviceAddress;
+            String deviceAddressBase = meshtasticDevice.deviceType == DevicesTabViewModel.DeviceType.USB ? "s%s" : "x%s";
+            String deviceAddress = String.format(deviceAddressBase, meshtasticDevice.address);
+            mMeshService.setDeviceAddress(deviceAddress);
+            mCommDeviceAddress = meshtasticDevice.address;
 
-            mStateStorage.storeCommDeviceAddress(deviceAddress);
+            mStateStorage.storeCommDeviceAddress(meshtasticDevice.address);
 
             success = true;
             Log.e(TAG, "setDeviceAddress success: " + success);

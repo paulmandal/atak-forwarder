@@ -1,7 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs;
 
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.AttributeSet;
@@ -33,7 +32,7 @@ public class DevicesTab extends RelativeLayout {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTab.class.getSimpleName();
 
     private Context mAtakContext;
-    private String mTargetDeviceAddress;
+    private DevicesTabViewModel.MeshtasticDevice mTargetDevice;
 
     public DevicesTab(Context context) {
         this(context, null);
@@ -60,7 +59,7 @@ public class DevicesTab extends RelativeLayout {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.set_comm_device_dialog))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> devicesTabViewModel.setCommDeviceAddress(mTargetDeviceAddress))
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> devicesTabViewModel.setCommDeviceAddress(mTargetDevice))
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
             alertDialog.show();
@@ -132,7 +131,7 @@ public class DevicesTab extends RelativeLayout {
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.write_to_non_atak_dialog))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDeviceAddress, deviceCallsignEditText.getText().toString(), teamSpinner.getSelectedItemPosition(), roleSpinner.getSelectedItemPosition(), Integer.parseInt(pliIntervalSEditText.getText().toString()), Integer.parseInt(screenShutoffDelaySEditText.getText().toString())))
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDevice, deviceCallsignEditText.getText().toString(), teamSpinner.getSelectedItemPosition(), roleSpinner.getSelectedItemPosition(), Integer.parseInt(pliIntervalSEditText.getText().toString()), Integer.parseInt(screenShutoffDelaySEditText.getText().toString())))
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
             alertDialog.show();
         });
@@ -143,29 +142,28 @@ public class DevicesTab extends RelativeLayout {
 
         devicesListView.setOnItemClickListener((AdapterView<?> parent, View view, int position, long id) -> {
             Log.e(TAG, "onItemClickListener: " + position);
-            BluetoothDevice bluetoothDevice = (BluetoothDevice) devicesListView.getAdapter().getItem(position);
+            DevicesTabViewModel.MeshtasticDevice meshtasticDevice = (DevicesTabViewModel.MeshtasticDevice) devicesListView.getAdapter().getItem(position);
 
-            String targetDeviceAddress = bluetoothDevice.getAddress();
-            targetDevice.setText(String.format("%s %s", bluetoothDevice.getName(), targetDeviceAddress));
-            mTargetDeviceAddress = targetDeviceAddress;
+            targetDevice.setText(String.format("%s %s", meshtasticDevice.name,  meshtasticDevice.address));
+            mTargetDevice = meshtasticDevice;
         });
 
-        devicesTabViewModel.getBluetoothDevices().observe(lifecycleOwner, bluetoothDevices -> {
+        devicesTabViewModel.getMeshtasticDevices().observe(lifecycleOwner, meshtasticDevices -> {
             String commDeviceAddress = devicesTabViewModel.getCommDeviceAddress().getValue();
 
-            maybeUpdateCommDevice(commDevice, commDeviceAddress, bluetoothDevices);
-            updateDevicesAdapter(devicesListView, pluginContext, bluetoothDevices, commDeviceAddress);
+            maybeUpdateCommDevice(commDevice, commDeviceAddress, meshtasticDevices);
+            updateDevicesAdapter(devicesListView, pluginContext, meshtasticDevices, commDeviceAddress);
         });
 
         devicesTabViewModel.getCommDeviceAddress().observe(lifecycleOwner, commDeviceAddress -> {
-            List<BluetoothDevice> bluetoothDevices = devicesTabViewModel.getBluetoothDevices().getValue();
+            List<DevicesTabViewModel.MeshtasticDevice> meshtasticDevices = devicesTabViewModel.getMeshtasticDevices().getValue();
 
-            if (bluetoothDevices == null) {
+            if (meshtasticDevices == null) {
                 return;
             }
 
-            maybeUpdateCommDevice(commDevice, commDeviceAddress, bluetoothDevices);
-            updateDevicesAdapter(devicesListView, pluginContext, bluetoothDevices, commDeviceAddress);
+            maybeUpdateCommDevice(commDevice, commDeviceAddress, meshtasticDevices);
+            updateDevicesAdapter(devicesListView, pluginContext, meshtasticDevices, commDeviceAddress);
         });
 
         ProgressBar deviceWriteProgressBar = findViewById(R.id.progressbar_writing_to_device);
@@ -174,24 +172,24 @@ public class DevicesTab extends RelativeLayout {
         mAtakContext = atakContext;
     }
 
-    private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<BluetoothDevice> bluetoothDevices) {
+    private void maybeUpdateCommDevice(TextView commDevice, String commDeviceAddress, List<DevicesTabViewModel.MeshtasticDevice> meshtasticDevices) {
         if (commDeviceAddress != null) {
-            for (BluetoothDevice device : bluetoothDevices) {
-                String deviceAddress = device.getAddress();
+            for (DevicesTabViewModel.MeshtasticDevice device : meshtasticDevices) {
+                String deviceAddress = device.address;
                 if (deviceAddress.equals(commDeviceAddress)) {
-                    commDevice.setText(String.format("%s - %s", device.getName(), deviceAddress));
+                    commDevice.setText(String.format("%s - %s", device.name, deviceAddress));
                 }
             }
         }
     }
 
-    private void updateDevicesAdapter(ListView devicesListView, Context pluginContext, List<BluetoothDevice> bluetoothDevices, String commDeviceAddress) {
-        DevicesDataAdapter devicesDataAdapter = new DevicesDataAdapter(pluginContext, bluetoothDevices, commDeviceAddress);
+    private void updateDevicesAdapter(ListView devicesListView, Context pluginContext, List<DevicesTabViewModel.MeshtasticDevice> meshtasticDevices, String commDeviceAddress) {
+        DevicesDataAdapter devicesDataAdapter = new DevicesDataAdapter(pluginContext, meshtasticDevices, commDeviceAddress);
         devicesListView.setAdapter(devicesDataAdapter);
     }
 
-    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, String deviceAddress, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
-        if (deviceAddress == null || deviceAddress.isEmpty()) {
+    private void maybeWriteToNonAtatkDevice(DevicesTabViewModel devicesTabViewModel, DevicesTabViewModel.MeshtasticDevice targetDevice, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
+        if (targetDevice == null) {
             Toast.makeText(mAtakContext, "You must select a device to write to", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -212,6 +210,6 @@ public class DevicesTab extends RelativeLayout {
         }
 
         Toast.makeText(mAtakContext, "Writing to non-ATAK device", Toast.LENGTH_SHORT).show();
-        devicesTabViewModel.writeToNonAtak(deviceAddress, deviceCallsign, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS);
+        devicesTabViewModel.writeToNonAtak(targetDevice, deviceCallsign, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS);
     }
 }

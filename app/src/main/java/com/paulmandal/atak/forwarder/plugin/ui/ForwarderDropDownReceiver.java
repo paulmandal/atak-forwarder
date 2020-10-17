@@ -3,8 +3,11 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TabHost;
+import android.widget.TabWidget;
 
 import androidx.lifecycle.LifecycleOwner;
 
@@ -46,7 +49,6 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         // Set up tabs
         TabHost tabs = mTemplateView.findViewById(R.id.tab_host);
         tabs.setup();
-
         TabHost.TabSpec spec = tabs.newTabSpec("tab_status");
         spec.setContent(R.id.tab_status);
         spec.setIndicator("Status");
@@ -67,6 +69,14 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         spec.setIndicator("Advanced");
         tabs.addTab(spec);
 
+        TabWidget tabWidget = tabs.getTabWidget();
+        for (int i = 0; i < tabWidget.getChildCount(); i++) {
+            View view = tabWidget.getChildAt(i);
+            ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+            layoutParams.height = dpToPx(32);
+            view.setLayoutParams(layoutParams);
+        }
+
         // Set up the rest of the UI
         LifecycleOwner lifecycleOwner = (LifecycleOwner) atakContext;
 
@@ -80,6 +90,10 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext, atakContext);
 
         advancedTab.bind(mTemplateView);
+    }
+
+    public static int dpToPx(int dp) {
+        return (int) (dp * Resources.getSystem().getDisplayMetrics().density);
     }
 
     public void disposeImpl() {

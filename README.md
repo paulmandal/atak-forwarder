@@ -31,6 +31,10 @@ Supports Meshtastic devices without an ATAK EUD attached
 * Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
 * Message queue with priority (chat = pli > markers)
 
+# Beta Features
+
+* Support for USB devices -- early stage, you might need to pair the device in the Meshtastic app to get USB permissions before setting it up in ATAK
+
 # To Do
 
 * Remote channel management / updating
@@ -44,6 +48,7 @@ Supports Meshtastic devices without an ATAK EUD attached
 * Re-add GoTenna support with a proper abstraction for communication layer
 * Bridge between multiple comm. devices? E.g. Meshtastic + goTenna on one device. Alternative is to break that into more than one plugin instance since their preSendProcessors will see each other's messages.
 * Use Dagger 2
+* Get a proper CI setup going (GitHub Actions?)
 
 # Building the Plugin
 

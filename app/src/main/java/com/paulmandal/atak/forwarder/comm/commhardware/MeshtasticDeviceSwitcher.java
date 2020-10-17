@@ -50,7 +50,7 @@ public class MeshtasticDeviceSwitcher {
                                 e.printStackTrace();
                             }
                         } else {
-                            Log.e(TAG, "permission denied for device " + device);
+                            Log.e(TAG, "Permission denied for USB device: " + device);
                         }
 
                         mAtakContext.unregisterReceiver(this);
@@ -61,11 +61,11 @@ public class MeshtasticDeviceSwitcher {
             UsbManager usbManager = (UsbManager) mAtakContext.getSystemService(Context.USB_SERVICE);
             PendingIntent permissionIntent = PendingIntent.getBroadcast(mAtakContext, 0, new Intent(ACTION_USB_PERMISSION), 0);
             IntentFilter filter = new IntentFilter(ACTION_USB_PERMISSION);
-            mAtakContext.registerReceiver(usbReceiver, filter);
 
             HashMap<String, UsbDevice> deviceList = usbManager.getDeviceList();
             UsbDevice device = deviceList.get(meshtasticDevice.address);
 
+            mAtakContext.registerReceiver(usbReceiver, filter);
             usbManager.requestPermission(device, permissionIntent);
             return;
         }

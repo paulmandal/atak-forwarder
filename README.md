@@ -33,7 +33,7 @@ Supports Meshtastic devices without an ATAK EUD attached
 
 # Beta Features
 
-* Support for USB devices
+* Support for USB devices -- early stage, you might need to pair the device in the Meshtastic app to get USB permissions before setting it up in ATAK
 
 # To Do
 

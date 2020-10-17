@@ -102,7 +102,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         HashMap<String, UsbDevice> usbDevicesMap = usbManager.getDeviceList();
         Collection<UsbDevice> usbDevices = usbDevicesMap.values();
         for (UsbDevice device : usbDevices) {
-            meshtasticDevices.add(new MeshtasticDevice(device.getDeviceName(), device.getProductName(), MeshtasticDevice.DeviceType.USB));
+            meshtasticDevices.add(new MeshtasticDevice(device.getProductName(), device.getDeviceName(), MeshtasticDevice.DeviceType.USB));
         }
 
         for (MeshtasticDevice device : meshtasticDevices) {

@@ -254,7 +254,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             success = true;
             Log.e(TAG, "setDeviceAddress success: " + success);
-//            connect();
         } catch (RemoteException e) {
             e.printStackTrace();
         }

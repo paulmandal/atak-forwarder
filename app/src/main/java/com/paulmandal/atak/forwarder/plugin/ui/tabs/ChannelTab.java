@@ -10,10 +10,10 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.geeksville.mesh.MeshProtos;
@@ -24,7 +24,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewMod
 import java.util.HashMap;
 import java.util.Map;
 
-public class ChannelTab extends RelativeLayout {
+public class ChannelTab extends ConstraintLayout {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ChannelTab.class.getSimpleName();
 
     private TextView mChannelName;

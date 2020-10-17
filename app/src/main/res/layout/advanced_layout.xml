@@ -29,7 +29,7 @@
         android:layout_height="wrap_content"
         android:inputType="number"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/edittext_default_purge_time_mins" />
+        app:layout_constraintTop_toBottomOf="@+id/edittext_default_purge_time_mins" />
 
     <Button
         android:id="@+id/button_set_pli_purge_time_ms"
@@ -38,8 +38,8 @@
         android:text="@string/set_pli_block_ttl_s"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toEndOf="@id/edittext_pli_purge_time_s"
-        app:layout_constraintTop_toBottomOf="@id/button_set_default_purge_time_ms" />
+        app:layout_constraintStart_toEndOf="@+id/edittext_pli_purge_time_s"
+        app:layout_constraintTop_toBottomOf="@+id/button_set_default_purge_time_ms" />
 
     <Button
         android:id="@+id/button_clear_message_cache"
@@ -48,7 +48,7 @@
         android:layout_marginTop="8dp"
         android:text="@string/clear_message_cache"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/edittext_pli_purge_time_s" />
+        app:layout_constraintTop_toBottomOf="@+id/edittext_pli_purge_time_s" />
 
     <Button
         android:id="@+id/button_clear_message_queue"
@@ -56,9 +56,9 @@
         android:layout_height="32dp"
         android:layout_marginTop="8dp"
         android:text="@string/clear_message_queue"
-        app:layout_constraintBottom_toTopOf="@id/button_clear_data"
+        app:layout_constraintBottom_toTopOf="@+id/button_clear_data"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_clear_message_cache"
+        app:layout_constraintTop_toBottomOf="@+id/button_clear_message_cache"
         app:layout_constraintVertical_bias="0.003" />
 
     <Button

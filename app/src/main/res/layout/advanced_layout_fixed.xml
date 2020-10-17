@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/tab_advanced"
-    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <EditText
@@ -19,7 +18,6 @@
         android:layout_height="32dp"
         android:text="@string/set_msg_block_ttl_mins"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@+id/edittext_default_purge_time_mins"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -36,10 +34,9 @@
         android:layout_width="wrap_content"
         android:layout_height="32dp"
         android:text="@string/set_pli_block_ttl_s"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toEndOf="@id/edittext_pli_purge_time_s"
-        app:layout_constraintTop_toBottomOf="@id/button_set_default_purge_time_ms" />
+        app:layout_constraintTop_toBottomOf="@id/button_set_default_purge_time_ms"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <Button
         android:id="@+id/button_clear_message_cache"
@@ -56,10 +53,8 @@
         android:layout_height="32dp"
         android:layout_marginTop="8dp"
         android:text="@string/clear_message_queue"
-        app:layout_constraintBottom_toTopOf="@id/button_clear_data"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/button_clear_message_cache"
-        app:layout_constraintVertical_bias="0.003" />
+        app:layout_constraintTop_toBottomOf="@id/button_clear_message_cache" />
 
     <Button
         android:id="@+id/button_clear_data"

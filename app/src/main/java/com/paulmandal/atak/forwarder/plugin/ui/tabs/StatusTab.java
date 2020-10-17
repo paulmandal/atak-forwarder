@@ -6,17 +6,17 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.plugin.ui.GroupMemberDataAdapter;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
-public class StatusTab extends RelativeLayout {
+public class StatusTab extends ConstraintLayout {
     private Context mAtakContext;
 
     private TextView mChannelName;

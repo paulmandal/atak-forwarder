@@ -253,6 +253,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             mStateStorage.storeCommDevice(meshtasticDevice);
 
             success = true;
+            connect();
             Log.e(TAG, "setDeviceAddress success: " + success);
         } catch (RemoteException e) {
             e.printStackTrace();

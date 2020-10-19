@@ -1,145 +1,129 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tab_devices"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:parentTag="android.widget.RelativeLayout">
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
 
     <TextView
         android:id="@+id/label_comm_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
         android:paddingEnd="8dp"
-        android:text="@string/comm_device" />
+        android:text="@string/comm_device"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="RtlSymmetry" />
 
     <TextView
         android:id="@+id/textview_comm_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@id/label_comm_device" />
-
-    <ListView
-        android:id="@+id/listview_bonded_devices"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/label_target_device"
-        android:layout_below="@id/label_comm_device"
-        android:layout_alignParentStart="true" />
-
-    <ProgressBar
-        android:id="@+id/progressbar_writing_to_device"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_above="@id/label_non_atak_settings"
-        android:layout_alignParentStart="true"
-        android:paddingEnd="8dp"
-        android:visibility="gone" />
+        app:layout_constraintStart_toEndOf="@+id/label_comm_device"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/label_target_device"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/label_non_atak_settings"
-        android:layout_toEndOf="@id/progressbar_writing_to_device"
         android:paddingEnd="8dp"
-        android:text="@string/target_device" />
+        android:text="@string/target_device"
+        app:layout_constraintBottom_toBottomOf="@+id/spinner_devices"
+        app:layout_constraintStart_toStartOf="parent" />
 
-    <TextView
-        android:id="@+id/textview_target_device"
-        style="@style/SmallTextView"
+    <com.atakmap.android.gui.PluginSpinner
+        android:id="@+id/spinner_devices"
+        style="@style/SmallSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/label_non_atak_settings"
-        android:layout_toEndOf="@id/label_target_device" />
+        app:layout_constraintStart_toEndOf="@+id/label_target_device"
+        app:layout_constraintTop_toBottomOf="@+id/label_comm_device"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/label_non_atak_settings"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/edittext_device_callsign"
-        android:layout_alignParentStart="true"
-        android:paddingStart="16dp"
-        android:paddingEnd="8dp"
-        android:text="@string/non_atak_device_settings" />
+        android:text="@string/non_atak_device_settings"
+        app:layout_constraintBottom_toTopOf="@+id/edittext_device_callsign"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/edittext_device_callsign"
-        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
-        android:layout_above="@id/edittext_pli_interval_s"
-        android:layout_alignParentEnd="true"
         android:hint="@string/device_callsign"
-        android:inputType="textNoSuggestions" />
+        android:inputType="textNoSuggestions"
+        app:layout_constraintBottom_toTopOf="@+id/edittext_pli_interval_s"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
         android:id="@+id/edittext_pli_interval_s"
-        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
-        android:layout_above="@id/edittext_screen_shutoff_delay_s"
-        android:layout_alignParentEnd="true"
         android:hint="@string/pli_interval"
-        android:inputType="number" />
+        android:inputType="number"
+        app:layout_constraintBottom_toTopOf="@+id/edittext_screen_shutoff_delay_s"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
         android:id="@+id/edittext_screen_shutoff_delay_s"
-        style="@style/SmallEditText"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_write_to_non_atak"
-        android:layout_alignParentEnd="true"
         android:hint="@string/screen_shutoff_time"
-        android:inputType="number" />
+        android:inputType="number"
+        app:layout_constraintBottom_toTopOf="@+id/button_write_to_non_atak"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_team"
         style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/spinner_role"
-        android:layout_alignParentStart="true" />
+        app:layout_constraintBottom_toTopOf="@+id/spinner_role"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_role"
         style="@style/SmallEditText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/button_refresh_connected_devices"
-        android:layout_alignParentStart="true" />
+        app:layout_constraintBottom_toTopOf="@+id/button_refresh_connected_devices"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/button_refresh_connected_devices"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/refresh_connected_devices" />
+        android:text="@string/refresh_connected_devices"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/button_set_comm_device"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_alignParentBottom="true"
-        android:layout_toStartOf="@id/button_write_to_non_atak"
-        android:text="@string/set_comm_device" />
+        android:text="@string/set_comm_device"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/button_write_to_non_atak" />
 
     <Button
         android:id="@+id/button_write_to_non_atak"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
         android:layout_height="32dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/write_to_non_atak" />
+        android:text="@string/write_to_non_atak"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progressbar_writing_to_device"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </merge>

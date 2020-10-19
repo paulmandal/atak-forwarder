@@ -2,12 +2,15 @@
 
     <!-- Application theme. -->
     <style name="ATAKPluginTheme" parent="@android:style/Theme.Holo">
-        <item name="android:buttonStyle">@android:style/Widget.Button</item>
-        <item name="android:imageButtonStyle">@android:style/Widget.Button</item>
-        <item name="android:buttonStyleToggle">@android:style/Widget.Button</item>
-        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
+        <item name="android:buttonStyle">@style/SmallTextButton</item>
+        <item name="android:imageButtonStyle">@style/SmallTextButton</item>
+        <item name="android:buttonStyleToggle">@style/SmallTextButton</item>
+        <item name="android:spinnerStyle">@style/SmallEditText</item>
         <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
         <item name="android:editTextStyle">@style/SmallEditText</item>
+        <item name="android:textViewStyle">@style/SmallTextView</item>
+        <item name="android:tabWidgetStyle">@style/SmallTabWidget</item>
+        <item name="android:radioButtonStyle">@style/SmallRadioButton</item>
     </style>
 
     <style name="ATAKTheme" parent="@android:style/Theme.Holo">
@@ -51,16 +54,6 @@
     </style>
 
     <!-- Application theme. -->
-    <style name="AppTheme" parent="@android:style/Theme.Holo">
-        <item name="android:buttonStyle">@style/SmallTextButton</item>
-        <item name="android:imageButtonStyle">@style/SmallTextButton</item>
-        <item name="android:buttonStyleToggle">@style/SmallTextButton</item>
-        <item name="android:spinnerStyle">@style/ATAKSpinner</item>
-        <item name="android:spinnerItemStyle">@style/ATAKSpinnerItem</item>
-        <item name="android:editTextStyle">@style/SmallEditText</item>
-        <item name="android:textViewStyle">@style/SmallTextView</item>
-    </style>
-
 
     <style name="ATAKSpinner" parent="@android:style/Widget.Spinner">
         <item name="android:spinnerMode">dialog</item>
@@ -76,6 +69,7 @@
     </style>
 
     <style name="SmallTextButton" parent="@android:style/Widget.Button">
+        <item name="android:layout_height">32dp</item>
         <item name="android:textSize">12sp</item>
     </style>
 
@@ -83,16 +77,26 @@
         <item name="android:textSize">12sp</item>
     </style>
 
-    <style name="SmallSpinner" parent="android:Widget.TextView">
-        <item name="android:textSize">12sp</item>
-    </style>
-
-    <style name="SmallSpinnerItem" parent="android:Widget.TextView">
+    <style name="SmallSpinner" parent="@android:style/Widget.EditText">
         <item name="android:textSize">12sp</item>
     </style>
 
     <style name="SmallSwitchText" parent="android:Widget.TextView">
         <item name="android:textSize">6sp</item>
+    </style>
+
+    <style name="SmallTabWidget" parent="@android:style/Widget.TabWidget">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textAppearance">@style/SmallTabWidgetText</item>
+    </style>
+
+    <style name="SmallRadioButton" parent="android:Widget.CompoundButton.RadioButton">
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="SmallTabWidgetText" parent="@android:style/TextAppearance.Widget.TabWidget">
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <!-- ====== Style for use in 9-line and other dropdowns that have very restricted space. ====== -->
@@ -104,8 +108,9 @@
 
 
     <!-- In the new theme, sometimes the spinner text color is turning white. -->
-    <style name="ATAKSpinnerItem" parent="@style/AppTheme">
-        <item name="android:textColor">@android:color/black</item>
+    <style name="ATAKSpinnerItem" parent="@style/ATAKPluginTheme">
+        <item name="android:imeOptions">flagNoFullscreen</item>
+        <item name="android:textSize">12sp</item>
     </style>
 
     <style name="unpaddedButton" parent="@android:style/Widget.Button">

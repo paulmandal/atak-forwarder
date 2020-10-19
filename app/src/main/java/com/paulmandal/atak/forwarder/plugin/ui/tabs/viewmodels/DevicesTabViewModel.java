@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -86,6 +87,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         return mNonAtakDeviceWriteInProgress;
     }
 
+    @SuppressLint("MissingPermission")
     public void refreshDevices() {
         List<MeshtasticDevice> meshtasticDevices = new ArrayList<>();
 
@@ -105,8 +107,9 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
             meshtasticDevices.add(new MeshtasticDevice(device.getProductName(), device.getDeviceName(), MeshtasticDevice.DeviceType.USB));
         }
 
+        String commDeviceAddress = mCommDeviceAddress.getValue();
         for (MeshtasticDevice device : meshtasticDevices) {
-            if (device.address.equals(mCommDeviceAddress)) {
+            if (device.address.equals(commDeviceAddress)) {
                 mCommDevice = device;
             }
         }

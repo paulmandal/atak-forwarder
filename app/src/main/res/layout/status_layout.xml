@@ -1,203 +1,209 @@
 <?xml version="1.0" encoding="utf-8"?>
 <merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/merge"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:parentTag="android.widget.RelativeLayout">
+    tools:parentTag="androidx.constraintlayout.widget.ConstraintLayout">
+
+    <!-- Line 1 -->
 
     <TextView
         android:id="@+id/textview_connection_status"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/channel_name"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@id/channel_name_psk_seperator" />
+        app:layout_constraintEnd_toStartOf="@+id/channel_name_psk_seperator"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/channel_name_psk_seperator"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@id/psk_hash"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
-        android:text="@string/channel_psk_modem_seperator" />
+        android:text="@string/channel_psk_modem_seperator"
+        app:layout_constraintEnd_toStartOf="@+id/psk_hash"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/psk_hash"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@id/psk_modem_seperator" />
+        app:layout_constraintEnd_toStartOf="@+id/psk_modem_seperator"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/psk_modem_seperator"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_toStartOf="@id/modem_config"
         android:paddingStart="4dp"
         android:paddingEnd="4dp"
-        android:text="@string/channel_psk_modem_seperator" />
+        android:text="@string/channel_psk_modem_seperator"
+        app:layout_constraintEnd_toStartOf="@+id/modem_config"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/modem_config"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/label_message_queue_length"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_message_queue_length"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/textview_message_queue_length"
-        android:text="@string/message_queue_length" />
-
-    <TextView
-        android:id="@+id/textview_message_queue_length"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/channel_name"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="8dp" />
+    <!-- Line 2 -->
 
     <TextView
         android:id="@+id/textview_total_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_message_queue_length"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/label_message_queue_length" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@+id/label_message_queue_length"
+        app:layout_constraintTop_toTopOf="@+id/label_message_queue_length" />
 
     <TextView
         android:id="@+id/label_total_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/textview_total_messages"
-        android:text="@string/total_messages" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/total_messages"
+        app:layout_constraintEnd_toStartOf="@+id/textview_total_messages"
+        app:layout_constraintTop_toTopOf="@+id/textview_total_messages" />
 
     <TextView
-        android:id="@+id/textview_errored_messages"
-        style="@style/SmallTextView"
+        android:id="@+id/label_message_queue_length"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/label_total_messages" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/message_queue_length"
+        app:layout_constraintEnd_toStartOf="@+id/textview_message_queue_length"
+        app:layout_constraintTop_toTopOf="@+id/textview_message_queue_length" />
 
     <TextView
-        android:id="@+id/label_errored_messages"
-        style="@style/SmallTextView"
+        android:id="@+id/textview_message_queue_length"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/textview_errored_messages"
-        android:text="@string/errored_messages" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/psk_modem_seperator" />
 
-    <TextView
-        android:id="@+id/textview_timed_out_messages"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/label_errored_messages" />
-
-    <TextView
-        android:id="@+id/label_timed_out_messages"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/textview_timed_out_messages"
-        android:text="@string/timed_out_messages" />
-
-    <TextView
-        android:id="@+id/textview_delivered_messages"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/label_timed_out_messages" />
-
-    <TextView
-        android:id="@+id/label_delivered_messages"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/textview_delivered_messages"
-        android:text="@string/delivered_messages" />
-
-    <TextView
-        android:id="@+id/textview_received_messages"
-        style="@style/SmallTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/label_delivered_messages" />
+    <!-- Line 3 -->
 
     <TextView
         android:id="@+id/label_received_messages"
-        style="@style/SmallTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@id/textview_total_messages"
-        android:layout_marginEnd="8dp"
-        android:layout_toStartOf="@id/textview_received_messages"
-        android:text="@string/received_messages" />
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/received_messages"
+        app:layout_constraintEnd_toStartOf="@+id/textview_received_messages"
+        app:layout_constraintTop_toTopOf="@+id/textview_received_messages" />
+
+    <TextView
+        android:id="@+id/textview_received_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@+id/label_delivered_messages"
+        app:layout_constraintTop_toTopOf="@+id/label_delivered_messages" />
+
+    <TextView
+        android:id="@+id/label_delivered_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/delivered_messages"
+        app:layout_constraintEnd_toStartOf="@+id/textview_delivered_messages"
+        app:layout_constraintTop_toTopOf="@+id/textview_delivered_messages" />
+
+    <TextView
+        android:id="@+id/textview_delivered_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@+id/label_timed_out_messages"
+        app:layout_constraintTop_toTopOf="@+id/label_timed_out_messages" />
+
+    <TextView
+        android:id="@+id/label_timed_out_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/timed_out_messages"
+        app:layout_constraintEnd_toStartOf="@+id/textview_timed_out_messages"
+        app:layout_constraintTop_toTopOf="@+id/textview_timed_out_messages" />
+
+    <TextView
+        android:id="@+id/textview_timed_out_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toStartOf="@+id/label_errored_messages"
+        app:layout_constraintTop_toTopOf="@+id/label_errored_messages" />
+
+    <TextView
+        android:id="@+id/label_errored_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:text="@string/errored_messages"
+        app:layout_constraintEnd_toStartOf="@+id/textview_errored_messages"
+        app:layout_constraintTop_toTopOf="@+id/textview_errored_messages" />
+
+    <TextView
+        android:id="@+id/textview_errored_messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textview_message_queue_length" />
+
+    <!-- List -->
 
     <ListView
         android:id="@+id/listview_channel_members"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/button_connect_to_service"
-        android:layout_below="@id/textview_total_messages"
-        android:layout_alignParentStart="true"
+        android:layout_height="0dp"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/button_broadcast_discovery"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textview_errored_messages" />
+
+    <!-- Bottom Buttons -->
 
     <Button
         android:id="@+id/button_connect_to_service"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/connect_to_service" />
+        android:layout_height="32dp"
+        android:text="@string/connect_to_service"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/button_broadcast_discovery"
-        style="@style/SmallTextButton"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
-        android:text="@string/broadcast_discovery" />
+        android:layout_height="32dp"
+        android:text="@string/broadcast_discovery"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </merge>

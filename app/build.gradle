@@ -169,6 +169,7 @@ sourceSets {
 }
 
 dependencies {
+    implementation "androidx.constraintlayout:constraintlayout:2.0.2"
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
 

@@ -15,4 +15,9 @@ public class MeshtasticDevice {
         this.address = address;
         this.deviceType = deviceType;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s - %s - %s", this.name, this.address, this.deviceType);
+    }
 }

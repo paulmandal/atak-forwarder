@@ -1,4 +1,4 @@
-# ATAK Packet Forwarder 
+# ATAK Forwarder 
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 

@@ -17,7 +17,6 @@ public class StateStorage {
 
     private static final String KEY_PLI_CACHE_PURGE_TIME = "pliCachePurgeTime";
     private static final String KEY_DEFAULT_CACHE_PURGE_TIME = "defaultCachePurgeTime";
-    private static final String KEY_COMM_DEVICE_ADDRESS = "commDeviceAddress";
     private static final String KEY_COMM_DEVICE = "commDevice";
 
     private Context mContext;

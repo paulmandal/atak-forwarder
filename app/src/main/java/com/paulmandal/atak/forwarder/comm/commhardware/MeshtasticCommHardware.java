@@ -38,8 +38,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.System.currentTimeMillis;
-
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface UserListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
@@ -183,7 +181,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         DataPacket dataPacket = new DataPacket(targetId, message,
                 MeshProtos.Data.Type.OPAQUE_VALUE, DataPacket.ID_LOCAL,
-                currentTimeMillis(), 0, MessageStatus.UNKNOWN);
+                System.currentTimeMillis(), 0, MessageStatus.UNKNOWN);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();

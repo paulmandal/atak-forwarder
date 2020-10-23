@@ -38,10 +38,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.System.currentTimeMillis;
+
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface UserListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-        void onChannelUsersUpdated(List<NonAtakUserInfo> userInfoList);
         void onUserUpdated(NonAtakUserInfo nonAtakUserInfo);
     }
 
@@ -60,6 +61,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final int DELAY_AFTER_STOPPING_SERVICE = Config.DELAY_AFTER_STOPPING_SERVICE;
     private static final int POSITION_BROADCAST_INTERVAL_S = Config.POSITION_BROADCAST_INTERVAL_S;
     private static final int LCD_SCREEN_ON_S = Config.LCD_SCREEN_ON_S;
+    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Config.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
     /**
      * Intents the Meshtastic service can send
@@ -181,7 +183,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         DataPacket dataPacket = new DataPacket(targetId, message,
                 MeshProtos.Data.Type.OPAQUE_VALUE, DataPacket.ID_LOCAL,
-                System.currentTimeMillis(), 0, MessageStatus.UNKNOWN);
+                currentTimeMillis(), 0, MessageStatus.UNKNOWN);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
@@ -328,7 +330,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         if (connected) {
             maybeSetupRadio();
             updateMeshId();
-            updateChannelMembers();
             updateChannelStatus();
         }
 
@@ -413,22 +414,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
-    private void updateChannelMembers() {
-        try {
-            List<NodeInfo> nodes = mMeshService.getNodes();
-            List<NonAtakUserInfo> userInfoList = new ArrayList<>();
-            for (NodeInfo nodeInfo : nodes) {
-
-                NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
-                userInfoList.add(nonAtakUserInfo);
-            }
-            mUserListener.onChannelUsersUpdated(userInfoList);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Exception in updateChannelMembers(): " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private NonAtakUserInfo nonAtakUserInfoFromNodeInfo(NodeInfo nodeInfo) {
         MeshUser meshUser = nodeInfo.getUser();
 
@@ -485,7 +470,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
-                    Log.d(TAG, "NODE_CHANGE: " + nodeInfo);
+                    long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
+                    Log.d(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
+                    if (timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
+                        // update is >30 mins old
+                        return;
+                    }
                     mUserListener.onUserUpdated(nonAtakUserInfo);
                     break;
                 case ACTION_MESSAGE_STATUS:

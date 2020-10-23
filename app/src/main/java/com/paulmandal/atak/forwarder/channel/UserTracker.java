@@ -8,7 +8,6 @@ import android.widget.Toast;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -83,39 +82,6 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
         }
 
         Toast.makeText(mAtakContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onChannelUsersUpdated(List<NonAtakUserInfo> userInfoList) {
-        List<NonAtakUserInfo> newUsers = new ArrayList<>();
-
-        boolean updatedNonAtakStation = false;
-
-        for (NonAtakUserInfo possiblyNewUser : userInfoList) {
-            boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(possiblyNewUser);
-
-            boolean repeatedUserEntry = newUsers.contains(possiblyNewUser);
-            boolean alreadyKnowAboutStation = mNonAtakStations.contains(possiblyNewUser);
-            if (!userExistsInAtakUserList && !repeatedUserEntry && !alreadyKnowAboutStation) {
-                newUsers.add(possiblyNewUser);
-            }
-
-            if (alreadyKnowAboutStation) {
-                updatedNonAtakStation = true;
-                updateNonAtakStation(possiblyNewUser);
-            }
-        }
-
-        if (newUsers.size() > 0) {
-            for (NonAtakUserInfo user : newUsers) {
-                Log.d(TAG, "Adding new non-ATAK user from Meshtastic: " + user.callsign);
-            }
-            mNonAtakStations.addAll(newUsers);
-        }
-
-        if (newUsers.size() > 0 || updatedNonAtakStation) {
-            notifyChannelMembersUpdateListeners();
-        }
     }
 
     @Override

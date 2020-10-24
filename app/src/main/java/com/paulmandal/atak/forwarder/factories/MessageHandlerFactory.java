@@ -8,7 +8,7 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
-import com.paulmandal.atak.libcotshrink.api.CotShrinker;
+import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
 public class MessageHandlerFactory {
     public static InboundMessageHandler getInboundMessageHandler(CommHardware commHardware,

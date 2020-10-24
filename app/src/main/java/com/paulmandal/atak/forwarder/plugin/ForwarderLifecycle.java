@@ -33,8 +33,8 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
-import com.paulmandal.atak.libcotshrink.api.CotShrinker;
-import com.paulmandal.atak.libcotshrink.api.CotShrinkerFactory;
+import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
+import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
 import com.paulmandal.atak.libcotshrink.hackytests.HackyTests;
 
 import java.util.Collection;

@@ -4,7 +4,7 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlinx-serialization'
 
-def PLUGIN_VERSION = "0.6.0"
+def PLUGIN_VERSION = "0.9.0"
 def ATAK_VERSION = "4.1.0"
 
 android {

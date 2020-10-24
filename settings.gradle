@@ -1,5 +1,2 @@
 include ':app'
 rootProject.name = "ATAK Forwarder"
-
-include ':libcotshrink'
-project(':libcotshrink').projectDir = new File('libcotshrink')

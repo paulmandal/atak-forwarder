@@ -181,7 +181,7 @@ dependencies {
 
     compileOnly fileTree(dir: '../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs/4.1.0.CIV/main.jar', include: '*.jar')
 
-    implementation project(':libcotshrink')
+    implementation 'com.paulmandal.atak:libcotshrink:0.1.0'
 
     testImplementation 'junit:junit:4.13'
 }

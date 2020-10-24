@@ -6,6 +6,7 @@ apply plugin: 'kotlinx-serialization'
 
 def PLUGIN_VERSION = "0.9.0"
 def ATAK_VERSION = "4.1.0"
+def ATAK_BUILD_DIR = "../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build"
 
 android {
     compileSdkVersion 28
@@ -103,9 +104,9 @@ android {
         }
 
         release {
-            def f = new File("$project.projectDir/../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/outputs/mapping/release/mapping.txt")
+            def f = new File("$project.projectDir/${ATAK_BUILD_DIR}/outputs/mapping/release/mapping.txt")
             if (f.exists()) {
-                System.setProperty("atak.proguard.mapping", "../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/outputs/mapping/release/mapping.txt")
+                System.setProperty("atak.proguard.mapping", "${ATAK_BUILD_DIR}/outputs/mapping/release/mapping.txt")
             } else {
                 println("WARNING: no mapping file exists, obfuscating just the plugin to work with the development core")
                 file("$project.projectDir/build").mkdir()
@@ -179,11 +180,11 @@ dependencies {
     implementation 'me.dm7.barcodescanner:zxing:1.9.13'
     implementation 'eo.view:batterymeter:2.0.0'
 
-    compileOnly fileTree(dir: '../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs/4.1.0.CIV/main.jar', include: '*.jar')
+    compileOnly fileTree(dir: "${ATAK_BUILD_DIR}/libs/4.1.0.CIV/main.jar", include: '*.jar')
 
     implementation 'com.paulmandal.atak:libcotshrink:0.1.0'
 
-    testImplementation 'junit:junit:4.13'
+    testImplementation 'junit:junit:4.13.1'
 }
 
 task updateSubmodules(type: Exec) {

@@ -1,24 +1,24 @@
-# ATAK Packet Forwarder 
+# ATAK Forwarder 
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
-![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/main/images/plugin-disconnected-indicator.png)
+![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/plugin-disconnected-indicator.png)
 <br>
-![Status View](https://github.com/paulmandal/atak-forwarder/raw/main/images/status-view.png)
+![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/status-view.png)
 <br>
-![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/main/images/channel-management.png)
+![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/channel-management.png)
 <br>
-![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/main/images/qr-configuration.png)
+![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/qr-configuration.png)
 <br>
-![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/main/images/integrated-direct-messaging.png)
+![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/integrated-direct-messaging.png)
 <br>
-![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/main/images/transmit-map-markers.png)
+![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/transmit-map-markers.png)
 <br>
 Supports Meshtastic devices without an ATAK EUD attached
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/main/images/non-atak-devices-configuration.png)
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/main/images/non-atak-devices-map-marker.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/non-atak-devices-configuration.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/non-atak-devices-map-marker.png)
 <br>
-![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/main/images/example-usage.png)
+![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/example-usage.png)
 
 # Features
 
@@ -131,8 +131,8 @@ The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but n
 
 # Architecture Diagram
 
-![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/main/images/arch-diagram.png)
-![Architecture Diagram Non-ATAK Devicess](https://github.com/paulmandal/atak-forwarder/raw/main/images/arch-diagram-non-atak-devices.png)
+![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/arch-diagram.png)
+![Architecture Diagram Non-ATAK Devicess](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/arch-diagram-non-atak-devices.png)
 
 # Notes on Message Handling
 

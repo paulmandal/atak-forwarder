@@ -7,7 +7,7 @@ import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
-import com.paulmandal.atak.libcotshrink.api.CotShrinker;
+import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
 public class InboundMessageHandler implements CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();

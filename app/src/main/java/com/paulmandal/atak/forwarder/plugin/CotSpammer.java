@@ -4,7 +4,7 @@ import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.libcotshrink.api.CotShrinker;
+import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
 public class CotSpammer {
     public static void spamCots(CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, CotShrinker cotShrinker) {

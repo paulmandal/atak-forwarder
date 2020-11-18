@@ -418,13 +418,15 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         double lat = 0.0;
         double lon = 0.0;
         int altitude = 0;
+        boolean gpsValid = false;
         Position position = nodeInfo.getValidPosition();
         if (position != null) {
             lat = position.getLatitude();
             lon = position.getLongitude();
             altitude = position.getAltitude();
+            gpsValid = true;
         }
-        return new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, meshUser.getShortName());
+        return new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, gpsValid, meshUser.getShortName());
     }
 
     private void updateChannelStatus() {

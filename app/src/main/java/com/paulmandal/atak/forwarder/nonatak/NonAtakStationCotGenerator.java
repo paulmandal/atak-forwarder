@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.nonatak;
 
+import android.util.Log;
+
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -88,6 +90,12 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
     public void onNonAtakStationUpdated(NonAtakUserInfo nonAtakUserInfo) {
         if (nonAtakUserInfo.callsign.equals(mLocalCallsign)) {
             // Disregard our own station
+            return;
+        }
+
+        if (! nonAtakUserInfo.gpsValid) {
+            // Ignore updates that don't contain a valid GPS point
+            Log.w(TAG, "NON-GPS update ignored");
             return;
         }
 

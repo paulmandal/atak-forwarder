@@ -1,12 +1,86 @@
+buildscript {
+
+    ext.PLUGIN_VERSION = "0.9.1"
+    ext.ATAK_VERSION = "4.2.0"
+
+    def takdevVersion = '2.0.0'
+
+    ext.getValueFromPropertiesFile = { propFile, key ->
+        if(!propFile.isFile() || !propFile.canRead())
+            return null
+        def prop = new Properties()
+        def reader = propFile.newReader()
+        try {
+            prop.load(reader)
+        } finally {
+            reader.close()
+        }
+        return prop.get(key)
+    }
+
+    def getProperty = { name, defValue ->
+        def prop = project.properties[name] ?:
+                getValueFromPropertiesFile(project.rootProject.file('local.properties'), name)
+        return (null == prop) ? defValue : prop
+    }
+
+    def urlKey = 'takrepo.url'
+
+    ext.isDevKitEnabled = { ->
+        return getProperty(urlKey, null) != null
+    }
+
+    ext.takrepoUrl = getProperty(urlKey, null)
+    ext.takrepoUser = getProperty('takrepo.user', null)
+    ext.takrepoPassword = getProperty('takrepo.password', null)
+    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-2.0.0.jar")
+
+    repositories {
+        jcenter()
+        google()
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url "https://jitpack.io"
+        }
+        if (takrepoUrl != null) {
+            maven {
+                url = takrepoUrl
+                credentials {
+                    username = takrepoUser
+                    password = takrepoPassword
+                }
+            }
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:4.0.1'
+        if(isDevKitEnabled()) {
+            classpath "com.atakmap.gradle:atak-gradle-takdev:${takdevVersion}"
+        } else {
+            classpath files(takdevPlugin)
+        }
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        google()
+        mavenCentral()
+        mavenLocal()
+        maven {
+            url "https://jitpack.io"
+        }
+    }
+}
+
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlinx-serialization'
-
-def PLUGIN_VERSION = "0.9.0"
-def ATAK_VERSION = "4.1.0"
-def ATAK_BUILD_DIR = "../../AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build"
+apply plugin: 'atak-takdev-plugin'
 
 android {
     compileSdkVersion 28
@@ -84,39 +158,48 @@ android {
 
     signingConfigs {
         debug {
-            storeFile file("/path/to/your/keystore")
-            storePassword ""
-            keyAlias ""
-            keyPassword ""
-        }
+            def kf = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFile')
+            def kfp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFilePassword')
+            def ka = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyAlias')
+            def kp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyPassword')
 
+            if (kf == null) {
+                throw new GradleException("No signing key configured!")
+            }
+
+            storeFile file(kf)
+            if (kfp != null) storePassword kfp
+            if (ka != null) keyAlias ka
+            if (kp != null) keyPassword kp
+        }
         release {
-            storeFile file("/path/to/your/keystore")
-            storePassword ""
-            keyAlias ""
-            keyPassword ""
+            def kf = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFile')
+            def kfp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFilePassword')
+            def ka = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyAlias')
+            def kp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyPassword')
+
+            if (kf == null) {
+                throw new GradleException("No signing key configured!")
+            }
+
+            storeFile file(kf)
+            if (kfp != null) storePassword kfp
+            if (ka != null) keyAlias ka
+            if (kp != null) keyPassword kp
         }
     }
 
     buildTypes {
         debug {
             debuggable true
+            matchingFallbacks = ['sdk']
         }
 
         release {
-            def f = new File("$project.projectDir/${ATAK_BUILD_DIR}/outputs/mapping/release/mapping.txt")
-            if (f.exists()) {
-                System.setProperty("atak.proguard.mapping", "${ATAK_BUILD_DIR}/outputs/mapping/release/mapping.txt")
-            } else {
-                println("WARNING: no mapping file exists, obfuscating just the plugin to work with the development core")
-                file("$project.projectDir/build").mkdir()
-                file("$project.projectDir/build/blank-mapping.txt").text = ""
-                System.setProperty("atak.proguard.mapping", "./build/blank-mapping.txt")
-            }
-
             minifyEnabled true
             proguardFile 'proguard-gradle.txt'
             signingConfig signingConfigs.release
+            matchingFallbacks = ['odk']
         }
     }
 }
@@ -179,8 +262,6 @@ dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'me.dm7.barcodescanner:zxing:1.9.13'
     implementation 'eo.view:batterymeter:2.0.0'
-
-    compileOnly fileTree(dir: "${ATAK_BUILD_DIR}/libs/4.1.0.CIV/main.jar", include: '*.jar')
 
     implementation 'com.paulmandal.atak:libcotshrink:0.1.0'
 

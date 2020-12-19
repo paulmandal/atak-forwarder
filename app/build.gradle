@@ -30,10 +30,10 @@ buildscript {
         return getProperty(urlKey, null) != null
     }
 
-    ext.takrepoUrl = getProperty(urlKey, null)
-    ext.takrepoUser = getProperty('takrepo.user', null)
-    ext.takrepoPassword = getProperty('takrepo.password', null)
-    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-2.0.0.jar")
+    ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
+    ext.takrepoUser = getProperty('takrepo.user', 'invalid')
+    ext.takrepoPassword = getProperty('takrepo.password', 'invalid')
+    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-${takdevVersion}.jar")
 
     repositories {
         jcenter()
@@ -43,18 +43,16 @@ buildscript {
         maven {
             url "https://jitpack.io"
         }
-        if (takrepoUrl != null) {
-            maven {
-                url = takrepoUrl
-                credentials {
-                    username = takrepoUser
-                    password = takrepoPassword
-                }
+        maven {
+            url = takrepoUrl
+            credentials {
+                username = takrepoUser
+                password = takrepoPassword
             }
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
+        classpath 'com.android.tools.build:gradle:4.0.2'
         if(isDevKitEnabled()) {
             classpath "com.atakmap.gradle:atak-gradle-takdev:${takdevVersion}"
         } else {
@@ -253,7 +251,7 @@ sourceSets {
 }
 
 dependencies {
-    implementation "androidx.constraintlayout:constraintlayout:2.0.2"
+    implementation "androidx.constraintlayout:constraintlayout:2.0.4"
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
 

@@ -2,23 +2,23 @@
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
-![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/plugin-disconnected-indicator.png)
+![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/plugin-disconnected-indicator.png)
 <br>
-![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/status-view.png)
+![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/status-view.png)
 <br>
-![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/channel-management.png)
+![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/channel-management.png)
 <br>
-![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/qr-configuration.png)
+![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/qr-configuration.png)
 <br>
-![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/integrated-direct-messaging.png)
+![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/integrated-direct-messaging.png)
 <br>
-![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/transmit-map-markers.png)
+![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/transmit-map-markers.png)
 <br>
 Supports Meshtastic devices without an ATAK EUD attached
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/non-atak-devices-configuration.png)
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/non-atak-devices-map-marker.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/non-atak-devices-configuration.png)
+![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/non-atak-devices-map-marker.png)
 <br>
-![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/example-usage.png)
+![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/example-usage.png)
 
 # Features
 
@@ -64,26 +64,26 @@ workspace/
   \--- atak-forwarder/
 ```
 
-## Build + Install Meshtastic
+## Install Meshtastic
 
-* Clone Meshtastic-Android: `git clone git@github.com:meshtastic/Meshtastic-Android.git`
-* Enter the `Meshtastic-Android` directory: `cd Meshtastic-Android`
-* Run the commands in `Meshtastic-Android/README.md` under "Build Instructions"
-* Open `Meshtastic-Android` in Android Studio, build and run the project, you can close the Meshtastic app
+* Install [Meshtastic](https://play.google.com/store/apps/details?id=com.geeksville.mesh) from the Play Store.
+* That's all, you don't need to open the app to continue
 
 ## Build + Install ATAK
 
-It is currently not possible or at least not easy to get a 3rd party plugin signed, so you will need to build your own copy of ATAK. ATAK checks the signature on any plugins it loads against a whitelist and will not load any plugin that is not signed with a whitelisted key.
+ATAK requires plugins to be signed with a whitelisted signature. In order to run your own builds of the plugin you will need to have a copy of ATAK that is signed with the same signature you use to sign your plugin build.
 
 * Clone the ATAK-CIV repo: `git clone git@github.com:deptofdefense/AndroidTacticalAssaultKit-CIV.git`
 * Follow the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
-    * Note: you will need to configure a signing key in the local.properties file, you must use the same signing configuration in the plugin's `app/build.gradle` file!
-    * Note: if you would like to use `installCivRelease` instead, you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
+    * Note: you will need to configure a signing key in the `local.properties` file
+    * Note: `installCivDebug` is recommended for development builds, if you would like to use `installCivRelease` instead you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 
 ## Build + Install ATAK Forwarder
 
 * Clone the ATAK Forwarder repo: `git clone git@github.com:paulmandal/atak-forwarder.git`
-* Run `git submodule update --init --recursive`
+* Run `./gradlew updateSubmodules`
+* Copy the `local.properties` file that you created while you were building ATAK to the `atak-forwarder` directory
+* Edit `local.properties` and add this line, remember to update the path to your correct path: `sdk.path=/path/to/your/AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs`
 * Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`
 * Build the `atak-forwarder` plugin and install it on your devices
 
@@ -131,8 +131,8 @@ The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but n
 
 # Architecture Diagram
 
-![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/arch-diagram.png)
-![Architecture Diagram Non-ATAK Devicess](https://github.com/paulmandal/atak-forwarder/raw/0.9.0/images/arch-diagram-non-atak-devices.png)
+![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/arch-diagram.png)
+![Architecture Diagram Non-ATAK Devicess](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/arch-diagram-non-atak-devices.png)
 
 # Notes on Message Handling
 

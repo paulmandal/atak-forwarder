@@ -110,13 +110,12 @@ android {
             defaultConfig.versionName = PLUGIN_VERSION + " (" + getVersionName() + ") - [" + ATAK_VERSION + "]"
 
             proto {
-                srcDir 'src/main/protobuf'
-                srcDir 'src/main/protocolbuffers'
+                srcDir 'src/main/meshtastic-protobuf'
             }
         }
         test {
             proto {
-                srcDir 'src/test/protocolbuffers'
+                srcDir 'src/main/meshtastic-protobuf'
             }
             java.srcDirs 'src/test/java'
         }

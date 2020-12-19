@@ -38,7 +38,7 @@ data class DataPacket(
      * Syntactic sugar to make it easy to create text messages
      */
     constructor(to: String? = ID_BROADCAST, text: String) : this(
-            to, text.toByteArray(utf8),
+            to, text.toByteArray(Charsets.UTF_8),
             MeshProtos.Data.Type.CLEAR_TEXT_VALUE
     )
 
@@ -47,7 +47,7 @@ data class DataPacket(
      */
     val text: String?
         get() = if (dataType == MeshProtos.Data.Type.CLEAR_TEXT_VALUE)
-            bytes?.toString(utf8)
+            bytes?.toString(Charsets.UTF_8)
         else
             null
 

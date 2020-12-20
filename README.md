@@ -35,6 +35,15 @@ Supports Meshtastic devices without an ATAK EUD attached
 
 * Support for USB devices -- early stage, you might need to pair the device in the Meshtastic app to get USB permissions before setting it up in ATAK
 
+# Supported Versions
+
+The plugin has been tested with these versions of the Meshtastic dependencies. If you run into issues try installing these versions of the Meshtastic software to resolve them.
+
+| Dependency | Version |
+|--|--|
+| Meshtastic-Android | 1.0.0 |
+| Meshtastic-device | 1.1.5 beta |
+
 # To Do
 
 * Remote channel management / updating
@@ -81,7 +90,7 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 
 ## Build the ATAK Gradle Plugin
 
-* Go to the `AndroidTacticalAssaultKit-CIV/atak-gradle-takdev`
+* Go to the `AndroidTacticalAssaultKit-CIV/atak-gradle-takdev` directory
 * Run `./gradlew assemble`
 
 ## Build + Install ATAK Forwarder

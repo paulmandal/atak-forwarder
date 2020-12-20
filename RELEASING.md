@@ -1,5 +1,5 @@
 - update any image links to use the permanent link style: `RELEASE_VERSION=x.y.z bash -c 'sed -i "s#https://github.com/paulmandal/atak-forwarder/raw/[.0-9a-z]\+/images/#https://github.com/paulmandal/atak-forwarder/raw/${RELEASE_VERSION}/images/#" README.md'`
 - verify that submodules are updated: `cd app/src/main/proto/meshtastic && git checkout master && git pull && cd ../../../../..`
-- update supported Meshtastic-Android version in README.md (note: not currently required, we build from source)
+- update supported Meshtastic-Android version in README.md
 - commit, PR, and merge updated image links
 - tag the release commit on main

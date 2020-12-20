@@ -64,24 +64,29 @@ workspace/
   \--- atak-forwarder/
 ```
 
-## Install Meshtastic
+## Set Up Meshtastic
 
+* Flash your devices with the lastest [Meshtastic firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) (The plugin has been tested with 1.1.5 beta, if you have issues try that version)
 * Install [Meshtastic](https://play.google.com/store/apps/details?id=com.geeksville.mesh) from the Play Store.
 * That's all, you don't need to open the app to continue
 
 ## Build + Install ATAK
 
-ATAK requires plugins to be signed with a whitelisted signature. In order to run your own builds of the plugin you will need to have a copy of ATAK that is signed with the same signature you use to sign your plugin build.
+ATAK requires that plugins be signed with a whitelisted signature. In order to run your own builds of the plugin you will need to have a copy of ATAK that is signed with the same key you are using to sign your plugin build.
 
 * Clone the ATAK-CIV repo: `git clone git@github.com:deptofdefense/AndroidTacticalAssaultKit-CIV.git`
 * Follow the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
     * Note: you will need to configure a signing key in the `local.properties` file
     * Note: `installCivDebug` is recommended for development builds, if you would like to use `installCivRelease` instead you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 
+## Build the ATAK Gradle Plugin
+
+* Go to the `AndroidTacticalAssaultKit-CIV/atak-gradle-takdev`
+* Run `./gradlew assemble`
+
 ## Build + Install ATAK Forwarder
 
 * Clone the ATAK Forwarder repo: `git clone git@github.com:paulmandal/atak-forwarder.git`
-* Run `./gradlew updateSubmodules`
 * Copy the `local.properties` file that you created while you were building ATAK to the `atak-forwarder` directory
 * Edit `local.properties` and add this line, remember to update the path to your correct path: `sdk.path=/path/to/your/AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs`
 * Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`

@@ -66,8 +66,8 @@ workspace/
 
 ## Set Up Meshtastic
 
-* Flash your devices with the lastest [Meshtastic firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) (The plugin has been tested with 1.1.5 beta, if you have issues try that version)
-* Install [Meshtastic](https://play.google.com/store/apps/details?id=com.geeksville.mesh) from the Play Store.
+* Flash your devices with the lastest [Meshtastic Firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) (The plugin has been tested with 1.1.5 beta, if you have issues try that version)
+* Install the [Meshtastic App](https://play.google.com/store/apps/details?id=com.geeksville.mesh) from the Play Store.
 * That's all, you don't need to open the app to continue
 
 ## Build + Install ATAK

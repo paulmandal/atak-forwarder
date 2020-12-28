@@ -269,7 +269,8 @@ task updateSubmodules(type: Exec) {
     executable "bash"
     args "-c", """
             echo "Updating submodules" &&
-            git submodule update --init --recursive
+            git submodule update --init --recursive ||
+            true
         """
 }
 

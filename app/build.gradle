@@ -30,6 +30,18 @@ buildscript {
         return getProperty(urlKey, null) != null
     }
 
+    ext.generateSigningKey = { name ->
+        def timestamp = new Date().getTime()
+        def keyFile = "${rootDir}/tmp-${name}-${timestamp}.keystore"
+        def keyFilePass = 'temp123'
+        def keyAlias = "tmp-${name}-signing-key"
+        def keyPass = 'temp123'
+        exec {
+            commandLine 'bash', '-c', "echo y | keytool -genkeypair -dname \"cn=ATAK Forwarder, ou=Plugins, o=Open Source, c=US\" -alias ${keyAlias} -keypass ${keyPass} -keystore ${keyFile} -storepass ${keyFilePass} -validity 20000"
+        }
+        return new Tuple(keyFile.toString(), keyFilePass, keyAlias.toString(), keyPass)
+    }
+
     ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
     ext.takrepoUser = getProperty('takrepo.user', 'invalid')
     ext.takrepoPassword = getProperty('takrepo.password', 'invalid')
@@ -155,34 +167,34 @@ android {
 
     signingConfigs {
         debug {
-            def kf = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFile')
-            def kfp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFilePassword')
-            def ka = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyAlias')
-            def kp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyPassword')
+            def debugKeyFile = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFile')
+            def debugKeyFilePassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFilePassword')
+            def debugKeyAlias = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyAlias')
+            def debugKeyPassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyPassword')
 
-            if (kf == null) {
-                throw new GradleException("No signing key configured!")
+            if (debugKeyFile == null) {
+                (debugKeyFile, debugKeyFilePassword, debugKeyAlias, debugKeyPassword) = generateSigningKey('debug')
             }
 
-            storeFile file(kf)
-            if (kfp != null) storePassword kfp
-            if (ka != null) keyAlias ka
-            if (kp != null) keyPassword kp
+            storeFile file(debugKeyFile)
+            if (debugKeyFilePassword != null) storePassword debugKeyFilePassword
+            if (debugKeyAlias != null) keyAlias debugKeyAlias
+            if (debugKeyPassword != null) keyPassword debugKeyPassword
         }
         release {
-            def kf = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFile')
-            def kfp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFilePassword')
-            def ka = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyAlias')
-            def kp = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyPassword')
+            def releaseKeyFile = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFile')
+            def releaseKeyFilePassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFilePassword')
+            def releaseKeyAlias = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyAlias')
+            def releaseKeyPassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyPassword')
 
-            if (kf == null) {
-                throw new GradleException("No signing key configured!")
+            if (releaseKeyFile == null) {
+                (releaseKeyFile, releaseKeyFilePassword, releaseKeyAlias, releaseKeyPassword) = generateSigningKey('release')
             }
 
-            storeFile file(kf)
-            if (kfp != null) storePassword kfp
-            if (ka != null) keyAlias ka
-            if (kp != null) keyPassword kp
+            storeFile file(releaseKeyFile)
+            if (releaseKeyFilePassword != null) storePassword releaseKeyFilePassword
+            if (releaseKeyAlias != null) keyAlias releaseKeyAlias
+            if (releaseKeyPassword != null) keyPassword releaseKeyPassword
         }
     }
 

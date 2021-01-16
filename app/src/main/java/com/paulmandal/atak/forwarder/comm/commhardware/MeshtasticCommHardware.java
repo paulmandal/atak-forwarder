@@ -59,6 +59,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final int DELAY_AFTER_STOPPING_SERVICE = Config.DELAY_AFTER_STOPPING_SERVICE;
     private static final int POSITION_BROADCAST_INTERVAL_S = Config.POSITION_BROADCAST_INTERVAL_S;
     private static final int LCD_SCREEN_ON_S = Config.LCD_SCREEN_ON_S;
+    private static final int WAIT_BLUETOOTH_S = Config.WAIT_BLUETOOTH_S;
+    private static final int PHONE_TIMEOUT_S = Config.PHONE_TIMEOUT_S;
     private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Config.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
     /**
@@ -387,6 +389,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             userPreferencesBuilder.setPositionBroadcastSecs(POSITION_BROADCAST_INTERVAL_S);
             userPreferencesBuilder.setScreenOnSecs(LCD_SCREEN_ON_S);
+            userPreferencesBuilder.setWaitBluetoothSecs(WAIT_BLUETOOTH_S);
+            userPreferencesBuilder.setPhoneTimeoutSecs(PHONE_TIMEOUT_S);
 
             // End Updates
 

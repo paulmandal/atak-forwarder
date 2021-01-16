@@ -38,7 +38,7 @@ data class DataPacket(
      * Syntactic sugar to make it easy to create text messages
      */
     constructor(to: String? = ID_BROADCAST, text: String) : this(
-        to, text.toByteArray(utf8),
+        to, text.toByteArray(Charsets.UTF_8),
         Portnums.PortNum.TEXT_MESSAGE_APP_VALUE
     )
 
@@ -47,7 +47,7 @@ data class DataPacket(
      */
     val text: String?
         get() = if (dataType == Portnums.PortNum.TEXT_MESSAGE_APP_VALUE)
-            bytes?.toString(utf8)
+            bytes?.toString(Charsets.UTF_8)
         else
             null
 

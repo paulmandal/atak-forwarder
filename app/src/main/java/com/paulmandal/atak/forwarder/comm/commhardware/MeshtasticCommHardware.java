@@ -19,6 +19,7 @@ import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Position;
+import com.geeksville.mesh.Portnums;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
@@ -181,9 +182,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     protected boolean sendMessageSegment(byte[] message, String targetId) {
         prepareToSendMessage(message.length);
 
-        DataPacket dataPacket = new DataPacket(targetId, message,
-                MeshProtos.Data.Type.OPAQUE_VALUE, DataPacket.ID_LOCAL,
-                System.currentTimeMillis(), 0, MessageStatus.UNKNOWN);
+        DataPacket dataPacket = new DataPacket(targetId,
+                message,
+                Portnums.PortNum.PRIVATE_APP.getNumber(),
+                DataPacket.ID_LOCAL,
+                System.currentTimeMillis(),
+                0,
+                MessageStatus.UNKNOWN);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
@@ -490,7 +495,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_RECEIVED_DATA:
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
-                    if (payload.getDataType() == MeshProtos.Data.Type.OPAQUE_VALUE) {
+                    if (payload.getDataType() == Portnums.PortNum.PRIVATE_APP.getNumber()) {
                         String message = new String(payload.getBytes());
                         Log.d(TAG, "data: " + message);
                         if (message.startsWith(BCAST_MARKER)) {

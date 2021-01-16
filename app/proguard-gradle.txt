@@ -45,9 +45,26 @@
     public static ** valueOf(java.lang.String);
 }
 
-
-
+# ATAK Plugin API Classes
 -keep class * extends transapps.maps.plugin.tool.Tool {
 }
 -keep class * implements transapps.maps.plugin.lifecycle.Lifecycle {
 }
+
+# This class is parsed/marshalled by Gson
+-keep class com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.** { *; }
+
+# These classes use Parcelable
+-keep class com.geeksville.mesh.** { *; }
+
+# ATAK Forwarder Libraries
+-keep class com.google.** {*;}
+-keep class com.siemens.** {*;}
+-keep class com.sun.** {*;}
+-keep class eo.view.** {*;}
+-keep class javax.** {*;}
+-keep class me.dm7.** {*;}
+-keep class org.apache.** {*;}
+-keep class org.w3c.** {*;}
+-keep class org.xml.** {*;}
+-keep class org.xmlpull.** {*;}

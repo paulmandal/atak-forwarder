@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
@@ -184,7 +186,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         DataPacket dataPacket = new DataPacket(targetId,
                 message,
-                Portnums.PortNum.PRIVATE_APP.getNumber(),
+                Portnums.PortNum.UNKNOWN_APP.getNumber(),
                 DataPacket.ID_LOCAL,
                 System.currentTimeMillis(),
                 0,
@@ -421,8 +423,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
+    @Nullable
     private NonAtakUserInfo nonAtakUserInfoFromNodeInfo(NodeInfo nodeInfo) {
         MeshUser meshUser = nodeInfo.getUser();
+
+        if (meshUser == null) {
+            return null;
+        }
 
         double lat = 0.0;
         double lon = 0.0;
@@ -478,11 +485,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
-                    NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
                     long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
                     Log.d(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
-                    if (timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
-                        // update is >30 mins old
+
+                    NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
+
+                    if (nonAtakUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
+                        // Drop updates that do not have a MeshUser attached or are >30 mins old
                         return;
                     }
                     mUserListener.onUserUpdated(nonAtakUserInfo);
@@ -495,7 +504,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_RECEIVED_DATA:
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
-                    if (payload.getDataType() == Portnums.PortNum.PRIVATE_APP.getNumber()) {
+                    if (payload.getDataType() == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
                         String message = new String(payload.getBytes());
                         Log.d(TAG, "data: " + message);
                         if (message.startsWith(BCAST_MARKER)) {

@@ -93,7 +93,7 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
             return;
         }
 
-        if (! nonAtakUserInfo.gpsValid) {
+        if (!nonAtakUserInfo.gpsValid) {
             // Ignore updates that don't contain a valid GPS point
             Log.w(TAG, "NON-GPS update ignored");
             return;

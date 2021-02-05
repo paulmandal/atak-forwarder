@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
@@ -19,6 +21,7 @@ import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Position;
+import com.geeksville.mesh.Portnums;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
@@ -59,6 +62,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private static final int DELAY_AFTER_STOPPING_SERVICE = Config.DELAY_AFTER_STOPPING_SERVICE;
     private static final int POSITION_BROADCAST_INTERVAL_S = Config.POSITION_BROADCAST_INTERVAL_S;
     private static final int LCD_SCREEN_ON_S = Config.LCD_SCREEN_ON_S;
+    private static final int WAIT_BLUETOOTH_S = Config.WAIT_BLUETOOTH_S;
+    private static final int PHONE_TIMEOUT_S = Config.PHONE_TIMEOUT_S;
     private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Config.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
     /**
@@ -179,9 +184,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     protected boolean sendMessageSegment(byte[] message, String targetId) {
         prepareToSendMessage(message.length);
 
-        DataPacket dataPacket = new DataPacket(targetId, message,
-                MeshProtos.Data.Type.OPAQUE_VALUE, DataPacket.ID_LOCAL,
-                System.currentTimeMillis(), 0, MessageStatus.UNKNOWN);
+        DataPacket dataPacket = new DataPacket(targetId,
+                message,
+                Portnums.PortNum.UNKNOWN_APP.getNumber(),
+                DataPacket.ID_LOCAL,
+                System.currentTimeMillis(),
+                0,
+                MessageStatus.UNKNOWN);
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
@@ -387,6 +396,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             userPreferencesBuilder.setPositionBroadcastSecs(POSITION_BROADCAST_INTERVAL_S);
             userPreferencesBuilder.setScreenOnSecs(LCD_SCREEN_ON_S);
+            userPreferencesBuilder.setWaitBluetoothSecs(WAIT_BLUETOOTH_S);
+            userPreferencesBuilder.setPhoneTimeoutSecs(PHONE_TIMEOUT_S);
 
             // End Updates
 
@@ -412,8 +423,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
+    @Nullable
     private NonAtakUserInfo nonAtakUserInfoFromNodeInfo(NodeInfo nodeInfo) {
         MeshUser meshUser = nodeInfo.getUser();
+
+        if (meshUser == null) {
+            return null;
+        }
 
         double lat = 0.0;
         double lon = 0.0;
@@ -469,11 +485,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     break;
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
-                    NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
                     long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
                     Log.d(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
-                    if (timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
-                        // update is >30 mins old
+
+                    NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
+
+                    if (nonAtakUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
+                        // Drop updates that do not have a MeshUser attached or are >30 mins old
                         return;
                     }
                     mUserListener.onUserUpdated(nonAtakUserInfo);
@@ -486,7 +504,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_RECEIVED_DATA:
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
-                    if (payload.getDataType() == MeshProtos.Data.Type.OPAQUE_VALUE) {
+                    if (payload.getDataType() == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
                         String message = new String(payload.getBytes());
                         Log.d(TAG, "data: " + message);
                         if (message.startsWith(BCAST_MARKER)) {

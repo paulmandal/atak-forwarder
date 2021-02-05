@@ -1,6 +1,6 @@
 buildscript {
 
-    ext.PLUGIN_VERSION = "0.9.1"
+    ext.PLUGIN_VERSION = "0.9.2"
     ext.ATAK_VERSION = "4.2.0"
 
     def takdevVersion = '2.0.0'
@@ -88,13 +88,13 @@ allprojects {
 apply plugin: 'com.android.application'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "30.0.1"
+    buildToolsVersion "30.0.2"
 
     dexOptions {
         jumboMode = true

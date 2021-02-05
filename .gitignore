@@ -17,5 +17,5 @@ build
 corpus/
 
 # ATAK SDK
-libs/main.jar
-libs/atak-javadoc.jar
+.takdev/
+

@@ -17,7 +17,6 @@ import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.StatusTab;
@@ -38,8 +37,7 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
                                      final Context atakContext,
                                      final StatusTabViewModel statusTabViewModel,
                                      final ChannelTabViewModel channelTabViewModel,
-                                     final DevicesTabViewModel devicesTabViewModel,
-                                     final AdvancedTab advancedTab) {
+                                     final DevicesTabViewModel devicesTabViewModel) {
         super(mapView);
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
         // In this case, using it is not necessary - but I am putting it here to remind
@@ -88,8 +86,6 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
 
         DevicesTab devicesTab = mTemplateView.findViewById(R.id.tab_devices);
         devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext, atakContext);
-
-        advancedTab.bind(mTemplateView);
     }
 
     public static int dpToPx(int dp) {

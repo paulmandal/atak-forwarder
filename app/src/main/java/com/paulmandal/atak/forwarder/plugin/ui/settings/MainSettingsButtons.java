@@ -12,7 +12,9 @@ import java.util.List;
 public class MainSettingsButtons {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MainSettingsButtons.class.getSimpleName();
 
-    public MainSettingsButtons(DevicesList devicesList, Preference setCommDevicePreference, Preference refreshDevicesPreference) {
+    public MainSettingsButtons(DevicesList devicesList,
+                               Preference setCommDevicePreference,
+                               Preference refreshDevicesPreference) {
         PanListPreference commDevicePreference = (PanListPreference) setCommDevicePreference;
         updateCommDevices(commDevicePreference, devicesList.getMeshtasticDevices());
 
@@ -22,7 +24,8 @@ public class MainSettingsButtons {
         });
     }
 
-    private void updateCommDevices(PanListPreference commDevicePreference, List<MeshtasticDevice> meshtasticDevices) {
+    private void updateCommDevices(PanListPreference commDevicePreference,
+                                   List<MeshtasticDevice> meshtasticDevices) {
         Gson gson = new Gson();
         String[] devices = new String[meshtasticDevices.size()];
         String[] values = new String[meshtasticDevices.size()];

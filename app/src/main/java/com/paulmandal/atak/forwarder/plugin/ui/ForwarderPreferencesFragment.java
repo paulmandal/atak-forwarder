@@ -5,13 +5,18 @@ import android.os.Bundle;
 
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
+import com.paulmandal.atak.forwarder.plugin.ui.settings.AdvancedButtons;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.MainSettingsButtons;
 
 public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
     private static Context sPluginContext;
     private static DevicesList sDevicesList;
+    private static CotMessageCache sCotMessageCache;
+    private static CommandQueue sCommandQueue;
 
     public ForwarderPreferencesFragment() {
         super(sPluginContext, R.xml.preferences);
@@ -19,17 +24,29 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
 
     @SuppressWarnings("ValidFragment")
     public ForwarderPreferencesFragment(final Context pluginContext,
-                                        final DevicesList devicesList) {
+                                        final DevicesList devicesList,
+                                        final CotMessageCache cotMessageCache,
+                                        final CommandQueue commandQueue) {
         super(pluginContext, R.xml.preferences);
         this.sPluginContext = pluginContext;
         this.sDevicesList = devicesList;
+        this.sCotMessageCache = cotMessageCache;
+        this.sCommandQueue = commandQueue;
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MainSettingsButtons mainSettingsButtons = new MainSettingsButtons(sDevicesList, findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE), findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES));
+        MainSettingsButtons mainSettingsButtons = new MainSettingsButtons(sDevicesList,
+                findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE),
+                findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES));
+        AdvancedButtons advancedButtons = new AdvancedButtons(sCotMessageCache,
+                sCommandQueue,
+                findPreference(PreferencesKeys.KEY_CLEAR_DUPLICATE_MSG_CACHE),
+                findPreference(PreferencesKeys.KEY_CLEAR_OUTBOUND_MSG_QUEUE),
+                findPreference(PreferencesKeys.KEY_RESET_TO_DEFAULT),
+                findPreference(PreferencesKeys.KEY_RESET_TO_DEFAULT_INCLUDING_CHANNEL));
     }
 
     @Override

@@ -30,7 +30,6 @@ import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.AdvancedTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
@@ -93,8 +92,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         ChannelTabViewModel channelTabViewModel = new ChannelTabViewModel(mPluginContext, atakContext, meshtasticCommHardware, userTracker, new QrHelper(), hashHelper);
         DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(atakContext, uiThreadHandler, meshtasticDeviceSwitcher, meshtasticCommHardware, hashHelper);
 
-        AdvancedTab advancedTab = new AdvancedTab(atakContext, commandQueue, cotMessageCache);
-
         DevicesList devicesList = new DevicesList(atakContext);
 
         ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,
@@ -102,8 +99,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 atakContext,
                 statusTabViewModel,
                 channelTabViewModel,
-                devicesTabViewModel,
-                advancedTab);
+                devicesTabViewModel);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(ForwarderDropDownReceiver.SHOW_PLUGIN);
@@ -117,7 +113,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                         pluginContext.getString(R.string.preferences_summary),
                         pluginContext.getString(R.string.key_atak_forwarder_preferences),
                         pluginContext.getResources().getDrawable(R.drawable.ic_launcher_maybe),
-                        new ForwarderPreferencesFragment(pluginContext, atakContext, devicesList)));
+                        new ForwarderPreferencesFragment(pluginContext, devicesList, cotMessageCache, commandQueue)));
     }
 
     @Override

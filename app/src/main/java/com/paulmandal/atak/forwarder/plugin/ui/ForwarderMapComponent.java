@@ -6,6 +6,7 @@ import android.content.Intent;
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
+import com.atakmap.app.preferences.ToolsPreferenceFragment;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
@@ -19,6 +20,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewMode
 public class ForwarderMapComponent extends DropDownMapComponent {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + ForwarderMapComponent.class.getSimpleName();
 
+    private Context mPluginContext;
     private ForwarderMarkerIconWidget mForwarderMarkerIconWidget;
 
     private CommHardware mCommHardware;
@@ -47,6 +49,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         pluginContext.setTheme(R.style.ATAKPluginTheme);
         super.onCreate(pluginContext, intent, mapView);
 
+        mPluginContext = pluginContext;
         Context atakContext = mapView.getContext();
 
         AdvancedTab advancedTab = new AdvancedTab(atakContext, mCommandQueue, mCotMessageCache);
@@ -64,11 +67,20 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         registerDropDownReceiver(forwarderDropDownReceiver, ddFilter);
 
         mForwarderMarkerIconWidget = new ForwarderMarkerIconWidget(mapView, forwarderDropDownReceiver, mCommHardware);
+
+        ToolsPreferenceFragment.register(
+                new ToolsPreferenceFragment.ToolPreference(
+                        pluginContext.getString(R.string.preferences_title),
+                        pluginContext.getString(R.string.preferences_summary),
+                        pluginContext.getString(R.string.key_atak_forwarder_preferences),
+                        pluginContext.getResources().getDrawable(R.drawable.ic_launcher_maybe),
+                        new ForwarderPreferencesFragment(pluginContext)));
     }
 
     @Override
     protected void onDestroyImpl(Context context, MapView view) {
         super.onDestroyImpl(context, view);
         mForwarderMarkerIconWidget.onDestroy();
+        ToolsPreferenceFragment.unregister(mPluginContext.getString(R.string.key_atak_forwarder_preferences));
     }
 }

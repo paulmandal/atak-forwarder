@@ -1,7 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
@@ -34,9 +33,8 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
     private static final String MARKER_MESHTASTIC = "Meshtastic";
 
-    private Activity mActivity;
-    private Handler mUiThreadHandler;
     private Context mAtakContext;
+    private Handler mUiThreadHandler;
 
     private MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private MeshtasticCommHardware mMeshtasticCommHardware;
@@ -56,15 +54,13 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
 
     private MutableLiveData<Boolean> mNonAtakDeviceWriteInProgress = new MutableLiveData<>();
 
-    public DevicesTabViewModel(Activity activity,
+    public DevicesTabViewModel(Context atakContext,
                                Handler uiThreadHandler,
-                               Context atakContext,
                                MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                MeshtasticCommHardware commHardware,
                                HashHelper hashHelper) {
-        mActivity = activity;
-        mUiThreadHandler = uiThreadHandler;
         mAtakContext = atakContext;
+        mUiThreadHandler = uiThreadHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mMeshtasticCommHardware = commHardware;
         mHashHelper = hashHelper;
@@ -118,9 +114,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
     }
 
     public void setCommDeviceAddress(MeshtasticDevice meshtasticDevice) {
-        if (mMeshtasticCommHardware.setDeviceAddress(meshtasticDevice)) {
-            mCommDeviceAddress.setValue(meshtasticDevice.address);
-        }
+        mCommDeviceAddress.setValue(meshtasticDevice.address);
     }
 
     public void writeToNonAtak(MeshtasticDevice targetDevice, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
@@ -140,7 +134,7 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         }
 
         // Write settings to device
-        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mActivity, mUiThreadHandler, mMeshtasticDeviceSwitcher, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
+        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mAtakContext, mUiThreadHandler, mMeshtasticDeviceSwitcher, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
         mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 

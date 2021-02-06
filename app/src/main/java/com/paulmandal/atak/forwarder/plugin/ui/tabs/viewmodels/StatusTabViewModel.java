@@ -54,7 +54,7 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements UserTr
         userTracker.addUpdateListener(this);
         commandQueue.setListener(this);
         commHardware.addConnectionStateListener(this);
-        commHardware.setMessageAckNackListener(this);
+        commHardware.addMessageAckNackListener(this);
         commHardware.addMessageListener(this);
     }
 

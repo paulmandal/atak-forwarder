@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.view.MotionEvent;
@@ -14,19 +15,23 @@ import com.atakmap.android.widgets.RootLayoutWidget;
 import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
-public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommHardware.ConnectionStateListener, MapWidget.OnClickListener  {
+import java.util.List;
+
+public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable, CommHardware.ConnectionStateListener, MapWidget.OnClickListener  {
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
     private ForwarderDropDownReceiver mForwarderDropDownReceiver;
-    private MapView mMapView;
 
     public ForwarderMarkerIconWidget(MapView mapView,
+                                     List<Destroyable> destroyables,
                                      ForwarderDropDownReceiver forwarderDropDownReceiver,
                                      CommHardware commHardware) {
         mForwarderDropDownReceiver = forwarderDropDownReceiver;
-        mMapView = mapView;
+
+        destroyables.add(this);
 
         commHardware.addConnectionStateListener(this);
 
@@ -38,6 +43,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
         brLayout.addWidget(this);
 
         updateIcon(commHardware.getConnectionState());
+
     }
 
     @Override
@@ -56,12 +62,6 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
     @Override
     public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
         updateIcon(connectionState);
-    }
-
-    public void onDestroy() {
-        RootLayoutWidget root = (RootLayoutWidget) mMapView.getComponentExtra("rootLayoutWidget");
-        LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
-        brLayout.removeWidget(this);
     }
 
     private void updateIcon(CommHardware.ConnectionState connectionState) {
@@ -91,5 +91,12 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
 
         Icon icon = builder.build();
         setIcon(icon);
+    }
+
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
+        LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
+        brLayout.removeWidget(this);
     }
 }

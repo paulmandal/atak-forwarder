@@ -1,7 +1,9 @@
 package com.paulmandal.atak.forwarder.handlers;
 
+import android.content.Context;
 import android.util.Log;
 
+import com.atakmap.android.maps.MapView;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.Config;
@@ -11,12 +13,15 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
+
+import java.util.List;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
-public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor {
+public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
     private CommsMapComponent mCommsMapComponent;
@@ -31,7 +36,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   CotMessageCache cotMessageCache,
-                                  CotShrinker cotShrinker) {
+                                  CotShrinker cotShrinker,
+                                  List<Destroyable> destroyables) {
         mCommsMapComponent = commsMapComponent;
         mCommHardware = commHardware;
         mCommandQueue = commandQueue;
@@ -40,10 +46,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         mCotShrinker = cotShrinker;
 
         commsMapComponent.registerPreSendProcessor(this);
-    }
-
-    public void destroy() {
-        mCommsMapComponent.registerPreSendProcessor(null);
+        destroyables.add(this);
     }
 
     @Override
@@ -74,5 +77,10 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
             default:
                 return QueuedCommand.PRIORITY_LOW;
         }
+    }
+
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        mCommsMapComponent.registerPreSendProcessor(null);
     }
 }

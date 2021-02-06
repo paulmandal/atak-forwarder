@@ -54,11 +54,11 @@
         android:dialogTitle="@string/channel_name"
         android:defaultValue="@string/default_channel_name" />
     <com.atakmap.android.gui.PanListPreference
-        android:key="@string/key_channel_speed"
-        android:title="@string/channel_speed"
+        android:key="@string/key_channel_mode"
+        android:title="@string/channel_mode"
         android:summary="@string/drop_duplicate_msgs_ttl_summary"
-        android:dialogTitle="@string/channel_speed"
-        android:defaultValue="@string/default_channel_speed" />
+        android:dialogTitle="@string/channel_mode"
+        android:defaultValue="@string/default_channel_mode" />
     <com.atakmap.android.gui.PanPreference
         android:key="@string/key_generate_psk"
         android:title="@string/generated_psk"

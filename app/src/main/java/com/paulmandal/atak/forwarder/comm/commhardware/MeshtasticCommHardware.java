@@ -1,12 +1,12 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -14,28 +14,30 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
+import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.NodeInfo;
-import com.geeksville.mesh.Position;
 import com.geeksville.mesh.Portnums;
+import com.geeksville.mesh.Position;
+import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.persistence.StateStorage;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
+import com.paulmandal.atak.forwarder.persistence.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -93,9 +95,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private UserTracker mUserTracker;
     private UserListener mUserListener;
-    private Activity mActivity;
+    private Context mAtakContext;
     private Handler mUiThreadHandler;
-    private StateStorage mStateStorage;
 
     private IntentFilter mIntentFilter;
 
@@ -103,7 +104,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private ServiceConnection mServiceConnection;
 
     private final List<ChannelSettingsListener> mChannelSettingsListeners = new CopyOnWriteArrayList<>();
-    private MessageAckNackListener mMessageAckNackListener;
+    private final List<MessageAckNackListener> mMessageAckNackListeners = new CopyOnWriteArrayList<>();
 
     private CountDownLatch mPendingMessageCountdownLatch; // TODO: maybe move this up to MessageLengthLimitedCommHardware
     private int mPendingMessageId;
@@ -117,25 +118,24 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private int mDataRate;
     private MeshtasticDevice mCommDevice;
 
-    public MeshtasticCommHardware(Activity activity,
+    public MeshtasticCommHardware(List<Destroyable> destroyables,
+                                  SharedPreferences sharedPreferences,
+                                  Context atakContext,
                                   Handler uiThreadHandler,
                                   MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                   UserListener userListener,
                                   UserTracker userTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
-                                  UserInfo selfInfo,
-                                  StateStorage stateStorage,
-                                  MeshtasticDevice commDevice) {
-        super(uiThreadHandler, commandQueue, queuedCommandFactory, userTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
+                                  UserInfo selfInfo) {
+        super(destroyables, sharedPreferences, uiThreadHandler, commandQueue, queuedCommandFactory, userTracker, Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH, selfInfo);
 
-        mActivity = activity;
+        mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mUserListener = userListener;
         mUserTracker = userTracker;
-        mStateStorage = stateStorage;
-        mCommDevice = commDevice;
+
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -169,15 +169,15 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         mIntentFilter = filter;
 
-        mActivity.registerReceiver(mBroadcastReceiver, filter);
+        mAtakContext.registerReceiver(mBroadcastReceiver, filter);
     }
 
     public void addChannelSettingsListener(ChannelSettingsListener listener) {
         mChannelSettingsListeners.add(listener);
     }
 
-    public void setMessageAckNackListener(MessageAckNackListener listener) {
-        mMessageAckNackListener = listener;
+    public void addMessageAckNackListener(MessageAckNackListener listener) {
+        mMessageAckNackListeners.add(listener);
     }
 
     @Override
@@ -252,30 +252,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         bindToService();
     }
 
-    public boolean setDeviceAddress(MeshtasticDevice meshtasticDevice) {
-        Log.e(TAG, "setDeviceAddress: " + meshtasticDevice.address);
-        boolean success = false;
-        try {
-            mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
-            mCommDevice = meshtasticDevice;
-
-            mStateStorage.storeCommDevice(meshtasticDevice);
-
-            success = true;
-            connect();
-            Log.e(TAG, "setDeviceAddress success: " + success);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-        return success;
-    }
-
     public void suspendResume(boolean suspended) { // TODO: rename
         if (suspended) {
-            mActivity.unregisterReceiver(mBroadcastReceiver);
+            mAtakContext.unregisterReceiver(mBroadcastReceiver);
             setConnectionState(ConnectionState.DEVICE_DISCONNECTED);
         } else {
-            mActivity.registerReceiver(mBroadcastReceiver, mIntentFilter);
+            mAtakContext.registerReceiver(mBroadcastReceiver, mIntentFilter);
             setConnectionState(ConnectionState.DEVICE_CONNECTED);
         }
     }
@@ -293,15 +275,37 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     @Override
-    public void destroy() {
-        super.destroy();
-        mActivity.unbindService(mServiceConnection);
-        mActivity.unregisterReceiver(mBroadcastReceiver);
+    public void onDestroy(Context context, MapView mapView) {
+        super.onDestroy(context, mapView);
+        mAtakContext.unbindService(mServiceConnection);
+        mAtakContext.unregisterReceiver(mBroadcastReceiver);
         mConnectedToService = false;
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        switch (key) {
+            case PreferencesKeys.KEY_COMM_DEVICE:
+                String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
+                Gson gson = new Gson();
+                MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
+
+                Log.e(TAG, "onSharedPreferenceChanged.KEY_COMM_DEVICE: " + meshtasticDevice.address);
+                try {
+                    mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
+                    mCommDevice = meshtasticDevice;
+
+                    connect();
+                    Log.e(TAG, "setDeviceAddress success");
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                break;
+        }
+    }
+
     private void bindToService() {
-        mActivity.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        mAtakContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 
     private void unbindAndStopService() {
@@ -309,8 +313,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             return;
         }
 
-        mActivity.unbindService(mServiceConnection);
-        mActivity.stopService(mServiceIntent);
+        mAtakContext.unbindService(mServiceConnection);
+        mAtakContext.stopService(mServiceIntent);
 
         try {
             Thread.sleep(DELAY_AFTER_STOPPING_SERVICE);
@@ -538,7 +542,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
-        mUiThreadHandler.post(() -> mMessageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED));
+        mUiThreadHandler.post(() -> {
+            for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
+                messageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED);
+            }
+        });
 
         if (id != mPendingMessageId) {
             Log.e(TAG, "handleMessageStatusChange for a msg we don't care about messageId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
@@ -571,7 +579,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         if(timedOut) {
             Log.e(TAG, "Timed out waiting for message ACK/NACK for: " + mPendingMessageId);
-            mUiThreadHandler.post(() -> mMessageAckNackListener.onMessageTimedOut(mPendingMessageId));
+            mUiThreadHandler.post(() -> {
+                for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
+                    messageAckNackListener.onMessageTimedOut(mPendingMessageId);
+                }
+            });
         }
     }
 }

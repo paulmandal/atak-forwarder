@@ -1,15 +1,17 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.util.Log;
 
 import com.geeksville.mesh.DataPacket;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
-import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +28,15 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
 
-    public MessageLengthLimitedCommHardware(Handler uiThreadHandler, CommandQueue commandQueue, QueuedCommandFactory queuedCommandFactory, UserTracker userTracker, int messageChunkLength, UserInfo selfInfo) {
-        super(uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
+    public MessageLengthLimitedCommHardware(List<Destroyable> destroyables,
+                                            SharedPreferences sharedPreferences,
+                                            Handler uiThreadHandler,
+                                            CommandQueue commandQueue,
+                                            QueuedCommandFactory queuedCommandFactory,
+                                            UserTracker userTracker,
+                                            int messageChunkLength,
+                                            UserInfo selfInfo) {
+        super(destroyables, sharedPreferences, uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
 
         mUserTracker = userTracker;
         mMessageChunkLength = messageChunkLength;

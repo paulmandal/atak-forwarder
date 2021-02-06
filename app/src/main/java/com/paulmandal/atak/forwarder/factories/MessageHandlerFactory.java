@@ -8,7 +8,10 @@ import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
+
+import java.util.List;
 
 public class MessageHandlerFactory {
     public static InboundMessageHandler getInboundMessageHandler(CommHardware commHardware,
@@ -20,8 +23,9 @@ public class MessageHandlerFactory {
                                                                    CommandQueue commandQueue,
                                                                    QueuedCommandFactory queuedCommandFactory,
                                                                    CotMessageCache cotMessageCache,
-                                                                   CotShrinker cotShrinker) {
+                                                                   CotShrinker cotShrinker,
+                                                                   List<Destroyable> destroyables) {
         CommsMapComponent commsMapComponent = CommsMapComponent.getInstance();
-        return new OutboundMessageHandler(commsMapComponent, commHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker);
+        return new OutboundMessageHandler(commsMapComponent, commHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, destroyables);
     }
 }

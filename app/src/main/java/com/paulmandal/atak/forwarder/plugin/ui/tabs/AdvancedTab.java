@@ -10,8 +10,6 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 
-import java.util.Locale;
-
 public class AdvancedTab {
     private final Context mAtakContext;
 
@@ -34,8 +32,8 @@ public class AdvancedTab {
         EditText cachePurgeTimeMins = templateView.findViewById(R.id.edittext_default_purge_time_mins);
         EditText pliPurgeTimeS = templateView.findViewById(R.id.edittext_pli_purge_time_s);
 
-        cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
-        pliPurgeTimeS.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs() / 1000));
+//        cachePurgeTimeMins.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getDefaultCachePurgeTimeMs() / 60000));
+//        pliPurgeTimeS.setText(String.format(Locale.getDefault(), "%d", mCotMessageCache.getPliCachePurgeTimeMs() / 1000));
 
         clearData.setOnClickListener((View v) -> {
             Toast.makeText(mAtakContext, "Clearing all plugin data", Toast.LENGTH_LONG).show();
@@ -60,7 +58,7 @@ public class AdvancedTab {
             }
             Toast.makeText(mAtakContext, "Set duplicate message cache TTL", Toast.LENGTH_SHORT).show();
             int cachePurgeTimeMs = Integer.parseInt(cachePurgeTimeMinsStr) * 60000;
-            mCotMessageCache.setDefaultCachePurgeTimeMs(cachePurgeTimeMs);
+//            mCotMessageCache.setDefaultCachePurgeTimeMs(cachePurgeTimeMs);
         });
 
         setPliCachePurgeTime.setOnClickListener((View v) -> {
@@ -70,7 +68,7 @@ public class AdvancedTab {
             }
             Toast.makeText(mAtakContext, "Set PLI message cache TTL", Toast.LENGTH_SHORT).show();
             int pliPurgeTimeSInt = Integer.parseInt(pliPurgeTimeSStr);
-            mCotMessageCache.setPliCachePurgeTimeMs(pliPurgeTimeSInt * 1000);
+//            mCotMessageCache.setPliCachePurgeTimeMs(pliPurgeTimeSInt * 1000);
         });
     }
 }

@@ -57,10 +57,10 @@
     <string name="channel_name_summary">The name of your private channel</string>
     <string name="default_channel_name">Default</string>
 
-    <string name="key_channel_speed">channel_speed</string>
-    <string name="channel_speed">Mode / Speed</string>
-    <string name="channel_speed_summary">Configures the channel data rate / range setting</string>
-    <string name="default_channel_speed">0</string>
+    <string name="key_channel_mode">channel_speed</string>
+    <string name="channel_mode">Mode / Speed</string>
+    <string name="channel_mode_summary">Configures the channel data rate / range setting</string>
+    <string name="default_channel_mode">0</string>
 
     <string name="key_generate_psk">gen_psk</string>
     <string name="generated_psk">Generated PSK</string>

@@ -1,6 +1,5 @@
 package com.paulmandal.atak.forwarder.nonatak;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -45,7 +44,7 @@ public class NonAtakMeshtasticConfigurator {
 
     private static final String STATE_CONNECTED = "CONNECTED";
 
-    private final Activity mActivity;
+    private final Context mAtakContext;
     private final Handler mUiThreadHandler;
 
     private final MeshtasticDevice mCommDevice;
@@ -81,7 +80,7 @@ public class NonAtakMeshtasticConfigurator {
 
     private Runnable mPostWriteDelayRunnable;
 
-    public NonAtakMeshtasticConfigurator(Activity activity,
+    public NonAtakMeshtasticConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
                                          MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                          MeshtasticDevice commDevice,
@@ -95,7 +94,7 @@ public class NonAtakMeshtasticConfigurator {
                                          int pliIntervalS,
                                          int screenShutoffDelayS,
                                          Listener listener) {
-        mActivity = activity;
+        mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mCommDevice = commDevice;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
@@ -132,14 +131,14 @@ public class NonAtakMeshtasticConfigurator {
         mServiceIntent = new Intent();
         mServiceIntent.setClassName("com.geeksville.mesh", "com.geeksville.mesh.service.MeshService");
 
-        mActivity.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        mAtakContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_MESH_CONNECTED);
 
         mIntentFilter = filter;
 
-        mActivity.registerReceiver(mBroadcastReceiver, filter);
+        mAtakContext.registerReceiver(mBroadcastReceiver, filter);
     }
 
     public void cancel() {
@@ -269,7 +268,7 @@ public class NonAtakMeshtasticConfigurator {
     }
 
     private void unbind() {
-        mActivity.unregisterReceiver(mBroadcastReceiver);
-        mActivity.unbindService(mServiceConnection);
+        mAtakContext.unregisterReceiver(mBroadcastReceiver);
+        mAtakContext.unbindService(mServiceConnection);
     }
 }

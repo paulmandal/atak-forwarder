@@ -1,9 +1,12 @@
 package com.paulmandal.atak.forwarder.comm.commhardware;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 
 import androidx.annotation.CallSuper;
 
+import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
@@ -12,11 +15,13 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryComma
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
+import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public abstract class CommHardware {
+public abstract class CommHardware extends DestroyableSharedPrefsListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
 
     protected static final String BCAST_MARKER = "ATAKBCAST";
@@ -51,10 +56,13 @@ public abstract class CommHardware {
 
     private UserInfo mSelfInfo;
 
-    public CommHardware(Handler uiThreadHandler,
+    public CommHardware(List<Destroyable> destroyables,
+                        SharedPreferences sharedPreferences,
+                        Handler uiThreadHandler,
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
                         UserInfo selfInfo) {
+        super(destroyables, sharedPreferences);
         mUiThreadHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
@@ -70,8 +78,9 @@ public abstract class CommHardware {
         broadcastDiscoveryMessage(false);
     }
 
-    @CallSuper
-    public void destroy() {
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        super.onDestroy(context, mapView);
         mDestroyed = true;
     }
 

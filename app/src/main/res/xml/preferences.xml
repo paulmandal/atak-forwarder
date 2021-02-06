@@ -88,7 +88,10 @@
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="@string/key_tracker_screen_off_time"
         android:title="@string/tracker_screen_off_time"
-        android:summary="@string/tracker_screen_off_time_summary" />
+        android:summary="@string/tracker_screen_off_time_summary"
+        android:inputType="number"
+        android:numeric="integer"
+        android:defaultValue="5" />
     <com.atakmap.android.gui.PanListPreference
         android:key="@string/key_tracker_team"
         android:title="@string/tracker_team"

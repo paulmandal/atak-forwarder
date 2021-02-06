@@ -78,7 +78,8 @@ public class ForwarderLifecycle implements Lifecycle {
 
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
-        StateStorage stateStorage = new StateStorage(activity);
+
+        
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
         CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();

@@ -42,8 +42,6 @@
                     android:layout_height="match_parent"
                     android:layout_margin="4dp" />
 
-                <include layout="@layout/advanced_layout" />
-
             </FrameLayout>
         </LinearLayout>
     </TabHost>

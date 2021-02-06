@@ -62,11 +62,6 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         spec.setIndicator("Devices");
         tabs.addTab(spec);
 
-        spec = tabs.newTabSpec("tab_advanced");
-        spec.setContent(R.id.tab_advanced);
-        spec.setIndicator("Advanced");
-        tabs.addTab(spec);
-
         TabWidget tabWidget = tabs.getTabWidget();
         for (int i = 0; i < tabWidget.getChildCount(); i++) {
             View view = tabWidget.getChildAt(i);

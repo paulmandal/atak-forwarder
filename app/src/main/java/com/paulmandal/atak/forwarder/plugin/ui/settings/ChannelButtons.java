@@ -40,13 +40,13 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
     public ChannelButtons(List<Destroyable> destroyables,
                           SharedPreferences sharedPreferences,
-                          Context atakContext,
+                          Context settingsMenuContext,
                           Context pluginContext,
                           CommHardware commHardware,
                           HashHelper hashHelper,
                           QrHelper qrHelper,
                           Preference channelMode,
-                          Preference generatePsk,
+                          Preference channelPsk,
                           Preference showChannelQr,
                           Preference scanChannelQr,
                           Preference saveChannelToFile,
@@ -63,14 +63,23 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         listPreferenceChannelMode.setEntries(R.array.channel_modes);
         listPreferenceChannelMode.setEntryValues(R.array.channel_mode_values);
 
-        generatePsk.setOnPreferenceClickListener((Preference preference) -> {
-            SecureRandom random = new SecureRandom();
-            byte[] psk = new byte[PSK_LENGTH];
-            random.nextBytes(psk);
+        channelPsk.setOnPreferenceClickListener((Preference preference) -> {
+            Log.e(TAG, "Generate PSK button clicked");
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
+                    .setTitle(pluginContext.getResources().getString(R.string.warning))
+                    .setMessage(pluginContext.getResources().getString(R.string.generate_psk_warning))
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
+                        SecureRandom random = new SecureRandom();
+                        byte[] psk = new byte[PSK_LENGTH];
+                        random.nextBytes(psk);
 
-            String pskBase64 = Base64.encodeToString(psk, Base64.DEFAULT);
+                        String pskBase64 = Base64.encodeToString(psk, Base64.DEFAULT);
 
-            preference.getEditor().putString(PreferencesKeys.KEY_CHANNEL_PSK, pskBase64).commit();
+                        preference.getEditor().putString(PreferencesKeys.KEY_CHANNEL_PSK, pskBase64).commit();
+                    })
+                    .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
+
+            alertDialog.show();
             return true;
         });
 
@@ -93,11 +102,10 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
 
             if (bm != null) {
-                ImageView iv = new ImageView(atakContext);
+                ImageView iv = new ImageView(settingsMenuContext);
                 iv.setImageBitmap(bm);
 
-                final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
-//                        .setTitle(pluginContext.getResources().getString(R.string.show_qr_dialog_title))
+                final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
                         .setView(iv)
                         .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
@@ -109,8 +117,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         scanChannelQr.setOnPreferenceClickListener((Preference preference) -> {
             ZXingScannerView scannerView = new ZXingScannerView(pluginContext);
 
-            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
-                    .setTitle(pluginContext.getResources().getString(R.string.scan_qr_dialog_title))
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
+                    .setView(scannerView)
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> {
                         scannerView.stopCamera();
                         dialog.cancel();
@@ -145,7 +153,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
                 dialog.dismiss();
             });
-            dialog.setView(scannerView);
             scannerView.startCamera();
 
             return true;

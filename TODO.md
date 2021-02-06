@@ -7,9 +7,20 @@
 - still have tab for Trackers, has its own settings menu, write button, and UI that shows write in progress
 - drop Advanced
 
+- finish Channel UI
+- rework node-info user/tracking, maybe a single model for non-ATAK and for UI?
+- do Non-ATAK UI
+
 - prefix all keystrings
 - validate keystrings in strings.xml vs. prefix file
 - validate emptystring doesn't break shit as the default PSK
+
+- handling sharedprefs may be locking up UI thread
+- TODO: gate channel updates since all 3 vars may save close to the same time?
+
+- meshtastic comm hardware should do this:
+svc connect: setDeviceAddress (if not already)
+broadcast node connect: update connection state, maybe do radio / channel config
 
 # UI
 - Maybe improve status top part of the screen? layout is a little dense
@@ -22,10 +33,6 @@
 - Tracker devices should always be drawn on the map in their last known position
 - Configurable grey-out time for Tracker devices (e.g. 10 mins after last known pos)
 - Write to device, check settings, rewrite if failed, see if there's a way to reboot them
-
-# Channel / Settings
-# Not Wired - Move manual channel config into settings menu
-# Not Wired - Maybe move show/scan QR into settings menu too
 
 # Config
 # Not Wired - Add config for hopLimit for PLI, Chat, and Other

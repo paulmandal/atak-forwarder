@@ -25,8 +25,6 @@ import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Portnums;
 import com.geeksville.mesh.Position;
 import com.google.gson.Gson;
-import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
@@ -49,11 +47,13 @@ import java.util.concurrent.TimeUnit;
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface UserListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
+
         void onUserUpdated(NonAtakUserInfo nonAtakUserInfo);
     }
 
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
+
         void onMessageTimedOut(int messageId);
     }
 
@@ -92,6 +92,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private MeshtasticChannelConfigurer mMeshtasticChannelConfigurer;
 
     private UserListener mUserListener;
+    private SharedPreferences mSharedPreferences;
     private Context mAtakContext;
     private Handler mUiThreadHandler;
 
@@ -108,8 +109,14 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private Intent mServiceIntent;
 
-    boolean mConnectedToService = false;
-    boolean mRadioSetupCalled = false;
+    private boolean mConnectedToService = false;
+    private boolean mSetDeviceAddressCalled = false;
+    private boolean mInitialRadioConfigurationDone = false;
+    private boolean mInitialChannelSetupDone = false;
+
+    private String mChannelName;
+    private int mChannelMode;
+    private byte[] mChannelPsk;
 
     private int mDataRate;
     private MeshtasticDevice mCommDevice;
@@ -128,8 +135,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                                   UserInfo selfInfo) {
         super(destroyables,
                 sharedPreferences,
-                new String[] {},
-                new String[] {
+                new String[]{},
+                new String[]{
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
                         PreferencesKeys.KEY_CHANNEL_NAME,
                         PreferencesKeys.KEY_CHANNEL_MODE,
@@ -142,6 +149,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH,
                 selfInfo);
 
+        mSharedPreferences = sharedPreferences;
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
@@ -154,6 +162,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Log.d(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
+
+                if (!mSetDeviceAddressCalled) {
+                    Log.e(TAG, "complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE)");
+                    complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
+                    mSetDeviceAddressCalled = true;
+                    return;
+                }
 
                 maybeInitialConnection();
             }
@@ -276,21 +291,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void maybeInitialConnection() {
         ConnectionState oldConnectionState = getConnectionState();
 
-        if (mCommDevice != null) {
-            try {
-                mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-        }
-
         updateConnectionState();
 
         boolean connected = getConnectionState() == ConnectionState.DEVICE_CONNECTED;
 
         if (connected) {
-            maybeSetupRadio();
             updateMeshId();
+            maybeSetupRadio();
         }
 
         if (oldConnectionState != getConnectionState() && connected) {
@@ -318,21 +325,26 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
-    private void maybeSetupRadio() {
-        if (mRadioSetupCalled) {
-            return;
-        }
-
-        mMeshtasticDeviceConfigurer.configureDevice(mMeshService);
-        mRadioSetupCalled = true;
-    }
-
     private void updateMeshId() {
         try {
             getSelfInfo().meshId = mMeshService.getMyId();
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in updateMeshId(): " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private void maybeSetupRadio() {
+        if (!mInitialRadioConfigurationDone) {
+            Log.e(TAG, "mMeshtasticDeviceConfigurer.configureDevice(mMeshService)");
+            mMeshtasticDeviceConfigurer.configureDevice(mMeshService);
+            mInitialRadioConfigurationDone = true;
+        }
+
+        if (!mInitialChannelSetupDone) {
+            Log.e(TAG, "complexUpdate(mSharedPreferences, PreferencesKeys.KEY_CHANNEL_NAME)");
+            complexUpdate(mSharedPreferences, PreferencesKeys.KEY_CHANNEL_NAME);
+            mInitialChannelSetupDone = true;
         }
     }
 
@@ -371,6 +383,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_MESH_CONNECTED:
                     String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
                     boolean connected = extraConnected.equals(STATE_CONNECTED);
+                    Log.d(TAG, "MESH_CONNECTED: " + connected);
                     maybeInitialConnection();
                     break;
                 case ACTION_NODE_CHANGE:
@@ -463,7 +476,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             e.printStackTrace();
         }
 
-        if(timedOut) {
+        if (timedOut) {
             Log.e(TAG, "Timed out waiting for message ACK/NACK for: " + mPendingMessageId);
             mUiThreadHandler.post(() -> {
                 for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
@@ -479,39 +492,64 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
         // Nothing yet
+        Log.e(TAG, "updateSettings");
     }
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
-        switch (key) {
-            case PreferencesKeys.KEY_SET_COMM_DEVICE:
-                String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
-                Gson gson = new Gson();
-                MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
+        Log.e(TAG, "complexUpdate: " + key);
+        mUiThreadHandler.post(() -> {
+            switch (key) {
+                case PreferencesKeys.KEY_SET_COMM_DEVICE:
+                    String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
+                    Gson gson = new Gson();
+                    MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
 
-                Log.e(TAG, "complexUpdate.KEY_COMM_DEVICE: " + meshtasticDevice.address);
-                try {
-                    mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
-                    mCommDevice = meshtasticDevice;
+                    Log.e(TAG, "complexUpdate.KEY_COMM_DEVICE: " + meshtasticDevice.address);
+                    try {
+                        mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
+                        mCommDevice = meshtasticDevice;
 
-                    connect();
-                    Log.e(TAG, "setDeviceAddress success");
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-                break;
-            case PreferencesKeys.KEY_CHANNEL_NAME:
-            case PreferencesKeys.KEY_CHANNEL_MODE:
-            case PreferencesKeys.KEY_CHANNEL_PSK:
-                String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-                int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-                byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+                        connect();
+                        Log.e(TAG, "setDeviceAddress success");
+                    } catch (RemoteException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case PreferencesKeys.KEY_CHANNEL_NAME:
+                case PreferencesKeys.KEY_CHANNEL_MODE:
+                case PreferencesKeys.KEY_CHANNEL_PSK:
+                    String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
+                    int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
+                    byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
 
-                MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
+                    boolean changed = !channelName.equals(mChannelName) || !(channelMode != mChannelMode) || !compareByteArrays(psk, mChannelPsk);
 
-                mMeshtasticChannelConfigurer.updateChannelSettings(mMeshService, channelName, psk, modemConfig);
-                break;
-        }
+                    if (changed) {
+                        mChannelName = channelName;
+                        mChannelMode = channelMode;
+                        mChannelPsk = psk;
+                        Log.e(TAG, "Updating channel settings: " + channelName + ", " + channelMode + ", " + new String(psk));
+
+                        MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
+
+                        mMeshtasticChannelConfigurer.updateChannelSettings(mMeshService, channelName, psk, modemConfig);
+                    }
+                    break;
+            }
+        });
     }
 
+    private boolean compareByteArrays(byte[] lhs, byte[] rhs) {
+        if (lhs.length != rhs.length) {
+            return false;
+        }
+
+        for (int i = 0 ; i < lhs.length ; i++) {
+            if (lhs[i] != rhs[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -21,30 +21,7 @@
     <string name="connect_to_service">Connect to Svc</string>
 
     <!-- SharedPreferences Keys -->
-    <string name="key_atak_forwarder_preferences">atak_forwarder_preferences</string>
-    <string name="key_set_comm_device">set_comm_device</string>
-    <string name="key_refresh_comm_devices">refresh_comm_device</string>
-    <string name="key_pli_max_frequency">pli_max_frequency</string>
-    <string name="key_drop_duplicate_msgs_ttl">drop_duplicate_messages_ttl</string>
-    <string name="key_pli_hop_limit">pli_hop_limit</string>
-    <string name="key_chat_hop_limit">chat_hop_limit</string>
-    <string name="key_other_hop_limit">other_hop_limit</string>
-    <string name="key_channel_name">channel_name</string>
-    <string name="key_channel_mode">channel_mode</string>
-    <string name="key_generate_psk">gen_psk</string>
-    <string name="key_show_channel_qr">show_channel_qr</string>
-    <string name="key_scan_channel_qr">scan_channel_qr</string>
-    <string name="key_save_channel_to_file">save_channel_to_file</string>
-    <string name="key_read_channel_from_file">read_channel_from_file</string>
-    <string name="key_tracker_pli_interval">tracker_pli_interval</string>
-    <string name="key_tracker_screen_off_time">tracker_screen_off_time</string>
-    <string name="key_tracker_team">tracker_team</string>
-    <string name="key_tracker_role">tracker_role</string>
-    <string name="key_tracker_write_to_device">tracker_write_to_device</string>
-    <string name="key_clear_duplicate_msg_cache">clear_duplicate_msg_cache</string>
-    <string name="key_clear_outbound_msg_queue">clear_outbound_msg_queue</string>
-    <string name="key_reset_to_default">reset_to_default</string>
-    <string name="key_reset_to_default_including_channel">reset_to_default_including_channel</string>
+    <string name="key_atak_forwarder_preferences">plugin_atak_forwarder_key_atak_forwarder_preferences</string>
 
     <!-- Settings / Preferences -->
     <string name="preferences_title">ATAK Forwarder Preferences</string>
@@ -82,8 +59,8 @@
     <string name="channel_mode_summary">Configures the channel data rate / range setting</string>
     <string name="default_channel_mode">0</string>
 
-    <string name="generated_psk">Generated PSK</string>
-    <string name="generated_psk_summary">Generates a new Pre-Shared Key for channel encryption</string>
+    <string name="channel_psk">Generated PSK</string>
+    <string name="channel_psk_summary">Generates a new Pre-Shared Key for channel encryption</string>
 
     <string name="show_channel_qr">Show QR</string>
     <string name="show_channel_qr_summary">Show a QR code with your channel configuration for scanning on another device</string>
@@ -99,6 +76,8 @@
 
     <string name="scan_qr_dialog_title">Scan QR</string>
     <string name="show_qr_dialog_title">Show QR</string>
+    <string name="warning">Warning</string>
+    <string name="generate_psk_warning">Warning if you generate a new PSK you will lose your old PSK!</string>
 
     <!-- Tracker Settings -->
     <string name="category_tracker_settings">Tracker</string>
@@ -146,8 +125,6 @@
     <string name="reusing_old_psk">Reusing old PSK!</string>
     <string name="using_new_psk">Using new PSK!</string>
 
-    <string name="warning">Warning</string>
-    <string name="start_channel_edit_dialog">Warning if you make any changes here you will lose your current channel settings!</string>
     <string name="start_qr_scan_dialog">Warning if you start this scan you will lose your current channel settings!</string>
 
     <string name="ok">Ok</string>

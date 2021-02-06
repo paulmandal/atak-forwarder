@@ -96,8 +96,8 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        mPliMaxFrequencyS = sharedPreferences.getInt(PreferencesKeys.KEY_PLI_MAX_FREQUENCY, PreferencesDefaults.DEFAULT_PLI_MAX_FREQUENCY);
-        mDuplicateMessagesTtlM = sharedPreferences.getInt(PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL, PreferencesDefaults.DEFAULT_DROP_DUPLICATE_MSGS_TTL);
+        mPliMaxFrequencyS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_MAX_FREQUENCY, PreferencesDefaults.DEFAULT_PLI_MAX_FREQUENCY));
+        mDuplicateMessagesTtlM = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL, PreferencesDefaults.DEFAULT_DROP_DUPLICATE_MSGS_TTL));
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mModeAwarePliRate = (mPliMaxFrequencyS * 1000) * (mChannelMode + 1);
     }

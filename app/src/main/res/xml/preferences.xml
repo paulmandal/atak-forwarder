@@ -2,16 +2,16 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/preferences_title" />
     <com.atakmap.android.gui.PanListPreference
-        android:key="@string/key_set_comm_device"
+        android:key="plugin_atak_forwarder_key_set_comm_device"
         android:title="@string/set_comm_device"
         android:summary="@string/set_comm_device_summary"
         android:dialogTitle="@string/set_comm_device"/>
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_refresh_comm_devices"
+        android:key="plugin_atak_forwarder_key_refresh_comm_devices"
         android:title="@string/refresh_comm_devices"
         android:summary="@string/refresh_comm_devices_summary" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_pli_max_frequency"
+        android:key="plugin_atak_forwarder_key_pli_max_frequency"
         android:title="@string/pli_max_frequency"
         android:summary="@string/pli_max_frequency_summary"
         android:dialogTitle="@string/pli_max_frequency"
@@ -19,7 +19,7 @@
         android:numeric="integer"
         android:defaultValue="30" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_drop_duplicate_msgs_ttl"
+        android:key="plugin_atak_forwarder_key_drop_duplicate_msgs_ttl"
         android:title="@string/drop_duplicate_msgs_ttl"
         android:summary="@string/drop_duplicate_msgs_ttl_summary"
         android:dialogTitle="@string/drop_duplicate_msgs_ttl"
@@ -27,7 +27,7 @@
         android:inputType="number"
         android:numeric="integer" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_pli_hop_limit"
+        android:key="plugin_atak_forwarder_key_pli_hop_limit"
         android:title="@string/pli_hop_limit"
         android:summary="@string/pli_hop_limit_summary"
         android:dialogTitle="@string/pli_hop_limit"
@@ -35,7 +35,7 @@
         android:inputType="number"
         android:numeric="integer" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_chat_hop_limit"
+        android:key="plugin_atak_forwarder_key_chat_hop_limit"
         android:title="@string/chat_hop_limit"
         android:summary="@string/chat_hop_limit_summary"
         android:dialogTitle="@string/chat_hop_limit"
@@ -43,7 +43,7 @@
         android:inputType="number"
         android:numeric="integer" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_other_hop_limit"
+        android:key="plugin_atak_forwarder_key_other_hop_limit"
         android:title="@string/other_hop_limit"
         android:summary="@string/other_hop_limit_summary"
         android:dialogTitle="@string/other_hop_limit"
@@ -53,41 +53,41 @@
 
     <PreferenceCategory android:title="@string/category_channel_settings" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_channel_name"
+        android:key="plugin_atak_forwarder_key_channel_name"
         android:title="@string/channel_name"
         android:summary="@string/channel_name_summary"
         android:dialogTitle="@string/channel_name"
-        android:defaultValue="@string/default_channel_name" />
+        android:defaultValue="Default" />
     <com.atakmap.android.gui.PanListPreference
-        android:key="@string/key_channel_mode"
+        android:key="plugin_atak_forwarder_key_channel_mode"
         android:title="@string/channel_mode"
         android:summary="@string/channel_mode_summary"
         android:dialogTitle="@string/channel_mode"
-        android:defaultValue="@string/default_channel_mode" />
+        android:defaultValue="0" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_generate_psk"
-        android:title="@string/generated_psk"
-        android:summary="@string/generated_psk_summary" />
+        android:key="plugin_atak_forwarder_key_channel_psk"
+        android:title="@string/channel_psk"
+        android:summary="@string/channel_psk_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_show_channel_qr"
+        android:key="plugin_atak_forwarder_key_show_channel_qr"
         android:title="@string/show_channel_qr"
         android:summary="@string/show_channel_qr_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_scan_channel_qr"
+        android:key="plugin_atak_forwarder_key_scan_channel_qr"
         android:title="@string/scan_channel_qr"
         android:summary="@string/scan_channel_qr_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_save_channel_to_file"
+        android:key="plugin_atak_forwarder_key_save_channel_to_file"
         android:title="@string/save_channel_to_file"
         android:summary="@string/save_channel_to_file_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_read_channel_from_file"
+        android:key="plugin_atak_forwarder_key_read_channel_from_file"
         android:title="@string/read_channel_from_file"
         android:summary="@string/read_channel_from_file_summary" />
 
     <PreferenceCategory android:title="@string/category_tracker_settings" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_tracker_pli_interval"
+        android:key="plugin_atak_forwarder_key_tracker_pli_interval"
         android:title="@string/tracker_pli_interval"
         android:summary="@string/tracker_pli_interval_summary"
         android:dialogTitle="@string/tracker_pli_interval"
@@ -95,42 +95,42 @@
         android:numeric="integer"
         android:defaultValue="20" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="@string/key_tracker_screen_off_time"
+        android:key="plugin_atak_forwarder_key_tracker_screen_off_time"
         android:title="@string/tracker_screen_off_time"
         android:summary="@string/tracker_screen_off_time_summary"
         android:inputType="number"
         android:numeric="integer"
         android:defaultValue="5" />
     <com.atakmap.android.gui.PanListPreference
-        android:key="@string/key_tracker_team"
+        android:key="plugin_atak_forwarder_key_tracker_team"
         android:title="@string/tracker_team"
         android:summary="@string/tracker_team_summary"
-        android:dialogTitle="@string/key_tracker_team" />
+        android:dialogTitle="@string/tracker_team" />
     <com.atakmap.android.gui.PanListPreference
-        android:key="@string/key_tracker_role"
+        android:key="plugin_atak_forwarder_key_tracker_role"
         android:title="@string/tracker_role"
         android:summary="@string/tracker_role_summary"
         android:dialogTitle="@string/tracker_role" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_tracker_write_to_device"
+        android:key="plugin_atak_forwarder_key_tracker_write_to_device"
         android:title="@string/tracker_write_to_device"
         android:summary="@string/tracker_write_to_device_summary" />
 
     <PreferenceCategory android:title="@string/category_advanced_settings" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_clear_duplicate_msg_cache"
+        android:key="plugin_atak_forwarder_key_clear_duplicate_msg_cache"
         android:title="@string/clear_duplicate_msg_cache"
         android:summary="@string/clear_duplicate_msg_cache_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_clear_outbound_msg_queue"
+        android:key="plugin_atak_forwarder_key_clear_outbound_msg_queue"
         android:title="@string/clear_outbound_msg_queue"
         android:summary="@string/clear_outbound_msg_queue_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_reset_to_default"
+        android:key="plugin_atak_forwarder_key_reset_to_default"
         android:title="@string/reset_to_default"
         android:summary="@string/reset_to_default_summary" />
     <com.atakmap.android.gui.PanPreference
-        android:key="@string/key_reset_to_default_including_channel"
+        android:key="plugin_atak_forwarder_key_reset_to_default_including_channel"
         android:title="@string/reset_to_default_including_channel"
         android:summary="@string/reset_to_default_including_channel_summary" />
 </PreferenceScreen>

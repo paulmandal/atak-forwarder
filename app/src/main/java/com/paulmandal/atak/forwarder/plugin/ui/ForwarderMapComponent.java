@@ -107,7 +107,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                         pluginContext.getString(R.string.key_atak_forwarder_preferences),
                         pluginContext.getResources().getDrawable(R.drawable.ic_launcher_maybe),
                         new ForwarderPreferencesFragment(
-                                atakContext,
                                 pluginContext,
                                 mDestroyables,
                                 sharedPreferences,

@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.plugin;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import androidx.annotation.CallSuper;
 
@@ -28,7 +29,6 @@ public abstract class DestroyableSharedPrefsListener implements Destroyable, Sha
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         updateSettings(sharedPreferences);
-        complexUpdate(sharedPreferences, "");
     }
 
     @CallSuper
@@ -38,6 +38,12 @@ public abstract class DestroyableSharedPrefsListener implements Destroyable, Sha
 
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Log.e("ATAKDBG", "shared pref changed: " + key);
+        try {
+            Log.e("ATAKDBG", "shared pref changed: " + key + ", value: " + sharedPreferences.getString(key, "none"));
+        } catch (Exception e) {
+            // Do nothing
+        }
         if (mSimplePreferencesKeys.contains(key)) {
             updateSettings(sharedPreferences);
         } else if (mComplexPreferencesKeys.contains(key)) {
@@ -45,6 +51,13 @@ public abstract class DestroyableSharedPrefsListener implements Destroyable, Sha
         }
     }
 
+    /**
+     * Called during ctor, for handling simple live vars
+     */
     protected abstract void updateSettings(SharedPreferences sharedPreferences);
+
+    /**
+     * Won't be called during ctor, for handling multiple-preference or other complex operations
+     */
     protected abstract void complexUpdate(SharedPreferences sharedPreferences, String key); // TODO: rename
 }

@@ -285,8 +285,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         switch (key) {
-            case PreferencesKeys.KEY_COMM_DEVICE:
-                String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
+            case PreferencesKeys.KEY_SET_COMM_DEVICE:
+                String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
                 Gson gson = new Gson();
                 MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
 

@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="@string/preferences_title" />
-    <com.atakmap.android.gui.PanPreference
+    <com.atakmap.android.gui.PanListPreference
         android:key="@string/key_set_comm_device"
         android:title="@string/set_comm_device"
-        android:summary="@string/set_comm_device_summary" />
+        android:summary="@string/set_comm_device_summary"
+        android:dialogTitle="@string/set_comm_device"/>
+    <com.atakmap.android.gui.PanPreference
+        android:key="@string/key_refresh_comm_devices"
+        android:title="@string/refresh_comm_devices"
+        android:summary="@string/refresh_comm_devices_summary" />
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="@string/key_pli_max_frequency"
         android:title="@string/pli_max_frequency"

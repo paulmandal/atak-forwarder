@@ -5,7 +5,8 @@ package com.paulmandal.atak.forwarder.persistence;
  */
 public class PreferencesKeys {
     public static final String KEY_ATAK_FORWARDER_PREFERENCES = "atak_forwarder_preferences";
-    public static final String KEY_COMM_DEVICE = "comm_device";
+    public static final String KEY_SET_COMM_DEVICE = "set_comm_device";
+    public static final String KEY_REFRESH_COMM_DEVICES = "refresh_comm_device";
     public static final String KEY_PLI_MAX_FREQUENCY = "pli_max_frequency";
     public static final String KEY_DROP_DUPLICATE_MSGS_TTL = "drop_duplicate_messages_ttl";
     public static final String KEY_PLI_HOP_LIMIT = "pli_hop_limit";

@@ -55,13 +55,13 @@
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="@string/key_channel_name"
         android:title="@string/channel_name"
-        android:summary="@string/drop_duplicate_msgs_ttl_summary"
+        android:summary="@string/channel_name_summary"
         android:dialogTitle="@string/channel_name"
         android:defaultValue="@string/default_channel_name" />
     <com.atakmap.android.gui.PanListPreference
         android:key="@string/key_channel_mode"
         android:title="@string/channel_mode"
-        android:summary="@string/drop_duplicate_msgs_ttl_summary"
+        android:summary="@string/channel_mode_summary"
         android:dialogTitle="@string/channel_mode"
         android:defaultValue="@string/default_channel_mode" />
     <com.atakmap.android.gui.PanPreference
@@ -80,6 +80,10 @@
         android:key="@string/key_save_channel_to_file"
         android:title="@string/save_channel_to_file"
         android:summary="@string/save_channel_to_file_summary" />
+    <com.atakmap.android.gui.PanPreference
+        android:key="@string/key_read_channel_from_file"
+        android:title="@string/read_channel_from_file"
+        android:summary="@string/read_channel_from_file_summary" />
 
     <PreferenceCategory android:title="@string/category_tracker_settings" />
     <com.atakmap.android.gui.PanEditTextPreference

@@ -10,7 +10,7 @@ public class PreferencesDefaults {
     public static final int DEFAULT_CHAT_HOP_LIMIT = 3;
     public static final int DEFAULT_OTHER_HOP_LIMIT = 3;
     public static final String DEFAULT_CHANNEL_NAME = "Default";
-    public static final int DEFAULT_CHANNEL_MODE = 0;
+    public static final String DEFAULT_CHANNEL_MODE = "0";
     public static final String DEFAULT_CHANNEL_PSK = "";
     public static final int DEFAULT_TRACKER_PLI_INTERVAL = 20;
     public static final int DEFAULT_TRACKER_SCREEN_OFF_TIME = 5;

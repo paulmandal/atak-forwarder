@@ -7,9 +7,10 @@ import android.os.Handler;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticChannelConfigurer;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDeviceConfigurer;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -17,7 +18,7 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import java.util.List;
 
 public class CommHardwareFactory {
-    public static CommHardware createAndInitCommHardware(Context atakContext,
+    public static MeshtasticCommHardware createAndInitMeshtasticCommHardware(Context atakContext,
                                                          MapView mapView,
                                                          Handler handler,
                                                          MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
@@ -30,10 +31,12 @@ public class CommHardwareFactory {
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
 
-        CommHardware commHardware;
+        MeshtasticCommHardware meshtasticCommHardware;
         UserInfo selfInfo = new UserInfo(callsign, null, atakUid, null);
-        commHardware = new MeshtasticCommHardware(destroyables, sharedPreferences, atakContext, handler, meshtasticDeviceSwitcher, userListener, userTracker, commandQueue, queuedCommandFactory, selfInfo);
-        return commHardware;
+        MeshtasticDeviceConfigurer meshtasticDeviceConfigurer = new MeshtasticDeviceConfigurer(selfInfo);
+        MeshtasticChannelConfigurer meshtasticChannelConfigurer = new MeshtasticChannelConfigurer(userTracker);
+        meshtasticCommHardware = new MeshtasticCommHardware(destroyables, sharedPreferences, atakContext, handler, meshtasticDeviceSwitcher, meshtasticDeviceConfigurer, meshtasticChannelConfigurer, userListener, userTracker, commandQueue, queuedCommandFactory, selfInfo);
+        return meshtasticCommHardware;
     }
 
     private static long longHashFromString(String s) {

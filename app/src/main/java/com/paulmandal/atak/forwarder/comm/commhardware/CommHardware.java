@@ -7,7 +7,6 @@ import android.os.Handler;
 import androidx.annotation.CallSuper;
 
 import com.atakmap.android.maps.MapView;
-import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -58,11 +57,13 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
 
     public CommHardware(List<Destroyable> destroyables,
                         SharedPreferences sharedPreferences,
+                        String[] simplePreferencesKeys,
+                        String[] complexPreferencesKeys,
                         Handler uiThreadHandler,
                         CommandQueue commandQueue,
                         QueuedCommandFactory queuedCommandFactory,
                         UserInfo selfInfo) {
-        super(destroyables, sharedPreferences);
+        super(destroyables, sharedPreferences, simplePreferencesKeys, complexPreferencesKeys);
         mUiThreadHandler = uiThreadHandler;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
@@ -153,7 +154,7 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     }
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = BCAST_MARKER + "," + getSelfInfo().meshId + "," + getSelfInfo().atakUid + "," + getSelfInfo().callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        String broadcastData = BCAST_MARKER + "," + mSelfInfo.meshId + "," + mSelfInfo.atakUid + "," + mSelfInfo.callsign + "," + (initialDiscoveryMessage ? 1 : 0);
 
         String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
         handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
@@ -177,7 +178,6 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
      * For subclasses to implement
      */
     public abstract void connect();
-    public abstract void updateChannelSettings(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig);
     protected abstract void handleBroadcastDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand);
     protected abstract void handleSendMessage(SendMessageCommand sendMessageCommand);
     protected abstract void handleDiscoveryMessage(String message);

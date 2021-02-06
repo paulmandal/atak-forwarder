@@ -9,12 +9,12 @@ import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevi
 
 import java.util.List;
 
-public class MainSettingsButtons {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MainSettingsButtons.class.getSimpleName();
+public class MainButtons {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + MainButtons.class.getSimpleName();
 
-    public MainSettingsButtons(DevicesList devicesList,
-                               Preference setCommDevicePreference,
-                               Preference refreshDevicesPreference) {
+    public MainButtons(DevicesList devicesList,
+                       Preference setCommDevicePreference,
+                       Preference refreshDevicesPreference) {
         PanListPreference commDevicePreference = (PanListPreference) setCommDevicePreference;
         updateCommDevices(commDevicePreference, devicesList.getMeshtasticDevices());
 

@@ -30,13 +30,15 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
 
     public MessageLengthLimitedCommHardware(List<Destroyable> destroyables,
                                             SharedPreferences sharedPreferences,
+                                            String[] simplePreferencesKeys,
+                                            String[] complexPreferencesKeys,
                                             Handler uiThreadHandler,
                                             CommandQueue commandQueue,
                                             QueuedCommandFactory queuedCommandFactory,
                                             UserTracker userTracker,
                                             int messageChunkLength,
                                             UserInfo selfInfo) {
-        super(destroyables, sharedPreferences, uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
+        super(destroyables, sharedPreferences, simplePreferencesKeys, complexPreferencesKeys, uiThreadHandler, commandQueue, queuedCommandFactory, selfInfo);
 
         mUserTracker = userTracker;
         mMessageChunkLength = messageChunkLength;

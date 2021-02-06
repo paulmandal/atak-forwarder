@@ -1,17 +1,20 @@
+- read/write device from SharedPref
+- Tear up UI, tabs are now Status, Trackers, Debug (log)
+- rewire buttons from old UI -> SharedPrefs UI
+- go through checklist again
+
+- special logic for updates to channel (tells MeshDevice to update channel)
+- still have tab for Trackers, has its own settings menu, write button, and UI that shows write in progress
+- drop Advanced
+
+- prefix all keystrings
+- validate keystrings in strings.xml vs. prefix file
+- validate emptystring doesn't break shit as the default PSK
+
 # UI
 - Maybe improve status top part of the screen? layout is a little dense
 - Add ATAK icon to TAK-associated devices in the Status screen, show the TAK uname (DeviceID)
 - Sort TAK-associated devices to the top
-- Add settings button and move all settings stuff into another menu
-- Move Set Comm Device into settings menu
-- More icon colors / maybe #s to show status, single icon with many colors seems to be good
-  - configurable window size (# of packets) to check, maybe configurable thresholds for green->brown?
-    Green - Connected, 100% of last 5 packets delivered
-    Orange - Connected, 50% delivered
-    Yellow - Connected, 20% delivered
-    Brown - Connected, 0% delivered
-    Blue - No Comm Device Configured
-    Red - Not Connected to Device
 
 # Tracker
 - Rename feature to Trackers (e.g. Devices tab becomes Trackers)
@@ -21,13 +24,13 @@
 - Write to device, check settings, rewrite if failed, see if there's a way to reboot them
 
 # Channel / Settings
-- Move manual channel config into settings menu
-- Maybe move show/scan QR into settings menu too
+# Not Wired - Move manual channel config into settings menu
+# Not Wired - Maybe move show/scan QR into settings menu too
 
 # Config
-- Add config for hopLimit for PLI, Chat, and Other
+# Not Wired - Add config for hopLimit for PLI, Chat, and Other
 - Add the option to read/write config to sdcard
-- Write more config values to device (e.g. channel settings)
+# Not Wired - Write more config values to device (e.g. channel settings)
 - Option to reset config to defaults
 
 # Internal

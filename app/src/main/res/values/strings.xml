@@ -20,107 +20,116 @@
     <string name="broadcast_discovery">Broadcast Discovery</string>
     <string name="connect_to_service">Connect to Svc</string>
 
+    <!-- SharedPreferences Keys -->
+    <string name="key_atak_forwarder_preferences">atak_forwarder_preferences</string>
+    <string name="key_set_comm_device">set_comm_device</string>
+    <string name="key_refresh_comm_devices">refresh_comm_device</string>
+    <string name="key_pli_max_frequency">pli_max_frequency</string>
+    <string name="key_drop_duplicate_msgs_ttl">drop_duplicate_messages_ttl</string>
+    <string name="key_pli_hop_limit">pli_hop_limit</string>
+    <string name="key_chat_hop_limit">chat_hop_limit</string>
+    <string name="key_other_hop_limit">other_hop_limit</string>
+    <string name="key_channel_name">channel_name</string>
+    <string name="key_channel_mode">channel_mode</string>
+    <string name="key_generate_psk">gen_psk</string>
+    <string name="key_show_channel_qr">show_channel_qr</string>
+    <string name="key_scan_channel_qr">scan_channel_qr</string>
+    <string name="key_save_channel_to_file">save_channel_to_file</string>
+    <string name="key_read_channel_from_file">read_channel_from_file</string>
+    <string name="key_tracker_pli_interval">tracker_pli_interval</string>
+    <string name="key_tracker_screen_off_time">tracker_screen_off_time</string>
+    <string name="key_tracker_team">tracker_team</string>
+    <string name="key_tracker_role">tracker_role</string>
+    <string name="key_tracker_write_to_device">tracker_write_to_device</string>
+    <string name="key_clear_duplicate_msg_cache">clear_duplicate_msg_cache</string>
+    <string name="key_clear_outbound_msg_queue">clear_outbound_msg_queue</string>
+    <string name="key_reset_to_default">reset_to_default</string>
+    <string name="key_reset_to_default_including_channel">reset_to_default_including_channel</string>
+
     <!-- Settings / Preferences -->
     <string name="preferences_title">ATAK Forwarder Preferences</string>
     <string name="preferences_summary">Allow configuration of ATAK Forwarder</string>
-    <string name="key_atak_forwarder_preferences">atak_forwarder_preferences</string>
 
-    <string name="key_set_comm_device">set_comm_device</string>
     <string name="set_comm_device">Set Comm Device</string>
     <string name="set_comm_device_summary">Configures which Meshtastic device to use</string>
 
-    <string name="key_refresh_comm_devices">refresh_comm_device</string>
     <string name="refresh_comm_devices">Refresh Devices</string>
     <string name="refresh_comm_devices_summary">Refresh the list of comm. devices, use this if your device is connected but not showing up in the Set Comm Device menu</string>
 
-    <string name="key_pli_max_frequency">pli_max_frequency</string>
     <string name="pli_max_frequency">PLI Max Frequency (s)</string>
     <string name="pli_max_frequency_summary">Maximum frequency that the plugin will send PLIs to the mesh</string>
 
-    <string name="key_drop_duplicate_msgs_ttl">drop_duplicate_messages_ttl</string>
     <string name="drop_duplicate_msgs_ttl">Drop Duplicate Msgs For (mins)</string>
     <string name="drop_duplicate_msgs_ttl_summary">How long to prevent a duplicate message from being sent to the mesh (e.g. a map marker on auto-send)</string>
 
-    <string name="key_pli_hop_limit">pli_hop_limit</string>
     <string name="pli_hop_limit">PLI Hop Limit</string>
     <string name="pli_hop_limit_summary">The hop limit to set on PLI messages</string>
 
-    <string name="key_chat_hop_limit">chat_hop_limit</string>
     <string name="chat_hop_limit">Chat Hop Limit</string>
     <string name="chat_hop_limit_summary">The hop limit to set on chat messages</string>
 
-    <string name="key_other_hop_limit">other_hop_limit</string>
     <string name="other_hop_limit">Other Hop Limit</string>
     <string name="other_hop_limit_summary">The hop limit to set on all other messages (e.g. map markers)</string>
 
     <!-- Channel Settings -->
     <string name="category_channel_settings">Channel</string>
 
-    <string name="key_channel_name">channel_name</string>
     <string name="channel_name">Channel Name</string>
     <string name="channel_name_summary">The name of your private channel</string>
     <string name="default_channel_name">Default</string>
 
-    <string name="key_channel_mode">channel_speed</string>
     <string name="channel_mode">Mode / Speed</string>
     <string name="channel_mode_summary">Configures the channel data rate / range setting</string>
     <string name="default_channel_mode">0</string>
 
-    <string name="key_generate_psk">gen_psk</string>
     <string name="generated_psk">Generated PSK</string>
     <string name="generated_psk_summary">Generates a new Pre-Shared Key for channel encryption</string>
 
-    <string name="key_show_channel_qr">show_channel_qr</string>
     <string name="show_channel_qr">Show QR</string>
     <string name="show_channel_qr_summary">Show a QR code with your channel configuration for scanning on another device</string>
 
-    <string name="key_scan_channel_qr">scan_channel_qr</string>
     <string name="scan_channel_qr">Scan QR</string>
     <string name="scan_channel_qr_summary">Scan the QR code from another device</string>
 
-    <string name="key_save_channel_to_file">save_channel_to_file</string>
     <string name="save_channel_to_file">Save to File</string>
     <string name="save_channel_to_file_summary">Write your channel settings to a file</string>
+
+    <string name="read_channel_from_file">Read from File</string>
+    <string name="read_channel_from_file_summary">Read your channel settings from a file</string>
+
+    <string name="scan_qr_dialog_title">Scan QR</string>
+    <string name="show_qr_dialog_title">Show QR</string>
 
     <!-- Tracker Settings -->
     <string name="category_tracker_settings">Tracker</string>
 
-    <string name="key_tracker_pli_interval">tracker_pli_interval</string>
     <string name="tracker_pli_interval">PLI Interval (s)</string>
     <string name="tracker_pli_interval_summary">PLI Interval (s)</string>
 
-    <string name="key_tracker_screen_off_time">tracker_screen_off_time</string>
     <string name="tracker_screen_off_time">Screen Shutoff Time (s)</string>
     <string name="tracker_screen_off_time_summary">Delay before shutting off the screen on Tracker devices</string>
 
-    <string name="key_tracker_team">tracker_team</string>
     <string name="tracker_team">Team</string>
     <string name="tracker_team_summary">Team this Tracker belongs to</string>
 
-    <string name="key_tracker_role">tracker_role</string>
     <string name="tracker_role">Role</string>
     <string name="tracker_role_summary">Role this Tracker performs</string>
 
-    <string name="key_tracker_write_to_device">tracker_write_to_device</string>
     <string name="tracker_write_to_device">Write to Device</string>
     <string name="tracker_write_to_device_summary">Write settings to a Tracker device, you will be able to pick the device and name it</string>
 
     <!-- Advanced Settings -->
     <string name="category_advanced_settings">Advanced</string>
 
-    <string name="key_clear_duplicate_msg_cache">clear_duplicate_msg_cache</string>
     <string name="clear_duplicate_msg_cache">Clear Duplicate Msg Cache</string>
     <string name="clear_duplicate_msg_cache_summary">Clear the cache of recently sent messages that new messages are checked against for potential duplicates</string>
 
-    <string name="key_clear_outbound_msg_queue">clear_outbound_msg_queue</string>
     <string name="clear_outbound_msg_queue">Clear Outbound Msg Queue</string>
     <string name="clear_outbound_msg_queue_summary">Clear the outbound message queue</string>
 
-    <string name="key_reset_to_default">reset_to_default</string>
     <string name="reset_to_default">Reset to Defaults</string>
     <string name="reset_to_default_summary">Reset the plugin to its default settings (keeps channel settings)</string>
 
-    <string name="key_reset_to_default_including_channel">reset_to_default_including_channel</string>
     <string name="reset_to_default_including_channel">Reset to Defaults (incl. Channel)</string>
     <string name="reset_to_default_including_channel_summary">Reset the plugin to its default settings (deletes channel settings)</string>
 
@@ -131,11 +140,6 @@
     <string name="save">Save</string>
     <string name="hide_channel_qr">Hide QR</string>
     <string name="abort_scan_qr">Abort Scan</string>
-
-    <string name="short_range">Short Range / Fast</string>
-    <string name="medium_range">Medium Range / Fast</string>
-    <string name="long_range">Long Range / Slower (Not Recommended)</string>
-    <string name="very_long_range">Very Long Range / Slow (Not Recommended)</string>
 
     <string name="generate_new_psk">Gen New PSK</string>
 
@@ -174,6 +178,20 @@
     <string name="set_comm_device_dialog">Do you want to set your comm device to the one in the Target Device field for real?</string>
     <string name="write_to_non_atak_dialog">Do you want to write to the non-ATAK device in the Target Device field?</string>
 
+    <string-array name="channel_modes">
+        <item>Short Range / Fast</item>
+        <item>Medium Range / Fast</item>
+        <item>Long Range / Slower (Not Recommended)</item>
+        <item>Very Long Range / Slow (Not Recommended)</item>
+    </string-array>
+
+    <string-array name="channel_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+
     <string-array name="teams">
         <item>White</item>
         <item>Yellow</item>
@@ -191,6 +209,23 @@
         <item>Brown</item>
     </string-array>
 
+    <string-array name="teams_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+    </string-array>
+
     <string-array name="roles">
         <item>Team Member</item>
         <item>Team Lead</item>
@@ -200,6 +235,17 @@
         <item>Forward Observer</item>
         <item>RTO</item>
         <item>K9</item>
+    </string-array>
+
+    <string-array name="roles_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
     </string-array>
 
 </resources>

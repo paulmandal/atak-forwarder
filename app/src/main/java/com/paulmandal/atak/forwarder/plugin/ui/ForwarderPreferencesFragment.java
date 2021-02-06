@@ -1,20 +1,31 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.AdvancedButtons;
+import com.paulmandal.atak.forwarder.plugin.ui.settings.ChannelButtons;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
-import com.paulmandal.atak.forwarder.plugin.ui.settings.MainSettingsButtons;
+import com.paulmandal.atak.forwarder.plugin.ui.settings.MainButtons;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+
+import java.util.List;
 
 public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
+    private static Context sAtakContext;
     private static Context sPluginContext;
+    private static List<Destroyable> sDestroyables;
+    private static SharedPreferences sSharedPreferences;
     private static DevicesList sDevicesList;
+    private static CommHardware sCommHardware;
     private static CotMessageCache sCotMessageCache;
     private static CommandQueue sCommandQueue;
 
@@ -23,13 +34,19 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
     }
 
     @SuppressWarnings("ValidFragment")
-    public ForwarderPreferencesFragment(final Context pluginContext,
+    public ForwarderPreferencesFragment(final Context atakContext,
+                                        final Context pluginContext,
+                                        final List<Destroyable> destroyables,
+                                        final SharedPreferences sharedPreferences,
                                         final DevicesList devicesList,
+                                        final CommHardware commHardware,
                                         final CotMessageCache cotMessageCache,
                                         final CommandQueue commandQueue) {
         super(pluginContext, R.xml.preferences);
+        this.sAtakContext = atakContext;
         this.sPluginContext = pluginContext;
         this.sDevicesList = devicesList;
+        this.sCommHardware = commHardware;
         this.sCotMessageCache = cotMessageCache;
         this.sCommandQueue = commandQueue;
     }
@@ -38,9 +55,26 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MainSettingsButtons mainSettingsButtons = new MainSettingsButtons(sDevicesList,
+        MainButtons mainButtons = new MainButtons(sDevicesList,
                 findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE),
                 findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES));
+
+        HashHelper hashHelper = new HashHelper();
+        QrHelper qrHelper = new QrHelper();
+        ChannelButtons channelButtons = new ChannelButtons(sDestroyables,
+                sSharedPreferences,
+                sAtakContext,
+                sPluginContext,
+                sCommHardware,
+                hashHelper,
+                qrHelper,
+                findPreference(PreferencesKeys.KEY_CHANNEL_MODE),
+                findPreference(PreferencesKeys.KEY_CHANNEL_PSK),
+                findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),
+                findPreference(PreferencesKeys.KEY_SCAN_CHANNEL_QR),
+                findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE),
+                findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE));
+
         AdvancedButtons advancedButtons = new AdvancedButtons(sCotMessageCache,
                 sCommandQueue,
                 findPreference(PreferencesKeys.KEY_CLEAR_DUPLICATE_MSG_CACHE),

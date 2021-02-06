@@ -8,7 +8,7 @@ import com.geeksville.mesh.MeshProtos;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
-public class ChannelStatusViewModel implements MeshtasticCommHardware.ChannelSettingsListener {
+public class ChannelStatusViewModel {
     private HashHelper mHashHelper;
 
     private MutableLiveData<String> mChannelName = new MutableLiveData<>();
@@ -19,16 +19,6 @@ public class ChannelStatusViewModel implements MeshtasticCommHardware.ChannelSet
                                   HashHelper hashHelper) {
 
         mHashHelper = hashHelper;
-
-        commHardware.addChannelSettingsListener(this);
-    }
-
-    @Override
-    @CallSuper
-    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mChannelName.setValue(channelName);
-        mModemConfig.setValue(modemConfig);
-        mPskHash.setValue(mHashHelper.hashFromBytes(psk));
     }
 
     public LiveData<String> getChannelName() {

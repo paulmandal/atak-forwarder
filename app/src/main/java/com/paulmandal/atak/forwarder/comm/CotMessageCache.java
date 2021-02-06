@@ -29,10 +29,15 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
     public CotMessageCache(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,
                            CotComparer cotComparer) {
-        super(destroyables, sharedPreferences);
+        super(destroyables,
+                sharedPreferences,
+                new String[]{
+                        PreferencesKeys.KEY_PLI_MAX_FREQUENCY,
+                        PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL,
+                        PreferencesKeys.KEY_CHANNEL_MODE
+                },
+                new String[]{});
         mCotComparer = cotComparer;
-
-        updateSettings(sharedPreferences);
     }
 
     public boolean checkIfRecentlySent(CotEvent cotEvent) {
@@ -90,21 +95,16 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
     }
 
     @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        switch (key) {
-            case PreferencesKeys.KEY_PLI_MAX_FREQUENCY:
-            case PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL:
-            case PreferencesKeys.KEY_CHANNEL_MODE:
-                updateSettings(sharedPreferences);
-                break;
-        }
-    }
-
-    private void updateSettings(SharedPreferences sharedPreferences) {
+    protected void updateSettings(SharedPreferences sharedPreferences) {
         mPliMaxFrequencyS = sharedPreferences.getInt(PreferencesKeys.KEY_PLI_MAX_FREQUENCY, PreferencesDefaults.DEFAULT_PLI_MAX_FREQUENCY);
         mDuplicateMessagesTtlM = sharedPreferences.getInt(PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL, PreferencesDefaults.DEFAULT_DROP_DUPLICATE_MSGS_TTL);
-        mChannelMode = sharedPreferences.getInt(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE);
+        mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mModeAwarePliRate = (mPliMaxFrequencyS * 1000) * (mChannelMode + 1);
+    }
+
+    @Override
+    protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
+        // Do nothing
     }
 
     private static class CachedCotEvent {

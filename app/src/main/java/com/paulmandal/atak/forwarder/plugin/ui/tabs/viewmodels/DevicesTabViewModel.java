@@ -9,7 +9,6 @@ import android.hardware.usb.UsbManager;
 import android.os.Handler;
 import android.util.Log;
 
-import androidx.annotation.CallSuper;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -27,8 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettingsListener,
-                                            NonAtakMeshtasticConfigurator.Listener {
+public class DevicesTabViewModel implements NonAtakMeshtasticConfigurator.Listener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTabViewModel.class.getSimpleName();
 
     private static final String MARKER_MESHTASTIC = "Meshtastic";
@@ -65,7 +63,6 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         mMeshtasticCommHardware = commHardware;
         mHashHelper = hashHelper;
 
-        commHardware.addChannelSettingsListener(this);
         MeshtasticDevice commDevice = commHardware.getDevice();
         mCommDeviceAddress.setValue(commDevice != null ? commDevice.address : null);
         mNonAtakDeviceWriteInProgress.setValue(false);
@@ -136,15 +133,6 @@ public class DevicesTabViewModel implements MeshtasticCommHardware.ChannelSettin
         // Write settings to device
         mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mAtakContext, mUiThreadHandler, mMeshtasticDeviceSwitcher, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
         mNonAtakMeshtasticConfigurator.writeToDevice();
-    }
-
-    @Override
-    @CallSuper
-    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mChannelName = channelName;
-        mModemConfig = modemConfig;
-        mPskHash = mHashHelper.hashFromBytes(psk);
-        mPsk = psk;
     }
 
     @Override

@@ -27,7 +27,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
-    private static final int PACKET_WINDOW_SIZE = 5;
+    private static final int PACKET_WINDOW_SIZE = 10;
     private static final int NO_DRAWABLE = -1;
 
     private ForwarderDropDownReceiver mForwarderDropDownReceiver;
@@ -111,7 +111,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
                 drawableId = R.drawable.ic_status_red;
                 break;
             case NO_DEVICE_CONFIGURED:
-                drawableId = R.drawable.ic_status_blue;
+                drawableId = R.drawable.ic_status_purple;
                 break;
         }
 
@@ -129,14 +129,16 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
         float percentageOfPacketsDelivered = totalDeliveredPackets / (float)PACKET_WINDOW_SIZE;
 
-        if (percentageOfPacketsDelivered > 99F) {
+        if (percentageOfPacketsDelivered > 95F) {
             drawableId = R.drawable.ic_status_green;
-        } else if (percentageOfPacketsDelivered > 50F) {
+        } else if (percentageOfPacketsDelivered > 75F) {
             drawableId = R.drawable.ic_status_yellow;
-        } else if (percentageOfPacketsDelivered > 20F) {
+        } else if (percentageOfPacketsDelivered > 50F) {
             drawableId = R.drawable.ic_status_orange;
-        } else {
+        } else if (percentageOfPacketsDelivered > 25F){
             drawableId = R.drawable.ic_status_brown;
+        } else {
+            drawableId = R.drawable.ic_status_grey;
         }
 
         setIcon(drawableId);

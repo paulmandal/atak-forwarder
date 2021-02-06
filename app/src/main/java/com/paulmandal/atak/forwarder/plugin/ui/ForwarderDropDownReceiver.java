@@ -17,10 +17,8 @@ import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.StatusTab;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.ChannelTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
 
@@ -36,7 +34,6 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
                                      final Context pluginContext,
                                      final Context atakContext,
                                      final StatusTabViewModel statusTabViewModel,
-                                     final ChannelTabViewModel channelTabViewModel,
                                      final DevicesTabViewModel devicesTabViewModel) {
         super(mapView);
         // Remember to use the PluginLayoutInflator if you are actually inflating a custom view
@@ -50,11 +47,6 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         TabHost.TabSpec spec = tabs.newTabSpec("tab_status");
         spec.setContent(R.id.tab_status);
         spec.setIndicator("Status");
-        tabs.addTab(spec);
-
-        spec = tabs.newTabSpec("tab_channel");
-        spec.setContent(R.id.tab_channel);
-        spec.setIndicator("Channel");
         tabs.addTab(spec);
 
         spec = tabs.newTabSpec("tab_devices");
@@ -75,9 +67,6 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
 
         StatusTab statusTab = mTemplateView.findViewById(R.id.tab_status);
         statusTab.bind(lifecycleOwner, statusTabViewModel, pluginContext, atakContext);
-
-        ChannelTab channelTab = mTemplateView.findViewById(R.id.tab_channel);
-        channelTab.bind(lifecycleOwner, channelTabViewModel, pluginContext, atakContext);
 
         DevicesTab devicesTab = mTemplateView.findViewById(R.id.tab_devices);
         devicesTab.bind(lifecycleOwner, devicesTabViewModel, pluginContext, atakContext);

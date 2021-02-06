@@ -79,6 +79,7 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     }
 
     @Override
+    @CallSuper
     public void onDestroy(Context context, MapView mapView) {
         super.onDestroy(context, mapView);
         mDestroyed = true;

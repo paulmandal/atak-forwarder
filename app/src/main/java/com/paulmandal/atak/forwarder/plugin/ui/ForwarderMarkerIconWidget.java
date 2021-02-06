@@ -15,25 +15,37 @@ import com.atakmap.android.widgets.RootLayoutWidget;
 import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
-public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable, CommHardware.ConnectionStateListener, MapWidget.OnClickListener  {
+public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable,
+        CommHardware.ConnectionStateListener,
+        MapWidget.OnClickListener,
+        MeshtasticCommHardware.MessageAckNackListener {
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
+    private static final int PACKET_WINDOW_SIZE = 5;
+    private static final int NO_DRAWABLE = -1;
+
     private ForwarderDropDownReceiver mForwarderDropDownReceiver;
+
+    private CommHardware.ConnectionState mConnectionState;
+    private boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
+    private int mWindowIndex;
 
     public ForwarderMarkerIconWidget(MapView mapView,
                                      List<Destroyable> destroyables,
                                      ForwarderDropDownReceiver forwarderDropDownReceiver,
-                                     CommHardware commHardware) {
+                                     MeshtasticCommHardware meshtasticCommHardware) {
         mForwarderDropDownReceiver = forwarderDropDownReceiver;
 
         destroyables.add(this);
 
-        commHardware.addConnectionStateListener(this);
+        meshtasticCommHardware.addConnectionStateListener(this);
+        meshtasticCommHardware.addMessageAckNackListener(this);
 
         setName("Forwarder Status");
         addOnClickListener(this);
@@ -42,8 +54,8 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.addWidget(this);
 
-        updateIcon(commHardware.getConnectionState());
-
+        mConnectionState = meshtasticCommHardware.getConnectionState();
+        updateIcon();
     }
 
     @Override
@@ -61,26 +73,76 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
     @Override
     public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
-        updateIcon(connectionState);
+        mConnectionState = connectionState;
+        updateIcon();
     }
 
-    private void updateIcon(CommHardware.ConnectionState connectionState) {
-        int drawableId = R.drawable.ic_no_service_connected;
-        switch (connectionState) {
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
+        LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
+        brLayout.removeWidget(this);
+    }
+
+    @Override
+    public void onMessageAckNack(int messageId, boolean isAck) {
+        addPacketToWindow(isAck);
+    }
+
+    @Override
+    public void onMessageTimedOut(int messageId) {
+        addPacketToWindow(false);
+    }
+
+    private void addPacketToWindow(boolean isAck) {
+        mDeliveredPacketsWindow[mWindowIndex] = isAck;
+        mWindowIndex++;
+        if (mWindowIndex >= PACKET_WINDOW_SIZE) {
+            mWindowIndex = 0;
+        }
+    }
+
+    private void updateIcon() {
+        int drawableId = NO_DRAWABLE;
+
+        switch (mConnectionState) {
             case NO_SERVICE_CONNECTION:
-                drawableId = R.drawable.ic_no_service_connected;
+            case DEVICE_DISCONNECTED:
+                drawableId = R.drawable.ic_status_red;
                 break;
             case NO_DEVICE_CONFIGURED:
-                drawableId = R.drawable.ic_no_device_configured;
-                break;
-            case DEVICE_DISCONNECTED:
-                drawableId = R.drawable.ic_device_disconnected;
-                break;
-            case DEVICE_CONNECTED:
-                drawableId = R.drawable.ic_device_connected;
+                drawableId = R.drawable.ic_status_blue;
                 break;
         }
 
+        if (drawableId != NO_DRAWABLE) {
+            setIcon(drawableId);
+            return;
+        }
+
+        int totalDeliveredPackets = 0;
+        for (boolean isAck : mDeliveredPacketsWindow) {
+            if (isAck) {
+                totalDeliveredPackets++;
+            }
+        }
+
+        float percentageOfPacketsDelivered = totalDeliveredPackets / (float)PACKET_WINDOW_SIZE;
+
+        if (percentageOfPacketsDelivered > 99F) {
+            drawableId = R.drawable.ic_status_green;
+        } else if (percentageOfPacketsDelivered > 50F) {
+            drawableId = R.drawable.ic_status_yellow;
+        } else if (percentageOfPacketsDelivered > 20F) {
+            drawableId = R.drawable.ic_status_orange;
+        } else {
+            drawableId = R.drawable.ic_status_brown;
+        }
+
+        setIcon(drawableId);
+    }
+
+    private void setIcon(int drawableId) {
         String imageUri = "android.resource://com.paulmandal.atak.forwarder/" + drawableId;
 
         Icon.Builder builder = new Icon.Builder();
@@ -91,12 +153,5 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
         Icon icon = builder.build();
         setIcon(icon);
-    }
-
-    @Override
-    public void onDestroy(Context context, MapView mapView) {
-        RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
-        LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
-        brLayout.removeWidget(this);
     }
 }

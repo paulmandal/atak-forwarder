@@ -19,8 +19,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 public class MeshtasticTrackerConfigurator {
@@ -51,7 +50,7 @@ public class MeshtasticTrackerConfigurator {
 
     private final MeshtasticDevice mCommDevice;
     private final MeshSuspendController mMeshSuspendController;
-    private final MeshtasticCommHardware mMeshtasticCommHardware;
+
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
@@ -82,7 +81,6 @@ public class MeshtasticTrackerConfigurator {
     public MeshtasticTrackerConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
                                          MeshSuspendController meshSuspendController,
-                                         MeshtasticCommHardware meshtasticCommHardware,
                                          MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                          MeshtasticDevice commDevice,
                                          MeshtasticDevice targetDevice,
@@ -99,7 +97,6 @@ public class MeshtasticTrackerConfigurator {
         mUiThreadHandler = uiThreadHandler;
         mCommDevice = commDevice;
         mMeshSuspendController = meshSuspendController;
-        mMeshtasticCommHardware = meshtasticCommHardware;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;

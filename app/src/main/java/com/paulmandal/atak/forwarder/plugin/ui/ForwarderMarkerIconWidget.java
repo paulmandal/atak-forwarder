@@ -14,16 +14,17 @@ import com.atakmap.android.widgets.MarkerIconWidget;
 import com.atakmap.android.widgets.RootLayoutWidget;
 import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
 public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable,
-        CommHardware.ConnectionStateListener,
+        MeshServiceController.ConnectionStateListener,
         MapWidget.OnClickListener,
-        MeshtasticCommHardware.MessageAckNackListener {
+        MeshSender.MessageAckNackListener {
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
@@ -32,20 +33,22 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
     private final ForwarderDropDownReceiver mForwarderDropDownReceiver;
 
-    private CommHardware.ConnectionState mConnectionState;
     private final boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
     private int mWindowIndex;
+
+    private ConnectionState mConnectionState;
 
     public ForwarderMarkerIconWidget(MapView mapView,
                                      List<Destroyable> destroyables,
                                      ForwarderDropDownReceiver forwarderDropDownReceiver,
-                                     MeshtasticCommHardware meshtasticCommHardware) {
+                                     MeshServiceController meshServiceController,
+                                     MeshSender meshSender) {
         mForwarderDropDownReceiver = forwarderDropDownReceiver;
 
         destroyables.add(this);
 
-        meshtasticCommHardware.addConnectionStateListener(this);
-        meshtasticCommHardware.addMessageAckNackListener(this);
+        meshServiceController.addConnectionStateListener(this);
+        meshSender.addMessageAckNackListener(this);
 
         setName("Forwarder Status");
         addOnClickListener(this);
@@ -54,11 +57,11 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.addWidget(this);
 
-        for (int i = 0 ; i < PACKET_WINDOW_SIZE ; i++) {
+        for (int i = 0; i < PACKET_WINDOW_SIZE; i++) {
             mDeliveredPacketsWindow[i] = true;
         }
 
-        mConnectionState = meshtasticCommHardware.getConnectionState();
+        mConnectionState = meshServiceController.getConnectionState();
         updateIcon();
     }
 
@@ -76,7 +79,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     }
 
     @Override
-    public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
+    public void onConnectionStateChanged(ConnectionState connectionState) {
         mConnectionState = connectionState;
         updateIcon();
     }
@@ -132,7 +135,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
             }
         }
 
-        float percentageOfPacketsDelivered = totalDeliveredPackets / (float)PACKET_WINDOW_SIZE;
+        float percentageOfPacketsDelivered = totalDeliveredPackets / (float) PACKET_WINDOW_SIZE;
 
         if (percentageOfPacketsDelivered > 0.95F) {
             drawableId = R.drawable.ic_status_green;
@@ -140,7 +143,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
             drawableId = R.drawable.ic_status_yellow;
         } else if (percentageOfPacketsDelivered > 0.50F) {
             drawableId = R.drawable.ic_status_orange;
-        } else if (percentageOfPacketsDelivered > 0.25F){
+        } else if (percentageOfPacketsDelivered > 0.25F) {
             drawableId = R.drawable.ic_status_brown;
         } else {
             drawableId = R.drawable.ic_status_grey;

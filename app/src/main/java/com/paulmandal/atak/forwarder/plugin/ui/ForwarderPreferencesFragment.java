@@ -11,8 +11,8 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -36,7 +36,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
     @SuppressLint("StaticFieldLeak")
     private static DevicesList sDevicesList;
     private static MeshSuspendController sMeshSuspendController;
-    private static MeshtasticCommHardware sCommHardware;
+    @SuppressLint("StaticFieldLeak")
+    private static DiscoveryBroadcastEventHandler sDiscoveryBroadcastEventHandler;
     private static CotMessageCache sCotMessageCache;
     private static CommandQueue sCommandQueue;
     @SuppressLint("StaticFieldLeak")
@@ -52,7 +53,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                                         final SharedPreferences sharedPreferences,
                                         final DevicesList devicesList,
                                         final MeshSuspendController meshSuspendController,
-                                        final MeshtasticCommHardware commHardware,
+                                        final DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                                         final CotMessageCache cotMessageCache,
                                         final CommandQueue commandQueue,
                                         final Logger logger) {
@@ -62,7 +63,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sSharedPreferences = sharedPreferences;
         this.sDevicesList = devicesList;
         this.sMeshSuspendController = meshSuspendController;
-        this.sCommHardware = commHardware;
+        this.sDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
         this.sCotMessageCache = cotMessageCache;
         this.sCommandQueue = commandQueue;
         this.sLogger = logger;
@@ -86,7 +87,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 sSharedPreferences,
                 settingsMenuContext,
                 sPluginContext,
-                sCommHardware,
+                sDiscoveryBroadcastEventHandler,
                 hashHelper,
                 qrHelper,
                 sLogger,
@@ -103,7 +104,6 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 uiThreadHandler,
                 sDevicesList,
                 sMeshSuspendController,
-                sCommHardware,
                 findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
                 findPreference(PreferencesKeys.KEY_TRACKER_ROLE),
                 findPreference(PreferencesKeys.KEY_TRACKER_WRITE_TO_DEVICE));
@@ -128,7 +128,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sSharedPreferences = null;
         this.sDevicesList = null;
         this.sMeshSuspendController = null;
-        this.sCommHardware = null;
+        this.sDiscoveryBroadcastEventHandler = null;
         this.sCotMessageCache = null;
         this.sCommandQueue = null;
         this.sLogger = null;

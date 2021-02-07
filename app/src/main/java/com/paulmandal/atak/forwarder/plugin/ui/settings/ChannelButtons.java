@@ -15,7 +15,7 @@ import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
@@ -42,7 +42,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           SharedPreferences sharedPreferences,
                           Context settingsMenuContext,
                           Context pluginContext,
-                          CommHardware commHardware,
+                          DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                           HashHelper hashHelper,
                           QrHelper qrHelper,
                           Logger logger,
@@ -148,7 +148,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
                 logger.e(TAG, "Updating channel settings: " + new String(channelNameBytes) + ", " + modemConfig + ", " + hashHelper.hashFromBytes(psk));
 
-                commHardware.broadcastDiscoveryMessage();
+                discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
 
                 scannerView.stopCamera();
 

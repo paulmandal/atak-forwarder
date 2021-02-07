@@ -5,14 +5,16 @@ import android.os.Handler;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.Constants;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class UserTracker implements MeshtasticCommHardware.UserListener {
+public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroadcastListener,
+        TrackerEventHandler.TrackerListener {
     private static final String TAG = Constants.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
 
     public interface ChannelMembersUpdateListener {
@@ -37,10 +39,15 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
 
     public UserTracker(Context atakContext,
                        Handler uiThreadHandler,
-                       Logger logger) {
+                       Logger logger,
+                       DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
+                       TrackerEventHandler trackerEventHandler) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mLogger = logger;
+
+        discoveryBroadcastEventHandler.setListener(this);
+        trackerEventHandler.setListener(this);
     }
 
     public List<UserInfo> getAtakUsers() {
@@ -88,7 +95,7 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
     }
 
     @Override
-    public void onUserUpdated(TrackerUserInfo trackerUserInfo) {
+    public void onTrackerUpdated(TrackerUserInfo trackerUserInfo) {
         boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(trackerUserInfo);
 
         if (userExistsInAtakUserList) {

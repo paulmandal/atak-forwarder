@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.RemoteException;
 
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.Portnums;
@@ -18,7 +19,9 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
     }
 
-    private final DiscoveryBroadcastListener mDiscoveryBroadcastListener;
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + DiscoveryBroadcastEventHandler.class.getSimpleName();
+
+    private DiscoveryBroadcastListener mDiscoveryBroadcastListener;
     private final CommandQueue mCommandQueue;
     private final QueuedCommandFactory mQueuedCommandFactory;
     private final MeshServiceController mMeshServiceController;
@@ -30,7 +33,6 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
 
     public DiscoveryBroadcastEventHandler(Context atakContext,
                                           Logger logger,
-                                          DiscoveryBroadcastListener discoveryBroadcastListener,
                                           CommandQueue commandQueue,
                                           QueuedCommandFactory queuedCommandFactory,
                                           List<Destroyable> destroyables,
@@ -46,7 +48,6 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
                 destroyables,
                 meshSuspendController);
 
-        mDiscoveryBroadcastListener = discoveryBroadcastListener;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mMeshServiceController = meshServiceController;
@@ -58,10 +59,29 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         meshServiceController.addConnectionStateListener(this);
     }
 
+    public void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
+        String broadcastData = Constants.DISCOVERY_BROADCAST_MARKER + "," + mMeshId + "," + mAtakUid + "," + mCallsign + "," + (initialDiscoveryMessage ? 1 : 0);
+
+        String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
+        handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
+
+        mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
+    }
+
+    public void setListener(DiscoveryBroadcastListener listener) {
+        mDiscoveryBroadcastListener = listener;
+    }
+
     @Override
     public void onConnectionStateChanged(ConnectionState connectionState) {
         if (connectionState == ConnectionState.DEVICE_CONNECTED) {
-            mMeshId = mMeshServiceController.getMeshId();
+            mMeshId = null;
+            try {
+              mMeshId = mMeshServiceController.getMeshService().getMyId();
+            } catch (RemoteException e) {
+                mLogger.e(TAG, "Exception getting meshId");
+                e.printStackTrace();
+            }
 
             if (mMeshId != null && !mInitialDiscoveryBroadcastSent) {
                 broadcastDiscoveryMessage(true);
@@ -99,14 +119,5 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
             broadcastDiscoveryMessage(false);
         }
         mDiscoveryBroadcastListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
-    }
-
-    private void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = Constants.DISCOVERY_BROADCAST_MARKER + "," + mMeshId + "," + mAtakUid + "," + mCallsign + "," + (initialDiscoveryMessage ? 1 : 0);
-
-        String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
-        handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
     }
 }

@@ -10,9 +10,11 @@ import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -22,16 +24,16 @@ import java.util.List;
 
 public class StatusViewModel extends ChannelStatusViewModel implements UserTracker.ChannelMembersUpdateListener,
         CommandQueue.Listener,
-        CommHardware.ConnectionStateListener,
-        MeshtasticCommHardware.MessageAckNackListener,
+        MeshServiceController.ConnectionStateListener,
+        MeshSender.MessageAckNackListener,
         InboundMeshMessageHandler.MessageListener {
     private static final String TAG = Constants.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
-    private final CommHardware mMeshtasticCommHardware;
+    private final DiscoveryBroadcastEventHandler mDiscoveryBroadcastEventHandler;
 
     private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
     private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
-    private final MutableLiveData<CommHardware.ConnectionState> mConnectionState = new MutableLiveData<>();
+    private final MutableLiveData<ConnectionState> mConnectionState = new MutableLiveData<>();
     private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
@@ -42,13 +44,15 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     public StatusViewModel(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,
                            UserTracker userTracker,
-                           MeshtasticCommHardware meshtasticCommHardware,
+                           MeshServiceController meshServiceController,
+                           DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
+                           MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
                            CommandQueue commandQueue,
                            HashHelper hashHelper) {
         super(destroyables, sharedPreferences, hashHelper);
 
-        mMeshtasticCommHardware = meshtasticCommHardware;
+        mDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
 
         mMessageQueueSize.setValue(0);
         mTotalMessages.setValue(0);
@@ -60,8 +64,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
         userTracker.addUpdateListener(this);
         commandQueue.setListener(this);
-        meshtasticCommHardware.addConnectionStateListener(this);
-        meshtasticCommHardware.addMessageAckNackListener(this);
+        meshServiceController.addConnectionStateListener(this);
+        meshSender.addMessageAckNackListener(this);
         inboundMeshMessageHandler.addMessageListener(this);
     }
 
@@ -79,7 +83,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     @Override
-    public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
+    public void onConnectionStateChanged(ConnectionState connectionState) {
         mConnectionState.setValue(connectionState);
     }
 
@@ -94,7 +98,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     @NonNull
-    public LiveData<CommHardware.ConnectionState> getConnectionState() {
+    public LiveData<ConnectionState> getConnectionState() {
         return mConnectionState;
     }
 
@@ -128,12 +132,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         return mErrorsInARow;
     }
 
-    public void connect() {
-        mMeshtasticCommHardware.connect();
-    }
-
     public void broadcastDiscoveryMessage() {
-        mMeshtasticCommHardware.broadcastDiscoveryMessage();
+        mDiscoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.comm.refactor;
+package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -12,7 +12,6 @@ import android.util.Log;
 
 import com.geeksville.mesh.IMeshService;
 import com.paulmandal.atak.forwarder.Constants;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 
 import java.util.ArrayList;
 import java.util.HashMap;

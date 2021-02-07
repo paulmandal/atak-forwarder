@@ -38,13 +38,6 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
         destroyables.add(this);
         meshServiceController.addConnectionStateListener(this);
 
-// TODO put for factory:
-//        Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
-//            Thread thread = new Thread(r);
-//            thread.setName(CommHardware.class.getSimpleName() + ".Worker");
-//            return thread;
-//        });
-
         mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
 
         startWorker();

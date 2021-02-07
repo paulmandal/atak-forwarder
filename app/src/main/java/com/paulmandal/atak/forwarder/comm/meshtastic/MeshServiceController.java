@@ -49,7 +49,6 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private boolean mConnectedToService;
 
     private final Set<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArraySet<>();
-    private String mMeshId;
 
     public MeshServiceController(List<Destroyable> destroyables,
                                  SharedPreferences sharedPreferences,
@@ -106,9 +105,6 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     }
     public ConnectionState getConnectionState() {
         return mConnectionState;
-    }
-    public String getMeshId() {
-        return mMeshId;
     }
 
     public void addConnectionStateListener(ConnectionStateListener listener) {

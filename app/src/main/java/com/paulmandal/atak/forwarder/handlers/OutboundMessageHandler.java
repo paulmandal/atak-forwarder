@@ -7,7 +7,8 @@ import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -25,7 +26,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private static final String TAG = Constants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
     private final CommsMapComponent mCommsMapComponent;
-    private final CommHardware mCommHardware;
+    private final MeshServiceController mMeshServiceController;
     private final CommandQueue mCommandQueue;
     private final QueuedCommandFactory mQueuedCommandFactory;
     private final CotMessageCache mCotMessageCache;
@@ -33,7 +34,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private final Logger mLogger;
 
     public OutboundMessageHandler(CommsMapComponent commsMapComponent,
-                                  CommHardware commHardware,
+                                  MeshServiceController meshServiceController,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   CotMessageCache cotMessageCache,
@@ -41,7 +42,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
                                   List<Destroyable> destroyables,
                                   Logger logger) {
         mCommsMapComponent = commsMapComponent;
-        mCommHardware = commHardware;
+        mMeshServiceController = meshServiceController;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mCotMessageCache = cotMessageCache;
@@ -60,7 +61,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         }
         mLogger.v(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
-        if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
+        if (mMeshServiceController.getConnectionState() == ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
                 mLogger.v(TAG, "Discarding recently sent event: " + cotEvent.toString());
                 return;

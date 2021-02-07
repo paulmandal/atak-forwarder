@@ -18,14 +18,16 @@ import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
-import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
@@ -40,6 +42,8 @@ import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import static com.atakmap.android.util.ATAKConstants.getPackageName;
 
@@ -59,25 +63,86 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         mPluginContext = pluginContext;
         Context atakContext = mapView.getContext();
 
+        List<Destroyable> destroyables = mDestroyables;
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(atakContext);
+
+        // Internal components
+        Logger logger = new Logger(destroyables, sharedPreferences, atakContext);
+
+
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
-        QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
-        CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();
-        CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(atakContext);
-        Logger logger = new Logger(mDestroyables, sharedPreferences, atakContext);
 
         MeshSuspendController meshSuspendController = new MeshSuspendController();
-        InboundMeshMessageHandler inboundMeshMessageHandler = new InboundMeshMessageHandler(atakContext, mDestroyables, meshSuspendController, uiThreadHandler, logger);
+        MeshServiceController meshServiceController = new MeshServiceController(destroyables,
+                sharedPreferences,
+                atakContext,
+                uiThreadHandler,
+                meshSuspendController,
+                logger);
 
-        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext);
-        UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger);
-        MeshtasticCommHardware meshtasticCommHardware = CommHardwareFactory.createAndInitMeshtasticCommHardware(atakContext, mapView, uiThreadHandler, meshtasticDeviceSwitcher, userTracker, userTracker, commandQueue, queuedCommandFactory, sharedPreferences, mDestroyables);
+
+        String callsign = mapView.getDeviceCallsign();
+        String atakUid = mapView.getSelfMarker().getUID();
+        QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
+        DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler = new DiscoveryBroadcastEventHandler(
+                atakContext,
+                logger,
+                commandQueue,
+                queuedCommandFactory,
+                destroyables,
+                meshSuspendController,
+                meshServiceController,
+                atakUid,
+                callsign);
+
+
+        TrackerEventHandler trackerEventHandler = new TrackerEventHandler(
+                atakContext,
+                logger,
+                destroyables,
+                meshSuspendController);
+
+
+        UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
+
+
+        MeshSender meshSender = new MeshSender(atakContext,
+                destroyables,
+                sharedPreferences,
+                meshSuspendController,
+                uiThreadHandler,
+                logger,
+                meshServiceController,
+                userTracker);
+
+
+        ScheduledExecutorService commandQueueExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("CommandQueueWorker.Worker");
+            return thread;
+        });
+        CommandQueueWorker commandQueueWorker = new CommandQueueWorker(destroyables, meshServiceController, commandQueue, meshSender, commandQueueExecutor);
+
+
+        InboundMeshMessageHandler inboundMeshMessageHandler = new InboundMeshMessageHandler(
+                atakContext,
+                destroyables,
+                meshSuspendController,
+                uiThreadHandler,
+                logger);
+
+
+        CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();
+        CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
         InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(inboundMeshMessageHandler, cotShrinker, logger);
-        CotMessageCache cotMessageCache = new CotMessageCache(mDestroyables, sharedPreferences, cotComparer);
-        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(meshtasticCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, mDestroyables, logger);
+
+
+        CotMessageCache cotMessageCache = new CotMessageCache(destroyables, sharedPreferences, cotComparer);
+        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(meshServiceController, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, destroyables, logger);
+
 
         String pluginVersion = "0.0";
         try {
@@ -86,24 +151,37 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(mDestroyables, userTracker, inboundMessageHandler, pluginVersion);
+        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, userTracker, inboundMessageHandler, pluginVersion);
+
 
         HashHelper hashHelper = new HashHelper();
-        StatusViewModel statusViewModel = new StatusViewModel(mDestroyables, sharedPreferences, userTracker, meshtasticCommHardware, inboundMeshMessageHandler, commandQueue, hashHelper);
+        StatusViewModel statusViewModel = new StatusViewModel(
+                destroyables,
+                sharedPreferences,
+                userTracker,
+                meshServiceController,
+                discoveryBroadcastEventHandler,
+                meshSender,
+                inboundMeshMessageHandler,
+                commandQueue,
+                hashHelper);
 
-        DevicesList devicesList = new DevicesList(atakContext);
 
         ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,
                 pluginContext,
                 atakContext,
                 statusViewModel);
 
+
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(ForwarderDropDownReceiver.SHOW_PLUGIN);
         registerDropDownReceiver(forwarderDropDownReceiver, ddFilter);
 
-        new ForwarderMarkerIconWidget(mapView, mDestroyables, forwarderDropDownReceiver, meshtasticCommHardware);
 
+        new ForwarderMarkerIconWidget(mapView, destroyables, forwarderDropDownReceiver, meshServiceController, meshSender);
+
+
+        DevicesList devicesList = new DevicesList(atakContext);
         ToolsPreferenceFragment.register(
                 new ToolsPreferenceFragment.ToolPreference(
                         pluginContext.getString(R.string.preferences_title),
@@ -112,11 +190,11 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                         pluginContext.getResources().getDrawable(R.drawable.ic_launcher_maybe),
                         new ForwarderPreferencesFragment(
                                 pluginContext,
-                                mDestroyables,
+                                destroyables,
                                 sharedPreferences,
                                 devicesList,
                                 meshSuspendController,
-                                meshtasticCommHardware,
+                                discoveryBroadcastEventHandler,
                                 cotMessageCache,
                                 commandQueue,
                                 logger

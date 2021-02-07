@@ -33,7 +33,6 @@ public class StatusScreen {
     private final TextView mErroredTextView;
     private final TextView mTotalTextView;
     private final ListView mGroupMembersListView;
-    private final Button mConnectToServiceButton;
     private final Button mBroadcastDiscoveryButton;
     
     public StatusScreen(ViewGroup vg) {
@@ -51,7 +50,6 @@ public class StatusScreen {
         mTotalTextView = vg.findViewById(R.id.textview_total_messages);
         mGroupMembersListView = vg.findViewById(R.id.listview_channel_members);
 
-        mConnectToServiceButton = vg.findViewById(R.id.button_connect_to_service);
         mBroadcastDiscoveryButton = vg.findViewById(R.id.button_broadcast_discovery);
     }
 
@@ -61,8 +59,6 @@ public class StatusScreen {
                      Context pluginContext,
                      Context atakContext) {
         mAtakContext = atakContext;
-
-        mConnectToServiceButton.setOnClickListener((View v) -> statusViewModel.connect());
 
         mBroadcastDiscoveryButton.setOnClickListener((View v) -> {
             Toast.makeText(atakContext, "Broadcasting discovery message", Toast.LENGTH_SHORT).show();
@@ -125,24 +121,20 @@ public class StatusScreen {
     private void handleNoServiceConnected() {
         Toast.makeText(mAtakContext, "Meshtastic Service not connected, if the icon remains red click the 'Connect Svc' button in the status tab", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_no_service_connected);
-        mConnectToServiceButton.setVisibility(View.VISIBLE);
     }
 
     private void handleNoDeviceConfigured() {
         Toast.makeText(mAtakContext, "No Comm device configured, select one in the Devices tab and tap Set Comm Device", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_no_device_configured);
-        mConnectToServiceButton.setVisibility(View.INVISIBLE);
     }
 
     private void handleDeviceDisconnected() {
         Toast.makeText(mAtakContext, "Comm Device disconnected, check that it is turned on and paired", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_device_disconnected);
-        mConnectToServiceButton.setVisibility(View.INVISIBLE);
     }
 
     private void handleDeviceConnected() {
         Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_device_connected);
-        mConnectToServiceButton.setVisibility(View.INVISIBLE);
     }
 }

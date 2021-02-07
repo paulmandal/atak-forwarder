@@ -24,13 +24,12 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Constants.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
-    private final TrackerListener mTrackerListener;
+    private TrackerListener mTrackerListener;
 
     public TrackerEventHandler(Context atakContext,
                                Logger logger,
                                List<Destroyable> destroyables,
-                               MeshSuspendController meshSuspendController,
-                               TrackerListener trackerListener) {
+                               MeshSuspendController meshSuspendController) {
         super(atakContext,
                 logger,
                 new String[] {
@@ -38,8 +37,10 @@ public class TrackerEventHandler extends MeshEventHandler {
                 },
                 destroyables,
                 meshSuspendController);
+    }
 
-        mTrackerListener = trackerListener;
+    public void setListener(TrackerListener listener) {
+        mTrackerListener = listener;
     }
 
     @Override

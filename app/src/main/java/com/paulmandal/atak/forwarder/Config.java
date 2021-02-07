@@ -12,7 +12,7 @@ public class Config {
     public static final int DELAY_AFTER_STOPPING_SERVICE = 5000;
 
     /**
-     * How long to wait for radioConfig to be available when writing to a non-ATAK device
+     * How long to wait for radioConfig to be available when writing to a Tracker device
      */
     public static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = 10000;
 
@@ -31,12 +31,6 @@ public class Config {
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;
     public static final int MESSAGE_AWAIT_TIMEOUT_MS = 70000;
     public static final int REJECT_STALE_NODE_CHANGE_TIME_MS = 1800000;
-
-    /**
-     * How long shape/PLI messages live in the cache CotMessageCache (preventing them being resent)
-     */
-    public static final int DEFAULT_CACHE_PURGE_TIME_MS = 1800000;
-    public static final int DEFAULT_PLI_CACHE_PURGE_TIME_MS = 20000;
 
     /**
      * TAG prefix for all debug messages

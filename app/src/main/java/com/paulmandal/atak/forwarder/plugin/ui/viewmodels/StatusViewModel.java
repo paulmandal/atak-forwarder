@@ -7,7 +7,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
@@ -64,10 +64,10 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     @Override
-    public void onChannelMembersUpdated(List<UserInfo> atakUsers, List<NonAtakUserInfo> nonAtakStations) {
-        List<UserInfo> allStations = new ArrayList<>(atakUsers.size() + nonAtakStations.size());
+    public void onChannelMembersUpdated(List<UserInfo> atakUsers, List<TrackerUserInfo> trackers) {
+        List<UserInfo> allStations = new ArrayList<>(atakUsers.size() + trackers.size());
         allStations.addAll(atakUsers);
-        allStations.addAll(nonAtakStations);
+        allStations.addAll(trackers);
         mUserInfoList.setValue(allStations);
     }
 

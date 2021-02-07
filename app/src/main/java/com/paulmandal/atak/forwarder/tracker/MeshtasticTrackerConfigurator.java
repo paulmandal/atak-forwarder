@@ -74,7 +74,7 @@ public class MeshtasticTrackerConfigurator {
     private boolean mWroteToDevice = false;
 
     private Runnable mTimeoutRunnable = () -> {
-        Log.e(TAG, "Timed out writing to non-ATAK device!");
+        Log.e(TAG, "Timed out writing to Tracker device!");
         cancel();
         mListener.onDoneWritingToDevice();
     };
@@ -151,12 +151,12 @@ public class MeshtasticTrackerConfigurator {
 
     private void onConnected() {
         try {
-            Log.d(TAG, "Setting service to use non-ATAK device address: " + mTargetDevice);
+            Log.d(TAG, "Setting service to use Tracker device address: " + mTargetDevice);
             mUiThreadHandler.postDelayed(mTimeoutRunnable, DEVICE_CONNECTION_TIMEOUT);
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mTargetDevice);
         } catch (RemoteException e) {
             e.printStackTrace();
-            Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
+            Log.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
         }
     }
 
@@ -222,7 +222,7 @@ public class MeshtasticTrackerConfigurator {
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
             channelSettingsBuilder.setModemConfig(mModemConfig);
 
-            Log.d(TAG, "Setting non-ATAK device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
+            Log.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder);
             radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
@@ -232,18 +232,18 @@ public class MeshtasticTrackerConfigurator {
             mMeshService.setRadioConfig(radioConfig.toByteArray());
 
             if (TrackerCotGenerator.ROLES.length > 9) {
-                throw new RuntimeException("NonAtakStationCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
+                throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
             }
 
-            Log.d(TAG, "Setting non-ATAK device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
+            Log.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
             mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex));
 
-            Log.d(TAG, "Non-ATAK device NodeInfo: " + mMeshService.getMyNodeInfo());
+            Log.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
 
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
             mWroteToDevice = true;
         } catch (RemoteException | InvalidProtocolBufferException e) {
-            Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
+            Log.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
             e.printStackTrace();
         }
     }

@@ -16,11 +16,11 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
 
     public interface ChannelMembersUpdateListener {
-        void onChannelMembersUpdated(List<UserInfo> atakUsers, List<NonAtakUserInfo> nonAtakStations);
+        void onChannelMembersUpdated(List<UserInfo> atakUsers, List<TrackerUserInfo> trackers);
     }
 
-    public interface NonAtakStationUpdateListener {
-        void onNonAtakStationUpdated(NonAtakUserInfo nonAtakUserInfo);
+    public interface TrackerUpdateListener {
+        void trackersUpdated(List<TrackerUserInfo> trackers);
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -29,10 +29,10 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
     private Handler mUiThreadHandler;
 
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
-    private final List<NonAtakUserInfo> mNonAtakStations = new CopyOnWriteArrayList<>();
+    private final List<TrackerUserInfo> mTrackers = new CopyOnWriteArrayList<>();
 
     private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
-    private final List<NonAtakStationUpdateListener> mNonAtakStationUpdateListener = new CopyOnWriteArrayList<>();
+    private final List<TrackerUpdateListener> mTrackerUpdateListener = new CopyOnWriteArrayList<>();
 
     public UserTracker(Context atakContext,
                        Handler uiThreadHandler) {
@@ -43,7 +43,7 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
     public List<UserInfo> getAtakUsers() {
         return mAtakUsers;
     }
-    public List<NonAtakUserInfo> getNonAtakStations() { return mNonAtakStations; }
+    public List<TrackerUserInfo> getTrackers() { return mTrackers; }
 
     @Override
     public void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid) {
@@ -60,17 +60,17 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
             }
         }
 
-        // Remove user from non-ATAK stations list if present
-        UserInfo nonAtakStationUserInfo = null;
-        for (UserInfo user : mNonAtakStations) {
+        // Remove user from Trackers list if present
+        UserInfo trackerUserInfo = null;
+        for (UserInfo user : mTrackers) {
             if (user.meshId.equals(meshId)) {
-                nonAtakStationUserInfo = user;
+                trackerUserInfo = user;
                 break;
             }
         }
 
-        if (nonAtakStationUserInfo != null) {
-            mNonAtakStations.remove(nonAtakStationUserInfo);
+        if (trackerUserInfo != null) {
+            mTrackers.remove(trackerUserInfo);
         }
 
         // Add user to ATAK users list and notify listeners
@@ -85,23 +85,23 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
     }
 
     @Override
-    public void onUserUpdated(NonAtakUserInfo nonAtakUserInfo) {
-        boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(nonAtakUserInfo);
+    public void onUserUpdated(TrackerUserInfo trackerUserInfo) {
+        boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(trackerUserInfo);
 
         if (userExistsInAtakUserList) {
             // Nothing else to do
             return;
         }
 
-        boolean alreadyKnowAboutStation = mNonAtakStations.contains(nonAtakUserInfo);
+        boolean alreadyKnowAboutStation = mTrackers.contains(trackerUserInfo);
         if (alreadyKnowAboutStation) {
-            updateNonAtakStation(nonAtakUserInfo);
+            updateTracker(trackerUserInfo);
         } else {
-            mNonAtakStations.add(nonAtakUserInfo);
+            mTrackers.add(trackerUserInfo);
         }
 
         // Notify listeners
-        notifyNonAtakStationUpdateListeners(nonAtakUserInfo);
+        notifyTrackerUpdateListeners();
     }
 
     public String getMeshIdForUid(String atakUid) {
@@ -121,29 +121,29 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
         mChannelMembersUpdateListeners.remove(listener);
     }
 
-    public void addNonAtakStationUpdateListener(NonAtakStationUpdateListener listener) {
-        mNonAtakStationUpdateListener.add(listener);
+    public void addTrackerUpdateListener(TrackerUpdateListener listener) {
+        mTrackerUpdateListener.add(listener);
     }
 
-    public void removeNonAtakStationUpdateListener(NonAtakStationUpdateListener listener) {
-        mNonAtakStationUpdateListener.remove(listener);
+    public void removeTrackerUpdateListener(TrackerUpdateListener listener) {
+        mTrackerUpdateListener.remove(listener);
     }
 
     public void clearData() {
         mAtakUsers.clear();
-        mNonAtakStations.clear();
+        mTrackers.clear();
         notifyChannelMembersUpdateListeners();
     }
 
-    private boolean maybeUpdateUserBatteryPercentage(NonAtakUserInfo nonAtakUserInfo) {
+    private boolean maybeUpdateUserBatteryPercentage(TrackerUserInfo trackerUserInfo) {
         boolean userExistsInAtakUserList = false;
 
         for (UserInfo user : mAtakUsers) {
-            if (user.meshId.equals(nonAtakUserInfo.meshId)) {
+            if (user.meshId.equals(trackerUserInfo.meshId)) {
                 userExistsInAtakUserList = true;
 
-                if (!Objects.equals(user.batteryPercentage, nonAtakUserInfo.batteryPercentage)) {
-                    user.batteryPercentage = nonAtakUserInfo.batteryPercentage;
+                if (!Objects.equals(user.batteryPercentage, trackerUserInfo.batteryPercentage)) {
+                    user.batteryPercentage = trackerUserInfo.batteryPercentage;
                 }
 
                 break;
@@ -153,34 +153,39 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
         return userExistsInAtakUserList;
     }
 
-    private void updateNonAtakStation(NonAtakUserInfo nonAtakUserInfo) {
-        NonAtakUserInfo userInfo = mNonAtakStations.get(mNonAtakStations.indexOf(nonAtakUserInfo));
+    private void updateTracker(TrackerUserInfo trackerUserInfo) {
+        TrackerUserInfo userInfo = mTrackers.get(mTrackers.indexOf(trackerUserInfo));
 
-        if (!Objects.equals(userInfo.lat, nonAtakUserInfo.lat)) {
-            userInfo.lat = nonAtakUserInfo.lat;
+        if (!Objects.equals(userInfo.lat, trackerUserInfo.lat)) {
+            userInfo.lat = trackerUserInfo.lat;
         }
 
-        if (!Objects.equals(userInfo.lon, nonAtakUserInfo.lon)) {
-            userInfo.lon = nonAtakUserInfo.lon;
+        if (!Objects.equals(userInfo.lon, trackerUserInfo.lon)) {
+            userInfo.lon = trackerUserInfo.lon;
         }
 
-        if (!Objects.equals(userInfo.altitude, nonAtakUserInfo.altitude)) {
-            userInfo.altitude = nonAtakUserInfo.altitude;
+        if (!Objects.equals(userInfo.altitude, trackerUserInfo.altitude)) {
+            userInfo.altitude = trackerUserInfo.altitude;
         }
 
-        if (!Objects.equals(userInfo.batteryPercentage, nonAtakUserInfo.batteryPercentage)) {
-            userInfo.batteryPercentage = nonAtakUserInfo.batteryPercentage;
+        if (!Objects.equals(userInfo.batteryPercentage, trackerUserInfo.batteryPercentage)) {
+            userInfo.batteryPercentage = trackerUserInfo.batteryPercentage;
+        }
+
+        if (!Objects.equals(userInfo.lastSeenTime, trackerUserInfo.lastSeenTime)) {
+            userInfo.lastSeenTime = trackerUserInfo.lastSeenTime;
+        }
+    }
+
+    private void notifyTrackerUpdateListeners() {
+        for (TrackerUpdateListener listener : mTrackerUpdateListener) {
+            mUiThreadHandler.post(() -> listener.trackersUpdated(mTrackers));
         }
     }
 
-    private void notifyNonAtakStationUpdateListeners(NonAtakUserInfo nonAtakUserInfo) {
-        for (NonAtakStationUpdateListener listener : mNonAtakStationUpdateListener) {
-            mUiThreadHandler.post(() -> listener.onNonAtakStationUpdated(nonAtakUserInfo));
-        }
-    }
     private void notifyChannelMembersUpdateListeners() {
         for (ChannelMembersUpdateListener channelMembersUpdateListener : mChannelMembersUpdateListeners) {
-            mUiThreadHandler.post(() -> channelMembersUpdateListener.onChannelMembersUpdated(mAtakUsers, mNonAtakStations));
+            mUiThreadHandler.post(() -> channelMembersUpdateListener.onChannelMembersUpdated(mAtakUsers, mTrackers));
         }
     }
 }

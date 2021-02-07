@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
@@ -90,8 +90,8 @@ public class StatusScreen {
 
         statusViewModel.getUserInfoList().observe(lifecycleOwner, userInfoList -> {
             Collections.sort(userInfoList, (UserInfo lhs, UserInfo rhs) -> {
-                boolean lhsTak = !(lhs instanceof NonAtakUserInfo);
-                boolean rhsTak = !(rhs instanceof NonAtakUserInfo);
+                boolean lhsTak = !(lhs instanceof TrackerUserInfo);
+                boolean rhsTak = !(rhs instanceof TrackerUserInfo);
 
                 if (lhsTak == rhsTak) {
                     return 0;

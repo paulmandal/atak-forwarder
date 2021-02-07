@@ -27,7 +27,7 @@ import com.geeksville.mesh.Position;
 import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.MessageLengthLimitedCommHardware;
@@ -47,7 +47,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface UserListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
 
-        void onUserUpdated(NonAtakUserInfo nonAtakUserInfo);
+        void onUserUpdated(TrackerUserInfo trackerUserInfo);
     }
 
     public interface MessageAckNackListener {
@@ -116,6 +116,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private String mChannelName;
     private int mChannelMode;
     private byte[] mChannelPsk;
+
+    private int mPliHopLimit;
+    private int mChatHopLimit;
+    private int mOtherHopLimit;
 
     private int mDataRate;
     private MeshtasticDevice mCommDevice;
@@ -347,7 +351,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     @Nullable
-    private NonAtakUserInfo nonAtakUserInfoFromNodeInfo(NodeInfo nodeInfo) {
+    private TrackerUserInfo trackerUserInfoFromNodeInfo(NodeInfo nodeInfo, long timeSinceLastSeen) {
         MeshUser meshUser = nodeInfo.getUser();
 
         if (meshUser == null) {
@@ -365,7 +369,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             altitude = position.getAltitude();
             gpsValid = true;
         }
-        return new NonAtakUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, gpsValid, meshUser.getShortName());
+        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
     }
 
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
@@ -389,13 +393,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
                     Log.d(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
 
-                    NonAtakUserInfo nonAtakUserInfo = nonAtakUserInfoFromNodeInfo(nodeInfo);
+                    TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
 
-                    if (nonAtakUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
+                    if (trackerUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
                         // Drop updates that do not have a MeshUser attached or are >30 mins old
                         return;
                     }
-                    mUserListener.onUserUpdated(nonAtakUserInfo);
+                    mUserListener.onUserUpdated(trackerUserInfo);
                     break;
                 case ACTION_MESSAGE_STATUS:
                     int id = intent.getIntExtra(EXTRA_PACKET_ID, 0);
@@ -405,7 +409,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_RECEIVED_DATA:
                     DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
 
-                    if (payload.getDataType() == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
+                    int dataType = payload.getDataType();
+
+                    if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
                         String message = new String(payload.getBytes());
                         Log.d(TAG, "data: " + message);
                         if (message.startsWith(BCAST_MARKER)) {
@@ -413,22 +419,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                         } else {
                             handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
                         }
-                    } else if (payload.getDataType() == Portnums.PortNum.POSITION_APP.getNumber()) {
-                        try {
-                            MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
-                            Log.e(TAG, "Unsupported payload pos, id: " + payload.getId() + ", from: " + payload.getFrom() + ", lat: " + position.getLatitudeI() + " lon: " + position.getLongitudeI());
-                        } catch (InvalidProtocolBufferException e) {
-                            e.printStackTrace();
-                        }
-                    } else if (payload.getDataType() == Portnums.PortNum.NODEINFO_APP.getNumber()) {
-                        try {
-                            MeshProtos.User user = MeshProtos.User.parseFrom(payload.getBytes());
-                            Log.e(TAG, "Unsupported payload user, id: " + payload.getId() + ", from: " + payload.getFrom() + ", name: " + user.getLongName() + ", sn: " + user.getShortName());
-                        } catch (InvalidProtocolBufferException e) {
-                            e.printStackTrace();
-                        }
+                    } else if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()
+                            || dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
+                        // Do nothing for these apps
                     } else {
-                        Log.e(TAG, "Unknown payload type: " + payload.getDataType() + ", id: " + payload.getId() + ", from: " + payload.getFrom() + ", text: " + payload.getText() + ", bytes: " + new String(payload.getBytes()));
+                        Log.e(TAG, "Unknown payload type: " + dataType + ", id: " + payload.getId() + ", from: " + payload.getFrom() + ", text: " + payload.getText() + ", bytes: " + new String(payload.getBytes()));
                     }
                     break;
                 default:
@@ -503,8 +498,9 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
      */
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        // Nothing yet
-        Log.e(TAG, "updateSettings");
+        mPliHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_HOP_LIMIT, PreferencesDefaults.DEFAULT_PLI_HOP_LIMIT));
+        mChatHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHAT_HOP_LIMIT, PreferencesDefaults.DEFAULT_CHAT_HOP_LIMIT));
+        mOtherHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_OTHER_HOP_LIMIT, PreferencesDefaults.DEFAULT_OTHER_HOP_LIMIT));
     }
 
     @Override

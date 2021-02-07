@@ -19,6 +19,9 @@ import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class CommHardware extends DestroyableSharedPrefsListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
@@ -48,7 +51,7 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
     private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
-    private Thread mMessageWorkerThread;
+    private ScheduledExecutorService mMessageWorkerExecutor;
 
     private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mDestroyed = false;
@@ -83,6 +86,7 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     @CallSuper
     public void onDestroy(Context context, MapView mapView) {
         super.onDestroy(context, mapView);
+        mMessageWorkerExecutor.shutdown();
         mDestroyed = true;
     }
 
@@ -110,7 +114,8 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
      */
     @CallSuper
     protected void startWorkerThreads() {
-        mMessageWorkerThread = new Thread(() -> {
+        mMessageWorkerExecutor = Executors.newSingleThreadScheduledExecutor();
+        mMessageWorkerExecutor.scheduleAtFixedRate(() -> {
             while (!mDestroyed) {
                 QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
@@ -128,9 +133,7 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
                         break;
                 }
             }
-        });
-        mMessageWorkerThread.setName("CommHardware.MessageWorker");
-        mMessageWorkerThread.start();
+        }, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     protected boolean isDestroyed() {

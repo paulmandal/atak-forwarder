@@ -1,21 +1,30 @@
 package com.paulmandal.atak.forwarder.tracker;
 
+import android.content.Context;
+
+import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.protobuf.ContactProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobuf.TakvProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufContact;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufTakv;
 
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
-public class TrackerCotGenerator implements UserTracker.NonAtakStationUpdateListener {
+public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, Destroyable {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
     private static final int STALE_TIME_OFFSET_MS = 75000;
@@ -73,44 +82,67 @@ public class TrackerCotGenerator implements UserTracker.NonAtakStationUpdateList
 
     private InboundMessageHandler mInboundMessageHandler;
 
+    private List<TrackerUserInfo> mTrackers;
     private final String mPluginVersion;
-    private final String mLocalCallsign;
 
-    public TrackerCotGenerator(UserTracker userTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion, String localCallsign) {
+    private ScheduledExecutorService mWorkerExecutor;
+    private boolean mDestroyCalled = false;
+
+    public TrackerCotGenerator(List<Destroyable> destroyables, UserTracker userTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion) {
         mInboundMessageHandler = inboundMessageHandler;
         mPluginVersion = pluginVersion;
-        mLocalCallsign = localCallsign;
 
-        userTracker.addNonAtakStationUpdateListener(this);
+        destroyables.add(this);
+        userTracker.addTrackerUpdateListener(this);
 
-        // TODO: thread/loop to draw every 5 mins with new stale-time-offset
-        // TODO: when we get a new station, update its entry in our list and then trigger a redraw
+        startWorkerThread();
     }
 
     @Override
-    public void onNonAtakStationUpdated(NonAtakUserInfo nonAtakUserInfo) {
-        if (nonAtakUserInfo.callsign.equals(mLocalCallsign)) {
-            // Disregard our own station
-            return;
-        }
+    public void trackersUpdated(List<TrackerUserInfo> trackers) {
+        mTrackers = trackers;
+        drawTrackers();
+    }
 
-        if (!nonAtakUserInfo.gpsValid) {
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        mDestroyCalled = true;
+    }
+
+    private void startWorkerThread() {
+        mWorkerExecutor = Executors.newSingleThreadScheduledExecutor();
+        mWorkerExecutor.scheduleAtFixedRate(() -> {
+            while (!mDestroyCalled) {
+                drawTrackers();
+            }
+        }, 0, 5, TimeUnit.MINUTES);
+    }
+
+    private void drawTrackers() {
+        for (TrackerUserInfo tracker : mTrackers) {
+            drawTracker(tracker);
+        }
+    }
+
+    private void drawTracker(TrackerUserInfo tracker) {
+        if (!tracker.gpsValid) {
             // Ignore updates that don't contain a valid GPS point
             return;
         }
 
         CotEvent spoofedPli = new CotEvent();
 
-        CoordinatedTime nowCoordinatedTime = new CoordinatedTime(System.currentTimeMillis());
-        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(nowCoordinatedTime.getMilliseconds() + STALE_TIME_OFFSET_MS);
+        long lastMsgTime = System.currentTimeMillis() - tracker.lastSeenTime;
+        CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(lastMsgTime);
+        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(lastMsgTime + STALE_TIME_OFFSET_MS);
 
-        spoofedPli.setUID(String.format("%s-%s", VALUE_UID_PREFIX, nonAtakUserInfo.meshId.replaceAll("!", "")));
+        spoofedPli.setUID(String.format("%s-%s", VALUE_UID_PREFIX, tracker.meshId.replaceAll("!", "")));
         spoofedPli.setType(TYPE_PLI);
-        spoofedPli.setTime(nowCoordinatedTime);
-        spoofedPli.setStart(nowCoordinatedTime);
+        spoofedPli.setTime(lastMsgCoordinatedTime);
+        spoofedPli.setStart(lastMsgCoordinatedTime);
         spoofedPli.setStale(staleCoordinatedTime);
         spoofedPli.setHow(VALUE_HOW_GPS);
-        spoofedPli.setPoint(new CotPoint(nonAtakUserInfo.lat, nonAtakUserInfo.lon, nonAtakUserInfo.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
+        spoofedPli.setPoint(new CotPoint(tracker.lat, tracker.lon, tracker.altitude, UNKNOWN_LE_CE, UNKNOWN_LE_CE));
 
         CotDetail cotDetail = new CotDetail(TAG_DETAIL);
 
@@ -124,12 +156,12 @@ public class TrackerCotGenerator implements UserTracker.NonAtakStationUpdateList
         mTakvProtobufConverter.maybeAddTakv(cotDetail, takv.build());
 
         ProtobufContact.Contact.Builder contact = ProtobufContact.Contact.newBuilder();
-        contact.setCallsign(nonAtakUserInfo.callsign);
+        contact.setCallsign(tracker.callsign);
         ContactProtobufConverter mContactProtobufConverter = new ContactProtobufConverter();
         mContactProtobufConverter.maybeAddContact(cotDetail, contact.build(), false);
 
         CotDetail uidDetail = new CotDetail(TAG_UID);
-        uidDetail.setAttribute(TAG_DROID, nonAtakUserInfo.callsign);
+        uidDetail.setAttribute(TAG_DROID, tracker.callsign);
         cotDetail.addChild(uidDetail);
 
         CotDetail precisionLocationDetail = new CotDetail(TAG_PRECISION_LOCATION);
@@ -139,11 +171,11 @@ public class TrackerCotGenerator implements UserTracker.NonAtakStationUpdateList
 
         String team = TEAMS[WHITE_INDEX];
         String role = ROLES[TEAM_MEMBER_INDEX];
-        if (nonAtakUserInfo.shortName != null && nonAtakUserInfo.shortName.length() > 1) {
+        if (tracker.shortName != null && tracker.shortName.length() > 1) {
             try {
                 // Try to split the shortname and get team/role values
-                int roleIndex = Integer.parseInt(nonAtakUserInfo.shortName.substring(0, 1));
-                int teamIndex = Integer.parseInt(nonAtakUserInfo.shortName.substring(1));
+                int roleIndex = Integer.parseInt(tracker.shortName.substring(0, 1));
+                int teamIndex = Integer.parseInt(tracker.shortName.substring(1));
 
                 if (teamIndex > -1 && teamIndex < TEAMS.length) {
                     team = TEAMS[teamIndex];
@@ -162,9 +194,9 @@ public class TrackerCotGenerator implements UserTracker.NonAtakStationUpdateList
         groupDetail.setAttribute(TAG_NAME, team);
         cotDetail.addChild(groupDetail);
 
-        if (nonAtakUserInfo.batteryPercentage != null) {
+        if (tracker.batteryPercentage != null) {
             CotDetail statusDetail = new CotDetail(TAG_STATUS);
-            statusDetail.setAttribute(TAG_BATTERY, Integer.toString(nonAtakUserInfo.batteryPercentage));
+            statusDetail.setAttribute(TAG_BATTERY, Integer.toString(tracker.batteryPercentage));
             cotDetail.addChild(statusDetail);
         }
 

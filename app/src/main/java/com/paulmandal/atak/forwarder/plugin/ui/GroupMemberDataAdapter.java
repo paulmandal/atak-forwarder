@@ -11,7 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.List;
@@ -56,7 +56,7 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
 
         ViewHolder holder = (ViewHolder) view.getTag();
         holder.callsign.setText(userInfo.callsign);
-        holder.takIcon.setVisibility(userInfo instanceof NonAtakUserInfo ? View.GONE : View.VISIBLE);
+        holder.takIcon.setVisibility(userInfo instanceof TrackerUserInfo ? View.GONE : View.VISIBLE);
         holder.batteryMeterView.setChargeLevel(userInfo.batteryPercentage);
         return view;
     }

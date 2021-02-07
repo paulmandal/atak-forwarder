@@ -43,6 +43,13 @@ public class Logger extends DestroyableSharedPrefsListener {
         maybeToast(tag, message);
     }
 
+    public void i(String tag, String message) {
+        if (mEnableLogging) {
+            Log.i(tag, message);
+        }
+        maybeToast(tag, message);
+    }
+
     public void e(String tag, String message) {
         if (mEnableLogging) {
             Log.e(tag, message);

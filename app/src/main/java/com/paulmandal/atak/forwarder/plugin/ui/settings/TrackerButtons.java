@@ -23,6 +23,7 @@ import com.atakmap.android.gui.PluginSpinner;
 import com.geeksville.mesh.MeshProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
@@ -38,6 +39,7 @@ public class TrackerButtons {
                           Context pluginContext,
                           Handler uiThreadHandler,
                           DevicesList devicesList,
+                          MeshSuspendController meshSuspendController,
                           MeshtasticCommHardware meshtasticCommHardware,
                           Preference teams,
                           Preference roles,
@@ -116,7 +118,7 @@ public class TrackerButtons {
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshtasticCommHardware, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, meshtasticCommHardware, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -129,6 +131,7 @@ public class TrackerButtons {
 
     private void writeToDevice(Context settingsMenuContext,
                                Handler uiThreadHandler,
+                               MeshSuspendController meshSuspendController,
                                MeshtasticCommHardware meshtasticCommHardware,
                                MeshtasticDevice commDevice,
                                MeshtasticDevice targetDevice,
@@ -142,7 +145,7 @@ public class TrackerButtons {
                                int screenShutoffDelayS,
                                MeshtasticTrackerConfigurator.Listener listener) {
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext);
-        MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(settingsMenuContext, uiThreadHandler, meshtasticCommHardware, meshtasticDeviceSwitcher, commDevice, targetDevice, deviceCallsign, channelName, psk, modemConfig, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, listener);
+        MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(settingsMenuContext, uiThreadHandler, meshSuspendController, meshtasticCommHardware, meshtasticDeviceSwitcher, commDevice, targetDevice, deviceCallsign, channelName, psk, modemConfig, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, listener);
         meshtasticTrackerConfigurator.writeToDevice();
     }
 }

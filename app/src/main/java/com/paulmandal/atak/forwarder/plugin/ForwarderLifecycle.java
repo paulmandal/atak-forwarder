@@ -8,7 +8,7 @@ import com.atakmap.android.maps.MapComponent;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.log.Log;
 import com.paulmandal.atak.forwarder.BuildConfig;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.plugin.ui.ForwarderMapComponent;
 import com.paulmandal.atak.libcotshrink.hackytests.HackyTests;
 
@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import transapps.maps.plugin.lifecycle.Lifecycle;
 
 public class ForwarderLifecycle implements Lifecycle {
-    private final static String TAG = Config.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
+    private final static String TAG = Constants.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
 
     private final Context mPluginContext;
     private MapView mMapView;

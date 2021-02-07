@@ -7,11 +7,11 @@ import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 
 public class MeshtasticChannelConfigurer {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticChannelConfigurer.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticChannelConfigurer.class.getSimpleName();
 
     private final UserTracker mUserTracker;
 

@@ -4,7 +4,7 @@ import android.os.Handler;
 
 import androidx.annotation.Nullable;
 
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class CommandQueue {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + CommandQueue.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + CommandQueue.class.getSimpleName();
 
     public interface Listener {
         void onMessageQueueSizeChanged(int size);

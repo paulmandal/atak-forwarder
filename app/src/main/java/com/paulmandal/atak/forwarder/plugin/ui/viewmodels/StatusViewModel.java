@@ -6,11 +6,12 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -23,8 +24,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
         MeshtasticCommHardware.MessageAckNackListener,
-        CommHardware.MessageListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
+        InboundMeshMessageHandler.MessageListener {
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
     private final CommHardware mMeshtasticCommHardware;
 
@@ -42,6 +43,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
                            SharedPreferences sharedPreferences,
                            UserTracker userTracker,
                            MeshtasticCommHardware meshtasticCommHardware,
+                           InboundMeshMessageHandler inboundMeshMessageHandler,
                            CommandQueue commandQueue,
                            HashHelper hashHelper) {
         super(destroyables, sharedPreferences, hashHelper);
@@ -60,7 +62,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         commandQueue.setListener(this);
         meshtasticCommHardware.addConnectionStateListener(this);
         meshtasticCommHardware.addMessageAckNackListener(this);
-        meshtasticCommHardware.addMessageListener(this);
+        inboundMeshMessageHandler.addMessageListener(this);
     }
 
     @Override

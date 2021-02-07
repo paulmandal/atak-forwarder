@@ -14,10 +14,12 @@ import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.app.preferences.ToolsPreferenceFragment;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -42,7 +44,7 @@ import java.util.List;
 import static com.atakmap.android.util.ATAKConstants.getPackageName;
 
 public class ForwarderMapComponent extends DropDownMapComponent {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + ForwarderMapComponent.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + ForwarderMapComponent.class.getSimpleName();
 
     private Context mPluginContext;
 
@@ -67,10 +69,13 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(atakContext);
         Logger logger = new Logger(mDestroyables, sharedPreferences, atakContext);
 
+        MeshSuspendController meshSuspendController = new MeshSuspendController();
+        InboundMeshMessageHandler inboundMeshMessageHandler = new InboundMeshMessageHandler(atakContext, mDestroyables, meshSuspendController, uiThreadHandler, logger);
+
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext);
         UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger);
         MeshtasticCommHardware meshtasticCommHardware = CommHardwareFactory.createAndInitMeshtasticCommHardware(atakContext, mapView, uiThreadHandler, meshtasticDeviceSwitcher, userTracker, userTracker, commandQueue, queuedCommandFactory, sharedPreferences, mDestroyables);
-        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(meshtasticCommHardware, cotShrinker, logger);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(inboundMeshMessageHandler, cotShrinker, logger);
         CotMessageCache cotMessageCache = new CotMessageCache(mDestroyables, sharedPreferences, cotComparer);
         OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(meshtasticCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, mDestroyables, logger);
 
@@ -84,7 +89,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(mDestroyables, userTracker, inboundMessageHandler, pluginVersion);
 
         HashHelper hashHelper = new HashHelper();
-        StatusViewModel statusViewModel = new StatusViewModel(mDestroyables, sharedPreferences, userTracker, meshtasticCommHardware, commandQueue, hashHelper);
+        StatusViewModel statusViewModel = new StatusViewModel(mDestroyables, sharedPreferences, userTracker, meshtasticCommHardware, inboundMeshMessageHandler, commandQueue, hashHelper);
 
         DevicesList devicesList = new DevicesList(atakContext);
 
@@ -110,6 +115,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                                 mDestroyables,
                                 sharedPreferences,
                                 devicesList,
+                                meshSuspendController,
                                 meshtasticCommHardware,
                                 cotMessageCache,
                                 commandQueue,

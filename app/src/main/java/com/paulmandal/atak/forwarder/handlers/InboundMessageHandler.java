@@ -2,14 +2,14 @@ package com.paulmandal.atak.forwarder.handlers;
 
 import com.atakmap.comms.CotDispatcher;
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
-public class InboundMessageHandler implements CommHardware.MessageListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
+public class InboundMessageHandler implements InboundMeshMessageHandler.MessageListener {
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
 
     private final CotDispatcher mInternalCotDispatcher;
     private final CotDispatcher mExternalCotDispatcher;
@@ -18,7 +18,7 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
 
     public InboundMessageHandler(CotDispatcher internalCotDispatcher,
                                  CotDispatcher externalCotDispatcher,
-                                 CommHardware commHardware,
+                                 InboundMeshMessageHandler inboundMeshMessageHandler,
                                  CotShrinker cotShrinker,
                                  Logger logger) {
         mInternalCotDispatcher = internalCotDispatcher;
@@ -26,7 +26,7 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
         mCotShrinker = cotShrinker;
         mLogger = logger;
 
-        commHardware.addMessageListener(this);
+        inboundMeshMessageHandler.addMessageListener(this);
     }
 
     @Override

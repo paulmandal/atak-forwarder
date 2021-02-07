@@ -16,21 +16,22 @@ import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticDeviceSwitcher;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 public class MeshtasticTrackerConfigurator {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
 
     public interface Listener {
         void onDoneWritingToDevice();
     }
 
-    private static final int DEVICE_CONNECTION_TIMEOUT = Config.DEVICE_CONNECTION_TIMEOUT;
-    private static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = Config.RADIO_CONFIG_MISSING_RETRY_TIME_MS;
+    private static final int DEVICE_CONNECTION_TIMEOUT = Constants.DEVICE_CONNECTION_TIMEOUT;
+    private static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = Constants.RADIO_CONFIG_MISSING_RETRY_TIME_MS;
 
     /**
      * Intents the Meshtastic service can send
@@ -49,6 +50,7 @@ public class MeshtasticTrackerConfigurator {
     private final Handler mUiThreadHandler;
 
     private final MeshtasticDevice mCommDevice;
+    private final MeshSuspendController mMeshSuspendController;
     private final MeshtasticCommHardware mMeshtasticCommHardware;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshtasticDevice mTargetDevice;
@@ -79,6 +81,7 @@ public class MeshtasticTrackerConfigurator {
 
     public MeshtasticTrackerConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
+                                         MeshSuspendController meshSuspendController,
                                          MeshtasticCommHardware meshtasticCommHardware,
                                          MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                          MeshtasticDevice commDevice,
@@ -95,6 +98,7 @@ public class MeshtasticTrackerConfigurator {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mCommDevice = commDevice;
+        mMeshSuspendController = meshSuspendController;
         mMeshtasticCommHardware = meshtasticCommHardware;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mTargetDevice = targetDevice;
@@ -110,7 +114,7 @@ public class MeshtasticTrackerConfigurator {
     }
 
     public void writeToDevice() {
-        mMeshtasticCommHardware.toggleEventHandling(true);
+        mMeshSuspendController.setSuspended(true);
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -250,7 +254,7 @@ public class MeshtasticTrackerConfigurator {
         Log.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
 
         unbind();
-        mMeshtasticCommHardware.toggleEventHandling(false);
+        mMeshSuspendController.setSuspended(false);
         mListener.onDoneWritingToDevice();
     }
 

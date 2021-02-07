@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
 
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class UserTracker implements MeshtasticCommHardware.UserListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
 
     public interface ChannelMembersUpdateListener {
         void onChannelMembersUpdated(List<UserInfo> atakUsers, List<TrackerUserInfo> trackers);

@@ -1,6 +1,6 @@
 package com.paulmandal.atak.forwarder;
 
-public class Config {
+public class Constants {
     /**
      * Pre-shared Key Length, 16 for AES128, 32 for AES256
      */
@@ -31,6 +31,11 @@ public class Config {
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;
     public static final int MESSAGE_AWAIT_TIMEOUT_MS = 70000;
     public static final int REJECT_STALE_NODE_CHANGE_TIME_MS = 1800000;
+
+    /**
+     * Discovery Broadcast Marker
+     */
+    public static final String DISCOVERY_BROADCAST_MARKER = "ATAKBCAST";
 
     /**
      * TAG prefix for all debug messages

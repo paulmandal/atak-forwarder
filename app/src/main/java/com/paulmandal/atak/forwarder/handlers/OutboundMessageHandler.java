@@ -5,7 +5,7 @@ import android.content.Context;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -22,7 +22,7 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable  {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
     private final CommsMapComponent mCommsMapComponent;
     private final CommHardware mCommHardware;

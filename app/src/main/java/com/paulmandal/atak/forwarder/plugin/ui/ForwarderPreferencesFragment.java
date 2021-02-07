@@ -11,6 +11,7 @@ import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -34,6 +35,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
     private static SharedPreferences sSharedPreferences;
     @SuppressLint("StaticFieldLeak")
     private static DevicesList sDevicesList;
+    private static MeshSuspendController sMeshSuspendController;
     private static MeshtasticCommHardware sCommHardware;
     private static CotMessageCache sCotMessageCache;
     private static CommandQueue sCommandQueue;
@@ -49,6 +51,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                                         final List<Destroyable> destroyables,
                                         final SharedPreferences sharedPreferences,
                                         final DevicesList devicesList,
+                                        final MeshSuspendController meshSuspendController,
                                         final MeshtasticCommHardware commHardware,
                                         final CotMessageCache cotMessageCache,
                                         final CommandQueue commandQueue,
@@ -58,6 +61,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sDestroyables = destroyables;
         this.sSharedPreferences = sharedPreferences;
         this.sDevicesList = devicesList;
+        this.sMeshSuspendController = meshSuspendController;
         this.sCommHardware = commHardware;
         this.sCotMessageCache = cotMessageCache;
         this.sCommandQueue = commandQueue;
@@ -98,6 +102,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 pluginContext,
                 uiThreadHandler,
                 sDevicesList,
+                sMeshSuspendController,
                 sCommHardware,
                 findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
                 findPreference(PreferencesKeys.KEY_TRACKER_ROLE),
@@ -122,6 +127,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sDestroyables = null;
         this.sSharedPreferences = null;
         this.sDevicesList = null;
+        this.sMeshSuspendController = null;
         this.sCommHardware = null;
         this.sCotMessageCache = null;
         this.sCommandQueue = null;

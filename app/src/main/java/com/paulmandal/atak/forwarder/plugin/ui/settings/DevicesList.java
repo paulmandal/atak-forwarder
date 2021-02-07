@@ -7,7 +7,7 @@ import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 public class DevicesList {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesList.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + DevicesList.class.getSimpleName();
 
     private static final String MARKER_MESHTASTIC = "Meshtastic";
 

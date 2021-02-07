@@ -11,7 +11,7 @@ import android.os.RemoteException;
 import android.util.Log;
 
 import com.geeksville.mesh.IMeshService;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MeshtasticDeviceSwitcher {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticDeviceSwitcher.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticDeviceSwitcher.class.getSimpleName();
 
     private static final String ACTION_USB_PERMISSION = "com.paulmandal.atak.forwarder.USB_PERMISSION";
 

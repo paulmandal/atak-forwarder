@@ -4,13 +4,13 @@ import android.preference.Preference;
 
 import com.atakmap.android.gui.PanListPreference;
 import com.google.gson.Gson;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 
 import java.util.List;
 
 public class MainButtons {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MainButtons.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MainButtons.class.getSimpleName();
 
     public MainButtons(DevicesList devicesList,
                        Preference setCommDevicePreference,

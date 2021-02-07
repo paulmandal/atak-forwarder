@@ -7,7 +7,7 @@ import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
 import com.atakmap.coremap.maps.time.CoordinatedTime;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, Destroyable {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
     private static final int DRAW_MARKERS_INTERVAL_MINS = 3;
 

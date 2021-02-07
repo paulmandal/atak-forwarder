@@ -6,16 +6,16 @@ import android.util.Log;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 public class MeshtasticDeviceConfigurer {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticDeviceConfigurer.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticDeviceConfigurer.class.getSimpleName();
 
-    private static final int POSITION_BROADCAST_INTERVAL_S = Config.POSITION_BROADCAST_INTERVAL_S;
-    private static final int LCD_SCREEN_ON_S = Config.LCD_SCREEN_ON_S;
-    private static final int WAIT_BLUETOOTH_S = Config.WAIT_BLUETOOTH_S;
-    private static final int PHONE_TIMEOUT_S = Config.PHONE_TIMEOUT_S;
+    private static final int POSITION_BROADCAST_INTERVAL_S = Constants.POSITION_BROADCAST_INTERVAL_S;
+    private static final int LCD_SCREEN_ON_S = Constants.LCD_SCREEN_ON_S;
+    private static final int WAIT_BLUETOOTH_S = Constants.WAIT_BLUETOOTH_S;
+    private static final int PHONE_TIMEOUT_S = Constants.PHONE_TIMEOUT_S;
 
     private final UserInfo mSelfInfo;
 

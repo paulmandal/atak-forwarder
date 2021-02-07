@@ -7,7 +7,7 @@ import android.os.Handler;
 import androidx.annotation.CallSuper;
 
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
@@ -24,11 +24,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public abstract class CommHardware extends DestroyableSharedPrefsListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
 
     private static final int CHECK_MESSAGE_QUEUE_INTERVAL_MS = 300;
-
-    protected static final String BCAST_MARKER = "ATAKBCAST";
 
     public enum ConnectionState {
         NO_SERVICE_CONNECTION,
@@ -37,9 +35,6 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
         DEVICE_CONNECTED
     }
 
-    public interface MessageListener {
-        void onMessageReceived(int messageId, byte[] message);
-    }
 
     public interface ConnectionStateListener {
         void onConnectionStateChanged(ConnectionState connectionState);
@@ -51,7 +46,6 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     private final QueuedCommandFactory mQueuedCommandFactory;
 
     private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
-    private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
 
     private ScheduledExecutorService mMessageWorkerExecutor;
 
@@ -97,13 +91,6 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     /**
      * Listener Management
      */
-    public void addMessageListener(MessageListener listener) {
-        mMessageListeners.add(listener);
-    }
-
-    public void removeMessageListener(MessageListener listener) {
-        mMessageListeners.remove(listener);
-    }
 
     public void addConnectionStateListener(ConnectionStateListener listener) {
         mConnectionStateListeners.add(listener);
@@ -173,18 +160,12 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     }
 
     protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = BCAST_MARKER + "," + mSelfInfo.meshId + "," + mSelfInfo.atakUid + "," + mSelfInfo.callsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        String broadcastData = Constants.DISCOVERY_BROADCAST_MARKER + "," + mSelfInfo.meshId + "," + mSelfInfo.atakUid + "," + mSelfInfo.callsign + "," + (initialDiscoveryMessage ? 1 : 0);
 
         String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
         handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
 
         mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
-    }
-
-    protected void notifyMessageListeners(int messageId, byte[] message) {
-        for (MessageListener listener : mMessageListeners) {
-            mUiThreadHandler.post(() -> listener.onMessageReceived(messageId, message));
-        }
     }
 
     protected void notifyConnectionStateListeners(ConnectionState connectionState) {

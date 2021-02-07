@@ -25,11 +25,12 @@ import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Portnums;
 import com.geeksville.mesh.Position;
 import com.google.gson.Gson;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.Constants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshServiceConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
@@ -56,35 +57,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         void onMessageTimedOut(int messageId);
     }
 
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
+    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
 
-    private static final int MESSAGE_AWAIT_TIMEOUT_MS = Config.MESSAGE_AWAIT_TIMEOUT_MS;
-    private static final int DELAY_AFTER_STOPPING_SERVICE = Config.DELAY_AFTER_STOPPING_SERVICE;
-    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Config.REJECT_STALE_NODE_CHANGE_TIME_MS;
-
-    /**
-     * Intents the Meshtastic service can send
-     */
-    private static final String ACTION_MESH_CONNECTED = "com.geeksville.mesh.MESH_CONNECTED";
-    private static final String ACTION_RECEIVED_DATA = "com.geeksville.mesh.RECEIVED_DATA";
-    private static final String ACTION_NODE_CHANGE = "com.geeksville.mesh.NODE_CHANGE";
-    private static final String ACTION_MESSAGE_STATUS = "com.geeksville.mesh.MESSAGE_STATUS";
-
-    /**
-     * Extra data fields from the Meshtastic service
-     */
-    // a bool true means now connected, false means not
-    private static final String EXTRA_CONNECTED = "com.geeksville.mesh.Connected";
-
-    /// a bool true means we expect this condition to continue until, false means device might come back
-    private static final String EXTRA_PERMANENT = "com.geeksville.mesh.Permanent";
-
-    private static final String EXTRA_PAYLOAD = "com.geeksville.mesh.Payload";
-    private static final String EXTRA_NODEINFO = "com.geeksville.mesh.NodeInfo";
-    private static final String EXTRA_PACKET_ID = "com.geeksville.mesh.PacketId";
-    private static final String EXTRA_STATUS = "com.geeksville.mesh.Status";
-
-    private static final String STATE_CONNECTED = "CONNECTED";
+    private static final int MESSAGE_AWAIT_TIMEOUT_MS = Constants.MESSAGE_AWAIT_TIMEOUT_MS;
+    private static final int DELAY_AFTER_STOPPING_SERVICE = Constants.DELAY_AFTER_STOPPING_SERVICE;
+    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Constants.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
     private MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private MeshtasticDeviceConfigurer mMeshtasticDeviceConfigurer;
@@ -148,7 +125,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 commandQueue,
                 queuedCommandFactory,
                 userTracker,
-                Config.MESHTASTIC_MESSAGE_CHUNK_LENGTH,
+                Constants.MESHTASTIC_MESSAGE_CHUNK_LENGTH,
                 selfInfo);
 
         mSharedPreferences = sharedPreferences;
@@ -187,16 +164,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         mServiceIntent.setClassName("com.geeksville.mesh", "com.geeksville.mesh.service.MeshService");
 
         bindToService();
-
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(ACTION_MESH_CONNECTED);
-        filter.addAction(ACTION_NODE_CHANGE);
-        filter.addAction(ACTION_RECEIVED_DATA);
-        filter.addAction(ACTION_MESSAGE_STATUS);
-
-        mIntentFilter = filter;
-
-        mAtakContext.registerReceiver(mBroadcastReceiver, filter);
     }
 
     public void addMessageAckNackListener(MessageAckNackListener listener) {
@@ -237,16 +204,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
         unbindAndStopService();
         bindToService();
-    }
-
-    public void toggleEventHandling(boolean suspended) {
-        if (suspended) {
-            mAtakContext.unregisterReceiver(mBroadcastReceiver);
-            setConnectionState(CommHardware.ConnectionState.DEVICE_DISCONNECTED);
-        } else {
-            mAtakContext.registerReceiver(mBroadcastReceiver, mIntentFilter);
-            setConnectionState(CommHardware.ConnectionState.DEVICE_CONNECTED);
-        }
     }
 
     public MeshtasticDevice getDevice() {
@@ -316,7 +273,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             if (mCommDevice == null) {
                 connectionState = CommHardware.ConnectionState.NO_DEVICE_CONFIGURED;
             } else {
-                boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
+                boolean connected = mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
                 connectionState = connected ? CommHardware.ConnectionState.DEVICE_CONNECTED : CommHardware.ConnectionState.DEVICE_DISCONNECTED;
             }
 
@@ -382,14 +339,14 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
             }
 
             switch (action) {
-                case ACTION_MESH_CONNECTED:
-                    String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
-                    boolean connected = extraConnected.equals(STATE_CONNECTED);
+                case MeshServiceConstants.ACTION_MESH_CONNECTED:
+                    String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
+                    boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
                     Log.d(TAG, "MESH_CONNECTED: " + connected);
                     maybeInitialConnection();
                     break;
-                case ACTION_NODE_CHANGE:
-                    NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
+                case MeshServiceConstants.ACTION_NODE_CHANGE:
+                    NodeInfo nodeInfo = intent.getParcelableExtra(MeshServiceConstants.EXTRA_NODEINFO);
                     long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
                     Log.v(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
 
@@ -401,30 +358,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     }
                     mUserListener.onUserUpdated(trackerUserInfo);
                     break;
-                case ACTION_MESSAGE_STATUS:
-                    int id = intent.getIntExtra(EXTRA_PACKET_ID, 0);
-                    MessageStatus status = intent.getParcelableExtra(EXTRA_STATUS);
+                case MeshServiceConstants.ACTION_MESSAGE_STATUS:
+                    int id = intent.getIntExtra(MeshServiceConstants.EXTRA_PACKET_ID, 0);
+                    MessageStatus status = intent.getParcelableExtra(MeshServiceConstants.EXTRA_STATUS);
                     handleMessageStatusChange(id, status);
                     break;
-                case ACTION_RECEIVED_DATA:
-                    DataPacket payload = intent.getParcelableExtra(EXTRA_PAYLOAD);
+                case MeshServiceConstants.ACTION_RECEIVED_DATA:
 
-                    int dataType = payload.getDataType();
-
-                    if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
-                        String message = new String(payload.getBytes());
-                        Log.d(TAG, "Received packet: " + (new String(message).replace("\n", "").replace("\r", "")));
-                        if (message.startsWith(CommHardware.BCAST_MARKER)) {
-                            handleDiscoveryMessage(message);
-                        } else {
-                            handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
-                        }
-                    } else if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()
-                            || dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
-                        // Do nothing for these apps
-                    } else {
-                        Log.e(TAG, "Unknown payload type: " + dataType + ", id: " + payload.getId() + ", from: " + payload.getFrom() + ", text: " + payload.getText() + ", bytes: " + new String(payload.getBytes()));
-                    }
                     break;
                 default:
                     Log.e(TAG, "Do not know how to handle intent action: " + intent.getAction());
@@ -434,7 +374,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     };
 
     protected void handleDiscoveryMessage(String message) {
-        String messageWithoutMarker = message.replace(CommHardware.BCAST_MARKER + ",", "");
+        String messageWithoutMarker = message.replace(Constants.DISCOVERY_BROADCAST_MARKER + ",", "");
         String[] messageSplit = messageWithoutMarker.split(",");
         String meshId = messageSplit[0];
         String atakUid = messageSplit[1];

@@ -121,22 +121,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     protected boolean sendMessageSegment(byte[] message, String targetId) {
         prepareToSendMessage(message.length);
 
-        DataPacket dataPacket = new DataPacket(targetId,
-                message,
-                Portnums.PortNum.UNKNOWN_APP.getNumber(),
-                DataPacket.ID_LOCAL,
-                System.currentTimeMillis(),
-                0,
-                MessageStatus.UNKNOWN);
-        try {
-            mMeshService.send(dataPacket);
-            mPendingMessageId = dataPacket.getId();
-            Log.d(TAG, "sendMessageSegment() waiting for ACK/NACK for messageId: " + dataPacket.getId());
-        } catch (RemoteException e) {
-            Log.e(TAG, "sendMessageSegment, RemoteException: " + e.getMessage());
-            e.printStackTrace();
-            return false;
-        }
 
         awaitPendingMessageCountDownLatch();
 

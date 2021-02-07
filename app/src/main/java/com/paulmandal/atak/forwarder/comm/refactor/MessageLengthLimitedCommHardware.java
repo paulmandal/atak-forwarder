@@ -55,28 +55,9 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
         byte[] message = sendMessageCommand.message;
         String[] toUIDs = sendMessageCommand.toUIDs;
         // Check message length and break up if necessary
-        int chunks = (int) Math.ceil((double) message.length / (double) mMessageChunkLength);
 
-        if (chunks > 15) {
-            Log.e(TAG, "Cannot break message into more than 15 pieces since we only have 1 byte for the header");
-            return;
-        }
 
-        Log.v(TAG, "sendMessageToUserOrGroup, message length: " + message.length + " chunks: " + chunks);
 
-        byte[][] messages = new byte[chunks][];
-        for (int i = 0; i < chunks; i++) {
-            int start = i * mMessageChunkLength;
-            int end = Math.min((i + 1) * mMessageChunkLength, message.length);
-            int length = end - start;
-
-            messages[i] = new byte[length + 1];
-            messages[i][0] = (byte) (i << 4 | chunks);
-
-            for (int idx = 1, j = start; j < end; j++, idx++) {
-                messages[i][idx] = message[j];
-            }
-        }
 
         if (toUIDs == null) {
             sendMessagesToGroup(messages, sendMessageCommand.cotEvent.getType().equals(TYPE_PLI));

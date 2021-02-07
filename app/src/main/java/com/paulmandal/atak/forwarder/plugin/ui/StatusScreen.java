@@ -12,7 +12,7 @@ import android.widget.Toast;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 public class StatusScreen {
     private Context mAtakContext;

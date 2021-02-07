@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.comm.commhardware;
+package com.paulmandal.atak.forwarder.comm.commhardware.meshtastic;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -30,14 +30,12 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticChannelConfigurer;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDeviceConfigurer;
+import com.paulmandal.atak.forwarder.comm.commhardware.MessageLengthLimitedCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
-import com.paulmandal.atak.forwarder.persistence.PreferencesDefaults;
-import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;

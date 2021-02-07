@@ -1,12 +1,12 @@
-package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
+package com.paulmandal.atak.forwarder.plugin.ui.viewmodels;
 
 import androidx.annotation.CallSuper;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.geeksville.mesh.MeshProtos;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 public class ChannelStatusViewModel {
     private HashHelper mHashHelper;

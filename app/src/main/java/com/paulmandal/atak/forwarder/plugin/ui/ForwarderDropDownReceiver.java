@@ -14,7 +14,7 @@ import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 public class ForwarderDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
     public static final String TAG = Config.DEBUG_TAG_PREFIX + ForwarderDropDownReceiver.class.getSimpleName();

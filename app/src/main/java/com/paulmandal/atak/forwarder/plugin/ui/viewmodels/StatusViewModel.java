@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels;
+package com.paulmandal.atak.forwarder.plugin.ui.viewmodels;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
@@ -9,9 +9,9 @@ import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 import java.util.ArrayList;
 import java.util.List;

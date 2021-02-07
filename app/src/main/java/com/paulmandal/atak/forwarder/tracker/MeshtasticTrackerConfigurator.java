@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.nonatak;
+package com.paulmandal.atak.forwarder.tracker;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -16,10 +16,10 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 public class MeshtasticTrackerConfigurator {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();

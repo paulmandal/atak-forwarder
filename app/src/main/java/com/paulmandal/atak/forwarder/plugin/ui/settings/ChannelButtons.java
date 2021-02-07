@@ -17,12 +17,12 @@ import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.persistence.PreferencesDefaults;
-import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
-import com.paulmandal.atak.forwarder.plugin.ui.QrHelper;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.QrHelper;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 import java.security.SecureRandom;
 import java.util.List;

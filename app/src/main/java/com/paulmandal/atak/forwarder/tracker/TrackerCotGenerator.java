@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.nonatak;
+package com.paulmandal.atak.forwarder.tracker;
 
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;

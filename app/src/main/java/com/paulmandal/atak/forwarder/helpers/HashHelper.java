@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.plugin.ui.tabs;
+package com.paulmandal.atak.forwarder.helpers;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

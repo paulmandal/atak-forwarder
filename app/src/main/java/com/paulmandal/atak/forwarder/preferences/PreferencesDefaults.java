@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.persistence;
+package com.paulmandal.atak.forwarder.preferences;
 
 /**
  * These should match the values in preferences.xml

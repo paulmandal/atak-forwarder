@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.plugin.ui;
+package com.paulmandal.atak.forwarder.helpers;
 
 import android.graphics.Bitmap;
 import android.util.Base64;

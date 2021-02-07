@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.persistence;
+package com.paulmandal.atak.forwarder.preferences;
 
 /**
  * Note: these must match their counterparts in strings.xml

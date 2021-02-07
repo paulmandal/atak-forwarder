@@ -23,12 +23,12 @@ import com.atakmap.android.gui.PluginSpinner;
 import com.geeksville.mesh.MeshProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.nonatak.MeshtasticTrackerConfigurator;
-import com.paulmandal.atak.forwarder.persistence.PreferencesDefaults;
-import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
+import com.paulmandal.atak.forwarder.tracker.MeshtasticTrackerConfigurator;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 
 import java.util.List;

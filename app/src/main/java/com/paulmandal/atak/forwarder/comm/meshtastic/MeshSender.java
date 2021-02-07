@@ -281,6 +281,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mLogger.e(TAG, "sendChunk(), RemoteException: " + e.getMessage());
             e.printStackTrace();
         }
+        mLogger.v(TAG, "  sendChunk() ended");
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {

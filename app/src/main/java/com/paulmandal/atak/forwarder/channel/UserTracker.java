@@ -2,11 +2,11 @@ package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +27,7 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
 
     private final Context mAtakContext;
     private final Handler mUiThreadHandler;
+    private final Logger mLogger;
 
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
     private final List<TrackerUserInfo> mTrackers = new CopyOnWriteArrayList<>();
@@ -35,9 +36,11 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
     private final List<TrackerUpdateListener> mTrackerUpdateListener = new CopyOnWriteArrayList<>();
 
     public UserTracker(Context atakContext,
-                       Handler uiThreadHandler) {
+                       Handler uiThreadHandler,
+                       Logger logger) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
+        mLogger = logger;
     }
 
     public List<UserInfo> getAtakUsers() {
@@ -75,7 +78,7 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
-            Log.d(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
+            mLogger.d(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
             notifyChannelMembersUpdateListeners();

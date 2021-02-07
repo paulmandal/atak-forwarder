@@ -28,6 +28,7 @@ import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
@@ -64,13 +65,14 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(atakContext);
+        Logger logger = new Logger(mDestroyables, sharedPreferences, atakContext);
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext);
-        UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler);
+        UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger);
         MeshtasticCommHardware meshtasticCommHardware = CommHardwareFactory.createAndInitMeshtasticCommHardware(atakContext, mapView, uiThreadHandler, meshtasticDeviceSwitcher, userTracker, userTracker, commandQueue, queuedCommandFactory, sharedPreferences, mDestroyables);
-        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(meshtasticCommHardware, cotShrinker);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(meshtasticCommHardware, cotShrinker, logger);
         CotMessageCache cotMessageCache = new CotMessageCache(mDestroyables, sharedPreferences, cotComparer);
-        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(meshtasticCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, mDestroyables);
+        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(meshtasticCommHardware, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, mDestroyables, logger);
 
         String pluginVersion = "0.0";
         try {
@@ -110,7 +112,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                                 devicesList,
                                 meshtasticCommHardware,
                                 cotMessageCache,
-                                commandQueue
+                                commandQueue,
+                                logger
                         )));
     }
 

@@ -13,15 +13,16 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
-import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.AdvancedButtons;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.ChannelButtons;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.MainButtons;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.TrackerButtons;
-import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.List;
 
@@ -36,6 +37,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
     private static MeshtasticCommHardware sCommHardware;
     private static CotMessageCache sCotMessageCache;
     private static CommandQueue sCommandQueue;
+    @SuppressLint("StaticFieldLeak")
+    private static Logger sLogger;
 
     public ForwarderPreferencesFragment() {
         super(sPluginContext, R.xml.preferences);
@@ -48,7 +51,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                                         final DevicesList devicesList,
                                         final MeshtasticCommHardware commHardware,
                                         final CotMessageCache cotMessageCache,
-                                        final CommandQueue commandQueue) {
+                                        final CommandQueue commandQueue,
+                                        final Logger logger) {
         super(pluginContext, R.xml.preferences);
         this.sPluginContext = pluginContext;
         this.sDestroyables = destroyables;
@@ -57,6 +61,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sCommHardware = commHardware;
         this.sCotMessageCache = cotMessageCache;
         this.sCommandQueue = commandQueue;
+        this.sLogger = logger;
 
         destroyables.add(this);
     }
@@ -80,6 +85,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 sCommHardware,
                 hashHelper,
                 qrHelper,
+                sLogger,
                 findPreference(PreferencesKeys.KEY_CHANNEL_MODE),
                 findPreference(PreferencesKeys.KEY_CHANNEL_PSK),
                 findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),
@@ -119,5 +125,6 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sCommHardware = null;
         this.sCotMessageCache = null;
         this.sCommandQueue = null;
+        this.sLogger = null;
     }
 }

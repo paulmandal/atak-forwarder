@@ -106,6 +106,12 @@
     <string name="clear_outbound_msg_queue">Clear Outbound Msg Queue</string>
     <string name="clear_outbound_msg_queue_summary">Clear the outbound message queue</string>
 
+    <string name="enable_logging">Enable Logging</string>
+    <string name="enable_logging_summary">Enables debug logging to logcat</string>
+
+    <string name="enable_logging_toasts">Enable Logging Toasts</string>
+    <string name="enable_logging_toasts_summary">Enables debug logging Toast messages</string>
+
     <string name="reset_to_default">Reset to Defaults</string>
     <string name="reset_to_default_summary">Reset the plugin to its default settings (keeps channel settings)</string>
 

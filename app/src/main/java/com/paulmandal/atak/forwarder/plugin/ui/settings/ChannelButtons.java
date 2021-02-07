@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.util.Base64;
-import android.util.Log;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanListPreference;
@@ -17,12 +16,13 @@ import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
-import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.helpers.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
-import com.paulmandal.atak.forwarder.helpers.QrHelper;
-import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.security.SecureRandom;
 import java.util.List;
@@ -45,6 +45,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           CommHardware commHardware,
                           HashHelper hashHelper,
                           QrHelper qrHelper,
+                          Logger logger,
                           Preference channelMode,
                           Preference channelPsk,
                           Preference showChannelQr,
@@ -64,7 +65,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         listPreferenceChannelMode.setEntryValues(R.array.channel_mode_values);
 
         channelPsk.setOnPreferenceClickListener((Preference preference) -> {
-            Log.e(TAG, "Generate PSK button clicked");
+            logger.e(TAG, "Generate PSK button clicked");
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.generate_psk_warning))
@@ -145,7 +146,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         .putString(PreferencesKeys.KEY_CHANNEL_PSK, Base64.encodeToString(psk, Base64.DEFAULT))
                         .apply();
 
-                Log.e(TAG, "Updating channel settings: " + new String(channelNameBytes) + ", " + modemConfig + ", " + hashHelper.hashFromBytes(psk));
+                logger.e(TAG, "Updating channel settings: " + new String(channelNameBytes) + ", " + modemConfig + ", " + hashHelper.hashFromBytes(psk));
 
                 commHardware.broadcastDiscoveryMessage();
 

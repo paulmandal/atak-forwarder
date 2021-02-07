@@ -28,4 +28,6 @@ public class PreferencesKeys {
     public static final String KEY_CLEAR_OUTBOUND_MSG_QUEUE = "plugin_atak_forwarder_key_clear_outbound_msg_queue";
     public static final String KEY_RESET_TO_DEFAULT = "plugin_atak_forwarder_key_reset_to_default";
     public static final String KEY_RESET_TO_DEFAULT_INCLUDING_CHANNEL = "plugin_atak_forwarder_key_reset_to_default_including_channel";
+    public static final String KEY_ENABLE_LOGGING = "plugin_atak_forwarder_key_enable_logging";
+    public static final String KEY_ENABLE_LOGGING_TOASTS = "plugin_atak_forwarder_key_enable_logging_toasts";
 }

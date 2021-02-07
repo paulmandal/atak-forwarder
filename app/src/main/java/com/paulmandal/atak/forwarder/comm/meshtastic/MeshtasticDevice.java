@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.comm.commhardware.meshtastic;
+package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import androidx.annotation.NonNull;
 

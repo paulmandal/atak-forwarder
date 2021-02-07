@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.comm.commhardware;
+package com.paulmandal.atak.forwarder.comm.refactor;
 
 import android.content.SharedPreferences;
 import android.os.Handler;
@@ -8,6 +8,7 @@ import com.geeksville.mesh.DataPacket;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;

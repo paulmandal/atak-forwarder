@@ -17,9 +17,9 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDeviceSwitcher;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
+import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 public class MeshtasticTrackerConfigurator {

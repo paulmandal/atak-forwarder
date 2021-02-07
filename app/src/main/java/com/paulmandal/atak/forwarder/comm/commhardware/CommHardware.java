@@ -124,15 +124,15 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
             return thread;
         });
         mMessageWorkerExecutor.scheduleAtFixedRate(() -> {
-            while (!mDestroyed) {
+            if (!mDestroyed) {
                 QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
                 if (mSendingMessage) {
-                    continue;
+                    return;
                 }
 
                 if (queuedCommand == null) {
-                    continue;
+                    return;
                 }
 
                 switch (queuedCommand.commandType) {

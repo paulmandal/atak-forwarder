@@ -5,7 +5,7 @@ import android.os.Handler;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.comm.refactor.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.List;

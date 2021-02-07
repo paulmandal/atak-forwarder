@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.comm.commhardware.meshtastic;
+package com.paulmandal.atak.forwarder.comm.refactor;
 
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -25,12 +25,12 @@ import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Portnums;
 import com.geeksville.mesh.Position;
 import com.google.gson.Gson;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.comm.commhardware.MessageLengthLimitedCommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -177,8 +177,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 Log.e(TAG, "Service has unexpectedly disconnected");
                 mMeshService = null;
 
-                setConnectionState(ConnectionState.NO_SERVICE_CONNECTION);
-                notifyConnectionStateListeners(ConnectionState.NO_SERVICE_CONNECTION);
+                setConnectionState(CommHardware.ConnectionState.NO_SERVICE_CONNECTION);
+                notifyConnectionStateListeners(CommHardware.ConnectionState.NO_SERVICE_CONNECTION);
                 mConnectedToService = false;
             }
         };
@@ -231,7 +231,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     public void connect() {
-        if (getConnectionState() == ConnectionState.DEVICE_CONNECTED) {
+        if (getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED) {
             Log.d(TAG, "connect: already connected");
             return;
         }
@@ -242,10 +242,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public void toggleEventHandling(boolean suspended) {
         if (suspended) {
             mAtakContext.unregisterReceiver(mBroadcastReceiver);
-            setConnectionState(ConnectionState.DEVICE_DISCONNECTED);
+            setConnectionState(CommHardware.ConnectionState.DEVICE_DISCONNECTED);
         } else {
             mAtakContext.registerReceiver(mBroadcastReceiver, mIntentFilter);
-            setConnectionState(ConnectionState.DEVICE_CONNECTED);
+            setConnectionState(CommHardware.ConnectionState.DEVICE_CONNECTED);
         }
     }
 
@@ -293,11 +293,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     }
 
     private void maybeInitialConnection() {
-        ConnectionState oldConnectionState = getConnectionState();
+        CommHardware.ConnectionState oldConnectionState = getConnectionState();
 
         updateConnectionState();
 
-        boolean connected = getConnectionState() == ConnectionState.DEVICE_CONNECTED;
+        boolean connected = getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED;
 
         if (connected) {
             updateMeshId();
@@ -312,12 +312,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void updateConnectionState() {
         try {
             String meshId = mMeshService.getMyId();
-            ConnectionState connectionState;
+            CommHardware.ConnectionState connectionState;
             if (mCommDevice == null) {
-                connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
+                connectionState = CommHardware.ConnectionState.NO_DEVICE_CONFIGURED;
             } else {
                 boolean connected = mMeshService.connectionState().equals(STATE_CONNECTED);
-                connectionState = connected ? ConnectionState.DEVICE_CONNECTED : ConnectionState.DEVICE_DISCONNECTED;
+                connectionState = connected ? CommHardware.ConnectionState.DEVICE_CONNECTED : CommHardware.ConnectionState.DEVICE_DISCONNECTED;
             }
 
             setConnectionState(connectionState);
@@ -414,7 +414,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
                         String message = new String(payload.getBytes());
                         Log.d(TAG, "Received packet: " + (new String(message).replace("\n", "").replace("\r", "")));
-                        if (message.startsWith(BCAST_MARKER)) {
+                        if (message.startsWith(CommHardware.BCAST_MARKER)) {
                             handleDiscoveryMessage(message);
                         } else {
                             handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
@@ -434,7 +434,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     };
 
     protected void handleDiscoveryMessage(String message) {
-        String messageWithoutMarker = message.replace(BCAST_MARKER + ",", "");
+        String messageWithoutMarker = message.replace(CommHardware.BCAST_MARKER + ",", "");
         String[] messageSplit = messageWithoutMarker.split(",");
         String meshId = messageSplit[0];
         String atakUid = messageSplit[1];

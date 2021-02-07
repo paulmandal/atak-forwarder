@@ -119,7 +119,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
             return thread;
         });
         mWorkerExecutor.scheduleAtFixedRate(() -> {
-            while (!mDestroyCalled) {
+            if (!mDestroyCalled) {
                 drawTrackers();
             }
         }, 0, DRAW_MARKERS_INTERVAL_MINS, TimeUnit.MINUTES);

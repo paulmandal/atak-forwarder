@@ -64,6 +64,11 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mCallsign = callsign;
 
         meshServiceController.addConnectionStateListener(this);
+
+        // TODO: clean up this hacks
+        mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
+        mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
+        mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
     }
 
     @Override
@@ -116,8 +121,9 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     @Override
     public void onConnectionStateChanged(ConnectionState connectionState) {
-        if (connectionState == ConnectionState.NO_SERVICE_CONNECTION) {
-            mMeshService = mMeshServiceController.getMeshService();
+        mMeshService = mMeshServiceController.getMeshService();
+        if (connectionState == ConnectionState.NO_SERVICE_CONNECTION
+                || connectionState == ConnectionState.NO_DEVICE_CONFIGURED) {
             return;
         }
 
@@ -130,6 +136,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void checkRadioConfig() {
+        mLogger.v(TAG, "  Checking radio config");
         byte[] radioConfigBytes = null;
         try {
             radioConfigBytes = mMeshService.getRadioConfig();

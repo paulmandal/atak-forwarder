@@ -200,7 +200,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             return;
         }
 
-        mLogger.v(TAG, "sendMessageToUserOrGroup, message length: " + message.length + " chunks: " + chunks);
+        mLogger.v(TAG, "sendMessageInternal(), message length: " + message.length + " chunks: " + chunks);
 
         byte[][] messages = new byte[chunks][];
         for (int i = 0; i < chunks; i++) {
@@ -243,12 +243,14 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     private void sendNextChunk() {
+        mLogger.v(TAG, "sendNextChunk()");
         OutboundMessageChunk outboundMessageChunk = mPendingMessageChunks.poll();
 
         if (outboundMessageChunk == null) {
             // Done sending
             mRestoreChunksAfterSuspend.clear();
             mSendingMessage = false;
+            mLogger.v(TAG, "Done sending message");
             return;
         }
 

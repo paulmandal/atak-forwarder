@@ -77,7 +77,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(mDestroyables, userTracker, inboundMessageHandler, pluginVersion, mapView.getDeviceCallsign());
+        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(mDestroyables, userTracker, inboundMessageHandler, pluginVersion);
 
         HashHelper hashHelper = new HashHelper();
         StatusViewModel statusViewModel = new StatusViewModel(mDestroyables, sharedPreferences, userTracker, meshtasticCommHardware, commandQueue, hashHelper);

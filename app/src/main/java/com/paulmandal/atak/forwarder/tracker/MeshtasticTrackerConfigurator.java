@@ -65,18 +65,14 @@ public class MeshtasticTrackerConfigurator {
     private IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
 
-    private Listener mListener;
+    private final Listener mListener;
 
     private boolean mBound;
 
     private boolean mStartedWritingToDevice = false;
     private boolean mWroteToDevice = false;
 
-    private final Runnable mTimeoutRunnable = () -> {
-        Log.e(TAG, "Timed out writing to Tracker device!");
-        cancel();
-        mListener.onDoneWritingToDevice();
-    };
+    private final Runnable mTimeoutRunnable;
 
     public MeshtasticTrackerConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
@@ -108,6 +104,12 @@ public class MeshtasticTrackerConfigurator {
         mPliIntervalS = pliIntervalS;
         mScreenShutoffDelayS = screenShutoffDelayS;
         mListener = listener;
+
+        mTimeoutRunnable = () -> {
+            Log.e(TAG, "Timed out writing to Tracker device!");
+            cancel();
+            mListener.onDoneWritingToDevice();
+        };
     }
 
     public void writeToDevice() {

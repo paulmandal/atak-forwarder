@@ -13,8 +13,8 @@ import java.util.List;
 public abstract class DestroyableSharedPrefsListener implements Destroyable, SharedPreferences.OnSharedPreferenceChangeListener {
     private final SharedPreferences mSharedPreferences;
 
-    List<String> mSimplePreferencesKeys;
-    List<String> mComplexPreferencesKeys;
+    private final List<String> mSimplePreferencesKeys;
+    private final List<String> mComplexPreferencesKeys;
 
     public DestroyableSharedPrefsListener(List<Destroyable> destroyables,
                                           SharedPreferences sharedPreferences,

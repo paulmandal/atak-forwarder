@@ -27,8 +27,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     private final MeshServiceController mMeshServiceController;
 
     private String mMeshId;
-    private String mAtakUid;
-    private String mCallsign;
+    private final String mAtakUid;
+    private final String mCallsign;
     private boolean mInitialDiscoveryBroadcastSent = false;
 
     public DiscoveryBroadcastEventHandler(Context atakContext,
@@ -85,6 +85,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
 
             if (mMeshId != null && !mInitialDiscoveryBroadcastSent) {
                 broadcastDiscoveryMessage(true);
+                mInitialDiscoveryBroadcastSent = true;
             }
         }
     }

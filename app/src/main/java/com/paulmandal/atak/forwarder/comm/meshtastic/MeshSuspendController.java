@@ -2,12 +2,12 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import com.paulmandal.atak.forwarder.plugin.SuspendListener;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class MeshSuspendController {
     private boolean mIsSuspended = false;
-    private List<SuspendListener> mListeners = new CopyOnWriteArrayList<>();
+    private final Set<SuspendListener> mListeners = new CopyOnWriteArraySet<>();
 
     public void addSuspendListener(SuspendListener listener) {
         mListeners.add(listener);

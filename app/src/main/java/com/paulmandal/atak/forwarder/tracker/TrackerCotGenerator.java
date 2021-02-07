@@ -54,7 +54,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     private static final int WHITE_INDEX = 0;
     private static final int TEAM_MEMBER_INDEX = 0;
 
-    public static String[] TEAMS = {
+    public static final String[] TEAMS = {
             "White",
             "Yellow",
             "Orange",
@@ -71,7 +71,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
             "Brown"
     };
 
-    public static String[] ROLES = {
+    public static final String[] ROLES = {
             "Team Member",
             "Team Lead",
             "HQ",

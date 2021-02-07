@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Logger extends DestroyableSharedPrefsListener {
 
-    private Context mAtakContext;
+    private final Context mAtakContext;
     private boolean mEnableLogging;
     private boolean mEnableLoggingToasts;
 

@@ -39,7 +39,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private final Logger mLogger;
 
     private IMeshService mMeshService;
-    private ServiceConnection mServiceConnection;
+    private final ServiceConnection mServiceConnection;
 
     private final IntentFilter mIntentFilter;
     private final Intent mServiceIntent;

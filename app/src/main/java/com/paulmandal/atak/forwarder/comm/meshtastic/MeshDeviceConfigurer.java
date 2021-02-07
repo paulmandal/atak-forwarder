@@ -101,7 +101,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
                     byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
 
-                    boolean changed = !channelName.equals(mChannelName) || !(channelMode != mChannelMode) || !compareByteArrays(psk, mChannelPsk);
+                    boolean changed = !channelName.equals(mChannelName) || channelMode != mChannelMode || !compareByteArrays(psk, mChannelPsk);
 
                     if (changed) {
                         mChannelName = channelName;

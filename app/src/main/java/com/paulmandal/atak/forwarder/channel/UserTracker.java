@@ -11,7 +11,9 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroadcastListener,
         TrackerEventHandler.TrackerListener {
@@ -34,8 +36,8 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
     private final List<TrackerUserInfo> mTrackers = new CopyOnWriteArrayList<>();
 
-    private final List<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArrayList<>();
-    private final List<TrackerUpdateListener> mTrackerUpdateListener = new CopyOnWriteArrayList<>();
+    private final Set<ChannelMembersUpdateListener> mChannelMembersUpdateListeners = new CopyOnWriteArraySet<>();
+    private final Set<TrackerUpdateListener> mTrackerUpdateListener = new CopyOnWriteArraySet<>();
 
     public UserTracker(Context atakContext,
                        Handler uiThreadHandler,
@@ -71,8 +73,8 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         }
 
         // Remove user from Trackers list if present
-        UserInfo trackerUserInfo = null;
-        for (UserInfo user : mTrackers) {
+        TrackerUserInfo trackerUserInfo = null;
+        for (TrackerUserInfo user : mTrackers) {
             if (user.meshId.equals(meshId)) {
                 trackerUserInfo = user;
                 break;

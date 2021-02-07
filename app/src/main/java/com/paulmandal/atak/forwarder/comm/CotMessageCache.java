@@ -106,8 +106,8 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
     }
 
     private static class CachedCotEvent {
-        public CotEvent cotEvent;
-        public long lastSentTime;
+        public final CotEvent cotEvent;
+        public final long lastSentTime;
 
         public CachedCotEvent(CotEvent cotEvent, long lastSentTime) {
             this.cotEvent = cotEvent;

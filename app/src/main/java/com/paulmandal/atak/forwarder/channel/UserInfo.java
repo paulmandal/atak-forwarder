@@ -4,7 +4,7 @@ import androidx.annotation.Nullable;
 
 public class UserInfo {
     public String callsign;
-    public String meshId;
+    public final String meshId;
 
     @Nullable
     public String atakUid;

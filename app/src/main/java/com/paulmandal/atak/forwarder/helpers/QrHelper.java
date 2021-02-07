@@ -12,8 +12,8 @@ import com.paulmandal.atak.forwarder.Constants;
 public class QrHelper {
     private static final String TAG = Constants.DEBUG_TAG_PREFIX + QrHelper.class.getSimpleName();
 
-    public static int COLOR_WHITE = 0xFFFFFFFF;
-    public static int COLOR_BLACK = 0xFF000000;
+    public static final int COLOR_WHITE = 0xFFFFFFFF;
+    public static final int COLOR_BLACK = 0xFF000000;
 
     private static final int WIDTH = 640;
 

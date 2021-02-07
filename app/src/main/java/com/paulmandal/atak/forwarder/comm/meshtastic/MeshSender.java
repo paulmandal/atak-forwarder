@@ -30,6 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class MeshSender extends MeshEventHandler implements MeshServiceController.ConnectionStateListener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
+
         void onMessageTimedOut(int messageId);
     }
 
@@ -61,6 +62,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     private Queue<OutboundMessageChunk> mPendingMessageChunks = new LinkedList<>();
     private Queue<OutboundMessageChunk> mRestoreChunksAfterSuspend = new LinkedList<>();
 
+    private final Object mSyncLock = new Object();
+
     private int mPendingMessageId;
     private OutboundMessageChunk mChunkInFlight;
 
@@ -74,7 +77,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                       UserTracker userTracker) {
         super(atakContext,
                 logger,
-                new String[] {
+                new String[]{
                         MeshServiceConstants.ACTION_MESSAGE_STATUS
                 },
                 destroyables,
@@ -161,20 +164,30 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     private void maybeSaveState() {
-        if (mRestoreChunksAfterSuspend.size() > 0) {
-            mStateSaved = true;
+        synchronized (mSyncLock) {
+            if (mRestoreChunksAfterSuspend.size() > 0) {
+                mStateSaved = true;
+            }
         }
     }
 
     private void maybeRestoreState() {
-        if (mStateSaved) {
-            mPendingMessageChunks.addAll(mRestoreChunksAfterSuspend);
-            sendNextChunk();
-            mStateSaved = false;
+        synchronized (mSyncLock) {
+            if (mStateSaved) {
+                mPendingMessageChunks.addAll(mRestoreChunksAfterSuspend);
+                sendNextChunk();
+                mStateSaved = false;
+            }
         }
     }
 
     private void sendMessage(byte[] message, String[] toUIDs) {
+        synchronized (mSyncLock) {
+            sendMessageInternal(message, toUIDs);
+        }
+    }
+
+    private void sendMessageInternal(byte[] message, String[] toUIDs) {
         mSendingMessage = true;
 
         mPendingMessage = message;
@@ -223,7 +236,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     private void addChunksToQueues(byte[][] chunks, String targetUid) {
         int chunksLength = chunks.length;
-        for (int i = 0 ; i < chunksLength ; i++) {
+        for (int i = 0; i < chunksLength; i++) {
             byte[] message = chunks[i];
             OutboundMessageChunk outboundMessageChunk = new OutboundMessageChunk(i, chunksLength, message, targetUid);
             mPendingMessageChunks.add(outboundMessageChunk);
@@ -242,6 +255,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         }
 
         mChunkInFlight = outboundMessageChunk;
+
+        sendChunk();
     }
 
     private void sendChunk() {

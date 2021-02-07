@@ -6,8 +6,8 @@ public class TrackerUserInfo extends UserInfo {
     public double lat;
     public double lon;
     public int altitude;
-    public boolean gpsValid;
-    public String shortName;
+    public final boolean gpsValid;
+    public final String shortName;
     public long lastSeenTime;
 
     public TrackerUserInfo(String callsign, String meshId, @Nullable Integer batteryPercentage, double lat, double lon, int altitude, boolean gpsValid, String shortName, long lastSeenTime) {

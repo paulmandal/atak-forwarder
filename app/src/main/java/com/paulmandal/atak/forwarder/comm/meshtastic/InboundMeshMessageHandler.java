@@ -15,7 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class InboundMeshMessageHandler extends MeshEventHandler {
     public interface MessageListener {
@@ -26,7 +27,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
     private final Handler mUiThreadHandler;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
-    private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
+    private final Set<MessageListener> mMessageListeners = new CopyOnWriteArraySet<>();
 
     public InboundMeshMessageHandler(Context atakContext,
                                      List<Destroyable> destroyables,
@@ -64,7 +65,8 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
                 mLogger.d(TAG, "Received packet: " + (message.replace("\n", "").replace("\r", "")));
                 handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
             }
-        } else if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()
+        } else //noinspection StatementWithEmptyBody
+               if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()
                 || dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
             // Do nothing for these apps
         } else {

@@ -7,10 +7,10 @@ import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 
 public class QrHelper {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + QrHelper.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + QrHelper.class.getSimpleName();
 
     public static final int COLOR_WHITE = 0xFFFFFFFF;
     public static final int COLOR_BLACK = 0xFF000000;

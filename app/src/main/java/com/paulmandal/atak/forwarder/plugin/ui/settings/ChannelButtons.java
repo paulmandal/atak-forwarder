@@ -13,7 +13,7 @@ import com.atakmap.android.gui.PanListPreference;
 import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -30,9 +30,9 @@ import java.util.List;
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
 
 public class ChannelButtons extends DestroyableSharedPrefsListener {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + ChannelButtons.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + ChannelButtons.class.getSimpleName();
 
-    private static final int PSK_LENGTH = Constants.PSK_LENGTH;
+    private static final int PSK_LENGTH = ForwarderConstants.PSK_LENGTH;
 
     private String mChannelName;
     private int mMode;

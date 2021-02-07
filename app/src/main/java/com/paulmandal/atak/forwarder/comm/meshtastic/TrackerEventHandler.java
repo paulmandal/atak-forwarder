@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Position;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -20,9 +20,9 @@ public class TrackerEventHandler extends MeshEventHandler {
         void onTrackerUpdated(TrackerUserInfo trackerUserInfo);
     }
 
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + TrackerEventHandler.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + TrackerEventHandler.class.getSimpleName();
 
-    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Constants.REJECT_STALE_NODE_CHANGE_TIME_MS;
+    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = ForwarderConstants.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
     private TrackerListener mTrackerListener;
 

@@ -3,7 +3,7 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 import android.content.Context;
 
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
@@ -15,7 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class CommandQueueWorker implements Destroyable, MeshServiceController.ConnectionStateListener {
-    private static final String TAG =  Constants.DEBUG_TAG_PREFIX + CommandQueueWorker.class.getSimpleName();
+    private static final String TAG =  ForwarderConstants.DEBUG_TAG_PREFIX + CommandQueueWorker.class.getSimpleName();
 
     private static final int CHECK_MESSAGE_QUEUE_INTERVAL_MS = 300;
 

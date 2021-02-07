@@ -1,6 +1,6 @@
 package com.paulmandal.atak.forwarder;
 
-public class Constants {
+public class ForwarderConstants {
     /**
      * Pre-shared Key Length, 16 for AES128, 32 for AES256
      */
@@ -40,5 +40,5 @@ public class Constants {
     /**
      * TAG prefix for all debug messages
      */
-    public static final String DEBUG_TAG_PREFIX = "ATAKDBG.";
+    public static final String DEBUG_TAG_PREFIX = "FWDDBG.";
 }

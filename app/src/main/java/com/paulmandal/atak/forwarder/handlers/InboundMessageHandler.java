@@ -2,14 +2,14 @@ package com.paulmandal.atak.forwarder.handlers;
 
 import com.atakmap.comms.CotDispatcher;
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
 public class InboundMessageHandler implements InboundMeshMessageHandler.MessageListener {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
 
     private final CotDispatcher mInternalCotDispatcher;
     private final CotDispatcher mExternalCotDispatcher;

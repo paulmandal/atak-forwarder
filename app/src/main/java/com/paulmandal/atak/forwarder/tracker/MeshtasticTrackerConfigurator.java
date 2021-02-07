@@ -16,21 +16,21 @@ import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 public class MeshtasticTrackerConfigurator {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
 
     public interface Listener {
         void onDoneWritingToDevice();
     }
 
-    private static final int DEVICE_CONNECTION_TIMEOUT = Constants.DEVICE_CONNECTION_TIMEOUT;
-    private static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = Constants.RADIO_CONFIG_MISSING_RETRY_TIME_MS;
+    private static final int DEVICE_CONNECTION_TIMEOUT = ForwarderConstants.DEVICE_CONNECTION_TIMEOUT;
+    private static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = ForwarderConstants.RADIO_CONFIG_MISSING_RETRY_TIME_MS;
 
     /**
      * Intents the Meshtastic service can send

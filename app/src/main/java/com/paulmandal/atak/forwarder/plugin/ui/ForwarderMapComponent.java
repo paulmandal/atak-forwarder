@@ -14,7 +14,7 @@ import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.app.preferences.ToolsPreferenceFragment;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
@@ -48,7 +48,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import static com.atakmap.android.util.ATAKConstants.getPackageName;
 
 public class ForwarderMapComponent extends DropDownMapComponent {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + ForwarderMapComponent.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + ForwarderMapComponent.class.getSimpleName();
 
     private Context mPluginContext;
 

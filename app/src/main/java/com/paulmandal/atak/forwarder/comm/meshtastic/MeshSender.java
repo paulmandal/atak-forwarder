@@ -12,7 +12,7 @@ import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.Portnums;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
@@ -34,7 +34,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         void onMessageTimedOut(int messageId);
     }
 
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshSender.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshSender.class.getSimpleName();
 
     private static final int REMOTE_EXCEPTION_RETRY_DELAY = 5000;
 
@@ -193,7 +193,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         mPendingMessage = message;
         mPendingMessageTargets = toUIDs;
 
-        int messageChunkLength = Constants.MESHTASTIC_MESSAGE_CHUNK_LENGTH;
+        int messageChunkLength = ForwarderConstants.MESHTASTIC_MESSAGE_CHUNK_LENGTH;
 
         int chunks = (int) Math.ceil((double) message.length / (double) messageChunkLength);
 

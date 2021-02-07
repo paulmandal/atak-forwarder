@@ -3,7 +3,7 @@ package com.paulmandal.atak.forwarder.comm;
 import android.content.SharedPreferences;
 
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CotMessageCache extends DestroyableSharedPrefsListener {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
 
     private final CotComparer mCotComparer;
 

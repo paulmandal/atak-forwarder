@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
 
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -17,7 +17,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroadcastListener,
         TrackerEventHandler.TrackerListener {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
 
     public interface ChannelMembersUpdateListener {
         void onChannelMembersUpdated(List<UserInfo> atakUsers, List<TrackerUserInfo> trackers);

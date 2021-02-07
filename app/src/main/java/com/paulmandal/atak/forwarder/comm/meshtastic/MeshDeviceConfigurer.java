@@ -12,7 +12,7 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
@@ -22,7 +22,7 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.List;
 
 public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener implements MeshServiceController.ConnectionStateListener {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshDeviceConfigurer.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurer.class.getSimpleName();
 
     private final SharedPreferences mSharedPreferences;
     private final MeshServiceController mMeshServiceController;
@@ -157,10 +157,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
         MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-        if (userPreferences.getPositionBroadcastSecs() != Constants.POSITION_BROADCAST_INTERVAL_S
-                || userPreferences.getScreenOnSecs() != Constants.LCD_SCREEN_ON_S
-                || userPreferences.getWaitBluetoothSecs() != Constants.WAIT_BLUETOOTH_S
-                || userPreferences.getPhoneTimeoutSecs() != Constants.PHONE_TIMEOUT_S
+        if (userPreferences.getPositionBroadcastSecs() != ForwarderConstants.POSITION_BROADCAST_INTERVAL_S
+                || userPreferences.getScreenOnSecs() != ForwarderConstants.LCD_SCREEN_ON_S
+                || userPreferences.getWaitBluetoothSecs() != ForwarderConstants.WAIT_BLUETOOTH_S
+                || userPreferences.getPhoneTimeoutSecs() != ForwarderConstants.PHONE_TIMEOUT_S
                 || !channelSettings.getName().equals(mChannelName)
                 || !compareByteArrays(channelSettings.getPsk().toByteArray(), mChannelPsk)
                 || channelSettings.getModemConfig() != modemConfig) {
@@ -190,10 +190,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
         MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
 
-        userPreferencesBuilder.setPositionBroadcastSecs(Constants.POSITION_BROADCAST_INTERVAL_S);
-        userPreferencesBuilder.setScreenOnSecs(Constants.LCD_SCREEN_ON_S);
-        userPreferencesBuilder.setWaitBluetoothSecs(Constants.WAIT_BLUETOOTH_S);
-        userPreferencesBuilder.setPhoneTimeoutSecs(Constants.PHONE_TIMEOUT_S);
+        userPreferencesBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
+        userPreferencesBuilder.setScreenOnSecs(ForwarderConstants.LCD_SCREEN_ON_S);
+        userPreferencesBuilder.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);
+        userPreferencesBuilder.setPhoneTimeoutSecs(ForwarderConstants.PHONE_TIMEOUT_S);
 
         channelSettingsBuilder.setName(mChannelName);
         channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));

@@ -12,12 +12,12 @@ import com.atak.plugins.impl.PluginLayoutInflater;
 import com.atakmap.android.dropdown.DropDown;
 import com.atakmap.android.dropdown.DropDownReceiver;
 import com.atakmap.android.maps.MapView;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 public class ForwarderDropDownReceiver extends DropDownReceiver implements DropDown.OnStateListener {
-    public static final String TAG = Constants.DEBUG_TAG_PREFIX + ForwarderDropDownReceiver.class.getSimpleName();
+    public static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + ForwarderDropDownReceiver.class.getSimpleName();
     public static final String SHOW_PLUGIN = "com.paulmandal.atak.forwarder.SHOW_PLUGIN";
 
     private final View mTemplateView;

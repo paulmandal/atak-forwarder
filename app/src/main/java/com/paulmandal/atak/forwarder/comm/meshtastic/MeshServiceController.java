@@ -15,7 +15,7 @@ import android.util.Log;
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.IMeshService;
 import com.google.gson.Gson;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.SuspendListener;
@@ -31,7 +31,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshServiceController.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshServiceController.class.getSimpleName();
 
     private final Context mAtakContext;
     private final Handler mUiThreadHandler;
@@ -161,14 +161,16 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         ConnectionState connectionState;
         if (mMeshDevice == null) {
             connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
-        } else {
+        } else if (mMeshService != null) {
             boolean connected = false;
-            try {
-                connected = mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+                try {
+                    connected = mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
             connectionState = connected ? ConnectionState.DEVICE_CONNECTED : ConnectionState.DEVICE_DISCONNECTED;
+        } else {
+            connectionState = ConnectionState.NO_SERVICE_CONNECTION;
         }
 
         if (mConnectionState != connectionState) {

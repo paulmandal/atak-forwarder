@@ -6,7 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
@@ -27,7 +27,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         MeshServiceController.ConnectionStateListener,
         MeshSender.MessageAckNackListener,
         InboundMeshMessageHandler.MessageListener {
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
     private final DiscoveryBroadcastEventHandler mDiscoveryBroadcastEventHandler;
 

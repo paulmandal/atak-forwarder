@@ -6,7 +6,7 @@ import android.os.RemoteException;
 
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.Portnums;
-import com.paulmandal.atak.forwarder.Constants;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -19,7 +19,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
     }
 
-    private static final String TAG = Constants.DEBUG_TAG_PREFIX + DiscoveryBroadcastEventHandler.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + DiscoveryBroadcastEventHandler.class.getSimpleName();
 
     private DiscoveryBroadcastListener mDiscoveryBroadcastListener;
     private final CommandQueue mCommandQueue;
@@ -60,7 +60,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     }
 
     public void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = Constants.DISCOVERY_BROADCAST_MARKER + "," + mMeshId + "," + mAtakUid + "," + mCallsign + "," + (initialDiscoveryMessage ? 1 : 0);
+        String broadcastData = ForwarderConstants.DISCOVERY_BROADCAST_MARKER + "," + mMeshId + "," + mAtakUid + "," + mCallsign + "," + (initialDiscoveryMessage ? 1 : 0);
 
         String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
         handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
@@ -101,7 +101,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         }
 
         String message = new String(payload.getBytes());
-        if (!message.startsWith(Constants.DISCOVERY_BROADCAST_MARKER)) {
+        if (!message.startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
             return;
         }
 
@@ -109,7 +109,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     }
 
     private void handleDiscoveryMessage(String message) {
-        String messageWithoutMarker = message.replace(Constants.DISCOVERY_BROADCAST_MARKER + ",", "");
+        String messageWithoutMarker = message.replace(ForwarderConstants.DISCOVERY_BROADCAST_MARKER + ",", "");
         String[] messageSplit = messageWithoutMarker.split(",");
         String meshId = messageSplit[0];
         String atakUid = messageSplit[1];

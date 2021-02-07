@@ -10,7 +10,6 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.MeshProtos;
@@ -21,6 +20,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 
 public class MeshtasticTrackerConfigurator {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
@@ -62,10 +62,11 @@ public class MeshtasticTrackerConfigurator {
     private final int mPliIntervalS;
     private final int mScreenShutoffDelayS;
 
+    private final Listener mListener;
+    private final Logger mLogger;
+    
     private IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
-
-    private final Listener mListener;
 
     private boolean mBound;
 
@@ -88,7 +89,8 @@ public class MeshtasticTrackerConfigurator {
                                          int roleIndex,
                                          int pliIntervalS,
                                          int screenShutoffDelayS,
-                                         Listener listener) {
+                                         Listener listener,
+                                         Logger logger) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mCommDevice = commDevice;
@@ -104,9 +106,10 @@ public class MeshtasticTrackerConfigurator {
         mPliIntervalS = pliIntervalS;
         mScreenShutoffDelayS = screenShutoffDelayS;
         mListener = listener;
+        mLogger = logger;
 
         mTimeoutRunnable = () -> {
-            Log.e(TAG, "Timed out writing to Tracker device!");
+            mLogger.e(TAG, "Timed out writing to Tracker device!");
             cancel();
             mListener.onDoneWritingToDevice();
         };
@@ -117,7 +120,7 @@ public class MeshtasticTrackerConfigurator {
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
-                Log.d(TAG, "onServiceConnected");
+                mLogger.d(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mBound = true;
 
@@ -125,7 +128,7 @@ public class MeshtasticTrackerConfigurator {
             }
 
             public void onServiceDisconnected(ComponentName className) {
-                Log.e(TAG, "Service has unexpectedly disconnected");
+                mLogger.e(TAG, "Service has unexpectedly disconnected");
                 mMeshService = null;
 
                 mBound = false;
@@ -150,12 +153,12 @@ public class MeshtasticTrackerConfigurator {
 
     private void onConnected() {
         try {
-            Log.d(TAG, "Setting service to use Tracker device address: " + mTargetDevice);
+            mLogger.d(TAG, "Setting service to use Tracker device address: " + mTargetDevice);
             mUiThreadHandler.postDelayed(mTimeoutRunnable, DEVICE_CONNECTION_TIMEOUT);
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mTargetDevice);
         } catch (RemoteException e) {
             e.printStackTrace();
-            Log.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
+            mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
         }
     }
 
@@ -163,10 +166,10 @@ public class MeshtasticTrackerConfigurator {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
-            Log.d(TAG, "onReceive: " + action);
+            mLogger.d(TAG, "onReceive: " + action);
 
             if (action == null) {
-                Log.e(TAG, "onReceive, action was null");
+                mLogger.e(TAG, "onReceive, action was null");
                 return;
             }
 
@@ -179,9 +182,9 @@ public class MeshtasticTrackerConfigurator {
                     maybeWriteToDevice();
                     maybeDoneWriting();
                 }
-                Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
+                mLogger.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
             } else {
-                Log.e(TAG, "Do not know how to handle intent action: " + intent.getAction());
+                mLogger.e(TAG, "Do not know how to handle intent action: " + intent.getAction());
             }
         }
     };
@@ -199,7 +202,7 @@ public class MeshtasticTrackerConfigurator {
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
             if (radioConfigBytes == null) {
-                Log.e(TAG, "radioConfigBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
+                mLogger.e(TAG, "radioConfigBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
                 mUiThreadHandler.postDelayed(this::maybeWriteToDevice, RADIO_CONFIG_MISSING_RETRY_TIME_MS);
                 return;
             }
@@ -219,7 +222,7 @@ public class MeshtasticTrackerConfigurator {
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
             channelSettingsBuilder.setModemConfig(mModemConfig);
 
-            Log.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
+            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder);
             radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
@@ -232,15 +235,15 @@ public class MeshtasticTrackerConfigurator {
                 throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
             }
 
-            Log.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
+            mLogger.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
             mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex));
 
-            Log.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
+            mLogger.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
 
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
             mWroteToDevice = true;
         } catch (RemoteException | InvalidProtocolBufferException e) {
-            Log.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
+            mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -250,7 +253,7 @@ public class MeshtasticTrackerConfigurator {
             return;
         }
 
-        Log.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
+        mLogger.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
 
         unbind();
         mMeshSuspendController.setSuspended(false);

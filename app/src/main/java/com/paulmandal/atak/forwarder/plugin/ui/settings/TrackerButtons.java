@@ -24,12 +24,13 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.tracker.MeshtasticTrackerConfigurator;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
-import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
+import com.paulmandal.atak.forwarder.tracker.MeshtasticTrackerConfigurator;
 
 import java.util.List;
 
@@ -39,6 +40,7 @@ public class TrackerButtons {
                           Handler uiThreadHandler,
                           DevicesList devicesList,
                           MeshSuspendController meshSuspendController,
+                          Logger logger,
                           Preference teams,
                           Preference roles,
                           Preference writeToDevice) {
@@ -116,7 +118,7 @@ public class TrackerButtons {
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -130,6 +132,7 @@ public class TrackerButtons {
     private void writeToDevice(Context settingsMenuContext,
                                Handler uiThreadHandler,
                                MeshSuspendController meshSuspendController,
+                               Logger logger,
                                MeshtasticDevice commDevice,
                                MeshtasticDevice targetDevice,
                                String deviceCallsign,
@@ -141,8 +144,24 @@ public class TrackerButtons {
                                int pliIntervalS,
                                int screenShutoffDelayS,
                                MeshtasticTrackerConfigurator.Listener listener) {
-        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext);
-        MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(settingsMenuContext, uiThreadHandler, meshSuspendController, meshtasticDeviceSwitcher, commDevice, targetDevice, deviceCallsign, channelName, psk, modemConfig, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, listener);
+        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext, logger);
+        MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(
+                settingsMenuContext,
+                uiThreadHandler,
+                meshSuspendController,
+                meshtasticDeviceSwitcher,
+                commDevice,
+                targetDevice,
+                deviceCallsign,
+                channelName,
+                psk,
+                modemConfig,
+                teamIndex,
+                roleIndex,
+                pliIntervalS,
+                screenShutoffDelayS,
+                listener,
+                logger);
         meshtasticTrackerConfigurator.writeToDevice();
     }
 }

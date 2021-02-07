@@ -104,6 +104,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 uiThreadHandler,
                 sDevicesList,
                 sMeshSuspendController,
+                sLogger,
                 findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
                 findPreference(PreferencesKeys.KEY_TRACKER_ROLE),
                 findPreference(PreferencesKeys.KEY_TRACKER_WRITE_TO_DEVICE));

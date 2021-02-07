@@ -3,7 +3,6 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 import android.content.SharedPreferences;
 import android.os.RemoteException;
 import android.util.Base64;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -86,7 +85,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     }
 
                     try {
-                        Log.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
+                        mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
                         mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
                         mMeshDevice = meshtasticDevice;
                         mSetDeviceAddressCalled = true;

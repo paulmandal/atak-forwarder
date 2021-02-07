@@ -8,10 +8,10 @@ import android.content.IntentFilter;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.geeksville.mesh.IMeshService;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,12 +23,13 @@ public class MeshtasticDeviceSwitcher {
     private static final String ACTION_USB_PERMISSION = "com.paulmandal.atak.forwarder.USB_PERMISSION";
 
     private final Context mAtakContext;
+    private final Logger mLogger;
 
-    private final List<String> mDevicesWithUsbPermisssion;
+    private final List<String> mDevicesWithUsbPermisssion = new ArrayList<>();
 
-    public MeshtasticDeviceSwitcher(Context atakContext) {
+    public MeshtasticDeviceSwitcher(Context atakContext, Logger logger) {
         mAtakContext = atakContext;
-        mDevicesWithUsbPermisssion = new ArrayList<>();
+        mLogger = logger;
     }
 
     public void setDeviceAddress(IMeshService meshService, MeshtasticDevice meshtasticDevice) throws RemoteException {
@@ -49,7 +50,7 @@ public class MeshtasticDeviceSwitcher {
                                 e.printStackTrace();
                             }
                         } else {
-                            Log.e(TAG, "Permission denied for USB device: " + device);
+                            mLogger.e(TAG, "Permission denied for USB device: " + device);
                         }
 
                         mAtakContext.unregisterReceiver(this);
@@ -65,7 +66,7 @@ public class MeshtasticDeviceSwitcher {
             UsbDevice device = deviceList.get(meshtasticDevice.address);
 
             if (device == null) {
-                Log.e(TAG, "USB device was not connected: " + meshtasticDevice.address);
+                mLogger.e(TAG, "USB device was not connected: " + meshtasticDevice.address);
                 return;
             }
 

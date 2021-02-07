@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.IMeshService;
@@ -119,14 +118,14 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
         if (action == null) {
-            Log.e(TAG, "onReceive with null action");
+            mLogger.e(TAG, "onReceive with null action");
             return;
         }
 
         if (action.equals(MeshServiceConstants.ACTION_MESH_CONNECTED)) {
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
             boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
-            Log.d(TAG, "  Mesh connected: " + connected);
+            mLogger.d(TAG, "  Mesh connected: " + connected);
             updateConnectionState();
         }
     }

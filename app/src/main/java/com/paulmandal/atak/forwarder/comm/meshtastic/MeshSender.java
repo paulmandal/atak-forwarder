@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.RemoteException;
-import android.util.Log;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.DataPacket;
@@ -30,7 +29,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 public class MeshSender extends MeshEventHandler implements MeshServiceController.ConnectionStateListener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
-
         void onMessageTimedOut(int messageId);
     }
 
@@ -202,7 +200,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             return;
         }
 
-        Log.v(TAG, "sendMessageToUserOrGroup, message length: " + message.length + " chunks: " + chunks);
+        mLogger.v(TAG, "sendMessageToUserOrGroup, message length: " + message.length + " chunks: " + chunks);
 
         byte[][] messages = new byte[chunks][];
         for (int i = 0; i < chunks; i++) {
@@ -271,11 +269,13 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
             mChunkInFlight = null;
-            mLogger.d(TAG, "  sendChunk() waiting for ACK/NACK for messageId: " + dataPacket.getId());
+            String chunkAsStr = new String(mChunkInFlight.chunk).replace("\n", "").replace("\r", "");
+            mLogger.d(TAG, "---> Sent packet: " + chunkAsStr);
+            mLogger.d(TAG, "        messageChunk: " + (mChunkInFlight.index + 1) + "/" + mChunkInFlight.count + " to: " + mChunkInFlight.targetUid + ", waiting for ack/nack id: " + dataPacket.getId());
         } catch (RemoteException e) {
             maybeSaveState();
             mUiThreadHandler.postDelayed(() -> maybeRestoreState(), REMOTE_EXCEPTION_RETRY_DELAY);
-            mLogger.e(TAG, "  sendChunk(), RemoteException: " + e.getMessage());
+            mLogger.e(TAG, "sendChunk(), RemoteException: " + e.getMessage());
             e.printStackTrace();
         }
     }

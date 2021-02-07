@@ -62,7 +62,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
         if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
             String message = new String(payload.getBytes());
             if (!message.startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
-                mLogger.d(TAG, "Received packet: " + (message.replace("\n", "").replace("\r", "")));
+                mLogger.d(TAG, "<--- Received packet: " + (message.replace("\n", "").replace("\r", "")));
                 handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
             }
         } else //noinspection StatementWithEmptyBody
@@ -78,7 +78,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
         int messageIndex = messageChunk[0] >> 4 & 0x0f;
         int messageCount = messageChunk[0] & 0x0f;
 
-        mLogger.d(TAG, "<---  messageChunk: " + (messageIndex + 1) + "/" + messageCount + " from: " + meshId);
+        mLogger.d(TAG, "        messageChunk: " + (messageIndex + 1) + "/" + messageCount + " from: " + meshId);
 
         byte[] chunk = new byte[messageChunk.length - 1];
         for (int idx = 0, i = 1; i < messageChunk.length; i++, idx++) {

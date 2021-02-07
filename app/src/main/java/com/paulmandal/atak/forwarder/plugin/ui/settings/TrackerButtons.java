@@ -26,7 +26,7 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.nonatak.NonAtakMeshtasticConfigurator;
+import com.paulmandal.atak.forwarder.nonatak.MeshtasticTrackerConfigurator;
 import com.paulmandal.atak.forwarder.persistence.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
@@ -136,9 +136,9 @@ public class TrackerButtons {
                                int roleIndex,
                                int pliIntervalS,
                                int screenShutoffDelayS,
-                               NonAtakMeshtasticConfigurator.Listener listener) {
+                               MeshtasticTrackerConfigurator.Listener listener) {
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext);
-        NonAtakMeshtasticConfigurator nonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(settingsMenuContext, uiThreadHandler, meshtasticCommHardware, meshtasticDeviceSwitcher, commDevice, targetDevice, deviceCallsign, channelName, psk, modemConfig, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, listener);
-        nonAtakMeshtasticConfigurator.writeToDevice();
+        MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(settingsMenuContext, uiThreadHandler, meshtasticCommHardware, meshtasticDeviceSwitcher, commDevice, targetDevice, deviceCallsign, channelName, psk, modemConfig, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, listener);
+        meshtasticTrackerConfigurator.writeToDevice();
     }
 }

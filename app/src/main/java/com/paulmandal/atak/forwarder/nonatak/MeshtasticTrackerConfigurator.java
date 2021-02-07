@@ -21,8 +21,8 @@ import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
-public class NonAtakMeshtasticConfigurator {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + NonAtakMeshtasticConfigurator.class.getSimpleName();
+public class MeshtasticTrackerConfigurator {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
 
     public interface Listener {
         void onDoneWritingToDevice();
@@ -82,7 +82,7 @@ public class NonAtakMeshtasticConfigurator {
 
     private Runnable mPostWriteDelayRunnable;
 
-    public NonAtakMeshtasticConfigurator(Context atakContext,
+    public MeshtasticTrackerConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
                                          MeshtasticCommHardware meshtasticCommHardware,
                                          MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,

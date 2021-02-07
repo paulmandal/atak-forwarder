@@ -16,7 +16,7 @@ import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.nonatak.NonAtakMeshtasticConfigurator;
+import com.paulmandal.atak.forwarder.nonatak.MeshtasticTrackerConfigurator;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-public class DevicesTabViewModel implements NonAtakMeshtasticConfigurator.Listener {
+public class DevicesTabViewModel implements MeshtasticTrackerConfigurator.Listener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + DevicesTabViewModel.class.getSimpleName();
 
     private static final String MARKER_MESHTASTIC = "Meshtastic";
@@ -37,7 +37,7 @@ public class DevicesTabViewModel implements NonAtakMeshtasticConfigurator.Listen
     private MeshtasticCommHardware mMeshtasticCommHardware;
     private HashHelper mHashHelper;
 
-    private NonAtakMeshtasticConfigurator mNonAtakMeshtasticConfigurator;
+    private MeshtasticTrackerConfigurator mMeshtasticTrackerConfigurator;
 
     private MutableLiveData<List<MeshtasticDevice>> mMeshtasticDevices = new MutableLiveData<>();
     private MutableLiveData<String> mCommDeviceAddress = new MutableLiveData<>();
@@ -137,7 +137,7 @@ public class DevicesTabViewModel implements NonAtakMeshtasticConfigurator.Listen
     @Override
     public void onDoneWritingToDevice() {
         mMeshtasticCommHardware.suspendResume(false);
-        mNonAtakMeshtasticConfigurator = null;
+        mMeshtasticTrackerConfigurator = null;
         mNonAtakDeviceWriteInProgress.setValue(false);
     }
 }

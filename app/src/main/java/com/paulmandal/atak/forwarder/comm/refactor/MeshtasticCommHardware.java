@@ -45,10 +45,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
-    public interface MessageAckNackListener {
-        void onMessageAckNack(int messageId, boolean isAck);
-        void onMessageTimedOut(int messageId);
-    }
 
     private static final String TAG = Constants.DEBUG_TAG_PREFIX + MeshtasticCommHardware.class.getSimpleName();
 
@@ -65,7 +61,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private Handler mUiThreadHandler;
 
 
-    private final List<MessageAckNackListener> mMessageAckNackListeners = new CopyOnWriteArrayList<>();
 
     private CountDownLatch mPendingMessageCountdownLatch; // TODO: maybe move this up to MessageLengthLimitedCommHardware
     private int mPendingMessageId;
@@ -81,9 +76,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private int mChannelMode;
     private byte[] mChannelPsk;
 
-    private int mPliHopLimit;
-    private int mChatHopLimit;
-    private int mOtherHopLimit;
 
     private MeshtasticDevice mCommDevice;
 
@@ -123,10 +115,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
 
 
-    }
-
-    public void addMessageAckNackListener(MessageAckNackListener listener) {
-        mMessageAckNackListeners.add(listener);
     }
 
     @Override
@@ -194,35 +182,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
-    private void updateConnectionState() {
-        try {
-            String meshId = mMeshService.getMyId();
-            CommHardware.ConnectionState connectionState;
-            if (mCommDevice == null) {
-                connectionState = CommHardware.ConnectionState.NO_DEVICE_CONFIGURED;
-            } else {
-                boolean connected = mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
-                connectionState = connected ? CommHardware.ConnectionState.DEVICE_CONNECTED : CommHardware.ConnectionState.DEVICE_DISCONNECTED;
-            }
-
-            setConnectionState(connectionState);
-            notifyConnectionStateListeners(connectionState);
-            Log.v(TAG, "  ConnectionState: " + connectionState);
-        } catch (RemoteException e) {
-            Log.e(TAG, "Exception in updateConnectionState: " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
-    private void updateMeshId() {
-        try {
-            getSelfInfo().meshId = mMeshService.getMyId();
-        } catch (RemoteException e) {
-            Log.e(TAG, "Exception in updateMeshId(): " + e.getMessage());
-            e.printStackTrace();
-        }
-    }
-
     private void maybeSetupRadio() {
         if (!mInitialRadioConfigurationDone) {
             Log.v(TAG, "maybeSetupRadio, calling configureDevice()");
@@ -252,9 +211,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     maybeInitialConnection();
                     break;
                 case MeshServiceConstants.ACTION_MESSAGE_STATUS:
-                    int id = intent.getIntExtra(MeshServiceConstants.EXTRA_PACKET_ID, 0);
-                    MessageStatus status = intent.getParcelableExtra(MeshServiceConstants.EXTRA_STATUS);
-                    handleMessageStatusChange(id, status);
                     break;
                 case MeshServiceConstants.ACTION_RECEIVED_DATA:
 
@@ -268,25 +224,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
 
 
-    private void handleMessageStatusChange(int id, MessageStatus status) {
-        mUiThreadHandler.post(() -> {
-            for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
-                messageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED);
-            }
-        });
 
-        if (id != mPendingMessageId) {
-            Log.e(TAG, "handleMessageStatusChange for a msg we don't care about messageId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
-            return;
-        }
-
-        mPendingMessageReceived = status != MessageStatus.ERROR;
-        Log.d(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
-
-        if (status == MessageStatus.ERROR || status == MessageStatus.DELIVERED) {
-            mPendingMessageCountdownLatch.countDown();
-        }
-    }
 
     /**
      * Message Utils
@@ -319,12 +257,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     /**
      * Config State Handling
      */
-    @Override
-    protected void updateSettings(SharedPreferences sharedPreferences) {
-        mPliHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_HOP_LIMIT, PreferencesDefaults.DEFAULT_PLI_HOP_LIMIT));
-        mChatHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHAT_HOP_LIMIT, PreferencesDefaults.DEFAULT_CHAT_HOP_LIMIT));
-        mOtherHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_OTHER_HOP_LIMIT, PreferencesDefaults.DEFAULT_OTHER_HOP_LIMIT));
-    }
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {

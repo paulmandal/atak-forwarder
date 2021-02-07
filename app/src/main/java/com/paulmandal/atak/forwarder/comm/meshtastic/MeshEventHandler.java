@@ -45,7 +45,7 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public final void onReceive(Context context, Intent intent) {
         if (mIsSuspended) {
             return;
         }
@@ -62,6 +62,7 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
     }
 
     @Override
+    @CallSuper
     public void onSuspendedChanged(boolean suspended) {
         mIsSuspended = suspended;
 

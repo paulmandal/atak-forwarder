@@ -250,8 +250,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         if (outboundMessageChunk == null) {
             // Done sending
             mRestoreChunksAfterSuspend.clear();
-            mChunkInFlight = null; // TODO: necessary?
             mSendingMessage = false;
+            return;
         }
 
         mChunkInFlight = outboundMessageChunk;
@@ -270,6 +270,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
+            mChunkInFlight = null;
             mLogger.d(TAG, "  sendChunk() waiting for ACK/NACK for messageId: " + dataPacket.getId());
         } catch (RemoteException e) {
             maybeSaveState();

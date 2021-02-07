@@ -243,7 +243,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     private void sendNextChunk() {
-        mLogger.v(TAG, "sendNextChunk()");
+        mLogger.v(TAG, "  sendNextChunk()");
         OutboundMessageChunk outboundMessageChunk = mPendingMessageChunks.poll();
 
         if (outboundMessageChunk == null) {
@@ -260,6 +260,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     private void sendChunk() {
+        mLogger.v(TAG, "  sendChunk()");
         DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
                 mChunkInFlight.chunk,
                 Portnums.PortNum.UNKNOWN_APP.getNumber(),
@@ -294,12 +295,12 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             return;
         }
 
-        mLogger.d(TAG, "  handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
+        mLogger.d(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
 
         if (status == MessageStatus.DELIVERED) {
             sendNextChunk();
         } else if (status == MessageStatus.QUEUED) {
-            mLogger.d(TAG, "  Status is queued, waiting for ERROR/DELIVERED");
+            mLogger.v(TAG, "  Status is queued, waiting for ERROR/DELIVERED");
             // Do nothing, wait for delivered or error
         } else {
             mLogger.d(TAG, "  Status is ERROR, resending chunk");

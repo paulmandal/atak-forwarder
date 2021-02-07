@@ -7,7 +7,6 @@ import android.os.Handler;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
-import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
@@ -23,7 +22,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
         void onMessageReceived(int messageId, byte[] message);
     }
 
-    public static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
+    public static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + InboundMeshMessageHandler.class.getSimpleName();
     private final Handler mUiThreadHandler;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
@@ -61,7 +60,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
 
         if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
             String message = new String(payload.getBytes());
-            if (!message.startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
+            if (!message.substring(1).startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
                 mLogger.d(TAG, "<--- Received packet: " + (message.replace("\n", "").replace("\r", "")));
                 handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
             }
@@ -125,6 +124,8 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
                         message[idx] = messagePieces[i][j];
                     }
                 }
+
+                mLogger.d(TAG, "Message re-assembled, notifying listeners");
                 notifyMessageListeners(messageId, message);
             }
         }

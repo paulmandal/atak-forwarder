@@ -1,5 +1,6 @@
-- read/write device from SharedPref
-- Tear up UI, tabs are now Status, Trackers, Debug (log)
+- write to non-ATAK device (configure and test)
+- tear up remaining UI
+- create Logger that toasts all debug output
 - rewire buttons from old UI -> SharedPrefs UI
 - go through checklist again
 
@@ -17,6 +18,8 @@
 
 - handling sharedprefs may be locking up UI thread
 - TODO: gate channel updates since all 3 vars may save close to the same time?
+
+- validation ranges for sharedprefs (e.g. PLI can be 0-10000 or some shit)
 
 - meshtastic comm hardware should do this:
 svc connect: setDeviceAddress (if not already)

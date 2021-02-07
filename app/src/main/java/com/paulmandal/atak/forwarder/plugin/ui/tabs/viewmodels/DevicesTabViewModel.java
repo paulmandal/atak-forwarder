@@ -7,7 +7,6 @@ import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 import android.os.Handler;
-import android.util.Log;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -115,24 +114,24 @@ public class DevicesTabViewModel implements NonAtakMeshtasticConfigurator.Listen
     }
 
     public void writeToNonAtak(MeshtasticDevice targetDevice, String deviceCallsign, int teamIndex, int roleIndex, int refreshIntervalS, int screenShutoffDelayS) {
-        if (targetDevice.address.equals(mCommDeviceAddress.getValue())
-                || mChannelName == null
-                || mModemConfig == null) {
-            Log.e(TAG, "Attempt to write to CommDevice address or write without channel settings!");
-            return;
-        }
-
-        mNonAtakDeviceWriteInProgress.setValue(true);
-
-        if (mNonAtakMeshtasticConfigurator != null) {
-            mNonAtakMeshtasticConfigurator.cancel();
-        } else {
-            mMeshtasticCommHardware.suspendResume(true);
-        }
-
-        // Write settings to device
-        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mAtakContext, mUiThreadHandler, mMeshtasticDeviceSwitcher, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
-        mNonAtakMeshtasticConfigurator.writeToDevice();
+//        if (targetDevice.address.equals(mCommDeviceAddress.getValue())
+//                || mChannelName == null
+//                || mModemConfig == null) {
+//            Log.e(TAG, "Attempt to write to CommDevice address or write without channel settings!");
+//            return;
+//        }
+//
+//        mNonAtakDeviceWriteInProgress.setValue(true);
+//
+//        if (mNonAtakMeshtasticConfigurator != null) {
+//            mNonAtakMeshtasticConfigurator.cancel();
+//        } else {
+//            mMeshtasticCommHardware.suspendResume(true);
+//        }
+//
+//        // Write settings to device
+//        mNonAtakMeshtasticConfigurator = new NonAtakMeshtasticConfigurator(mAtakContext, mUiThreadHandler, mMeshtasticDeviceSwitcher, mCommDevice, targetDevice, deviceCallsign, mChannelName, mPsk, mModemConfig, teamIndex, roleIndex, refreshIntervalS, screenShutoffDelayS, this);
+//        mNonAtakMeshtasticConfigurator.writeToDevice();
     }
 
     @Override

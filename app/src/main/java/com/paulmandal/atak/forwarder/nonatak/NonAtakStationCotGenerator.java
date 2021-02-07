@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.nonatak;
 
-import android.util.Log;
-
 import com.atakmap.coremap.cot.event.CotDetail;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.atakmap.coremap.cot.event.CotPoint;
@@ -84,6 +82,9 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
         mLocalCallsign = localCallsign;
 
         userTracker.addNonAtakStationUpdateListener(this);
+
+        // TODO: thread/loop to draw every 5 mins with new stale-time-offset
+        // TODO: when we get a new station, update its entry in our list and then trigger a redraw
     }
 
     @Override
@@ -95,7 +96,6 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
 
         if (!nonAtakUserInfo.gpsValid) {
             // Ignore updates that don't contain a valid GPS point
-            Log.w(TAG, "NON-GPS update ignored");
             return;
         }
 

@@ -3,11 +3,13 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.persistence.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -25,7 +27,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
     private static List<Destroyable> sDestroyables;
     private static SharedPreferences sSharedPreferences;
     private static DevicesList sDevicesList;
-    private static CommHardware sCommHardware;
+    private static MeshtasticCommHardware sCommHardware;
     private static CotMessageCache sCotMessageCache;
     private static CommandQueue sCommandQueue;
 
@@ -38,7 +40,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
                                         final List<Destroyable> destroyables,
                                         final SharedPreferences sharedPreferences,
                                         final DevicesList devicesList,
-                                        final CommHardware commHardware,
+                                        final MeshtasticCommHardware commHardware,
                                         final CotMessageCache cotMessageCache,
                                         final CommandQueue commandQueue) {
         super(pluginContext, R.xml.preferences);
@@ -59,11 +61,13 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
                 findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE),
                 findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES));
 
+        Context settingsMenuContext = getActivity();
+
         HashHelper hashHelper = new HashHelper();
         QrHelper qrHelper = new QrHelper();
         ChannelButtons channelButtons = new ChannelButtons(sDestroyables,
                 sSharedPreferences,
-                getActivity(),
+                settingsMenuContext,
                 sPluginContext,
                 sCommHardware,
                 hashHelper,
@@ -75,7 +79,14 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
                 findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE),
                 findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE));
 
-        TrackerButtons trackerButtons = new TrackerButtons(sDevicesList,
+        Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+        TrackerButtons trackerButtons = new TrackerButtons(settingsMenuContext,
+                pluginContext,
+                uiThreadHandler,
+                sDevicesList,
+                sCommHardware,
+                findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
+                findPreference(PreferencesKeys.KEY_TRACKER_ROLE),
                 findPreference(PreferencesKeys.KEY_TRACKER_WRITE_TO_DEVICE));
 
         AdvancedButtons advancedButtons = new AdvancedButtons(sCotMessageCache,

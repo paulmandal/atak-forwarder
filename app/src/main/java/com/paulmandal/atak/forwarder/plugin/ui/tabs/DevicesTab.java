@@ -5,15 +5,12 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -69,19 +66,6 @@ public class DevicesTab extends ConstraintLayout {
             alertDialog.show();
         });
 
-        EditText deviceCallsignEditText = findViewById(R.id.edittext_device_callsign);
-        deviceCallsignEditText.addTextChangedListener(new EditTextValidator(deviceCallsignEditText) {
-            @Override
-            public void validate(TextView textView, String text) {
-                if (text == null || text.isEmpty()) {
-                    textView.setError("You must enter a device callsign");
-                    return;
-                }
-
-                textView.setError(null);
-            }
-        });
-
         EditText pliIntervalSEditText = findViewById(R.id.edittext_pli_interval_s);
         pliIntervalSEditText.addTextChangedListener(new EditTextValidator(pliIntervalSEditText) {
             @Override
@@ -129,16 +113,6 @@ public class DevicesTab extends ConstraintLayout {
         ArrayAdapter<String> roleArrayAdapter = new ArrayAdapter<>(pluginContext, R.layout.plugin_spinner_item, Arrays.asList(NonAtakStationCotGenerator.ROLES));
         roleArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         roleSpinner.setAdapter(roleArrayAdapter);
-
-        Button writeToNonAtakButton = findViewById(R.id.button_write_to_non_atak);
-        writeToNonAtakButton.setOnClickListener(v -> {
-            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(atakContext)
-                    .setTitle(pluginContext.getResources().getString(R.string.warning))
-                    .setMessage(pluginContext.getResources().getString(R.string.write_to_non_atak_dialog))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> maybeWriteToNonAtatkDevice(devicesTabViewModel, mTargetDevice, deviceCallsignEditText.getText().toString(), teamSpinner.getSelectedItemPosition(), roleSpinner.getSelectedItemPosition(), Integer.parseInt(pliIntervalSEditText.getText().toString()), Integer.parseInt(screenShutoffDelaySEditText.getText().toString())))
-                    .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
-            alertDialog.show();
-        });
 
         PluginSpinner devicesSpinner = findViewById(R.id.spinner_devices);
         TextView commDevice = findViewById(R.id.textview_comm_device);

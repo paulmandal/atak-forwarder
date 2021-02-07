@@ -74,8 +74,6 @@
     <string name="read_channel_from_file">Read from File</string>
     <string name="read_channel_from_file_summary">Read your channel settings from a file</string>
 
-    <string name="scan_qr_dialog_title">Scan QR</string>
-    <string name="show_qr_dialog_title">Show QR</string>
     <string name="warning">Warning</string>
     <string name="generate_psk_warning">Warning if you generate a new PSK you will lose your old PSK!</string>
 
@@ -96,6 +94,8 @@
 
     <string name="tracker_write_to_device">Write to Device</string>
     <string name="tracker_write_to_device_summary">Write settings to a Tracker device, you will be able to pick the device and name it</string>
+
+    <string name="choose_device_and_callsign">Choose Device and Callsign</string>
 
     <!-- Advanced Settings -->
     <string name="category_advanced_settings">Advanced</string>

@@ -16,6 +16,7 @@ import com.geeksville.mesh.MeshProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
@@ -48,6 +49,7 @@ public class NonAtakMeshtasticConfigurator {
     private final Handler mUiThreadHandler;
 
     private final MeshtasticDevice mCommDevice;
+    private final MeshtasticCommHardware mMeshtasticCommHardware;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
@@ -82,6 +84,7 @@ public class NonAtakMeshtasticConfigurator {
 
     public NonAtakMeshtasticConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
+                                         MeshtasticCommHardware meshtasticCommHardware,
                                          MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                          MeshtasticDevice commDevice,
                                          MeshtasticDevice targetDevice,
@@ -97,6 +100,7 @@ public class NonAtakMeshtasticConfigurator {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
         mCommDevice = commDevice;
+        mMeshtasticCommHardware = meshtasticCommHardware;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;
@@ -111,6 +115,8 @@ public class NonAtakMeshtasticConfigurator {
     }
 
     public void writeToDevice() {
+        mMeshtasticCommHardware.suspendResume(true);
+
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
                 Log.d(TAG, "onServiceConnected");
@@ -264,6 +270,7 @@ public class NonAtakMeshtasticConfigurator {
         Log.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
 
         unbind();
+        mMeshtasticCommHardware.suspendResume(false);
         mListener.onDoneWritingToDevice();
     }
 

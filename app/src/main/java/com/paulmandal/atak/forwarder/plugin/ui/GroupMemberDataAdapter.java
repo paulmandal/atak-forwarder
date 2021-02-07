@@ -5,11 +5,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 
 import java.util.List;
@@ -18,16 +20,19 @@ import eo.view.batterymeter.BatteryMeterView;
 
 public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
     private final List<UserInfo> mUsers;
+    private final Context mAtakContext;
     private final Context mPluginContext;
 
-    public GroupMemberDataAdapter(Context pluginContext, List<UserInfo> users) {
+    public GroupMemberDataAdapter(Context atakContext, Context pluginContext, List<UserInfo> users) {
         super(pluginContext, R.layout.group_member_list_view_item, users);
+        mAtakContext = atakContext;
         mPluginContext = pluginContext;
         mUsers = users;
     }
 
     static class ViewHolder {
         protected TextView callsign;
+        protected ImageView takIcon;
         protected BatteryMeterView batteryMeterView;
     }
 
@@ -40,6 +45,8 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
             view = inflator.inflate(R.layout.group_member_list_view_item, parent, false);
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.callsign = view.findViewById(R.id.textview_callsign);
+            viewHolder.takIcon = view.findViewById(R.id.imageview_tak_icon);
+            viewHolder.takIcon.setImageDrawable(mAtakContext.getResources().getDrawable(com.atakmap.app.R.drawable.ic_atak_launcher));
             viewHolder.batteryMeterView = view.findViewById(R.id.battery_meter);
             view.setTag(viewHolder);
         } else {
@@ -49,6 +56,7 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
 
         ViewHolder holder = (ViewHolder) view.getTag();
         holder.callsign.setText(userInfo.callsign);
+        holder.takIcon.setVisibility(userInfo instanceof NonAtakUserInfo ? View.GONE : View.VISIBLE);
         holder.batteryMeterView.setChargeLevel(userInfo.batteryPercentage);
         return view;
     }

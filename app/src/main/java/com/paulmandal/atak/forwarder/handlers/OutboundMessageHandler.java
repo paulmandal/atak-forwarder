@@ -67,7 +67,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
 
         byte[] cotAsBytes = mCotShrinker.toByteArrayLossy(cotEvent);
         boolean overwriteSimilar = eventType.equals(TYPE_PLI) || !eventType.equals(TYPE_CHAT);
-//        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs), overwriteSimilar);
+        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs), overwriteSimilar);
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {

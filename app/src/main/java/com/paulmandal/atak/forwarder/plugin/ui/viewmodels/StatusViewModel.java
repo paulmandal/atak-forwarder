@@ -1,17 +1,20 @@
 package com.paulmandal.atak.forwarder.plugin.ui.viewmodels;
 
+import android.content.SharedPreferences;
+
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticCommHardware;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +26,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
-    private CommHardware mCommHardware;
+    private CommHardware mMeshtasticCommHardware;
 
     private MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
     private MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
@@ -35,13 +38,15 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     private MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
-    public StatusViewModel(UserTracker userTracker,
-                           MeshtasticCommHardware commHardware,
+    public StatusViewModel(List<Destroyable> destroyables,
+                           SharedPreferences sharedPreferences,
+                           UserTracker userTracker,
+                           MeshtasticCommHardware meshtasticCommHardware,
                            CommandQueue commandQueue,
                            HashHelper hashHelper) {
-        super(commHardware, hashHelper);
+        super(destroyables, sharedPreferences, hashHelper);
 
-        mCommHardware = commHardware;
+        mMeshtasticCommHardware = meshtasticCommHardware;
 
         mMessageQueueSize.setValue(0);
         mTotalMessages.setValue(0);
@@ -53,9 +58,9 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
         userTracker.addUpdateListener(this);
         commandQueue.setListener(this);
-        commHardware.addConnectionStateListener(this);
-        commHardware.addMessageAckNackListener(this);
-        commHardware.addMessageListener(this);
+        meshtasticCommHardware.addConnectionStateListener(this);
+        meshtasticCommHardware.addMessageAckNackListener(this);
+        meshtasticCommHardware.addMessageListener(this);
     }
 
     @Override
@@ -122,11 +127,11 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     public void connect() {
-        mCommHardware.connect();
+        mMeshtasticCommHardware.connect();
     }
 
     public void broadcastDiscoveryMessage() {
-        mCommHardware.broadcastDiscoveryMessage();
+        mMeshtasticCommHardware.broadcastDiscoveryMessage();
     }
 
     @Override

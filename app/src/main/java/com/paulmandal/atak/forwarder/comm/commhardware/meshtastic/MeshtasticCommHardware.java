@@ -165,10 +165,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 if (!mSetDeviceAddressCalled) {
                     Log.e(TAG, "complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE)");
                     complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
-                    mSetDeviceAddressCalled = true;
                     return;
                 }
-//                maybeInitialConnection();
+
+                maybeInitialConnection();
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -517,10 +517,15 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     Gson gson = new Gson();
                     MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
 
+                    if (meshtasticDevice == null) {
+                        return;
+                    }
+
                     Log.e(TAG, "complexUpdate.KEY_COMM_DEVICE: " + meshtasticDevice.address);
                     try {
                         mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
                         mCommDevice = meshtasticDevice;
+                        mSetDeviceAddressCalled = true;
 
                         connect();
                         Log.e(TAG, "setDeviceAddress success");

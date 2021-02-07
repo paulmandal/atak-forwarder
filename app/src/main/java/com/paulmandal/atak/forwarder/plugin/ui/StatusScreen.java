@@ -12,7 +12,11 @@ import android.widget.Toast;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
+
+import java.util.Collections;
 
 public class StatusScreen {
     private Context mAtakContext;
@@ -85,7 +89,21 @@ public class StatusScreen {
         });
 
         statusViewModel.getUserInfoList().observe(lifecycleOwner, userInfoList -> {
-            GroupMemberDataAdapter groupMemberDataAdapter = new GroupMemberDataAdapter(pluginContext, userInfoList);
+            Collections.sort(userInfoList, (UserInfo lhs, UserInfo rhs) -> {
+                boolean lhsTak = !(lhs instanceof NonAtakUserInfo);
+                boolean rhsTak = !(rhs instanceof NonAtakUserInfo);
+
+                if (lhsTak == rhsTak) {
+                    return 0;
+                }
+
+                if (lhsTak) {
+                    return 1;
+                }
+
+                return -1;
+            });
+            GroupMemberDataAdapter groupMemberDataAdapter = new GroupMemberDataAdapter(atakContext, pluginContext, userInfoList);
             mGroupMembersListView.setAdapter(groupMemberDataAdapter);
         });
 

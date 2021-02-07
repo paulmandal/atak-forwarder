@@ -80,7 +80,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(userTracker, inboundMessageHandler, pluginVersion, mapView.getDeviceCallsign());
 
         HashHelper hashHelper = new HashHelper();
-        StatusViewModel statusViewModel = new StatusViewModel(userTracker, meshtasticCommHardware, commandQueue, hashHelper);
+        StatusViewModel statusViewModel = new StatusViewModel(mDestroyables, sharedPreferences, userTracker, meshtasticCommHardware, commandQueue, hashHelper);
 
         DevicesList devicesList = new DevicesList(atakContext);
 

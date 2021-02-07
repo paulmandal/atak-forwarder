@@ -12,9 +12,9 @@ import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 public class InboundMessageHandler implements CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
 
-    private CotDispatcher mInternalCotDispatcher;
-    private CotDispatcher mExternalCotDispatcher;
-    private CotShrinker mCotShrinker;
+    private final CotDispatcher mInternalCotDispatcher;
+    private final CotDispatcher mExternalCotDispatcher;
+    private final CotShrinker mCotShrinker;
 
     public InboundMessageHandler(CotDispatcher internalCotDispatcher,
                                  CotDispatcher externalCotDispatcher,

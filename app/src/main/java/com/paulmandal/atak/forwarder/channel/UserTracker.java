@@ -25,8 +25,8 @@ public class UserTracker implements MeshtasticCommHardware.UserListener {
 
     public static final String USER_NOT_FOUND = "";
 
-    private Context mAtakContext;
-    private Handler mUiThreadHandler;
+    private final Context mAtakContext;
+    private final Handler mUiThreadHandler;
 
     private final List<UserInfo> mAtakUsers = new CopyOnWriteArrayList<>();
     private final List<TrackerUserInfo> mTrackers = new CopyOnWriteArrayList<>();

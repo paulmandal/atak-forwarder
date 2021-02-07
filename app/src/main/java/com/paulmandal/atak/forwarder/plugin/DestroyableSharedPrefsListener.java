@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public abstract class DestroyableSharedPrefsListener implements Destroyable, SharedPreferences.OnSharedPreferenceChangeListener {
-    private SharedPreferences mSharedPreferences;
+    private final SharedPreferences mSharedPreferences;
 
     List<String> mSimplePreferencesKeys;
     List<String> mComplexPreferencesKeys;

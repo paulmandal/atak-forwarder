@@ -39,7 +39,7 @@ public class MeshtasticDeviceSwitcher {
                 public void onReceive(Context context, Intent intent) {
                     String action = intent.getAction();
                     if (ACTION_USB_PERMISSION.equals(action)) {
-                        UsbDevice device = (UsbDevice) intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
+                        UsbDevice device = intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
 
                         if (intent.getBooleanExtra(UsbManager.EXTRA_PERMISSION_GRANTED, false) && device != null) {
                             mDevicesWithUsbPermisssion.add(device.getDeviceName());

@@ -22,6 +22,7 @@ public class QrHelper {
 
         BitMatrix result;
         try {
+            //noinspection SuspiciousNameCombination
             result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, WIDTH, WIDTH, null);
         } catch (IllegalArgumentException iae) {
             // Unsupported format

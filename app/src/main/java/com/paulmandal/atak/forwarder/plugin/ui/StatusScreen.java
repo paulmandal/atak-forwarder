@@ -21,20 +21,20 @@ import java.util.Collections;
 public class StatusScreen {
     private Context mAtakContext;
 
-    private TextView mChannelName;
-    private TextView mPskHash;
-    private TextView mModemConfig;
-    private TextView mConnectionStatusTextView;
+    private final TextView mChannelName;
+    private final TextView mPskHash;
+    private final TextView mModemConfig;
+    private final TextView mConnectionStatusTextView;
 
-    private TextView mMessageQueueLengthTextView;
-    private TextView mReceivedTextView;
-    private TextView mDelieveredTextView;
-    private TextView mTimedOutTextView;
-    private TextView mErroredTextView;
-    private TextView mTotalTextView;
-    private ListView mGroupMembersListView;
-    private Button mConnectToServiceButton;
-    private Button mBroadcastDiscoveryButton;
+    private final TextView mMessageQueueLengthTextView;
+    private final TextView mReceivedTextView;
+    private final TextView mDelieveredTextView;
+    private final TextView mTimedOutTextView;
+    private final TextView mErroredTextView;
+    private final TextView mTotalTextView;
+    private final ListView mGroupMembersListView;
+    private final Button mConnectToServiceButton;
+    private final Button mBroadcastDiscoveryButton;
     
     public StatusScreen(ViewGroup vg) {
         mConnectionStatusTextView = vg.findViewById(R.id.textview_connection_status);
@@ -118,7 +118,7 @@ public class StatusScreen {
             }
         });
         statusViewModel.getChannelName().observe(lifecycleOwner, channelName -> mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null));
-        statusViewModel.getPskHash().observe(lifecycleOwner, pskHash -> mPskHash.setText(pskHash));
+        statusViewModel.getPskHash().observe(lifecycleOwner, mPskHash::setText);
         statusViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
     }
 

@@ -64,7 +64,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.2'
+        classpath 'com.android.tools.build:gradle:4.1.2'
         if(isDevKitEnabled()) {
             classpath "com.atakmap.gradle:atak-gradle-takdev:${takdevVersion}"
         } else {

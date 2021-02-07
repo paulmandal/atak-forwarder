@@ -80,7 +80,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
             "K9"
     };
 
-    private InboundMessageHandler mInboundMessageHandler;
+    private final InboundMessageHandler mInboundMessageHandler;
 
     private List<TrackerUserInfo> mTrackers;
     private final String mPluginVersion;
@@ -107,6 +107,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     @Override
     public void onDestroy(Context context, MapView mapView) {
         mDestroyCalled = true;
+        mWorkerExecutor.shutdown();
     }
 
     private void startWorkerThread() {

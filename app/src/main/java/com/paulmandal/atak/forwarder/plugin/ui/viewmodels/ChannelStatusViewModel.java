@@ -17,11 +17,11 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.List;
 
 public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
-    private MutableLiveData<String> mChannelName = new MutableLiveData<>();
-    private MutableLiveData<String> mPskHash = new MutableLiveData<>();
-    private MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
+    private final MutableLiveData<String> mChannelName = new MutableLiveData<>();
+    private final MutableLiveData<String> mPskHash = new MutableLiveData<>();
+    private final MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
 
-    private HashHelper mHashHelper;
+    private final HashHelper mHashHelper;
 
     public ChannelStatusViewModel(List<Destroyable> destroyables,
                                   SharedPreferences sharedPreferences,

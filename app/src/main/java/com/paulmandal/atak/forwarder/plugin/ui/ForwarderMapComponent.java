@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,8 +45,9 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
     private Context mPluginContext;
 
-    private List<Destroyable> mDestroyables = new ArrayList<>();
+    private final List<Destroyable> mDestroyables = new ArrayList<>();
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     public void onCreate(final Context pluginContext, Intent intent,
                          final MapView mapView) {
         pluginContext.setTheme(R.style.ATAKPluginTheme);

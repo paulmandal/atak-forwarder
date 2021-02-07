@@ -17,13 +17,11 @@ import java.util.List;
 public class CotMessageCache extends DestroyableSharedPrefsListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
 
-    private CotComparer mCotComparer;
+    private final CotComparer mCotComparer;
 
     private final List<CachedCotEvent> mCachedEvents = new ArrayList<>();
 
-    private int mPliMaxFrequencyS;
     private int mDuplicateMessagesTtlM;
-    private int mChannelMode;
     private int mModeAwarePliRate;
 
     public CotMessageCache(List<Destroyable> destroyables,
@@ -96,10 +94,10 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        mPliMaxFrequencyS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_MAX_FREQUENCY, PreferencesDefaults.DEFAULT_PLI_MAX_FREQUENCY));
+        int pliMaxFrequencyS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_MAX_FREQUENCY, PreferencesDefaults.DEFAULT_PLI_MAX_FREQUENCY));
         mDuplicateMessagesTtlM = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL, PreferencesDefaults.DEFAULT_DROP_DUPLICATE_MSGS_TTL));
-        mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-        mModeAwarePliRate = (mPliMaxFrequencyS * 1000) * (mChannelMode + 1);
+        int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
+        mModeAwarePliRate = (pliMaxFrequencyS * 1000) * (channelMode + 1);
     }
 
     @Override

@@ -43,10 +43,10 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
-    private Handler mUiThreadHandler;
+    private final Handler mUiThreadHandler;
 
     private final CommandQueue mCommandQueue;
-    private QueuedCommandFactory mQueuedCommandFactory;
+    private final QueuedCommandFactory mQueuedCommandFactory;
 
     private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
     private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
@@ -56,7 +56,7 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
     private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mDestroyed = false;
 
-    private UserInfo mSelfInfo;
+    private final UserInfo mSelfInfo;
 
     public CommHardware(List<Destroyable> destroyables,
                         SharedPreferences sharedPreferences,

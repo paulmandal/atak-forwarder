@@ -118,7 +118,7 @@ public class TrackerButtons {
 
                 writeToDevice(settingsMenuContext, uiThreadHandler, meshtasticCommHardware, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT);
+                    Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
                 });
                 progressBar.setVisibility(View.VISIBLE);

@@ -23,9 +23,9 @@ public class CommandQueue {
         void onMessageQueueSizeChanged(int size);
     }
 
-    private Handler mHandler;
+    private final Handler mHandler;
 
-    private CotComparer mCotComparer;
+    private final CotComparer mCotComparer;
 
     private final List<QueuedCommand> mQueuedCommands;
     private Listener mListener;

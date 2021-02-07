@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.tracker;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -60,11 +61,8 @@ public class MeshtasticTrackerConfigurator {
     private final int mPliIntervalS;
     private final int mScreenShutoffDelayS;
 
-    private IntentFilter mIntentFilter;
-
     private IMeshService mMeshService;
     private ServiceConnection mServiceConnection;
-    private Intent mServiceIntent;
 
     private Listener mListener;
 
@@ -73,7 +71,7 @@ public class MeshtasticTrackerConfigurator {
     private boolean mStartedWritingToDevice = false;
     private boolean mWroteToDevice = false;
 
-    private Runnable mTimeoutRunnable = () -> {
+    private final Runnable mTimeoutRunnable = () -> {
         Log.e(TAG, "Timed out writing to Tracker device!");
         cancel();
         mListener.onDoneWritingToDevice();
@@ -131,15 +129,13 @@ public class MeshtasticTrackerConfigurator {
             }
         };
 
-        mServiceIntent = new Intent();
-        mServiceIntent.setClassName("com.geeksville.mesh", "com.geeksville.mesh.service.MeshService");
+        Intent serviceIntent = new Intent();
+        serviceIntent.setClassName("com.geeksville.mesh", "com.geeksville.mesh.service.MeshService");
 
-        mAtakContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
+        mAtakContext.bindService(serviceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(ACTION_MESH_CONNECTED);
-
-        mIntentFilter = filter;
 
         mAtakContext.registerReceiver(mBroadcastReceiver, filter);
     }
@@ -160,7 +156,7 @@ public class MeshtasticTrackerConfigurator {
         }
     }
 
-    private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -171,25 +167,23 @@ public class MeshtasticTrackerConfigurator {
                 return;
             }
 
-            switch (action) {
-                case ACTION_MESH_CONNECTED:
-                    String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
-                    boolean connected = extraConnected.equals(STATE_CONNECTED);
+            if (action.equals(ACTION_MESH_CONNECTED)) {
+                String extraConnected = intent.getStringExtra(EXTRA_CONNECTED);
+                boolean connected = extraConnected.equals(STATE_CONNECTED);
 
-                    if (connected) {
-                        mUiThreadHandler.removeCallbacks(mTimeoutRunnable);
-                        maybeWriteToDevice();
-                        maybeDoneWriting();
-                    }
-                    Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
-                    break;
-                default:
-                    Log.e(TAG, "Do not know how to handle intent action: " + intent.getAction());
-                    break;
+                if (connected) {
+                    mUiThreadHandler.removeCallbacks(mTimeoutRunnable);
+                    maybeWriteToDevice();
+                    maybeDoneWriting();
+                }
+                Log.d(TAG, "ACTION_MESH_CONNECTED: " + connected + ", extra: " + extraConnected);
+            } else {
+                Log.e(TAG, "Do not know how to handle intent action: " + intent.getAction());
             }
         }
     };
 
+    @SuppressLint("DefaultLocale")
     private void maybeWriteToDevice() {
         if (mWroteToDevice || mStartedWritingToDevice) {
             return;
@@ -203,7 +197,7 @@ public class MeshtasticTrackerConfigurator {
 
             if (radioConfigBytes == null) {
                 Log.e(TAG, "radioConfigBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
-                mUiThreadHandler.postDelayed(() -> maybeWriteToDevice(), RADIO_CONFIG_MISSING_RETRY_TIME_MS);
+                mUiThreadHandler.postDelayed(this::maybeWriteToDevice, RADIO_CONFIG_MISSING_RETRY_TIME_MS);
                 return;
             }
 

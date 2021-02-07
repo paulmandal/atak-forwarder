@@ -24,12 +24,12 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
-    private CommsMapComponent mCommsMapComponent;
-    private CommHardware mCommHardware;
-    private CommandQueue mCommandQueue;
-    private QueuedCommandFactory mQueuedCommandFactory;
-    private CotMessageCache mCotMessageCache;
-    private CotShrinker mCotShrinker;
+    private final CommsMapComponent mCommsMapComponent;
+    private final CommHardware mCommHardware;
+    private final CommandQueue mCommandQueue;
+    private final QueuedCommandFactory mQueuedCommandFactory;
+    private final CotMessageCache mCotMessageCache;
+    private final CotShrinker mCotShrinker;
 
     public OutboundMessageHandler(CommsMapComponent commsMapComponent,
                                   CommHardware commHardware,
@@ -71,11 +71,10 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {
-        switch (cotEvent.getType()) {
-            case TYPE_CHAT:
-                return QueuedCommand.PRIORITY_MEDIUM;
-            default:
-                return QueuedCommand.PRIORITY_LOW;
+        if (cotEvent.getType().equals(TYPE_CHAT)) {
+            return QueuedCommand.PRIORITY_MEDIUM;
+        } else {
+            return QueuedCommand.PRIORITY_LOW;
         }
     }
 

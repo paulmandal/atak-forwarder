@@ -23,7 +23,7 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 public abstract class MessageLengthLimitedCommHardware extends CommHardware {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MessageLengthLimitedCommHardware.class.getSimpleName();
 
-    private UserTracker mUserTracker;
+    private final UserTracker mUserTracker;
     private final int mMessageChunkLength;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();

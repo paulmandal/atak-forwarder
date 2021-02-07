@@ -21,7 +21,7 @@ public class DevicesList {
 
     private static final String MARKER_MESHTASTIC = "Meshtastic";
 
-    private Context mAtakContext;
+    private final Context mAtakContext;
 
     public DevicesList(Context atakContext) {
         mAtakContext = atakContext;

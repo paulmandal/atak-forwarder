@@ -137,7 +137,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                 int modemConfigValue = resultBytes[PSK_LENGTH];
                 System.arraycopy(resultBytes, PSK_LENGTH + 1, channelNameBytes, 0, resultBytes.length - PSK_LENGTH - 1);
 
-                MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.valueOf(modemConfigValue);
+                MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(modemConfigValue);
 
                 preference.getEditor()
                         .putString(PreferencesKeys.KEY_CHANNEL_NAME, new String(channelNameBytes))

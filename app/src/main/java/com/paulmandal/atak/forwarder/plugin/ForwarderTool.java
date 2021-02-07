@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +30,7 @@ public class ForwarderTool extends Tool implements ToolDescriptor {
         return context.getString(R.string.app_name);
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     @Override
     public Drawable getIcon() {
         return (context == null) ? null : context.getResources().getDrawable(R.drawable.ic_launcher);

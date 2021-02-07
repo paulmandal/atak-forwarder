@@ -17,7 +17,7 @@ public class MeshtasticDeviceConfigurer {
     private static final int WAIT_BLUETOOTH_S = Config.WAIT_BLUETOOTH_S;
     private static final int PHONE_TIMEOUT_S = Config.PHONE_TIMEOUT_S;
 
-    private UserInfo mSelfInfo;
+    private final UserInfo mSelfInfo;
 
     public MeshtasticDeviceConfigurer(UserInfo selfInfo) {
         mSelfInfo = selfInfo;

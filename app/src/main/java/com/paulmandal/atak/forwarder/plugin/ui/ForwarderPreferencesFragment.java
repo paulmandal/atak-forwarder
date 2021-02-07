@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -24,10 +25,13 @@ import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 import java.util.List;
 
+@SuppressWarnings("AccessStaticViaInstance")
 public class ForwarderPreferencesFragment extends PluginPreferenceFragment implements Destroyable {
+    @SuppressLint("StaticFieldLeak")
     private static Context sPluginContext;
     private static List<Destroyable> sDestroyables;
     private static SharedPreferences sSharedPreferences;
+    @SuppressLint("StaticFieldLeak")
     private static DevicesList sDevicesList;
     private static MeshtasticCommHardware sCommHardware;
     private static CotMessageCache sCotMessageCache;

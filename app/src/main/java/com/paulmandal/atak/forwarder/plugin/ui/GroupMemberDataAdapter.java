@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -36,6 +37,7 @@ public class GroupMemberDataAdapter extends ArrayAdapter<UserInfo> {
         protected BatteryMeterView batteryMeterView;
     }
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     @Override
     @NonNull
     public View getView(int position, View convertView, @NonNull ViewGroup parent) {

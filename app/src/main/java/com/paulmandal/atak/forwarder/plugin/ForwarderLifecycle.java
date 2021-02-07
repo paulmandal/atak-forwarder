@@ -21,7 +21,7 @@ import transapps.maps.plugin.lifecycle.Lifecycle;
 public class ForwarderLifecycle implements Lifecycle {
     private final static String TAG = Config.DEBUG_TAG_PREFIX + ForwarderLifecycle.class.getSimpleName();
 
-    private Context mPluginContext;
+    private final Context mPluginContext;
     private MapView mMapView;
     private final Collection<MapComponent> mOverlays;
 

@@ -13,7 +13,7 @@ import com.paulmandal.atak.forwarder.channel.UserTracker;
 public class MeshtasticChannelConfigurer {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + MeshtasticChannelConfigurer.class.getSimpleName();
 
-    private UserTracker mUserTracker;
+    private final UserTracker mUserTracker;
 
     public MeshtasticChannelConfigurer(UserTracker userTracker) {
         mUserTracker = userTracker;

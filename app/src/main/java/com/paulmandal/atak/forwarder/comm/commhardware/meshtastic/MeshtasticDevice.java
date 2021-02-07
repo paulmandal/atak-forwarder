@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.comm.commhardware.meshtastic;
 
+import androidx.annotation.NonNull;
+
 public class MeshtasticDevice {
     public enum DeviceType {
         BLUETOOTH,
@@ -17,6 +19,7 @@ public class MeshtasticDevice {
     }
 
     @Override
+    @NonNull
     public String toString() {
         return String.format("%s - %s - %s", this.name, this.address, this.deviceType);
     }

@@ -19,6 +19,7 @@ public class UserInfo {
         this.batteryPercentage = batteryPercentage;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public UserInfo clone() {
         return new UserInfo(this.callsign, this.meshId, this.atakUid, this.batteryPercentage);
     }

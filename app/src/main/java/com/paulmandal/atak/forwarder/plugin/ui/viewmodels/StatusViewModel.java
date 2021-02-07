@@ -26,17 +26,17 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         CommHardware.MessageListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
-    private CommHardware mMeshtasticCommHardware;
+    private final CommHardware mMeshtasticCommHardware;
 
-    private MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
-    private MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
-    private MutableLiveData<CommHardware.ConnectionState> mConnectionState = new MutableLiveData<>();
-    private MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
-    private MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
-    private MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
-    private MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
-    private MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
-    private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
+    private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
+    private final MutableLiveData<CommHardware.ConnectionState> mConnectionState = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
     public StatusViewModel(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,

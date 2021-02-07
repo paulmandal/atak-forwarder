@@ -52,7 +52,7 @@
 }
 
 # This class is parsed/marshalled by Gson
--keep class com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.** { *; }
+-keep class com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice { *; }
 
 # These classes use Parcelable
 -keep class com.geeksville.mesh.** { *; }

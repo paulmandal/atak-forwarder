@@ -30,10 +30,10 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     private static final int PACKET_WINDOW_SIZE = 10;
     private static final int NO_DRAWABLE = -1;
 
-    private ForwarderDropDownReceiver mForwarderDropDownReceiver;
+    private final ForwarderDropDownReceiver mForwarderDropDownReceiver;
 
     private CommHardware.ConnectionState mConnectionState;
-    private boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
+    private final boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
     private int mWindowIndex;
 
     public ForwarderMarkerIconWidget(MapView mapView,

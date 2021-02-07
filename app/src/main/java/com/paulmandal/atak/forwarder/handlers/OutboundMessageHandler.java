@@ -55,11 +55,11 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
             // Drop CotEvents that we have retransmitted from Meshtastic
             return;
         }
-        Log.d(TAG, "processCotEvent: " + cotEvent);
+        Log.v(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
         if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString());
+                Log.v(TAG, "Discarding recently sent event: " + cotEvent.toString());
                 return;
             }
             mCotMessageCache.cacheEvent(cotEvent);

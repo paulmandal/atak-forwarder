@@ -23,7 +23,7 @@ public class MeshtasticDeviceConfigurer {
         mSelfInfo = selfInfo;
     }
 
-    public void configureDevice(IMeshService meshService) {
+    public boolean configureDevice(IMeshService meshService) {
         try {
             String meshId = meshService.getMyId();
             String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
@@ -34,7 +34,7 @@ public class MeshtasticDeviceConfigurer {
 
             if (radioConfigBytes == null) {
                 Log.e(TAG, "radioConfigBytes was null");
-                return;
+                return false;
             }
 
             MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
@@ -60,9 +60,12 @@ public class MeshtasticDeviceConfigurer {
             radioConfig = radioConfigBuilder.build();
 
             meshService.setRadioConfig(radioConfig.toByteArray());
+
+            return true;
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "Exception in setupRadio(): " + e.getMessage());
             e.printStackTrace();
         }
+        return false;
     }
 }

@@ -119,7 +119,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
             return;
         }
 
-        Log.d(TAG, "Message length: " + message.length + " chunks: " + chunks);
+        Log.v(TAG, "sendMessageToUserOrGroup, message length: " + message.length + " chunks: " + chunks);
 
         byte[][] messages = new byte[chunks][];
         for (int i = 0; i < chunks; i++) {

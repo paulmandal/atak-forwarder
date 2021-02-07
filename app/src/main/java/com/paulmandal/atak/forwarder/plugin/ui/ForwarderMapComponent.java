@@ -26,11 +26,11 @@ import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
-import com.paulmandal.atak.forwarder.tracker.TrackerCotGenerator;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
-import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
+import com.paulmandal.atak.forwarder.tracker.TrackerCotGenerator;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
 

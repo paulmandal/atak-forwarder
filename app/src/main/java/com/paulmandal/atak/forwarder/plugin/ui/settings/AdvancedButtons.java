@@ -20,13 +20,13 @@ public class AdvancedButtons {
             commandQueue.clearData();
             return true;
         });
-        resetToDefault.setOnPreferenceClickListener((Preference preference) -> {
-            // TODO: implement reset to default
-            return true;
-        });
-        resetToDefaultIncludingChannel.setOnPreferenceClickListener((Preference preference) -> {
-            // TODO: implement reseting to default
-            return true;
-        });
+//        resetToDefault.setOnPreferenceClickListener((Preference preference) -> {
+//            // TODO: implement reset to default
+//            return true;
+//        });
+//        resetToDefaultIncludingChannel.setOnPreferenceClickListener((Preference preference) -> {
+//            // TODO: implement reseting to default
+//            return true;
+//        });
     }
 }

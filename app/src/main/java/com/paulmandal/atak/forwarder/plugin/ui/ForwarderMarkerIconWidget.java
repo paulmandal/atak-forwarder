@@ -54,6 +54,10 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.addWidget(this);
 
+        for (int i = 0 ; i < PACKET_WINDOW_SIZE ; i++) {
+            mDeliveredPacketsWindow[i] = true;
+        }
+
         mConnectionState = meshtasticCommHardware.getConnectionState();
         updateIcon();
     }
@@ -100,6 +104,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         if (mWindowIndex >= PACKET_WINDOW_SIZE) {
             mWindowIndex = 0;
         }
+        updateIcon();
     }
 
     private void updateIcon() {
@@ -129,13 +134,13 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
         float percentageOfPacketsDelivered = totalDeliveredPackets / (float)PACKET_WINDOW_SIZE;
 
-        if (percentageOfPacketsDelivered > 95F) {
+        if (percentageOfPacketsDelivered > 0.95F) {
             drawableId = R.drawable.ic_status_green;
-        } else if (percentageOfPacketsDelivered > 75F) {
+        } else if (percentageOfPacketsDelivered > 0.75F) {
             drawableId = R.drawable.ic_status_yellow;
-        } else if (percentageOfPacketsDelivered > 50F) {
+        } else if (percentageOfPacketsDelivered > 0.50F) {
             drawableId = R.drawable.ic_status_orange;
-        } else if (percentageOfPacketsDelivered > 25F){
+        } else if (percentageOfPacketsDelivered > 0.25F){
             drawableId = R.drawable.ic_status_brown;
         } else {
             drawableId = R.drawable.ic_status_grey;

@@ -158,15 +158,15 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             return true;
         });
 
-        saveChannelToFile.setOnPreferenceClickListener((Preference preference) -> {
-            // TODO: implement
-            return true;
-        });
-
-        readChannelFromFile.setOnPreferenceClickListener((Preference preference) -> {
-            // TODO: implement
-            return true;
-        });
+//        saveChannelToFile.setOnPreferenceClickListener((Preference preference) -> {
+//            // TODO: implement
+//            return true;
+//        });
+//
+//        readChannelFromFile.setOnPreferenceClickListener((Preference preference) -> {
+//            // TODO: implement
+//            return true;
+//        });
     }
 
     @Override

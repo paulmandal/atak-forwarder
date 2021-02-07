@@ -3,7 +3,9 @@
     <string name="app_name">ATAK Forwarder</string>
     <string name="app_desc">Forwards CoT messages to/from ATAK via a hardware layer</string>
 
-    <!-- SettingsTab  -->
+    <!-- StatusScreen  -->
+    <string name="channel_psk_modem_seperator">/</string>
+
     <string name="connection_status_no_service_connected">Svc Disconnected</string>
     <string name="connection_status_no_device_configured">No Dvc Cfg</string>
     <string name="connection_status_device_disconnected">Disconnected</string>
@@ -53,11 +55,9 @@
 
     <string name="channel_name">Channel Name</string>
     <string name="channel_name_summary">The name of your private channel</string>
-    <string name="default_channel_name">Default</string>
 
     <string name="channel_mode">Mode / Speed</string>
     <string name="channel_mode_summary">Configures the channel data rate / range setting</string>
-    <string name="default_channel_mode">0</string>
 
     <string name="channel_psk">Generated PSK</string>
     <string name="channel_psk_summary">Generates a new Pre-Shared Key for channel encryption</string>
@@ -112,48 +112,9 @@
     <string name="reset_to_default_including_channel">Reset to Defaults (incl. Channel)</string>
     <string name="reset_to_default_including_channel_summary">Reset the plugin to its default settings (deletes channel settings)</string>
 
-    <!-- ChannelTab -->
-    <string name="channel_psk_modem_seperator">/</string>
-
-    <string name="edit_channel">Edit Channel</string>
-    <string name="save">Save</string>
-    <string name="hide_channel_qr">Hide QR</string>
-    <string name="abort_scan_qr">Abort Scan</string>
-
-    <string name="generate_new_psk">Gen New PSK</string>
-
-    <string name="reusing_old_psk">Reusing old PSK!</string>
-    <string name="using_new_psk">Using new PSK!</string>
-
-    <string name="start_qr_scan_dialog">Warning if you start this scan you will lose your current channel settings!</string>
-
-    <string name="ok">Ok</string>
+    <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
-
-    <!-- AdvancedTab -->
-    <string name="set_msg_block_ttl_mins">Repeat Msg Block TTL (mins)</string>
-    <string name="set_pli_block_ttl_s">PLI max. freq. (s)</string>
-    <string name="clear_data">Clear Data</string>
-    <string name="clear_message_queue">Clear MsgQ</string>
-    <string name="clear_message_cache">Clear Msg Cache</string>
-    <string name="configure_non_atak_device">Cfg Non-ATAK Dvc</string>
-
-    <!-- DevicesTab -->
-    <string name="callsign">Callsign</string>
-    <string name="gps_update_frequency">Position Bcast Frequency (s)</string>
-    <string name="comm_device">Comm Device</string>
-    <string name="target_device">Target Device</string>
-    <string name="non_atak_device_settings">non-ATAK device cfg</string>
-    <string name="device_callsign">Dvc Callsign</string>
-    <string name="pli_interval">PLI interval (s)</string>
-    <string name="screen_shutoff_time">Screen Off (s)</string>
-    <string name="write_to_non_atak">Write to non-ATAK</string>
-    <string name="close">Close</string>
-    <string name="comm_device_switch_text">Comm</string>
-    <string name="refresh_connected_devices">Refresh</string>
-
-    <string name="set_comm_device_dialog">Do you want to set your comm device to the one in the Target Device field for real?</string>
-    <string name="write_to_non_atak_dialog">Do you want to write to the non-ATAK device in the Target Device field?</string>
+    <string name="tracker_callsign">Tracker Callsign</string>
 
     <string-array name="channel_modes">
         <item>Short Range / Fast</item>

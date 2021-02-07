@@ -110,7 +110,11 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     }
 
     private void startWorkerThread() {
-        mWorkerExecutor = Executors.newSingleThreadScheduledExecutor();
+        mWorkerExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
+            Thread thread = new Thread(r);
+            thread.setName(TrackerCotGenerator.class.getSimpleName() + ".Worker");
+            return thread;
+        });
         mWorkerExecutor.scheduleAtFixedRate(() -> {
             while (!mDestroyCalled) {
                 drawTrackers();

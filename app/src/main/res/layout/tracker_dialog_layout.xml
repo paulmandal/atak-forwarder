@@ -18,7 +18,7 @@
         android:id="@+id/edittext_device_callsign"
         android:layout_width="128dp"
         android:layout_height="wrap_content"
-        android:hint="@string/device_callsign"
+        android:hint="@string/tracker_callsign"
         android:inputType="textNoSuggestions"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

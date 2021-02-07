@@ -114,7 +114,11 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
      */
     @CallSuper
     protected void startWorkerThreads() {
-        mMessageWorkerExecutor = Executors.newSingleThreadScheduledExecutor();
+        mMessageWorkerExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
+            Thread thread = new Thread(r);
+            thread.setName(CommHardware.class.getSimpleName() + ".Worker");
+            return thread;
+        });
         mMessageWorkerExecutor.scheduleAtFixedRate(() -> {
             while (!mDestroyed) {
                 QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);

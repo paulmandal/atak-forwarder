@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 
+import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
@@ -23,7 +24,7 @@ import com.paulmandal.atak.forwarder.helpers.HashHelper;
 
 import java.util.List;
 
-public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
+public class ForwarderPreferencesFragment extends PluginPreferenceFragment implements Destroyable {
     private static Context sPluginContext;
     private static List<Destroyable> sDestroyables;
     private static SharedPreferences sSharedPreferences;
@@ -52,6 +53,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
         this.sCommHardware = commHardware;
         this.sCotMessageCache = cotMessageCache;
         this.sCommandQueue = commandQueue;
+
+        destroyables.add(this);
     }
 
     @Override
@@ -101,5 +104,16 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment {
     @Override
     public String getSubTitle() {
         return getSubTitle("Tool Preferences", sPluginContext.getString(R.string.preferences_title));
+    }
+
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        this.sPluginContext = null;
+        this.sDestroyables = null;
+        this.sSharedPreferences = null;
+        this.sDevicesList = null;
+        this.sCommHardware = null;
+        this.sCotMessageCache = null;
+        this.sCommandQueue = null;
     }
 }

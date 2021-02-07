@@ -162,12 +162,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
-                Log.d(TAG, "onServiceConnected");
+                Log.v(TAG, "onServiceConnected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
                 if (!mSetDeviceAddressCalled) {
-                    Log.e(TAG, "complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE)");
                     complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
                     return;
                 }
@@ -241,7 +240,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         bindToService();
     }
 
-    public void suspendResume(boolean suspended) { // TODO: rename
+    public void toggleEventHandling(boolean suspended) {
         if (suspended) {
             mAtakContext.unregisterReceiver(mBroadcastReceiver);
             setConnectionState(ConnectionState.DEVICE_DISCONNECTED);
@@ -266,8 +265,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     @Override
     public void onDestroy(Context context, MapView mapView) {
         super.onDestroy(context, mapView);
-        mAtakContext.unbindService(mServiceConnection);
+        Log.v(TAG, "onDestroy()");
         mAtakContext.unregisterReceiver(mBroadcastReceiver);
+        mAtakContext.unbindService(mServiceConnection);
+        if (mPendingMessageCountdownLatch != null) {
+            mPendingMessageCountdownLatch.countDown();
+        }
         mConnectedToService = false;
     }
 
@@ -320,7 +323,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
             setConnectionState(connectionState);
             notifyConnectionStateListeners(connectionState);
-            Log.e(TAG, "  ConnectionState: " + connectionState);
+            Log.v(TAG, "  ConnectionState: " + connectionState);
         } catch (RemoteException e) {
             Log.e(TAG, "Exception in updateConnectionState: " + e.getMessage());
             e.printStackTrace();
@@ -338,13 +341,11 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private void maybeSetupRadio() {
         if (!mInitialRadioConfigurationDone) {
-            Log.e(TAG, "mMeshtasticDeviceConfigurer.configureDevice(mMeshService)");
-            mMeshtasticDeviceConfigurer.configureDevice(mMeshService);
-            mInitialRadioConfigurationDone = true;
+            Log.v(TAG, "maybeSetupRadio, calling configureDevice()");
+            mInitialRadioConfigurationDone = mMeshtasticDeviceConfigurer.configureDevice(mMeshService);
         }
 
         if (!mInitialChannelSetupDone) {
-            Log.e(TAG, "complexUpdate(mSharedPreferences, PreferencesKeys.KEY_CHANNEL_NAME)");
             complexUpdate(mSharedPreferences, PreferencesKeys.KEY_CHANNEL_NAME);
             mInitialChannelSetupDone = true;
         }
@@ -391,7 +392,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                 case ACTION_NODE_CHANGE:
                     NodeInfo nodeInfo = intent.getParcelableExtra(EXTRA_NODEINFO);
                     long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
-                    Log.d(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
+                    Log.v(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
 
                     TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
 
@@ -413,7 +414,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
                     if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
                         String message = new String(payload.getBytes());
-                        Log.d(TAG, "data: " + message);
+                        Log.d(TAG, "Received packet: " + message);
                         if (message.startsWith(BCAST_MARKER)) {
                             handleDiscoveryMessage(message);
                         } else {
@@ -505,7 +506,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
-        Log.e(TAG, "complexUpdate: " + key);
         new Thread(() -> {
             switch (key) {
                 case PreferencesKeys.KEY_SET_COMM_DEVICE:
@@ -517,14 +517,13 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                         return;
                     }
 
-                    Log.e(TAG, "complexUpdate.KEY_COMM_DEVICE: " + meshtasticDevice.address);
                     try {
+                        Log.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
                         mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
                         mCommDevice = meshtasticDevice;
                         mSetDeviceAddressCalled = true;
 
                         connect();
-                        Log.e(TAG, "setDeviceAddress success");
                     } catch (RemoteException e) {
                         e.printStackTrace();
                     }
@@ -542,10 +541,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                         mChannelName = channelName;
                         mChannelMode = channelMode;
                         mChannelPsk = psk;
-                        Log.e(TAG, "Updating channel settings: " + channelName + ", " + channelMode + ", " + new String(psk));
 
                         MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
 
+                        Log.v(TAG, "complexUpdate, updating channel settings: " + channelName + ", " + channelMode);
                         mMeshtasticChannelConfigurer.updateChannelSettings(mMeshService, channelName, psk, modemConfig);
                     }
                     break;

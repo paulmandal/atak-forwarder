@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
-import android.util.Log;
 
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshtasticDevice;
@@ -48,7 +47,6 @@ public class DevicesList {
             meshtasticDevices.add(new MeshtasticDevice(device.getProductName(), device.getDeviceName(), MeshtasticDevice.DeviceType.USB));
         }
 
-        Log.d(TAG, "Refreshing devices, size: " + meshtasticDevices.size());
         return meshtasticDevices;
     }
 }

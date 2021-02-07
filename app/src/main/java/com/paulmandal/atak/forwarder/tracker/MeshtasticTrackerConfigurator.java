@@ -112,7 +112,7 @@ public class MeshtasticTrackerConfigurator {
     }
 
     public void writeToDevice() {
-        mMeshtasticCommHardware.suspendResume(true);
+        mMeshtasticCommHardware.toggleEventHandling(true);
 
         mServiceConnection = new ServiceConnection() {
             public void onServiceConnected(ComponentName className, IBinder service) {
@@ -256,7 +256,7 @@ public class MeshtasticTrackerConfigurator {
         Log.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
 
         unbind();
-        mMeshtasticCommHardware.suspendResume(false);
+        mMeshtasticCommHardware.toggleEventHandling(false);
         mListener.onDoneWritingToDevice();
     }
 

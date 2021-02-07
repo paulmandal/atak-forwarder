@@ -24,7 +24,6 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
 
     public static final String TAG = Constants.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
     private final Handler mUiThreadHandler;
-    private final Logger mLogger;
 
     private final Map<String, List<MessageChunk>> mIncomingMessages = new HashMap<>();
     private final List<MessageListener> mMessageListeners = new CopyOnWriteArrayList<>();
@@ -35,6 +34,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
                                      Handler uiThreadHandler,
                                      Logger logger) {
         super(atakContext,
+                logger,
                 new String[] {
                         MeshServiceConstants.ACTION_RECEIVED_DATA
                 },
@@ -42,7 +42,6 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
                 meshSuspendController);
 
         mUiThreadHandler = uiThreadHandler;
-        mLogger = logger;
     }
 
     public void addMessageListener(MessageListener listener) {

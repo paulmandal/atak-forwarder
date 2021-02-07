@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import androidx.annotation.CallSuper;
 
 import com.atakmap.android.maps.MapView;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.SuspendListener;
 
@@ -16,14 +17,20 @@ import java.util.List;
 
 public abstract class MeshEventHandler extends BroadcastReceiver implements SuspendListener, Destroyable {
     private final Context mAtakContext;
+    protected final Logger mLogger;
     private final IntentFilter mIntentFilter;
 
     private final List<String> mActionsToHandle;
 
     private boolean mIsSuspended = false;
 
-    public MeshEventHandler(Context atakContext, String[] actionsToHandle, List<Destroyable> destroyables, MeshSuspendController meshSuspendController) {
+    public MeshEventHandler(Context atakContext,
+                            Logger logger,
+                            String[] actionsToHandle,
+                            List<Destroyable> destroyables,
+                            MeshSuspendController meshSuspendController) {
         mAtakContext = atakContext;
+        mLogger = logger;
         mActionsToHandle = Arrays.asList(actionsToHandle);
 
         IntentFilter intentFilter = new IntentFilter();

@@ -45,11 +45,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
-    public interface UserListener {
-        void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-        void onUserUpdated(TrackerUserInfo trackerUserInfo);
-    }
-
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
         void onMessageTimedOut(int messageId);
@@ -59,13 +54,12 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     private static final int MESSAGE_AWAIT_TIMEOUT_MS = Constants.MESSAGE_AWAIT_TIMEOUT_MS;
     private static final int DELAY_AFTER_STOPPING_SERVICE = Constants.DELAY_AFTER_STOPPING_SERVICE;
-    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = Constants.REJECT_STALE_NODE_CHANGE_TIME_MS;
 
     private MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private MeshtasticDeviceConfigurer mMeshtasticDeviceConfigurer;
     private MeshtasticChannelConfigurer mMeshtasticChannelConfigurer;
 
-    private UserListener mUserListener;
+
     private SharedPreferences mSharedPreferences;
     private Context mAtakContext;
     private Handler mUiThreadHandler;
@@ -100,7 +94,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                                   MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                   MeshtasticDeviceConfigurer meshtasticDeviceConfigurer,
                                   MeshtasticChannelConfigurer meshtasticChannelConfigurer,
-                                  UserListener userListener,
                                   UserTracker userTracker,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
@@ -127,7 +120,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mMeshtasticDeviceConfigurer = meshtasticDeviceConfigurer;
         mMeshtasticChannelConfigurer = meshtasticChannelConfigurer;
-        mUserListener = userListener;
 
 
 
@@ -243,28 +235,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
-    @Nullable
-    private TrackerUserInfo trackerUserInfoFromNodeInfo(NodeInfo nodeInfo, long timeSinceLastSeen) {
-        MeshUser meshUser = nodeInfo.getUser();
-
-        if (meshUser == null) {
-            return null;
-        }
-
-        double lat = 0.0;
-        double lon = 0.0;
-        int altitude = 0;
-        boolean gpsValid = false;
-        Position position = nodeInfo.getValidPosition();
-        if (position != null) {
-            lat = position.getLatitude();
-            lon = position.getLongitude();
-            altitude = position.getAltitude();
-            gpsValid = true;
-        }
-        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
-    }
-
     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -281,19 +251,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     Log.d(TAG, "MESH_CONNECTED: " + connected);
                     maybeInitialConnection();
                     break;
-                case MeshServiceConstants.ACTION_NODE_CHANGE:
-                    NodeInfo nodeInfo = intent.getParcelableExtra(MeshServiceConstants.EXTRA_NODEINFO);
-                    long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
-                    Log.v(TAG, "NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
-
-                    TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
-
-                    if (trackerUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
-                        // Drop updates that do not have a MeshUser attached or are >30 mins old
-                        return;
-                    }
-                    mUserListener.onUserUpdated(trackerUserInfo);
-                    break;
                 case MeshServiceConstants.ACTION_MESSAGE_STATUS:
                     int id = intent.getIntExtra(MeshServiceConstants.EXTRA_PACKET_ID, 0);
                     MessageStatus status = intent.getParcelableExtra(MeshServiceConstants.EXTRA_STATUS);
@@ -309,19 +266,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     };
 
-    protected void handleDiscoveryMessage(String message) {
-        String messageWithoutMarker = message.replace(Constants.DISCOVERY_BROADCAST_MARKER + ",", "");
-        String[] messageSplit = messageWithoutMarker.split(",");
-        String meshId = messageSplit[0];
-        String atakUid = messageSplit[1];
-        String callsign = messageSplit[2];
-        boolean initialDiscoveryMessage = messageSplit[3].equals("1");
 
-        if (initialDiscoveryMessage) {
-            broadcastDiscoveryMessage(false);
-        }
-        mUserListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);
-    }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
         mUiThreadHandler.post(() -> {

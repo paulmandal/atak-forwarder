@@ -23,7 +23,8 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class MeshServiceController extends BroadcastReceiver implements Destroyable, SuspendListener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface ConnectionStateListener {
@@ -47,7 +48,8 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private ConnectionState mConnectionState;
     private boolean mConnectedToService;
 
-    private final List<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArrayList<>();
+    private final Set<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArraySet<>();
+    private String mMeshId;
 
     public MeshServiceController(List<Destroyable> destroyables,
                                  SharedPreferences sharedPreferences,
@@ -102,9 +104,19 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     public IMeshService getMeshService() {
         return mMeshService;
     }
-
     public ConnectionState getConnectionState() {
         return mConnectionState;
+    }
+    public String getMeshId() {
+        return mMeshId;
+    }
+
+    public void addConnectionStateListener(ConnectionStateListener listener) {
+        mConnectionStateListeners.add(listener);
+    }
+
+    public void removeConnectionStateListener(ConnectionStateListener listener) {
+        mConnectionStateListeners.remove(listener);
     }
 
     @Override

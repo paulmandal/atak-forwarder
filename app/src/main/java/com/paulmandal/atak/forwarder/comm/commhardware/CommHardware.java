@@ -155,21 +155,6 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
         mCommandQueue.queueCommand(queuedCommand);
     }
 
-    protected void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
-        String broadcastData = Constants.DISCOVERY_BROADCAST_MARKER + "," + mSelfInfo.meshId + "," + mSelfInfo.atakUid + "," + mSelfInfo.callsign + "," + (initialDiscoveryMessage ? 1 : 0);
-
-        String broadcastWithInitialDiscoveryUnset = broadcastData.replaceAll(",1$", ",0");
-        handleDiscoveryMessage(broadcastWithInitialDiscoveryUnset);
-
-        mCommandQueue.queueCommand(mQueuedCommandFactory.createBroadcastDiscoveryCommand(broadcastData.getBytes()));
-    }
-
-    protected void notifyConnectionStateListeners(ConnectionState connectionState) {
-        for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
-            mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(connectionState));
-        }
-    }
-
     /**
      * For subclasses to implement
      */

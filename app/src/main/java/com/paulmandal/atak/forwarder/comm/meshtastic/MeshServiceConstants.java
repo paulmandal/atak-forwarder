@@ -1,6 +1,12 @@
-package com.paulmandal.atak.forwarder.comm.commhardware.meshtastic;
+package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 public class MeshServiceConstants {
+    /**
+     * Service Intent
+     */
+    public static final String PACKAGE_NAME = "com.geeksville.mesh";
+    public static final String CLASS_NAME = "com.geeksville.mesh.service.MeshService";
+
     /**
      * Intents the Meshtastic service can send
      */

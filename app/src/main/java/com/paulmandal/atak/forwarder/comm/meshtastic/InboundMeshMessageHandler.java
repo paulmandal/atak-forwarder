@@ -7,7 +7,6 @@ import android.os.Handler;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.Constants;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshServiceConstants;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;

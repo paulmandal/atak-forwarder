@@ -30,7 +30,7 @@ import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
-import com.paulmandal.atak.forwarder.comm.commhardware.meshtastic.MeshServiceConstants;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
@@ -47,13 +47,11 @@ import java.util.concurrent.TimeUnit;
 public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     public interface UserListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
-
         void onUserUpdated(TrackerUserInfo trackerUserInfo);
     }
 
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
-
         void onMessageTimedOut(int messageId);
     }
 
@@ -72,10 +70,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private Context mAtakContext;
     private Handler mUiThreadHandler;
 
-    private IntentFilter mIntentFilter;
-
-    private IMeshService mMeshService;
-    private ServiceConnection mServiceConnection;
 
     private final List<MessageAckNackListener> mMessageAckNackListeners = new CopyOnWriteArrayList<>();
 
@@ -83,7 +77,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private int mPendingMessageId;
     private boolean mPendingMessageReceived;
 
-    private Intent mServiceIntent;
 
     private boolean mConnectedToService = false;
     private boolean mSetDeviceAddressCalled = false;
@@ -136,34 +129,8 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         mMeshtasticChannelConfigurer = meshtasticChannelConfigurer;
         mUserListener = userListener;
 
-        mServiceConnection = new ServiceConnection() {
-            public void onServiceConnected(ComponentName className, IBinder service) {
-                Log.v(TAG, "onServiceConnected");
-                mMeshService = IMeshService.Stub.asInterface(service);
-                mConnectedToService = true;
 
-                if (!mSetDeviceAddressCalled) {
-                    complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
-                    return;
-                }
 
-                maybeInitialConnection();
-            }
-
-            public void onServiceDisconnected(ComponentName className) {
-                Log.e(TAG, "Service has unexpectedly disconnected");
-                mMeshService = null;
-
-                setConnectionState(CommHardware.ConnectionState.NO_SERVICE_CONNECTION);
-                notifyConnectionStateListeners(CommHardware.ConnectionState.NO_SERVICE_CONNECTION);
-                mConnectedToService = false;
-            }
-        };
-
-        mServiceIntent = new Intent();
-        mServiceIntent.setClassName("com.geeksville.mesh", "com.geeksville.mesh.service.MeshService");
-
-        bindToService();
     }
 
     public void addMessageAckNackListener(MessageAckNackListener listener) {
@@ -198,12 +165,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
     @Override
     public void connect() {
-        if (getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED) {
-            Log.d(TAG, "connect: already connected");
-            return;
-        }
-        unbindAndStopService();
-        bindToService();
+
     }
 
     public MeshtasticDevice getDevice() {
@@ -218,36 +180,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
         }
     }
 
-    @Override
-    public void onDestroy(Context context, MapView mapView) {
-        super.onDestroy(context, mapView);
-        Log.v(TAG, "onDestroy()");
-        mAtakContext.unregisterReceiver(mBroadcastReceiver);
-        mAtakContext.unbindService(mServiceConnection);
-        if (mPendingMessageCountdownLatch != null) {
-            mPendingMessageCountdownLatch.countDown();
-        }
-        mConnectedToService = false;
-    }
 
-    private void bindToService() {
-        mAtakContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
-    }
 
-    private void unbindAndStopService() {
-        if (!mConnectedToService) {
-            return;
-        }
 
-        mAtakContext.unbindService(mServiceConnection);
-        mAtakContext.stopService(mServiceIntent);
 
-        try {
-            Thread.sleep(DELAY_AFTER_STOPPING_SERVICE);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 
     private void maybeInitialConnection() {
         CommHardware.ConnectionState oldConnectionState = getConnectionState();

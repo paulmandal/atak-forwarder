@@ -27,6 +27,8 @@ import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, Destroyable {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
+    private static final int DRAW_MARKERS_INTERVAL_MINS = 3;
+
     private static final int STALE_TIME_OFFSET_MS = 75000;
     private static final double UNKNOWN_LE_CE = 9999999.0;
 
@@ -120,7 +122,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
             while (!mDestroyCalled) {
                 drawTrackers();
             }
-        }, 0, 5, TimeUnit.MINUTES);
+        }, 0, DRAW_MARKERS_INTERVAL_MINS, TimeUnit.MINUTES);
     }
 
     private void drawTrackers() {

@@ -147,7 +147,7 @@ public abstract class MessageLengthLimitedCommHardware extends CommHardware {
             byte[] message = messages[i];
             String groupId = DataPacket.ID_BROADCAST;
 
-            Log.d(TAG, "---> sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + new String(message));
+            Log.d(TAG, "---> sending chunk " + (i + 1) + "/" + messages.length + " to groupId: " + groupId + ", " + (new String(message).replace("\n", "").replace("\r", "")));
 
             boolean messageSent = sendMessageSegment(message, groupId);
 

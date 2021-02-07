@@ -26,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 public abstract class CommHardware extends DestroyableSharedPrefsListener {
     private static final String TAG = Config.DEBUG_TAG_PREFIX + CommHardware.class.getSimpleName();
 
+    private static final int CHECK_MESSAGE_QUEUE_INTERVAL_MS = 300;
+
     protected static final String BCAST_MARKER = "ATAKBCAST";
 
     public enum ConnectionState {
@@ -55,6 +57,8 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
 
     private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mDestroyed = false;
+
+    private boolean mSendingMessage = false;
 
     private final UserInfo mSelfInfo;
 
@@ -123,6 +127,10 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
             while (!mDestroyed) {
                 QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
+                if (mSendingMessage) {
+                    continue;
+                }
+
                 if (queuedCommand == null) {
                     continue;
                 }
@@ -137,11 +145,15 @@ public abstract class CommHardware extends DestroyableSharedPrefsListener {
                         break;
                 }
             }
-        }, 0, 100, TimeUnit.MILLISECONDS);
+        }, 0, CHECK_MESSAGE_QUEUE_INTERVAL_MS, TimeUnit.MILLISECONDS);
     }
 
     protected boolean isDestroyed() {
         return mDestroyed;
+    }
+
+    protected void setSendingMessage(boolean sendingMessage) {
+        mSendingMessage = sendingMessage;
     }
 
     protected void setConnectionState(ConnectionState connectionState) {

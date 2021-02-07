@@ -121,7 +121,6 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private int mChatHopLimit;
     private int mOtherHopLimit;
 
-    private int mDataRate;
     private MeshtasticDevice mCommDevice;
 
     public MeshtasticCommHardware(List<Destroyable> destroyables,
@@ -414,7 +413,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
 
                     if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
                         String message = new String(payload.getBytes());
-                        Log.d(TAG, "Received packet: " + message);
+                        Log.d(TAG, "Received packet: " + (new String(message).replace("\n", "").replace("\r", "")));
                         if (message.startsWith(BCAST_MARKER)) {
                             handleDiscoveryMessage(message);
                         } else {
@@ -479,8 +478,10 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     private void awaitPendingMessageCountDownLatch() {
         boolean timedOut = false;
         try {
-            timedOut = !mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS * (mDataRate + 1), TimeUnit.MILLISECONDS);
+//            timedOut = !mPendingMessageCountdownLatch.await(600, TimeUnit.SECONDS);
+            timedOut = !mPendingMessageCountdownLatch.await(MESSAGE_AWAIT_TIMEOUT_MS * (mChannelMode + 1), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
+            Log.e(TAG, "Interrupted waiting for pending message: " + mPendingMessageId);
             e.printStackTrace();
         }
 

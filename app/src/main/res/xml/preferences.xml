@@ -93,7 +93,7 @@
         android:dialogTitle="@string/tracker_pli_interval"
         android:inputType="number"
         android:numeric="integer"
-        android:defaultValue="20" />
+        android:defaultValue="60" />
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="plugin_atak_forwarder_key_tracker_screen_off_time"
         android:title="@string/tracker_screen_off_time"

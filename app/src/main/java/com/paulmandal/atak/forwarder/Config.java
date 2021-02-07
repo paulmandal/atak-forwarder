@@ -23,7 +23,6 @@ public class Config {
     public static final int LCD_SCREEN_ON_S = 5;
     public static final int WAIT_BLUETOOTH_S = 86400;
     public static final int PHONE_TIMEOUT_S = 86400;
-    public static final int WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE = 60000;
     public static final int DEVICE_CONNECTION_TIMEOUT = 30000;
 
     /**

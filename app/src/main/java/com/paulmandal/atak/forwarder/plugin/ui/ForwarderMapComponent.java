@@ -26,12 +26,11 @@ import com.paulmandal.atak.forwarder.factories.CommHardwareFactory;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
-import com.paulmandal.atak.forwarder.nonatak.NonAtakStationCotGenerator;
+import com.paulmandal.atak.forwarder.nonatak.TrackerCotGenerator;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
 import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.DevicesTabViewModel;
-import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusTabViewModel;
+import com.paulmandal.atak.forwarder.plugin.ui.tabs.viewmodels.StatusViewModel;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
 
@@ -54,8 +53,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         mPluginContext = pluginContext;
         Context atakContext = mapView.getContext();
-
-        // TODO: this is kinda a mess, move to a Factory and clean this up (or use Dagger 2)
 
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         CotComparer cotComparer = new CotComparer();
@@ -80,19 +77,17 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        NonAtakStationCotGenerator nonAtakStationCotGenerator = new NonAtakStationCotGenerator(userTracker, inboundMessageHandler, pluginVersion, mapView.getDeviceCallsign());
+        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(userTracker, inboundMessageHandler, pluginVersion, mapView.getDeviceCallsign());
 
         HashHelper hashHelper = new HashHelper();
-        StatusTabViewModel statusTabViewModel = new StatusTabViewModel(userTracker, meshtasticCommHardware, commandQueue, hashHelper);
-        DevicesTabViewModel devicesTabViewModel = new DevicesTabViewModel(atakContext, uiThreadHandler, meshtasticDeviceSwitcher, meshtasticCommHardware, hashHelper);
+        StatusViewModel statusViewModel = new StatusViewModel(userTracker, meshtasticCommHardware, commandQueue, hashHelper);
 
         DevicesList devicesList = new DevicesList(atakContext);
 
         ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,
                 pluginContext,
                 atakContext,
-                statusTabViewModel,
-                devicesTabViewModel);
+                statusViewModel);
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();
         ddFilter.addAction(ForwarderDropDownReceiver.SHOW_PLUGIN);

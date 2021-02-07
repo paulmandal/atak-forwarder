@@ -59,7 +59,10 @@ public class TrackerButtons {
 
             meshtasticDevices.remove(commDevice);
 
-            // TODO: validate that there are comm devices, or Toast and say we need to bluetooth/USB to some
+            if (meshtasticDevices.size() == 0) {
+                Toast.makeText(settingsMenuContext, "You do not have any extra devices connected, connect via Bluetooth or USB", Toast.LENGTH_SHORT).show();
+                return true;
+            }
 
             // Create view
             ConstraintLayout dialogLayout = (ConstraintLayout) LayoutInflater.from(pluginContext).inflate(R.layout.tracker_dialog_layout, null);
@@ -97,7 +100,7 @@ public class TrackerButtons {
                     Toast.makeText(settingsMenuContext, "You must pick a device to write to!", Toast.LENGTH_SHORT).show();
                     return;
                 } else if (callsignEditText.getText().toString().equals("")) {
-                    Toast.makeText(settingsMenuContext, "You must enter a callsign for the device!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(settingsMenuContext, "You must enter a callsign for the Tracker!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -115,6 +118,7 @@ public class TrackerButtons {
 
                 writeToDevice(settingsMenuContext, uiThreadHandler, meshtasticCommHardware, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
                     progressBar.setVisibility(View.GONE);
+                    Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT);
                     dialog.dismiss();
                 });
                 progressBar.setVisibility(View.VISIBLE);

@@ -15,8 +15,8 @@ import com.paulmandal.atak.libcotshrink.protobufs.ProtobufTakv;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
-public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpdateListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + NonAtakStationCotGenerator.class.getSimpleName();
+public class TrackerCotGenerator implements UserTracker.NonAtakStationUpdateListener {
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
     private static final int STALE_TIME_OFFSET_MS = 75000;
     private static final double UNKNOWN_LE_CE = 9999999.0;
@@ -76,7 +76,7 @@ public class NonAtakStationCotGenerator implements UserTracker.NonAtakStationUpd
     private final String mPluginVersion;
     private final String mLocalCallsign;
 
-    public NonAtakStationCotGenerator(UserTracker userTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion, String localCallsign) {
+    public TrackerCotGenerator(UserTracker userTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion, String localCallsign) {
         mInboundMessageHandler = inboundMessageHandler;
         mPluginVersion = pluginVersion;
         mLocalCallsign = localCallsign;

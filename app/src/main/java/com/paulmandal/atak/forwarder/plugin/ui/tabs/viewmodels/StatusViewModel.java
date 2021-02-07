@@ -16,12 +16,12 @@ import com.paulmandal.atak.forwarder.plugin.ui.tabs.HashHelper;
 import java.util.ArrayList;
 import java.util.List;
 
-public class StatusTabViewModel extends ChannelStatusViewModel implements UserTracker.ChannelMembersUpdateListener,
+public class StatusViewModel extends ChannelStatusViewModel implements UserTracker.ChannelMembersUpdateListener,
         CommandQueue.Listener,
         CommHardware.ConnectionStateListener,
         MeshtasticCommHardware.MessageAckNackListener,
         CommHardware.MessageListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + StatusTabViewModel.class.getSimpleName();
+    private static final String TAG = Config.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
     private CommHardware mCommHardware;
 
@@ -35,10 +35,10 @@ public class StatusTabViewModel extends ChannelStatusViewModel implements UserTr
     private MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
     private MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
-    public StatusTabViewModel(UserTracker userTracker,
-                              MeshtasticCommHardware commHardware,
-                              CommandQueue commandQueue,
-                              HashHelper hashHelper) {
+    public StatusViewModel(UserTracker userTracker,
+                           MeshtasticCommHardware commHardware,
+                           CommandQueue commandQueue,
+                           HashHelper hashHelper) {
         super(commHardware, hashHelper);
 
         mCommHardware = commHardware;

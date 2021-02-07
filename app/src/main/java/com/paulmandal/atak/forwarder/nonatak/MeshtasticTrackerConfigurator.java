@@ -28,7 +28,6 @@ public class MeshtasticTrackerConfigurator {
         void onDoneWritingToDevice();
     }
 
-    private static final int WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE = Config.WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE;
     private static final int DEVICE_CONNECTION_TIMEOUT = Config.DEVICE_CONNECTION_TIMEOUT;
     private static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = Config.RADIO_CONFIG_MISSING_RETRY_TIME_MS;
 
@@ -79,8 +78,6 @@ public class MeshtasticTrackerConfigurator {
         cancel();
         mListener.onDoneWritingToDevice();
     };
-
-    private Runnable mPostWriteDelayRunnable;
 
     public MeshtasticTrackerConfigurator(Context atakContext,
                                          Handler uiThreadHandler,
@@ -149,7 +146,6 @@ public class MeshtasticTrackerConfigurator {
 
     public void cancel() {
         mUiThreadHandler.removeCallbacks(mTimeoutRunnable);
-        mUiThreadHandler.removeCallbacks(mPostWriteDelayRunnable);
         unbind();
     }
 
@@ -235,7 +231,7 @@ public class MeshtasticTrackerConfigurator {
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
 
-            if (NonAtakStationCotGenerator.ROLES.length > 9) {
+            if (TrackerCotGenerator.ROLES.length > 9) {
                 throw new RuntimeException("NonAtakStationCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
             }
 
@@ -244,18 +240,8 @@ public class MeshtasticTrackerConfigurator {
 
             Log.d(TAG, "Non-ATAK device NodeInfo: " + mMeshService.getMyNodeInfo());
 
-            mPostWriteDelayRunnable = () -> {
-                try {
-                    Log.d(TAG, "Setting mesh service back to Comm Device address: " + mCommDevice.address);
-                    mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice); // TODO: verify this changed back
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
-                mWroteToDevice = true;
-                Log.e(TAG, "Done writing to non-ATAK device: " + mTargetDevice);
-
-            };
-            mUiThreadHandler.postDelayed(mPostWriteDelayRunnable, WAIT_TIME_AFTER_WRITING_NON_ATAK_DEVICE);
+            mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
+            mWroteToDevice = true;
         } catch (RemoteException | InvalidProtocolBufferException e) {
             Log.e(TAG, "RemoteException writing to non-ATAK device: " + e.getMessage());
             e.printStackTrace();

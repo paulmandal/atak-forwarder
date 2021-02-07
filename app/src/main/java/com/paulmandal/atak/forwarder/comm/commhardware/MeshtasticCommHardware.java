@@ -25,6 +25,7 @@ import com.geeksville.mesh.NodeInfo;
 import com.geeksville.mesh.Portnums;
 import com.geeksville.mesh.Position;
 import com.google.gson.Gson;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.Config;
 import com.paulmandal.atak.forwarder.channel.NonAtakUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
@@ -169,8 +170,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     mSetDeviceAddressCalled = true;
                     return;
                 }
-
-                maybeInitialConnection();
+//                maybeInitialConnection();
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -415,8 +415,22 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                         } else {
                             handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
                         }
+                    } else if (payload.getDataType() == Portnums.PortNum.POSITION_APP.getNumber()) {
+                        try {
+                            MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
+                            Log.e(TAG, "Unsupported payload pos, id: " + payload.getId() + ", from: " + payload.getFrom() + ", lat: " + position.getLatitudeI() + " lon: " + position.getLongitudeI());
+                        } catch (InvalidProtocolBufferException e) {
+                            e.printStackTrace();
+                        }
+                    } else if (payload.getDataType() == Portnums.PortNum.NODEINFO_APP.getNumber()) {
+                        try {
+                            MeshProtos.User user = MeshProtos.User.parseFrom(payload.getBytes());
+                            Log.e(TAG, "Unsupported payload user, id: " + payload.getId() + ", from: " + payload.getFrom() + ", name: " + user.getLongName() + ", sn: " + user.getShortName());
+                        } catch (InvalidProtocolBufferException e) {
+                            e.printStackTrace();
+                        }
                     } else {
-                        Log.e(TAG, "Unknown payload type: " + payload.getDataType());
+                        Log.e(TAG, "Unknown payload type: " + payload.getDataType() + ", id: " + payload.getId() + ", from: " + payload.getFrom() + ", text: " + payload.getText() + ", bytes: " + new String(payload.getBytes()));
                     }
                     break;
                 default:
@@ -498,7 +512,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
         Log.e(TAG, "complexUpdate: " + key);
-        mUiThreadHandler.post(() -> {
+        new Thread(() -> {
             switch (key) {
                 case PreferencesKeys.KEY_SET_COMM_DEVICE:
                     String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
@@ -537,7 +551,7 @@ public class MeshtasticCommHardware extends MessageLengthLimitedCommHardware {
                     }
                     break;
             }
-        });
+        }).start();
     }
 
     private boolean compareByteArrays(byte[] lhs, byte[] rhs) {

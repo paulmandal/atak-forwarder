@@ -100,7 +100,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
             return;
         }
 
-        String message = new String(payload.getBytes());
+        String message = new String(payload.getBytes()).substring(1);
         if (!message.startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
             return;
         }

@@ -131,8 +131,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             complexUpdate(mSharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
         }
 
-        checkOwner();
-        checkRadioConfig();
+        if (connectionState == ConnectionState.DEVICE_CONNECTED) {
+            checkOwner();
+            checkRadioConfig();
+        }
     }
 
     private void checkRadioConfig() {

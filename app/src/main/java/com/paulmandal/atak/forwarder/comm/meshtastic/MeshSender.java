@@ -232,7 +232,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                     continue;
                 }
 
-                addChunksToQueues(messages, uid);
+                addChunksToQueues(messages, meshId);
             }
         } else {
             addChunksToQueues(messages, DataPacket.ID_BROADCAST);

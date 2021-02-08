@@ -137,7 +137,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
         float percentageOfPacketsDelivered = totalDeliveredPackets / (float) PACKET_WINDOW_SIZE;
 
-        if (percentageOfPacketsDelivered > 0.95F) {
+        if (percentageOfPacketsDelivered > 0.89F) {
             drawableId = R.drawable.ic_status_green;
         } else if (percentageOfPacketsDelivered > 0.75F) {
             drawableId = R.drawable.ic_status_yellow;

@@ -94,10 +94,10 @@ public class StatusScreen {
                 }
 
                 if (lhsTak) {
-                    return 1;
+                    return -1;
                 }
 
-                return -1;
+                return 1;
             });
             GroupMemberDataAdapter groupMemberDataAdapter = new GroupMemberDataAdapter(atakContext, pluginContext, userInfoList);
             mGroupMembersListView.setAdapter(groupMemberDataAdapter);

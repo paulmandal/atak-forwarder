@@ -93,7 +93,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
             notifyChannelMembersUpdateListeners();
         }
 
-        Toast.makeText(mAtakContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show();
+        mUiThreadHandler.post(() -> Toast.makeText(mAtakContext, "User discovery broadcast received for " + callsign, Toast.LENGTH_SHORT).show());
     }
 
     @Override

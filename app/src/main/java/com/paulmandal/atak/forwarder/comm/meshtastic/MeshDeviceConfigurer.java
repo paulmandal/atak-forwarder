@@ -108,6 +108,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     boolean changed = !channelName.equals(mChannelName) || channelMode != mChannelMode || !compareByteArrays(psk, mChannelPsk);
 
                     if (changed) {
+                        mLogger.d(TAG, "channelConfig changed, checking if radio is up to date");
                         mChannelName = channelName;
                         mChannelMode = channelMode;
                         mChannelPsk = psk;

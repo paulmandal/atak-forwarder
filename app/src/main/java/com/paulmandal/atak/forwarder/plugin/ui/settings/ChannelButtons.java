@@ -65,7 +65,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         listPreferenceChannelMode.setEntryValues(R.array.channel_mode_values);
 
         channelPsk.setOnPreferenceClickListener((Preference preference) -> {
-            logger.e(TAG, "Generate PSK button clicked");
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.generate_psk_warning))
@@ -145,8 +144,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         .putString(PreferencesKeys.KEY_CHANNEL_MODE, Integer.toString(modemConfigValue))
                         .putString(PreferencesKeys.KEY_CHANNEL_PSK, Base64.encodeToString(psk, Base64.DEFAULT))
                         .apply();
-
-                logger.e(TAG, "Updating channel settings: " + new String(channelNameBytes) + ", " + modemConfig + ", " + hashHelper.hashFromBytes(psk));
 
                 discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
 

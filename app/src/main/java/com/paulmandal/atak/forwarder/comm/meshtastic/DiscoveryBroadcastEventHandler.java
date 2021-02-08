@@ -105,6 +105,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
             return;
         }
 
+        mLogger.d(TAG, "<--- Received broadcast: " + message);
+
         handleDiscoveryMessage(message);
     }
 

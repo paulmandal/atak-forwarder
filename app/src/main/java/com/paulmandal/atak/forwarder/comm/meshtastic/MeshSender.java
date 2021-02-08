@@ -243,7 +243,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     private void sendNextChunk() {
-        mLogger.i(TAG, "  sendNextChunk()");
+        mLogger.d(TAG, "  sendNextChunk()");
         OutboundMessageChunk outboundMessageChunk = mPendingMessageChunks.poll();
 
         if (outboundMessageChunk == null) {
@@ -260,7 +260,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     private void sendChunk() {
-        mLogger.i(TAG, "  sendChunk()");
+        mLogger.d(TAG, "  sendChunk()");
         DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
                 mChunkInFlight.chunk,
                 Portnums.PortNum.UNKNOWN_APP.getNumber(),
@@ -268,20 +268,21 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                 System.currentTimeMillis(),
                 0,
                 MessageStatus.UNKNOWN);
+
         try {
             mMeshService.send(dataPacket);
             mPendingMessageId = dataPacket.getId();
-            mChunkInFlight = null;
-            String chunkAsStr = new String(mChunkInFlight.chunk).replace("\n", "").replace("\r", "");
+            OutboundMessageChunk chunkInFlight = mChunkInFlight;
+
+            String chunkAsStr = new String(chunkInFlight.chunk).replace("\n", "").replace("\r", "");
             mLogger.i(TAG, "---> Sent packet: " + chunkAsStr);
-            mLogger.i(TAG, "        messageChunk: " + (mChunkInFlight.index + 1) + "/" + mChunkInFlight.count + " to: " + mChunkInFlight.targetUid + ", waiting for ack/nack id: " + dataPacket.getId());
+            mLogger.i(TAG, "        messageChunk: " + (chunkInFlight.index + 1) + "/" + chunkInFlight.count + " to: " + chunkInFlight.targetUid + ", waiting for ack/nack id: " + mPendingMessageId);
         } catch (RemoteException e) {
             maybeSaveState();
             mUiThreadHandler.postDelayed(() -> maybeRestoreState(), REMOTE_EXCEPTION_RETRY_DELAY);
             mLogger.e(TAG, "sendChunk(), RemoteException: " + e.getMessage());
             e.printStackTrace();
         }
-        mLogger.i(TAG, "  sendChunk() ended");
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
@@ -299,12 +300,16 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         mLogger.i(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
 
         if (status == MessageStatus.DELIVERED) {
+            mChunkInFlight = null;
             sendNextChunk();
         } else if (status == MessageStatus.QUEUED) {
             mLogger.i(TAG, "  Status is queued, waiting for ERROR/DELIVERED");
             // Do nothing, wait for delivered or error
         } else {
             mLogger.i(TAG, "  Status is ERROR, resending chunk");
+//            if (mChunkInFlight == null) { TODO: maybe we need this?
+//                return;
+//            }
             sendChunk();
         }
     }

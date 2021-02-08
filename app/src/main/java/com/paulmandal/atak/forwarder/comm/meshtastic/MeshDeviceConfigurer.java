@@ -148,7 +148,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         try {
             radioConfigBytes = mMeshService.getRadioConfig();
         } catch (RemoteException e) {
-            mLogger.e(TAG, "  checkRadioConfig() - RemoteException");
+            mLogger.e(TAG, "  checkRadioConfig() - RemoteException!");
             e.printStackTrace();
         }
 

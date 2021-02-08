@@ -152,7 +152,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             // Reset since we may have been sending to a channel/device that won't ever ACK/NACK
             mLogger.d(TAG, "Channel settings or comm device changed, restarting message send");
             maybeSaveState();
-            maybeRestoreState();
+            mUiThreadHandler.postDelayed(() -> maybeRestoreState(), ForwarderConstants.DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_CHANNEL_CHANGE);
         }
     }
 

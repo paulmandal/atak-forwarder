@@ -3,13 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="8dp">
+    android:padding="16dp">
 
     <com.atakmap.android.gui.PluginSpinner
         android:id="@+id/spinner_devices"
         style="@style/SmallSpinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:spinnerMode="dropdown"
         app:layout_constraintEnd_toStartOf="@id/edittext_device_callsign"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

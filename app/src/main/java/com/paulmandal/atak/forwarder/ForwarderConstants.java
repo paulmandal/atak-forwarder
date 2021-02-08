@@ -16,6 +16,8 @@ public class ForwarderConstants {
      */
     public static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = 10000;
 
+    public static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_CHANNEL_CHANGE = 3000;
+
     /**
      * Meshtastic Radio Config
      */

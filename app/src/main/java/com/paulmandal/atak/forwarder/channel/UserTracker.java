@@ -114,6 +114,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
 
         // Notify listeners
         notifyTrackerUpdateListeners();
+        notifyChannelMembersUpdateListeners();
     }
 
     public String getMeshIdForUid(String atakUid) {

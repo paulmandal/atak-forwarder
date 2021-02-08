@@ -12,6 +12,7 @@ import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
@@ -26,6 +27,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private final SharedPreferences mSharedPreferences;
     private final MeshServiceController mMeshServiceController;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
+    private final HashHelper mHashHelper;
     private final Logger mLogger;
     private final String mCallsign;
 
@@ -45,6 +47,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                                 SharedPreferences sharedPreferences,
                                 MeshServiceController meshServiceController,
                                 MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
+                                HashHelper hashHelper,
                                 Logger logger,
                                 String callsign) {
         super(destroyables,
@@ -60,6 +63,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mSharedPreferences = sharedPreferences;
         mMeshServiceController = meshServiceController;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
+        mHashHelper = hashHelper;
         mLogger = logger;
         mCallsign = callsign;
 
@@ -181,7 +185,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         try {
             String meshId = mMeshService.getMyId();
             String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
-            mMeshService.setOwner(null, String.format("%s-MX-%s", mCallsign, shortMeshId), mCallsign.substring(0, 1));
+            String longName = String.format("%s-MX-%s", mCallsign, shortMeshId);
+            String shortName = mCallsign.substring(0, 1);
+            mLogger.v(TAG, "  Setting radio owner longName: " + longName + ", shortName: " + shortName);
+            mMeshService.setOwner(null, longName, shortName);
         } catch (RemoteException e) {
             mLogger.e(TAG, "checkOwner() -- RemoteException!");
             e.printStackTrace();
@@ -189,7 +196,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void writeRadioConfig(MeshProtos.RadioConfig radioConfig) {
-        mLogger.v(TAG, "  Writing radio config to device");
+        mLogger.v(TAG, "  Writing radio config to device, channel: " + mChannelName + ", mode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk));
         MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode);
 
         MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();

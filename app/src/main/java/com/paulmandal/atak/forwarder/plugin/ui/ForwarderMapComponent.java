@@ -109,7 +109,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
-        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables, sharedPreferences, meshServiceController, meshtasticDeviceSwitcher, logger, callsign);
+        HashHelper hashHelper = new HashHelper();
+        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables, sharedPreferences, meshServiceController, meshtasticDeviceSwitcher, hashHelper, logger, callsign);
 
 
         UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
@@ -160,7 +161,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, userTracker, inboundMessageHandler, pluginVersion);
 
 
-        HashHelper hashHelper = new HashHelper();
         StatusViewModel statusViewModel = new StatusViewModel(
                 destroyables,
                 sharedPreferences,

@@ -150,6 +150,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                 || key.equals(PreferencesKeys.KEY_CHANNEL_PSK)
                 || key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
             // Reset since we may have been sending to a channel/device that won't ever ACK/NACK
+            mLogger.d(TAG, "Channel settings or comm device changed, restarting message send");
             maybeSaveState();
             maybeRestoreState();
         }
@@ -179,6 +180,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     private void maybeRestoreState() {
         synchronized (mSyncLock) {
             if (mStateSaved) {
+                mPendingMessageChunks.clear();
                 mPendingMessageChunks.addAll(mRestoreChunksAfterSuspend);
                 sendNextChunk();
                 mStateSaved = false;

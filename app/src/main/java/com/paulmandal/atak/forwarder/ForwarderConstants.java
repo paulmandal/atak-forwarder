@@ -29,7 +29,6 @@ public class ForwarderConstants {
      * Tweaks to message handling
      */
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;
-    public static final int MESSAGE_AWAIT_TIMEOUT_MS = 70000;
     public static final int REJECT_STALE_NODE_CHANGE_TIME_MS = 1800000;
 
     /**

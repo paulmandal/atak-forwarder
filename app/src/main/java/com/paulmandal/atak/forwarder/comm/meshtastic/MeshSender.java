@@ -328,7 +328,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         }
     }
 
-    private void getHopLimit(MessageType messageType) {
+    private int getHopLimit(MessageType messageType) {
         if (messageType == MessageType.PLI) {
             return mPliHopLimit;
         } else if (messageType == MessageType.CHAT) {

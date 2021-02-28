@@ -76,7 +76,6 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 logger.v(TAG, "Service connected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
-                mConnectionState = ConnectionState.DEVICE_DISCONNECTED;
 
                 updateConnectionState();
             }
@@ -180,6 +179,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
     private void notifyConnectionStateListeners() {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
+            mLogger.v(TAG, "Notifying connection state listener: " + connectionStateListener.hashCode() + ", state: " + mConnectionState);
             mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(mConnectionState));
         }
     }

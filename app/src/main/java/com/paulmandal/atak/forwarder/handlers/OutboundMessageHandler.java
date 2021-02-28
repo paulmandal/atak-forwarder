@@ -20,9 +20,6 @@ import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
 import java.util.List;
 
-import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
-import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
-
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable  {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
@@ -62,7 +59,8 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         }
         mLogger.v(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
-        if (mMeshServiceController.getConnectionState() == ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
+        boolean isChat = MessageType.fromCotEventType(eventType) == MessageType.CHAT;
+        if (mMeshServiceController.getConnectionState() == ConnectionState.DEVICE_CONNECTED && !isChat) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
                 mLogger.v(TAG, "Discarding recently sent event: " + cotEvent.toString());
                 return;

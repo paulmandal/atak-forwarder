@@ -15,8 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
-
 public class CommandQueue {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + CommandQueue.class.getSimpleName();
 

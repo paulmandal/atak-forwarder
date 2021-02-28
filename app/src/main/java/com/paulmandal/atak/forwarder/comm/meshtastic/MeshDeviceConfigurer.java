@@ -67,7 +67,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mLogger = logger;
         mCallsign = callsign;
 
-//        meshServiceController.addConnectionStateListener(this);
+        meshServiceController.addConnectionStateListener(this);
 
         // TODO: clean up this hacks
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
@@ -117,7 +117,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                         mChannelMode = channelMode;
                         mChannelPsk = psk;
 
-//                        checkRadioConfig();
+                        checkRadioConfig();
                     }
                     break;
             }

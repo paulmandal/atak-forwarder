@@ -15,6 +15,7 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
+import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -26,6 +27,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class MeshSender extends MeshEventHandler implements MeshServiceController.ConnectionStateListener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface MessageAckNackListener {
@@ -35,12 +38,16 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshSender.class.getSimpleName();
 
+    private static final int WATCHDOG_TIMEOUT_MS = 900000; // 15 minutes
+    private static final int WATCHDOG_RUN_INTERVAL_MINS = 1;
     private static final int REMOTE_EXCEPTION_RETRY_DELAY = 5000;
+    private static final int NO_ID = -1;
 
     private final SharedPreferences mSharedPreferences;
     private final Handler mUiThreadHandler;
     private final MeshServiceController mMeshServiceController;
     private final UserTracker mUserTracker;
+    private final ScheduledExecutorService mExecutor;
 
     private final Set<MessageAckNackListener> mMessageAckNackListeners = new CopyOnWriteArraySet<>();
 
@@ -63,7 +70,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     private final Object mSyncLock = new Object();
 
-    private int mPendingMessageId;
+    private long mLastMessageSentTime;
+    private int mPendingMessageId = NO_ID;
     private OutboundMessageChunk mChunkInFlight;
 
     public MeshSender(Context atakContext,
@@ -73,7 +81,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                       Handler uiThreadHandler,
                       Logger logger,
                       MeshServiceController meshServiceController,
-                      UserTracker userTracker) {
+                      UserTracker userTracker,
+                      ScheduledExecutorService scheduledExecutorService) {
         super(atakContext,
                 logger,
                 new String[]{
@@ -86,9 +95,12 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         mUiThreadHandler = uiThreadHandler;
         mMeshServiceController = meshServiceController;
         mUserTracker = userTracker;
+        mExecutor = scheduledExecutorService;
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         meshServiceController.addConnectionStateListener(this);
+
+        startWatchdog();
 
         onSharedPreferenceChanged(sharedPreferences, PreferencesKeys.KEY_PLI_HOP_LIMIT);
     }
@@ -160,6 +172,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     @Override
     public void onDestroy(Context context, MapView mapView) {
         super.onDestroy(context, mapView);
+        mExecutor.shutdown();
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
@@ -168,6 +181,25 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         int id = intent.getIntExtra(MeshServiceConstants.EXTRA_PACKET_ID, 0);
         MessageStatus status = intent.getParcelableExtra(MeshServiceConstants.EXTRA_STATUS);
         handleMessageStatusChange(id, status);
+    }
+
+    private void startWatchdog() {
+        mLogger.v(TAG, "startWatchdog()");
+        mExecutor.scheduleAtFixedRate(() -> {
+            mLogger.v(TAG, "Watchdog checking for message status update timeout");
+            if (mPendingMessageId == NO_ID) {
+                mLogger.v(TAG, "  No pending message, exiting");
+                // Not waiting for a message status to change
+                return;
+            }
+
+            long timeSinceLastSent = System.currentTimeMillis() - mLastMessageSentTime;
+            mLogger.v(TAG, "  Time since last sent: " + timeSinceLastSent);
+            if (timeSinceLastSent > WATCHDOG_TIMEOUT_MS) {
+                mLogger.e(TAG, "Waiting over " + (WATCHDOG_TIMEOUT_MS / 60000) + " mins for a message status change, calling sendChunk() again");
+                sendChunk();
+            }
+        }, 0, WATCHDOG_RUN_INTERVAL_MINS, TimeUnit.MINUTES);
     }
 
     private void maybeSaveState() {
@@ -285,6 +317,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
         try {
             mMeshService.send(dataPacket);
+            mLastMessageSentTime = System.currentTimeMillis();
             mPendingMessageId = dataPacket.getId();
             OutboundMessageChunk chunkInFlight = mChunkInFlight;
 
@@ -314,6 +347,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         mLogger.i(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
 
         if (status == MessageStatus.DELIVERED) {
+            mPendingMessageId = NO_ID;
             mChunkInFlight = null;
             sendNextChunk();
         } else if (status == MessageStatus.QUEUED) {

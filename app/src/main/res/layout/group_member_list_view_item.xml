@@ -12,6 +12,15 @@
         android:layout_alignParentTop="true"
         android:paddingStart="8dp" />
 
+    <ImageView
+        android:id="@+id/imageview_tak_icon"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@id/battery_meter"
+        android:paddingEnd="8dp"
+        android:contentDescription="TAK Icon" />
+
     <eo.view.batterymeter.BatteryMeterView
         android:id="@+id/battery_meter"
         android:layout_width="16dp"

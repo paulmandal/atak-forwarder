@@ -1,5 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.view.MotionEvent;
@@ -13,22 +14,41 @@ import com.atakmap.android.widgets.MarkerIconWidget;
 import com.atakmap.android.widgets.RootLayoutWidget;
 import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
-public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommHardware.ConnectionStateListener, MapWidget.OnClickListener  {
+import java.util.List;
+
+public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable,
+        MeshServiceController.ConnectionStateListener,
+        MapWidget.OnClickListener,
+        MeshSender.MessageAckNackListener {
     private final static int ICON_WIDTH = 32;
     private final static int ICON_HEIGHT = 32;
 
-    private ForwarderDropDownReceiver mForwarderDropDownReceiver;
-    private MapView mMapView;
+    private static final int PACKET_WINDOW_SIZE = 10;
+    private static final int NO_DRAWABLE = -1;
+
+    private final ForwarderDropDownReceiver mForwarderDropDownReceiver;
+
+    private final boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
+    private int mWindowIndex;
+
+    private ConnectionState mConnectionState;
 
     public ForwarderMarkerIconWidget(MapView mapView,
+                                     List<Destroyable> destroyables,
                                      ForwarderDropDownReceiver forwarderDropDownReceiver,
-                                     CommHardware commHardware) {
+                                     MeshServiceController meshServiceController,
+                                     MeshSender meshSender) {
         mForwarderDropDownReceiver = forwarderDropDownReceiver;
-        mMapView = mapView;
 
-        commHardware.addConnectionStateListener(this);
+        destroyables.add(this);
+
+        meshServiceController.addConnectionStateListener(this);
+        meshSender.addMessageAckNackListener(this);
 
         setName("Forwarder Status");
         addOnClickListener(this);
@@ -37,7 +57,12 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.addWidget(this);
 
-        updateIcon(commHardware.getConnectionState());
+        for (int i = 0; i < PACKET_WINDOW_SIZE; i++) {
+            mDeliveredPacketsWindow[i] = true;
+        }
+
+        mConnectionState = meshServiceController.getConnectionState();
+        updateIcon();
     }
 
     @Override
@@ -54,33 +79,80 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements CommH
     }
 
     @Override
-    public void onConnectionStateChanged(CommHardware.ConnectionState connectionState) {
-        updateIcon(connectionState);
+    public void onConnectionStateChanged(ConnectionState connectionState) {
+        mConnectionState = connectionState;
+        updateIcon();
     }
 
-    public void onDestroy() {
-        RootLayoutWidget root = (RootLayoutWidget) mMapView.getComponentExtra("rootLayoutWidget");
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
         LinearLayoutWidget brLayout = root.getLayout(RootLayoutWidget.BOTTOM_RIGHT);
         brLayout.removeWidget(this);
     }
 
-    private void updateIcon(CommHardware.ConnectionState connectionState) {
-        int drawableId = R.drawable.ic_no_service_connected;
-        switch (connectionState) {
+    @Override
+    public void onMessageAckNack(int messageId, boolean isAck) {
+        addPacketToWindow(isAck);
+    }
+
+    @Override
+    public void onMessageTimedOut(int messageId) {
+        addPacketToWindow(false);
+    }
+
+    private void addPacketToWindow(boolean isAck) {
+        mDeliveredPacketsWindow[mWindowIndex] = isAck;
+        mWindowIndex++;
+        if (mWindowIndex >= PACKET_WINDOW_SIZE) {
+            mWindowIndex = 0;
+        }
+        updateIcon();
+    }
+
+    private void updateIcon() {
+        int drawableId = NO_DRAWABLE;
+
+        switch (mConnectionState) {
             case NO_SERVICE_CONNECTION:
-                drawableId = R.drawable.ic_no_service_connected;
+            case DEVICE_DISCONNECTED:
+                drawableId = R.drawable.ic_status_red;
                 break;
             case NO_DEVICE_CONFIGURED:
-                drawableId = R.drawable.ic_no_device_configured;
-                break;
-            case DEVICE_DISCONNECTED:
-                drawableId = R.drawable.ic_device_disconnected;
-                break;
-            case DEVICE_CONNECTED:
-                drawableId = R.drawable.ic_device_connected;
+                drawableId = R.drawable.ic_status_purple;
                 break;
         }
 
+        if (drawableId != NO_DRAWABLE) {
+            setIcon(drawableId);
+            return;
+        }
+
+        int totalDeliveredPackets = 0;
+        for (boolean isAck : mDeliveredPacketsWindow) {
+            if (isAck) {
+                totalDeliveredPackets++;
+            }
+        }
+
+        float percentageOfPacketsDelivered = totalDeliveredPackets / (float) PACKET_WINDOW_SIZE;
+
+        if (percentageOfPacketsDelivered > 0.89F) {
+            drawableId = R.drawable.ic_status_green;
+        } else if (percentageOfPacketsDelivered > 0.75F) {
+            drawableId = R.drawable.ic_status_yellow;
+        } else if (percentageOfPacketsDelivered > 0.50F) {
+            drawableId = R.drawable.ic_status_orange;
+        } else if (percentageOfPacketsDelivered > 0.25F) {
+            drawableId = R.drawable.ic_status_brown;
+        } else {
+            drawableId = R.drawable.ic_status_grey;
+        }
+
+        setIcon(drawableId);
+    }
+
+    private void setIcon(int drawableId) {
         String imageUri = "android.resource://com.paulmandal.atak.forwarder/" + drawableId;
 
         Icon.Builder builder = new Icon.Builder();

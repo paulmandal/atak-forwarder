@@ -1,45 +1,40 @@
 package com.paulmandal.atak.forwarder.comm;
 
+import android.content.SharedPreferences;
+
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.geeksville.mesh.MeshProtos;
-import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.commhardware.MeshtasticCommHardware;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
-import com.paulmandal.atak.forwarder.persistence.StateStorage;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
+import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
+public class CotMessageCache extends DestroyableSharedPrefsListener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + CotMessageCache.class.getSimpleName();
 
-    private StateStorage mStateStorage;
-    private CotComparer mCotComparer;
+    private final CotComparer mCotComparer;
 
     private final List<CachedCotEvent> mCachedEvents = new ArrayList<>();
-    private int mPliCachePurgeTimeMs;
-    private int mDefaultCachePurgeTimeMs;
-    private int mDataRateAwarePliCachePurgeTimeMs;
 
-    public CotMessageCache(StateStorage stateStorage,
-                           CotComparer cotComparer,
-                           MeshtasticCommHardware commHardware,
-                           int defaultCachePurgeTimeMs,
-                           int pliCachePurgeTimeMs) {
-        mStateStorage = stateStorage;
+    private int mDuplicateMessagesTtlMs;
+    private int mPliMaxFrequencyMs;
+
+    public CotMessageCache(List<Destroyable> destroyables,
+                           SharedPreferences sharedPreferences,
+                           CotComparer cotComparer) {
+        super(destroyables,
+                sharedPreferences,
+                new String[]{
+                        PreferencesKeys.KEY_PLI_MAX_FREQUENCY,
+                        PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL
+                },
+                new String[]{});
         mCotComparer = cotComparer;
-
-        mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
-        mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
-        mDataRateAwarePliCachePurgeTimeMs = pliCachePurgeTimeMs;
-
-        commHardware.addChannelSettingsListener(this);
-    }
-
-    @Override
-    public void onChannelSettingsUpdated(String channelName, byte[] psk, MeshProtos.ChannelSettings.ModemConfig modemConfig) {
-        mDataRateAwarePliCachePurgeTimeMs = mPliCachePurgeTimeMs * (modemConfig.getNumber() + 1);
     }
 
     public boolean checkIfRecentlySent(CotEvent cotEvent) {
@@ -73,24 +68,6 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
         }
     }
 
-    public void setDefaultCachePurgeTimeMs(int defaultCachePurgeTimeMs) {
-        mDefaultCachePurgeTimeMs = defaultCachePurgeTimeMs;
-        mStateStorage.storeDefaultCachePurgeTime(defaultCachePurgeTimeMs);
-    }
-
-    public void setPliCachePurgeTimeMs(int pliCachePurgeTimeMs) {
-        mPliCachePurgeTimeMs = pliCachePurgeTimeMs;
-        mStateStorage.storePliCachePurgeTime(pliCachePurgeTimeMs);
-    }
-
-    public int getDefaultCachePurgeTimeMs() {
-        return mDefaultCachePurgeTimeMs;
-    }
-
-    public int getPliCachePurgeTimeMs() {
-        return mPliCachePurgeTimeMs;
-    }
-
     private void purgeCacheOfStaleEvents() {
         long currentTime = System.currentTimeMillis();
 
@@ -99,11 +76,11 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
         synchronized (mCachedEvents) {
 
             for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-                int purgeTime = mDefaultCachePurgeTimeMs;
+                int purgeTimeMs = mDuplicateMessagesTtlMs;
                 if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
-                    purgeTime = mDataRateAwarePliCachePurgeTimeMs;
+                    purgeTimeMs = mPliMaxFrequencyMs * 1000;
                 }
-                if (currentTime - cachedCotEvent.lastSentTime > purgeTime) {
+                if (currentTime - cachedCotEvent.lastSentTime > purgeTimeMs) {
                     purgeEvents.add(cachedCotEvent);
                 }
             }
@@ -114,9 +91,20 @@ public class CotMessageCache implements MeshtasticCommHardware.ChannelSettingsLi
         }
     }
 
+    @Override
+    protected void updateSettings(SharedPreferences sharedPreferences) {
+        mPliMaxFrequencyMs = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_MAX_FREQUENCY, PreferencesDefaults.DEFAULT_PLI_MAX_FREQUENCY)) * 1000;
+        mDuplicateMessagesTtlMs = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_DROP_DUPLICATE_MSGS_TTL, PreferencesDefaults.DEFAULT_DROP_DUPLICATE_MSGS_TTL)) * 60 * 1000;
+    }
+
+    @Override
+    protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
+        // Do nothing
+    }
+
     private static class CachedCotEvent {
-        public CotEvent cotEvent;
-        public long lastSentTime;
+        public final CotEvent cotEvent;
+        public final long lastSentTime;
 
         public CachedCotEvent(CotEvent cotEvent, long lastSentTime) {
             this.cotEvent = cotEvent;

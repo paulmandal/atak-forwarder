@@ -1,49 +1,56 @@
 package com.paulmandal.atak.forwarder.handlers;
 
-import android.util.Log;
+import android.content.Context;
 
+import com.atakmap.android.maps.MapView;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.Config;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
+import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
+
+import java.util.List;
 
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
 import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
-public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
+public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable  {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
-    private CommsMapComponent mCommsMapComponent;
-    private CommHardware mCommHardware;
-    private CommandQueue mCommandQueue;
-    private QueuedCommandFactory mQueuedCommandFactory;
-    private CotMessageCache mCotMessageCache;
-    private CotShrinker mCotShrinker;
+    private final CommsMapComponent mCommsMapComponent;
+    private final MeshServiceController mMeshServiceController;
+    private final CommandQueue mCommandQueue;
+    private final QueuedCommandFactory mQueuedCommandFactory;
+    private final CotMessageCache mCotMessageCache;
+    private final CotShrinker mCotShrinker;
+    private final Logger mLogger;
 
     public OutboundMessageHandler(CommsMapComponent commsMapComponent,
-                                  CommHardware commHardware,
+                                  MeshServiceController meshServiceController,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   CotMessageCache cotMessageCache,
-                                  CotShrinker cotShrinker) {
+                                  CotShrinker cotShrinker,
+                                  List<Destroyable> destroyables,
+                                  Logger logger) {
         mCommsMapComponent = commsMapComponent;
-        mCommHardware = commHardware;
+        mMeshServiceController = meshServiceController;
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
         mCotMessageCache = cotMessageCache;
         mCotShrinker = cotShrinker;
+        mLogger = logger;
 
+        destroyables.add(this);
         commsMapComponent.registerPreSendProcessor(this);
-    }
-
-    public void destroy() {
-        mCommsMapComponent.registerPreSendProcessor(null);
     }
 
     @Override
@@ -52,11 +59,11 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
             // Drop CotEvents that we have retransmitted from Meshtastic
             return;
         }
-        Log.d(TAG, "processCotEvent: " + cotEvent);
+        mLogger.v(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
-        if (mCommHardware.getConnectionState() == CommHardware.ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
+        if (mMeshServiceController.getConnectionState() == ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                Log.d(TAG, "Discarding recently sent event: " + cotEvent.toString());
+                mLogger.v(TAG, "Discarding recently sent event: " + cotEvent.toString());
                 return;
             }
             mCotMessageCache.cacheEvent(cotEvent);
@@ -68,11 +75,15 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {
-        switch (cotEvent.getType()) {
-            case TYPE_CHAT:
-                return QueuedCommand.PRIORITY_MEDIUM;
-            default:
-                return QueuedCommand.PRIORITY_LOW;
+        if (cotEvent.getType().equals(TYPE_CHAT)) {
+            return QueuedCommand.PRIORITY_MEDIUM;
+        } else {
+            return QueuedCommand.PRIORITY_LOW;
         }
+    }
+
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        mCommsMapComponent.registerPreSendProcessor(null);
     }
 }

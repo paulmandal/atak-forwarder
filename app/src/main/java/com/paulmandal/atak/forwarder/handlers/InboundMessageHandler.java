@@ -1,30 +1,32 @@
 package com.paulmandal.atak.forwarder.handlers;
 
-import android.util.Log;
-
 import com.atakmap.comms.CotDispatcher;
 import com.atakmap.coremap.cot.event.CotEvent;
-import com.paulmandal.atak.forwarder.Config;
-import com.paulmandal.atak.forwarder.comm.commhardware.CommHardware;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
-public class InboundMessageHandler implements CommHardware.MessageListener {
-    private static final String TAG = Config.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
+public class InboundMessageHandler implements InboundMeshMessageHandler.MessageListener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + InboundMessageHandler.class.getSimpleName();
 
-    private CotDispatcher mInternalCotDispatcher;
-    private CotDispatcher mExternalCotDispatcher;
-    private CotShrinker mCotShrinker;
+    private final CotDispatcher mInternalCotDispatcher;
+    private final CotDispatcher mExternalCotDispatcher;
+    private final CotShrinker mCotShrinker;
+    private final Logger mLogger;
 
     public InboundMessageHandler(CotDispatcher internalCotDispatcher,
                                  CotDispatcher externalCotDispatcher,
-                                 CommHardware commHardware,
-                                 CotShrinker cotShrinker) {
+                                 InboundMeshMessageHandler inboundMeshMessageHandler,
+                                 CotShrinker cotShrinker,
+                                 Logger logger) {
         mInternalCotDispatcher = internalCotDispatcher;
         mExternalCotDispatcher = externalCotDispatcher;
         mCotShrinker = cotShrinker;
+        mLogger = logger;
 
-        commHardware.addMessageListener(this);
+        inboundMeshMessageHandler.addMessageListener(this);
     }
 
     @Override
@@ -32,7 +34,7 @@ public class InboundMessageHandler implements CommHardware.MessageListener {
         Thread messageConversionAndDispatchThread = new Thread(() -> {
             CotEvent cotEvent = mCotShrinker.toCotEvent(message);
             if (cotEvent == null) {
-                Log.e(TAG, "Error in onMessageReceived, cotEvent did not parse");
+                mLogger.e(TAG, "Error in onMessageReceived, cotEvent did not parse");
                 return;
             }
 

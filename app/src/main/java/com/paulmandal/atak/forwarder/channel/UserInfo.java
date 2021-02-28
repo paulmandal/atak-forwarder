@@ -4,7 +4,7 @@ import androidx.annotation.Nullable;
 
 public class UserInfo {
     public String callsign;
-    public String meshId;
+    public final String meshId;
 
     @Nullable
     public String atakUid;
@@ -19,6 +19,7 @@ public class UserInfo {
         this.batteryPercentage = batteryPercentage;
     }
 
+    @SuppressWarnings("MethodDoesntCallSuperMethod")
     public UserInfo clone() {
         return new UserInfo(this.callsign, this.meshId, this.atakUid, this.batteryPercentage);
     }

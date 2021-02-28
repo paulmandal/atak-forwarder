@@ -23,6 +23,7 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
     private final List<String> mActionsToHandle;
 
     private boolean mIsSuspended = false;
+    private boolean mReceiverRegistered;
 
     public MeshEventHandler(Context atakContext,
                             Logger logger,
@@ -66,9 +67,11 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
     public void onSuspendedChanged(boolean suspended) {
         mIsSuspended = suspended;
 
-        if (suspended) {
+        if (suspended && mReceiverRegistered) {
+            mReceiverRegistered = false;
             mAtakContext.unregisterReceiver(this);
-        } else {
+        } else if (!suspended && !mReceiverRegistered) {
+            mReceiverRegistered = true;
             mAtakContext.registerReceiver(this, mIntentFilter);
         }
     }

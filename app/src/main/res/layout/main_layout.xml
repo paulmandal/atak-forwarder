@@ -191,14 +191,6 @@
     <!-- Bottom Buttons -->
 
     <Button
-        android:id="@+id/button_connect_to_service"
-        android:layout_width="wrap_content"
-        android:layout_height="32dp"
-        android:text="@string/connect_to_service"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <Button
         android:id="@+id/button_broadcast_discovery"
         android:layout_width="wrap_content"
         android:layout_height="32dp"

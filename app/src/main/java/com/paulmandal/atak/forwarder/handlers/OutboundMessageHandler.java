@@ -7,6 +7,7 @@ import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -70,12 +71,13 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         }
 
         byte[] cotAsBytes = mCotShrinker.toByteArrayLossy(cotEvent);
-        boolean overwriteSimilar = eventType.equals(TYPE_PLI) || !eventType.equals(TYPE_CHAT);
-        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs), overwriteSimilar);
+        MessageType messageType = MessageType.fromCotEventType(eventType);
+        boolean overwriteSimilar = messageType != MessageType.CHAT;
+        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs, messageType), overwriteSimilar);
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {
-        if (cotEvent.getType().equals(TYPE_CHAT)) {
+        if (MessageType.fromCotEventType(cotEvent.getType()) == MessageType.CHAT) {
             return QueuedCommand.PRIORITY_MEDIUM;
         } else {
             return QueuedCommand.PRIORITY_LOW;

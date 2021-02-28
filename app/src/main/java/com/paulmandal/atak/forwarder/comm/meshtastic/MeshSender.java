@@ -13,6 +13,7 @@ import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
+import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -97,11 +98,11 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     public void sendDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
-        sendMessage(broadcastDiscoveryCommand.discoveryMessage, null);
+        sendMessage(MessageType.OTHER, broadcastDiscoveryCommand.discoveryMessage, null);
     }
 
     public void sendMessage(SendMessageCommand sendMessageCommand) {
-        sendMessage(sendMessageCommand.message, sendMessageCommand.toUIDs);
+        sendMessage(sendMessageCommand.messageType, sendMessageCommand.message, sendMessageCommand.toUIDs);
     }
 
     public boolean isSuspended() {
@@ -188,13 +189,13 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         }
     }
 
-    private void sendMessage(byte[] message, String[] toUIDs) {
+    private void sendMessage(MessageType messageType, byte[] message, String[] toUIDs) {
         synchronized (mSyncLock) {
-            sendMessageInternal(message, toUIDs);
+            sendMessageInternal(messageType, message, toUIDs);
         }
     }
 
-    private void sendMessageInternal(byte[] message, String[] toUIDs) {
+    private void sendMessageInternal(MessageType messageType, byte[] message, String[] toUIDs) {
         mSendingMessage = true;
 
         mPendingMessage = message;
@@ -232,20 +233,20 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                     continue;
                 }
 
-                addChunksToQueues(messages, meshId);
+                addChunksToQueues(messageType, messages, meshId);
             }
         } else {
-            addChunksToQueues(messages, DataPacket.ID_BROADCAST);
+            addChunksToQueues(messageType, messages, DataPacket.ID_BROADCAST);
         }
 
         sendNextChunk();
     }
 
-    private void addChunksToQueues(byte[][] chunks, String targetUid) {
+    private void addChunksToQueues(MessageType messageType, byte[][] chunks, String targetUid) {
         int chunksLength = chunks.length;
         for (int i = 0; i < chunksLength; i++) {
             byte[] message = chunks[i];
-            OutboundMessageChunk outboundMessageChunk = new OutboundMessageChunk(i, chunksLength, message, targetUid);
+            OutboundMessageChunk outboundMessageChunk = new OutboundMessageChunk(messageType, i, chunksLength, message, targetUid);
             mPendingMessageChunks.add(outboundMessageChunk);
             mRestoreChunksAfterSuspend.add(outboundMessageChunk);
         }
@@ -270,13 +271,17 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     private void sendChunk() {
         mLogger.d(TAG, "  sendChunk()");
+
+        int hopLimit = getHopLimit(mChunkInFlight.messageType);
+
         DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
                 mChunkInFlight.chunk,
                 Portnums.PortNum.UNKNOWN_APP.getNumber(),
                 DataPacket.ID_LOCAL,
                 System.currentTimeMillis(),
                 0,
-                MessageStatus.UNKNOWN);
+                MessageStatus.UNKNOWN,
+                hopLimit);
 
         try {
             mMeshService.send(dataPacket);
@@ -321,5 +326,14 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 //            }
             sendChunk();
         }
+    }
+
+    private void getHopLimit(MessageType messageType) {
+        if (messageType == MessageType.PLI) {
+            return mPliHopLimit;
+        } else if (messageType == MessageType.CHAT) {
+            return mChatHopLimit;
+        }
+        return mOtherHopLimit;
     }
 }

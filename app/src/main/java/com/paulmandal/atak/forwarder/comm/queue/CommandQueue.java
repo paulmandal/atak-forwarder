@@ -5,6 +5,7 @@ import android.os.Handler;
 import androidx.annotation.Nullable;
 
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.CommandType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
@@ -67,7 +68,7 @@ public class CommandQueue {
                     if (queuedCommand instanceof SendMessageCommand) {
                         SendMessageCommand queuedSendMessageCommand = (SendMessageCommand)queuedCommand;
                         if (mCotComparer.areCotEventsEqual(sendMessageCommand.cotEvent, queuedSendMessageCommand.cotEvent)
-                                || queuedSendMessageCommand.cotEvent.getType().equals(TYPE_PLI)
+                                || MessageType.fromCotEventType(queuedSendMessageCommand.cotEvent.getType()) == MessageType.PLI
                                 && mCotComparer.areUidsEqual(sendMessageCommand.toUIDs, queuedSendMessageCommand.toUIDs)) {
                             queuedSendMessageCommand.takeStateFrom(sendMessageCommand);
                             return;

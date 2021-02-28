@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.plugin;
 
 import com.atakmap.coremap.cot.event.CotEvent;
+import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -32,7 +33,7 @@ public class CotSpammer {
 
         for (CotEvent cotEvent : cotEvents) {
             byte[] cotProtobuf = cotShrinker.toByteArray(cotEvent);
-            commandQueue.queueSendMessage(queuedCommandFactory.createSendMessageCommand(QueuedCommand.PRIORITY_HIGH, cotEvent, cotProtobuf, null), false);
+            commandQueue.queueSendMessage(queuedCommandFactory.createSendMessageCommand(QueuedCommand.PRIORITY_HIGH, cotEvent, cotProtobuf, null, MessageType.PLI), false);
         }
     }
 }

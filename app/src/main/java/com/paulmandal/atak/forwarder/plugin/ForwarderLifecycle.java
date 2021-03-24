@@ -32,6 +32,7 @@ public class ForwarderLifecycle implements Lifecycle {
 
     @Override
     public void onCreate(final Activity activity, final transapps.mapi.MapView transappsMapView) {
+        Log.d(TAG, "Starting ATAK Forwarder plugin");
         if (transappsMapView == null || !(transappsMapView.getView() instanceof MapView)) {
             Log.e(TAG, "This plugin is only compatible with ATAK MapView");
             return;

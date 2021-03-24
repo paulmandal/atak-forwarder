@@ -46,6 +46,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private MeshtasticDevice mMeshDevice;
     private ConnectionState mConnectionState;
     private boolean mConnectedToService;
+    private boolean mReceiverRegistered;
 
     private final Set<ConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArraySet<>();
 
@@ -76,7 +77,6 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 logger.v(TAG, "Service connected");
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
-                mConnectionState = ConnectionState.DEVICE_DISCONNECTED;
 
                 updateConnectionState();
             }
@@ -132,9 +132,9 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
     @Override
     public void onSuspendedChanged(boolean suspended) {
-        if (suspended) {
+        if (suspended && mReceiverRegistered) {
             unregisterReceiver();
-        } else {
+        } else if (!suspended && !mReceiverRegistered) {
             registerReceiver();
         }
     }
@@ -180,16 +180,19 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
     private void notifyConnectionStateListeners() {
         for (ConnectionStateListener connectionStateListener : mConnectionStateListeners) {
+            mLogger.v(TAG, "Notifying connection state listener: " + connectionStateListener.hashCode() + ", state: " + mConnectionState);
             mUiThreadHandler.post(() -> connectionStateListener.onConnectionStateChanged(mConnectionState));
         }
     }
 
 
     private void registerReceiver() {
+        mReceiverRegistered = true;
         mAtakContext.registerReceiver(this, mIntentFilter);
     }
 
     private void unregisterReceiver() {
+        mReceiverRegistered = false;
         mAtakContext.unregisterReceiver(this);
     }
 

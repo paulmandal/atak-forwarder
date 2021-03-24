@@ -22,12 +22,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
-
 public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, Destroyable {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
     private static final int DRAW_MARKERS_INTERVAL_MINS = 3;
+
+    private static final String TYPE_PLI = "a-f-G-U-C";
 
     private static final int STALE_TIME_OFFSET_MS = 75000;
     private static final double UNKNOWN_LE_CE = 9999999.0;

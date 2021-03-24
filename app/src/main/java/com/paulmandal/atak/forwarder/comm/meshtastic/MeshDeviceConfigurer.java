@@ -90,6 +90,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
 
                     if (meshtasticDevice == null) {
+                        mLogger.v(TAG, "complexUpdate, no device configured, exiting");
                         return;
                     }
 
@@ -129,10 +130,12 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mMeshService = mMeshServiceController.getMeshService();
         if (connectionState == ConnectionState.NO_SERVICE_CONNECTION
                 || connectionState == ConnectionState.NO_DEVICE_CONFIGURED) {
+            mLogger.d(TAG, "onConnectionStateChanged: no service connection or no device configured");
             return;
         }
 
         if (!mSetDeviceAddressCalled) {
+            mLogger.d(TAG, "onConnectionStateChanged: set device address not called yet, calling complexUpdate()");
             complexUpdate(mSharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
         }
 

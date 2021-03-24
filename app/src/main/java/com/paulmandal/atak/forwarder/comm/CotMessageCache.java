@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
-import com.paulmandal.atak.forwarder.cotutils.CotMessageTypes;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -40,11 +39,11 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
     public boolean checkIfRecentlySent(CotEvent cotEvent) {
         purgeCacheOfStaleEvents();
 
-        boolean isPli = cotEvent.getType().equals(CotMessageTypes.TYPE_PLI);
+        boolean isPli = MessageType.fromCotEventType(cotEvent.getType()) == MessageType.PLI;
 
         synchronized (mCachedEvents) {
             for (CachedCotEvent cachedCotEvent : mCachedEvents) {
-                if (isPli && cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                if (isPli && MessageType.fromCotEventType(cachedCotEvent.cotEvent.getType()) == MessageType.PLI) {
                     // Don't compare PLIs
                     return true;
                 } else if (mCotComparer.areCotEventsEqual(cotEvent, cachedCotEvent.cotEvent)) {
@@ -77,7 +76,7 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
 
             for (CachedCotEvent cachedCotEvent : mCachedEvents) {
                 int purgeTimeMs = mDuplicateMessagesTtlMs;
-                if (cachedCotEvent.cotEvent.getType().equals(CotMessageTypes.TYPE_PLI)) {
+                if (MessageType.fromCotEventType(cachedCotEvent.cotEvent.getType()) == MessageType.PLI) {
                     purgeTimeMs = mPliMaxFrequencyMs * 1000;
                 }
                 if (currentTime - cachedCotEvent.lastSentTime > purgeTimeMs) {

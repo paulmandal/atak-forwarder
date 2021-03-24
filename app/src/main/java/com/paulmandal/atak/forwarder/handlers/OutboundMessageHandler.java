@@ -7,6 +7,7 @@ import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
+import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
@@ -18,9 +19,6 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
 import java.util.List;
-
-import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_CHAT;
-import static com.paulmandal.atak.forwarder.cotutils.CotMessageTypes.TYPE_PLI;
 
 public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable  {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
@@ -61,21 +59,23 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         }
         mLogger.v(TAG, "processCotEvent: " + cotEvent);
         String eventType = cotEvent.getType();
-        if (mMeshServiceController.getConnectionState() == ConnectionState.DEVICE_CONNECTED && !eventType.equals(TYPE_CHAT)) {
+        boolean isChat = MessageType.fromCotEventType(eventType) == MessageType.CHAT;
+        if (mMeshServiceController.getConnectionState() == ConnectionState.DEVICE_CONNECTED && !isChat) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                mLogger.v(TAG, "Discarding recently sent event: " + cotEvent.toString());
+                mLogger.v(TAG, "  Discarding recently sent event: " + cotEvent.toString());
                 return;
             }
             mCotMessageCache.cacheEvent(cotEvent);
         }
 
         byte[] cotAsBytes = mCotShrinker.toByteArrayLossy(cotEvent);
-        boolean overwriteSimilar = eventType.equals(TYPE_PLI) || !eventType.equals(TYPE_CHAT);
-        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs), overwriteSimilar);
+        MessageType messageType = MessageType.fromCotEventType(eventType);
+        boolean overwriteSimilar = messageType != MessageType.CHAT;
+        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs, messageType), overwriteSimilar);
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {
-        if (cotEvent.getType().equals(TYPE_CHAT)) {
+        if (MessageType.fromCotEventType(cotEvent.getType()) == MessageType.CHAT) {
             return QueuedCommand.PRIORITY_MEDIUM;
         } else {
             return QueuedCommand.PRIORITY_LOW;

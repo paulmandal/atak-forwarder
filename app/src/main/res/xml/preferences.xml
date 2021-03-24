@@ -26,30 +26,30 @@
         android:defaultValue="20"
         android:inputType="number"
         android:numeric="integer" />
-<!--    <com.atakmap.android.gui.PanEditTextPreference-->
-<!--        android:key="plugin_atak_forwarder_key_pli_hop_limit"-->
-<!--        android:title="@string/pli_hop_limit"-->
-<!--        android:summary="@string/pli_hop_limit_summary"-->
-<!--        android:dialogTitle="@string/pli_hop_limit"-->
-<!--        android:defaultValue="3"-->
-<!--        android:inputType="number"-->
-<!--        android:numeric="integer" />-->
-<!--    <com.atakmap.android.gui.PanEditTextPreference-->
-<!--        android:key="plugin_atak_forwarder_key_chat_hop_limit"-->
-<!--        android:title="@string/chat_hop_limit"-->
-<!--        android:summary="@string/chat_hop_limit_summary"-->
-<!--        android:dialogTitle="@string/chat_hop_limit"-->
-<!--        android:defaultValue="3"-->
-<!--        android:inputType="number"-->
-<!--        android:numeric="integer" />-->
-<!--    <com.atakmap.android.gui.PanEditTextPreference-->
-<!--        android:key="plugin_atak_forwarder_key_other_hop_limit"-->
-<!--        android:title="@string/other_hop_limit"-->
-<!--        android:summary="@string/other_hop_limit_summary"-->
-<!--        android:dialogTitle="@string/other_hop_limit"-->
-<!--        android:defaultValue="3"-->
-<!--        android:inputType="number"-->
-<!--        android:numeric="integer" />-->
+    <com.atakmap.android.gui.PanEditTextPreference
+        android:key="plugin_atak_forwarder_key_pli_hop_limit"
+        android:title="@string/pli_hop_limit"
+        android:summary="@string/pli_hop_limit_summary"
+        android:dialogTitle="@string/pli_hop_limit"
+        android:defaultValue="3"
+        android:inputType="number"
+        android:numeric="integer" />
+    <com.atakmap.android.gui.PanEditTextPreference
+        android:key="plugin_atak_forwarder_key_chat_hop_limit"
+        android:title="@string/chat_hop_limit"
+        android:summary="@string/chat_hop_limit_summary"
+        android:dialogTitle="@string/chat_hop_limit"
+        android:defaultValue="3"
+        android:inputType="number"
+        android:numeric="integer" />
+    <com.atakmap.android.gui.PanEditTextPreference
+        android:key="plugin_atak_forwarder_key_other_hop_limit"
+        android:title="@string/other_hop_limit"
+        android:summary="@string/other_hop_limit_summary"
+        android:dialogTitle="@string/other_hop_limit"
+        android:defaultValue="3"
+        android:inputType="number"
+        android:numeric="integer" />
 
     <PreferenceCategory android:title="@string/category_channel_settings" />
     <com.atakmap.android.gui.PanEditTextPreference
@@ -128,7 +128,8 @@
     <com.atakmap.android.gui.PanSwitchPreference
         android:key="plugin_atak_forwarder_key_enable_logging"
         android:title="@string/enable_logging"
-        android:summary="@string/enable_logging_summary" />
+        android:summary="@string/enable_logging_summary"
+        android:defaultValue="true" />
     <com.atakmap.android.gui.PanSwitchPreference
         android:key="plugin_atak_forwarder_key_enable_logging_toasts"
         android:title="@string/enable_logging_toasts"

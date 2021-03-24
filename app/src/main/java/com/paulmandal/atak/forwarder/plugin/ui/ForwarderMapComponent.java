@@ -116,6 +116,11 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
 
 
+        ScheduledExecutorService meshSenderExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("MeshSender.Watchdog");
+            return thread;
+        });
         MeshSender meshSender = new MeshSender(atakContext,
                 destroyables,
                 sharedPreferences,
@@ -123,7 +128,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 uiThreadHandler,
                 logger,
                 meshServiceController,
-                userTracker);
+                userTracker,
+                meshSenderExecutor);
 
 
         ScheduledExecutorService commandQueueExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {

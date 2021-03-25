@@ -14,22 +14,37 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data class MeshUser(val id: String, val longName: String, val shortName: String) :
-    Parcelable {
+data class MeshUser(
+        val id: String,
+        val longName: String,
+        val shortName: String,
+        val hwModel: MeshProtos.HardwareModel
+) :
+        Parcelable {
 
     override fun toString(): String {
-        return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName})"
+        return "MeshUser(id=${id.anonymize}, longName=${longName.anonymize}, shortName=${shortName.anonymize}, hwModel=${hwModelString})"
     }
+
+    /** a string version of the hardware model, converted into pretty lowercase and changing _ to -, and p to dot
+     * or null if unset
+     * */
+    val hwModelString: String?
+        get() =
+            if (hwModel == MeshProtos.HardwareModel.UNSET)
+                null
+            else
+                hwModel.name.replace('_', '-').replace('p', '.').toLowerCase()
 }
 
 @Serializable
 @Parcelize
 data class Position(
-    val latitude: Double,
-    val longitude: Double,
-    val altitude: Int,
-    val time: Int = currentTime(), // default to current time in secs
-    val batteryPctLevel: Int = 0
+        val latitude: Double,
+        val longitude: Double,
+        val altitude: Int,
+        val time: Int = currentTime(), // default to current time in secs
+        val batteryPctLevel: Int = 0
 ) : Parcelable {
     companion object {
         /// Convert to a double representation of degrees
@@ -42,12 +57,12 @@ data class Position(
     /** Create our model object from a protobuf.  If time is unspecified in the protobuf, the provided default time will be used.
      */
     constructor(p: MeshProtos.Position, defaultTime: Int = currentTime()) : this(
-        // We prefer the int version of lat/lon but if not available use the depreciated legacy version
-        degD(p.latitudeI),
-        degD(p.longitudeI),
-        p.altitude,
-        if (p.time != 0) p.time else defaultTime,
-        p.batteryLevel
+            // We prefer the int version of lat/lon but if not available use the depreciated legacy version
+            degD(p.latitudeI),
+            degD(p.longitudeI),
+            p.altitude,
+            if (p.time != 0) p.time else defaultTime,
+            p.batteryLevel
     )
 
     /// @return distance in meters to some other node (or null if unknown)
@@ -57,7 +72,7 @@ data class Position(
     fun bearing(o: Position) = bearing(latitude, longitude, o.latitude, o.longitude)
 
     override fun toString(): String {
-        return "Position(lat=${latitude}, lon=${longitude}, alt=${altitude}, time=${time}, batteryPctLevel=${batteryPctLevel})"
+        return "Position(lat=${latitude.anonymize}, lon=${longitude.anonymize}, alt=${altitude.anonymize}, time=${time}, batteryPctLevel=${batteryPctLevel})"
     }
 }
 
@@ -65,9 +80,11 @@ data class Position(
 @Serializable
 @Parcelize
 data class NodeInfo(
-    val num: Int, // This is immutable, and used as a key
-    var user: MeshUser? = null,
-    var position: Position? = null
+        val num: Int, // This is immutable, and used as a key
+        var user: MeshUser? = null,
+        var position: Position? = null,
+        var snr: Float = Float.MAX_VALUE,
+        var rssi: Int = Int.MAX_VALUE
 ) : Parcelable {
 
     /// Return the last time we've seen this node in secs since 1970
@@ -86,7 +103,7 @@ data class NodeInfo(
             val now = System.currentTimeMillis() / 1000
             // FIXME - use correct timeout from the device settings
             val timeout =
-                15 * 60 // Don't set this timeout too tight, or otherwise we will stop sending GPS helper positions to our device
+                    15 * 60 // Don't set this timeout too tight, or otherwise we will stop sending GPS helper positions to our device
             return (now - lastSeen <= timeout) || lastSeen == 0
         }
 

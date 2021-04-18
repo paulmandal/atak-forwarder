@@ -7,9 +7,8 @@ import android.util.Base64;
 import androidx.annotation.Nullable;
 
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.MeshProtos;
+import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
-import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -36,6 +35,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     @Nullable
     private MeshtasticDevice mMeshDevice;
+
+    private RadioConfigProtos.RegionCode mRegionCode;
 
     private String mChannelName;
     private int mChannelMode;
@@ -70,6 +71,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         meshServiceController.addConnectionStateListener(this);
 
         // TODO: clean up this hacks
+        mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFALUT_REGION)));
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
@@ -103,6 +105,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                         e.printStackTrace();
                     }
                     break;
+                case PreferencesKeys.KEY_REGION:
+                    RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFALUT_REGION)));
+
+                    if (regionCode != mRegionCode) {
+                        mLogger.d(TAG, "Region config changed, checking if radio is up to date");
+                        mRegionCode = regionCode;
+
+                        checkRadioConfig();
+                    }
+                    break;
                 case PreferencesKeys.KEY_CHANNEL_NAME:
                 case PreferencesKeys.KEY_CHANNEL_MODE:
                 case PreferencesKeys.KEY_CHANNEL_PSK:
@@ -118,7 +130,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                         mChannelMode = channelMode;
                         mChannelPsk = psk;
 
-                        checkRadioConfig();
+                        checkChannelConfig();
                     }
                     break;
             }
@@ -147,6 +159,11 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     private void checkRadioConfig() {
         mLogger.v(TAG, "  Checking radio config");
+        if (mMeshService == null) {
+            mLogger.v(TAG, "  Not connected to MeshService");
+            return;
+        }
+
         byte[] radioConfigBytes = null;
         try {
             radioConfigBytes = mMeshService.getRadioConfig();
@@ -160,31 +177,49 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
-        MeshProtos.RadioConfig radioConfig = null;
+        RadioConfigProtos.RadioConfig radioConfig = null;
         try {
-            radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
+            radioConfig = RadioConfigProtos.RadioConfig.parseFrom(radioConfigBytes);
         } catch (InvalidProtocolBufferException e) {
             mLogger.e(TAG, "  checkRadioConfig() - exception parsing radioConfig protobuf");
             e.printStackTrace();
+            return;
         }
 
-        MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode);
-
-        MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-        MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+        RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
 
         if (userPreferences.getPositionBroadcastSecs() != ForwarderConstants.POSITION_BROADCAST_INTERVAL_S
                 || userPreferences.getScreenOnSecs() != ForwarderConstants.LCD_SCREEN_ON_S
                 || userPreferences.getWaitBluetoothSecs() != ForwarderConstants.WAIT_BLUETOOTH_S
-                || userPreferences.getPhoneTimeoutSecs() != ForwarderConstants.PHONE_TIMEOUT_S
-                || !channelSettings.getName().equals(mChannelName)
-                || !compareByteArrays(channelSettings.getPsk().toByteArray(), mChannelPsk)
-                || channelSettings.getModemConfig() != modemConfig) {
+                || userPreferences.getPhoneTimeoutSecs() != ForwarderConstants.PHONE_TIMEOUT_S) {
             writeRadioConfig(radioConfig);
         }
     }
 
+    private void checkChannelConfig() {
+        mLogger.v(TAG, "  Checking channel config");
+        if (mMeshService == null) {
+            mLogger.v(TAG, "  Not connected to MeshService");
+            return;
+        }
+        //AppOnlyProtos.ChannelSet
+
+//        MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode);
+//        MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+
+//                        || !channelSettings.getName().equals(mChannelName)
+//                || !compareByteArrays(channelSettings.getPsk().toByteArray(), mChannelPsk)
+//                || channelSettings.getModemConfig() != modemConfig) {
+
+    }
+
     private void checkOwner() {
+        mLogger.v(TAG, "  Checking owner");
+        if (mMeshService == null) {
+            mLogger.v(TAG, "  Not connected to MeshService");
+            return;
+        }
+
         try {
             String meshId = mMeshService.getMyId();
             String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
@@ -198,28 +233,33 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         }
     }
 
-    private void writeRadioConfig(MeshProtos.RadioConfig radioConfig) {
+    private void writeRadioConfig(RadioConfigProtos.RadioConfig radioConfig) {
         mLogger.v(TAG, "  Writing radio config to device, channel: " + mChannelName + ", mode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk));
-        MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode);
+        if (mMeshService == null) {
+            mLogger.v(TAG, "  Not connected to MeshService");
+            return;
+        }
+//        MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode);
 
-        MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-        MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+        RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+//        MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-        MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
-        MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
-        MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
+        RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
+        RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+//        MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
 
         userPreferencesBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
         userPreferencesBuilder.setScreenOnSecs(ForwarderConstants.LCD_SCREEN_ON_S);
         userPreferencesBuilder.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);
         userPreferencesBuilder.setPhoneTimeoutSecs(ForwarderConstants.PHONE_TIMEOUT_S);
+        userPreferencesBuilder.setRegion(mRegionCode);
 
-        channelSettingsBuilder.setName(mChannelName);
-        channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
-        channelSettingsBuilder.setModemConfig(modemConfig);
+//        channelSettingsBuilder.setName(mChannelName);
+//        channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
+//        channelSettingsBuilder.setModemConfig(modemConfig);
 
         radioConfigBuilder.setPreferences(userPreferencesBuilder);
-        radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
+//        radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
 
         radioConfig = radioConfigBuilder.build();
 

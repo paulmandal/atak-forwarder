@@ -30,10 +30,13 @@
     <string name="preferences_summary">Allow configuration of ATAK Forwarder</string>
 
     <string name="set_comm_device">Set Comm Device</string>
-    <string name="set_comm_device_summary">Configures which Meshtastic device to use</string>
+    <string name="set_comm_device_summary">Configures which Meshtastic device to use (required)</string>
 
     <string name="refresh_comm_devices">Refresh Devices</string>
     <string name="refresh_comm_devices_summary">Refresh the list of comm. devices, use this if your device is connected but not showing up in the Set Comm Device menu</string>
+
+    <string name="set_region">Set Region</string>
+    <string name="set_region_summary">Sets the Region you are using your devices in (required)</string>
 
     <string name="pli_max_frequency">PLI Max Frequency (s)</string>
     <string name="pli_max_frequency_summary">Maximum frequency that the plugin will send PLIs to the mesh</string>

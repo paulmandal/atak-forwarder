@@ -12,6 +12,7 @@ public class PreferencesKeys {
     public static final String KEY_PLI_HOP_LIMIT = "plugin_atak_forwarder_key_pli_hop_limit";
     public static final String KEY_CHAT_HOP_LIMIT = "plugin_atak_forwarder_key_chat_hop_limit";
     public static final String KEY_OTHER_HOP_LIMIT = "plugin_atak_forwarder_key_other_hop_limit";
+    public static final String KEY_REGION = "plugin_atak_forwarder_key_pli_max_frequency";
     public static final String KEY_CHANNEL_NAME = "plugin_atak_forwarder_key_channel_name";
     public static final String KEY_CHANNEL_MODE = "plugin_atak_forwarder_key_channel_mode";
     public static final String KEY_CHANNEL_PSK = "plugin_atak_forwarder_key_channel_psk";

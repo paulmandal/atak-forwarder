@@ -77,7 +77,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
 
         MainButtons mainButtons = new MainButtons(sDevicesList,
                 findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE),
-                findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES));
+                findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES),
+                findPreference(PreferencesKeys.KEY_REGION));
 
         Context settingsMenuContext = getActivity();
 

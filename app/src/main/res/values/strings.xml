@@ -139,6 +139,32 @@
         <item>3</item>
     </string-array>
 
+    <string-array name="regions">
+        <item>Unset</item>
+        <item>US</item>
+        <item>EU433</item>
+        <item>EU865</item>
+        <item>CN</item>
+        <item>JP</item>
+        <item>ANZ</item>
+        <item>KR</item>
+        <item>TW</item>
+        <item>RU</item>
+    </string-array>
+
+    <string-array name="regions_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+    </string-array>
+
     <string-array name="teams">
         <item>White</item>
         <item>Yellow</item>

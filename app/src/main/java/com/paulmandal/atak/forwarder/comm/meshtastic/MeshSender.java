@@ -15,7 +15,6 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -86,7 +85,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         super(atakContext,
                 logger,
                 new String[]{
-                        MeshServiceConstants.ACTION_MESSAGE_STATUS
+                        MeshServiceConstants.ACTION_MESSAGE_STATUS_CHANGED
                 },
                 destroyables,
                 meshSuspendController);
@@ -308,7 +307,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
         DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
                 mChunkInFlight.chunk,
-                Portnums.PortNum.UNKNOWN_APP.getNumber(),
+                Portnums.PortNum.ATAK_FORWARDER.getNumber(),
                 DataPacket.ID_LOCAL,
                 System.currentTimeMillis(),
                 0,

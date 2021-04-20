@@ -43,7 +43,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         super(atakContext,
                 logger,
                 new String[]{
-                        MeshServiceConstants.ACTION_RECEIVED_DATA
+                        MeshServiceConstants.ACTION_RECEIVED_DATA,
+                        MeshServiceConstants.ACTION_RECEIVED_ATAK_FORWARDER
                 },
                 destroyables,
                 meshSuspendController);
@@ -96,7 +97,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
 
         int dataType = payload.getDataType();
 
-        if (dataType != Portnums.PortNum.UNKNOWN_APP.getNumber()) {
+        mLogger.v(TAG, "handleReceive(), dataType: " + dataType);
+        if (dataType != Portnums.PortNum.ATAK_FORWARDER.getNumber()) {
             return;
         }
 

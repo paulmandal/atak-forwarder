@@ -209,27 +209,27 @@ public class MeshtasticTrackerConfigurator {
 
             RadioConfigProtos.RadioConfig radioConfig = RadioConfigProtos.RadioConfig.parseFrom(radioConfigBytes);
             RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-//            ChannelProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
             RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
             RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
-//            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
 
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
 
-//            channelSettingsBuilder.setName(mChannelName);
-//            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-//            channelSettingsBuilder.setModemConfig(mModemConfig);
 
             mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder);
-//            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
-
             radioConfig = radioConfigBuilder.build();
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
+
+            //            ChannelProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+//            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
+//            channelSettingsBuilder.setName(mChannelName);
+//            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
+//            channelSettingsBuilder.setModemConfig(mModemConfig);
+//            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
 
             if (TrackerCotGenerator.ROLES.length > 9) {
                 throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");

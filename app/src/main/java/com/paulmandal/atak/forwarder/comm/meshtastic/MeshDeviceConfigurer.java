@@ -155,6 +155,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         if (connectionState == ConnectionState.DEVICE_CONNECTED) {
             checkOwner();
             checkRadioConfig();
+            checkChannelConfig();
         }
     }
 
@@ -233,6 +234,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         boolean needsUpdate = true;
         for (ChannelProtos.ChannelSettings channelSetting : channelSettings) {
             if (!mChannelName.equals(channelSetting.getName())) {
+                mLogger.v(TAG, "    channel: " + channelSetting.getName() + ", found, not target");
                 continue;
             }
 
@@ -326,7 +328,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             channelSetBuilder.removeSettings(indexToRemove);
         }
 
-        channelSetBuilder.addSettings(channelSettingsBuilder.build());
+        channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
         channelSet = channelSetBuilder.build();
 
         try {

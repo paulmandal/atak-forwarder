@@ -1,7 +1,5 @@
 package com.paulmandal.atak.forwarder.comm.meshtastic;
 
-import com.geeksville.mesh.Portnums;
-
 public class MeshServiceConstants {
     /**
      * Service Intent
@@ -12,13 +10,13 @@ public class MeshServiceConstants {
     /**
      * Intents the Meshtastic service can send
      */
-    public static final String ACTION_CONNECTION_CHANGED = "com.geeksville.mesh.CONNECTION_CHANGED";
+    public static final String ACTION_MESH_CONNECTED = "com.geeksville.mesh.MESH_CONNECTED";
     public static final String ACTION_RECEIVED_DATA = "com.geeksville.mesh.RECEIVED_DATA";
-    public static final String ACTION_RECEIVED_ATAK_FORWARDER = "com.geeksville.mesh.RECEIVED." + Portnums.PortNum.ATAK_FORWARDER_VALUE;
-    public static final String ACTION_RECEIVED_NODEINFO_APP = "com.geeksville.mesh.RECEIVED." + Portnums.PortNum.NODEINFO_APP_VALUE;
-    public static final String ACTION_RECEIVED_POSITION_APP = "com.geeksville.mesh.RECEIVED." + Portnums.PortNum.POSITION_APP_VALUE;
+    public static final String ACTION_RECEIVED_ATAK_FORWARDER = "com.geeksville.mesh.RECEIVED.ATAK_FORWARDER";
+    public static final String ACTION_RECEIVED_NODEINFO_APP = "com.geeksville.mesh.RECEIVED.NODEINFO_APP";
+    public static final String ACTION_RECEIVED_POSITION_APP = "com.geeksville.mesh.RECEIVED.POSITION_APP";
     public static final String ACTION_NODE_CHANGE = "com.geeksville.mesh.NODE_CHANGE";
-    public static final String ACTION_MESSAGE_STATUS_CHANGED = "com.geeksville.mesh.MESSAGE_STATUS_CHANGED";
+    public static final String ACTION_MESSAGE_STATUS = "com.geeksville.mesh.MESSAGE_STATUS";
 
     /**
      * Extra data fields from the Meshtastic service

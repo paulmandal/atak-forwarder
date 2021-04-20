@@ -85,7 +85,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         super(atakContext,
                 logger,
                 new String[]{
-                        MeshServiceConstants.ACTION_MESSAGE_STATUS_CHANGED
+                        MeshServiceConstants.ACTION_MESSAGE_STATUS
                 },
                 destroyables,
                 meshSuspendController);

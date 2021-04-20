@@ -95,7 +95,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         };
 
         IntentFilter filter = new IntentFilter();
-        filter.addAction(MeshServiceConstants.ACTION_CONNECTION_CHANGED);
+        filter.addAction(MeshServiceConstants.ACTION_MESH_CONNECTED);
         mIntentFilter = filter;
 
         bindToService();
@@ -125,7 +125,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
             return;
         }
 
-        if (action.equals(MeshServiceConstants.ACTION_CONNECTION_CHANGED)) {
+        if (action.equals(MeshServiceConstants.ACTION_MESH_CONNECTED)) {
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
             boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
             mLogger.d(TAG, "  Mesh connected: " + connected);

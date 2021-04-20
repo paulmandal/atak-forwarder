@@ -10,6 +10,7 @@ import android.util.Base64;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanListPreference;
+import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
@@ -137,7 +138,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                 int modemConfigValue = resultBytes[PSK_LENGTH];
                 System.arraycopy(resultBytes, PSK_LENGTH + 1, channelNameBytes, 0, resultBytes.length - PSK_LENGTH - 1);
 
-                MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(modemConfigValue);
+                ChannelProtos.ChannelSettings.ModemConfig modemConfig = ChannelProtos.ChannelSettings.ModemConfig.forNumber(modemConfigValue);
 
                 preference.getEditor()
                         .putString(PreferencesKeys.KEY_CHANNEL_NAME, new String(channelNameBytes))

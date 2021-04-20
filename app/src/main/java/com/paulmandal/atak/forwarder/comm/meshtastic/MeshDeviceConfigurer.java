@@ -74,7 +74,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         meshServiceController.addConnectionStateListener(this);
 
         // TODO: clean up this hacks
-        mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFALUT_REGION)));
+        mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
@@ -87,57 +87,55 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
-        new Thread(() -> {
-            switch (key) {
-                case PreferencesKeys.KEY_SET_COMM_DEVICE:
-                    String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
-                    Gson gson = new Gson();
-                    MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
+        switch (key) {
+            case PreferencesKeys.KEY_SET_COMM_DEVICE:
+                String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
+                Gson gson = new Gson();
+                MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
 
-                    if (meshtasticDevice == null) {
-                        mLogger.v(TAG, "complexUpdate, no device configured, exiting");
-                        return;
-                    }
+                if (meshtasticDevice == null) {
+                    mLogger.v(TAG, "complexUpdate, no device configured, exiting");
+                    return;
+                }
 
-                    try {
-                        mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
-                        mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
-                        mMeshDevice = meshtasticDevice;
-                        mSetDeviceAddressCalled = true;
-                    } catch (RemoteException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case PreferencesKeys.KEY_REGION:
-                    RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFALUT_REGION)));
+                try {
+                    mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
+                    mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
+                    mMeshDevice = meshtasticDevice;
+                    mSetDeviceAddressCalled = true;
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case PreferencesKeys.KEY_REGION:
+                RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
 
-                    if (regionCode != mRegionCode) {
-                        mLogger.d(TAG, "Region config changed, checking if radio is up to date");
-                        mRegionCode = regionCode;
+                if (regionCode != mRegionCode) {
+                    mLogger.d(TAG, "Region config changed, new region: " + regionCode + ", checking if radio is up to date");
+                    mRegionCode = regionCode;
 
-                        checkRadioConfig();
-                    }
-                    break;
-                case PreferencesKeys.KEY_CHANNEL_NAME:
-                case PreferencesKeys.KEY_CHANNEL_MODE:
-                case PreferencesKeys.KEY_CHANNEL_PSK:
-                    String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-                    int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-                    byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+                    checkRadioConfig();
+                }
+                break;
+            case PreferencesKeys.KEY_CHANNEL_NAME:
+            case PreferencesKeys.KEY_CHANNEL_MODE:
+            case PreferencesKeys.KEY_CHANNEL_PSK:
+                String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
+                int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
+                byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
 
-                    boolean changed = !channelName.equals(mChannelName) || channelMode != mChannelMode || !areByteArraysEqual(psk, mChannelPsk);
+                boolean changed = !channelName.equals(mChannelName) || channelMode != mChannelMode || !areByteArraysEqual(psk, mChannelPsk);
 
-                    if (changed) {
-                        mLogger.d(TAG, "channelConfig changed, checking if radio is up to date");
-                        mChannelName = channelName;
-                        mChannelMode = channelMode;
-                        mChannelPsk = psk;
+                if (changed) {
+                    mLogger.d(TAG, "channelConfig changed, checking if radio is up to date");
+                    mChannelName = channelName;
+                    mChannelMode = channelMode;
+                    mChannelPsk = psk;
 
-                        checkChannelConfig();
-                    }
-                    break;
-            }
-        }).start();
+                    checkChannelConfig();
+                }
+                break;
+        }
     }
 
     @Override

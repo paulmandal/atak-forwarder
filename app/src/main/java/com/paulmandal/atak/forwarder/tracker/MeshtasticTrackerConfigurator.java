@@ -11,9 +11,9 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.MeshProtos;
-import com.google.protobuf.ByteString;
+import com.geeksville.mesh.RadioConfigProtos;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
@@ -56,7 +56,7 @@ public class MeshtasticTrackerConfigurator {
     private final String mDeviceCallsign;
     private final String mChannelName;
     private final byte[] mPsk;
-    private final MeshProtos.ChannelSettings.ModemConfig mModemConfig;
+    private final ChannelProtos.ChannelSettings.ModemConfig mModemConfig;
     private final int mTeamIndex;
     private final int mRoleIndex;
     private final int mPliIntervalS;
@@ -84,7 +84,7 @@ public class MeshtasticTrackerConfigurator {
                                          String deviceCallsign,
                                          String channelName,
                                          byte[] psk,
-                                         MeshProtos.ChannelSettings.ModemConfig modemConfig,
+                                         ChannelProtos.ChannelSettings.ModemConfig modemConfig,
                                          int teamIndex,
                                          int roleIndex,
                                          int pliIntervalS,
@@ -207,25 +207,25 @@ public class MeshtasticTrackerConfigurator {
                 return;
             }
 
-            MeshProtos.RadioConfig radioConfig = MeshProtos.RadioConfig.parseFrom(radioConfigBytes);
-            MeshProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
-            MeshProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
+            RadioConfigProtos.RadioConfig radioConfig = RadioConfigProtos.RadioConfig.parseFrom(radioConfigBytes);
+            RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+//            ChannelProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
 
-            MeshProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
-            MeshProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
-            MeshProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
+            RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
+            RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+//            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
 
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
 
-            channelSettingsBuilder.setName(mChannelName);
-            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-            channelSettingsBuilder.setModemConfig(mModemConfig);
+//            channelSettingsBuilder.setName(mChannelName);
+//            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
+//            channelSettingsBuilder.setModemConfig(mModemConfig);
 
             mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder);
-            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
+//            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
 
             radioConfig = radioConfigBuilder.build();
 

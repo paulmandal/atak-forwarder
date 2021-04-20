@@ -7,7 +7,7 @@ import androidx.annotation.CallSuper;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.geeksville.mesh.MeshProtos;
+import com.geeksville.mesh.ChannelProtos;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
@@ -19,7 +19,7 @@ import java.util.List;
 public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
     private final MutableLiveData<String> mChannelName = new MutableLiveData<>();
     private final MutableLiveData<String> mPskHash = new MutableLiveData<>();
-    private final MutableLiveData<MeshProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
+    private final MutableLiveData<ChannelProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
 
     private final HashHelper mHashHelper;
 
@@ -44,7 +44,7 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
         return mChannelName;
     }
 
-    public LiveData<MeshProtos.ChannelSettings.ModemConfig> getModemConfig() {
+    public LiveData<ChannelProtos.ChannelSettings.ModemConfig> getModemConfig() {
         return mModemConfig;
     }
 
@@ -69,7 +69,7 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
         String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        MeshProtos.ChannelSettings.ModemConfig modemConfig = MeshProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
+        ChannelProtos.ChannelSettings.ModemConfig modemConfig = ChannelProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
 
         mChannelName.postValue(channelName);
         mModemConfig.postValue(modemConfig);

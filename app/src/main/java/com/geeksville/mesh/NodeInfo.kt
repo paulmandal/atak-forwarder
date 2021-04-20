@@ -3,7 +3,6 @@ package com.geeksville.mesh
 import android.os.Parcelable
 import com.geeksville.mesh.ui.bearing
 import com.geeksville.mesh.ui.latLongToMeter
-import com.geeksville.util.anonymize
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -23,7 +22,7 @@ data class MeshUser(
         Parcelable {
 
     override fun toString(): String {
-        return "MeshUser(id=${id.anonymize}, longName=${longName.anonymize}, shortName=${shortName.anonymize}, hwModel=${hwModelString})"
+        return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName}, hwModel=${hwModelString})"
     }
 
     /** a string version of the hardware model, converted into pretty lowercase and changing _ to -, and p to dot
@@ -72,7 +71,7 @@ data class Position(
     fun bearing(o: Position) = bearing(latitude, longitude, o.latitude, o.longitude)
 
     override fun toString(): String {
-        return "Position(lat=${latitude.anonymize}, lon=${longitude.anonymize}, alt=${altitude.anonymize}, time=${time}, batteryPctLevel=${batteryPctLevel})"
+        return "Position(lat=${latitude}, lon=${longitude}, alt=${altitude}, time=${time}, batteryPctLevel=${batteryPctLevel})"
     }
 }
 

@@ -20,6 +20,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.atakmap.android.gui.EditText;
 import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PluginSpinner;
+import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.MeshProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
@@ -110,7 +111,7 @@ public class TrackerButtons {
                 String callsign = callsignEditText.getText().toString();
 
                 String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-                MeshProtos.ChannelSettings.ModemConfig channelMode = MeshProtos.ChannelSettings.ModemConfig.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
+                ChannelProtos.ChannelSettings.ModemConfig channelMode = ChannelProtos.ChannelSettings.ModemConfig.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
                 byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
 
                 int teamIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_TEAM, PreferencesDefaults.DEFAULT_TRACKER_TEAM));
@@ -138,7 +139,7 @@ public class TrackerButtons {
                                String deviceCallsign,
                                String channelName,
                                byte[] psk,
-                               MeshProtos.ChannelSettings.ModemConfig modemConfig,
+                               ChannelProtos.ChannelSettings.ModemConfig modemConfig,
                                int teamIndex,
                                int roleIndex,
                                int pliIntervalS,

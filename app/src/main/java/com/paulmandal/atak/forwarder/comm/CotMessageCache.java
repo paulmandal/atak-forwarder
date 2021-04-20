@@ -77,7 +77,7 @@ public class CotMessageCache extends DestroyableSharedPrefsListener {
             for (CachedCotEvent cachedCotEvent : mCachedEvents) {
                 int purgeTimeMs = mDuplicateMessagesTtlMs;
                 if (MessageType.fromCotEventType(cachedCotEvent.cotEvent.getType()) == MessageType.PLI) {
-                    purgeTimeMs = mPliMaxFrequencyMs * 1000;
+                    purgeTimeMs = mPliMaxFrequencyMs;
                 }
                 if (currentTime - cachedCotEvent.lastSentTime > purgeTimeMs) {
                     purgeEvents.add(cachedCotEvent);

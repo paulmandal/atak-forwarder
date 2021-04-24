@@ -148,7 +148,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(lastMsgTime);
         CoordinatedTime staleCoordinatedTime = new CoordinatedTime(System.currentTimeMillis() + STALE_TIME_OFFSET_MS);
 
-        spoofedPli.setUID();
+        spoofedPli.setUID(uid);
         spoofedPli.setType(TYPE_PLI);
         spoofedPli.setTime(lastMsgCoordinatedTime);
         spoofedPli.setStart(lastMsgCoordinatedTime);

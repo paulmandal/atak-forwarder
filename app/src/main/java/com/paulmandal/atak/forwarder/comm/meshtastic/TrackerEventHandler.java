@@ -5,9 +5,13 @@ import android.content.Intent;
 
 import androidx.annotation.Nullable;
 
+import com.geeksville.mesh.DataPacket;
+import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.NodeInfo;
+import com.geeksville.mesh.Portnums;
 import com.geeksville.mesh.Position;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -33,6 +37,8 @@ public class TrackerEventHandler extends MeshEventHandler {
         super(atakContext,
                 logger,
                 new String[] {
+                        MeshServiceConstants.ACTION_RECEIVED_POSITION_APP,
+                        MeshServiceConstants.ACTION_RECEIVED_NODEINFO_APP,
                         MeshServiceConstants.ACTION_NODE_CHANGE
                 },
                 destroyables,
@@ -45,17 +51,63 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     @Override
     protected void handleReceive(Context context, Intent intent) {
-        NodeInfo nodeInfo = intent.getParcelableExtra(MeshServiceConstants.EXTRA_NODEINFO);
-        long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
-        mLogger.v(TAG, "  NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
+        if (intent.getAction() != null && intent.getAction().equals(MeshServiceConstants.ACTION_NODE_CHANGE)) {
+            // TODO: this is probably not supported anymore, remove it a few Meshtastic versions after 1.2
+            NodeInfo nodeInfo = intent.getParcelableExtra(MeshServiceConstants.EXTRA_NODEINFO);
+            long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
+            mLogger.v(TAG, "  NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
 
-        TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
+            TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
 
-        if (trackerUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
-            // Drop updates that do not have a MeshUser attached or are >30 mins old
+            if (trackerUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
+                // Drop updates that do not have a MeshUser attached or are >30 mins old
+                return;
+            }
+            mTrackerListener.onTrackerUpdated(trackerUserInfo);
             return;
         }
-        mTrackerListener.onTrackerUpdated(trackerUserInfo);
+
+        DataPacket payload = intent.getParcelableExtra(MeshServiceConstants.EXTRA_PAYLOAD);
+        int dataType = payload.getDataType();
+
+        if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()) {
+            mLogger.d(TAG, "  NODEINFO_APP, parsing");
+            try {
+                MeshProtos.NodeInfo nodeInfo = MeshProtos.NodeInfo.parseFrom(payload.getBytes());
+                mLogger.d(TAG, "    parsed NodeInfo: " + nodeInfo);
+
+                TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo);
+
+                mTrackerListener.onTrackerUpdated(trackerUserInfo);
+            } catch (InvalidProtocolBufferException e) {
+                mLogger.e(TAG, "    NODEINFO_APP message failed to parse");
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Nullable
+    private TrackerUserInfo trackerUserInfoFromNodeInfo(MeshProtos.NodeInfo nodeInfo) {
+        MeshProtos.User meshUser = nodeInfo.getUser();
+
+        if (meshUser == null) {
+            return null;
+        }
+
+        double lat = 0.0;
+        double lon = 0.0;
+        int altitude = 0;
+        boolean gpsValid = false;
+        long timeSinceLastSeen = 0;
+        MeshProtos.Position position = nodeInfo.getPosition();
+        if (position != null) {
+            lat = position.getLatitudeI();
+            lon = position.getLongitudeI();
+            altitude = position.getAltitude();
+            timeSinceLastSeen = position.getTime();
+            gpsValid = true;
+        }
+        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), 0, lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
     }
 
     @Nullable
@@ -70,13 +122,13 @@ public class TrackerEventHandler extends MeshEventHandler {
         double lon = 0.0;
         int altitude = 0;
         boolean gpsValid = false;
-        Position position = nodeInfo.getValidPosition();
+        Position position = nodeInfo.getPosition();
         if (position != null) {
             lat = position.getLatitude();
             lon = position.getLongitude();
             altitude = position.getAltitude();
             gpsValid = true;
         }
-        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getBatteryPctLevel(), lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
+        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), 0, lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
     }
 }

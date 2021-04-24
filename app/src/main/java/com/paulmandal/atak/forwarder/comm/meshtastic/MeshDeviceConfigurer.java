@@ -61,7 +61,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
                         PreferencesKeys.KEY_CHANNEL_NAME,
                         PreferencesKeys.KEY_CHANNEL_MODE,
-                        PreferencesKeys.KEY_CHANNEL_PSK
+                        PreferencesKeys.KEY_CHANNEL_PSK,
+                        PreferencesKeys.KEY_REGION
                 });
 
         mSharedPreferences = sharedPreferences;
@@ -199,7 +200,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void checkChannelConfig() {
-        mLogger.v(TAG, "  Checking channel config");
+        mLogger.v(TAG, "  Checking channel config for channel: " + mChannelName + ", mode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk));
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
@@ -238,9 +239,11 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 continue;
             }
 
+            mLogger.v(TAG, "    target channel: " + channelSetting.getName() + ", found! checking PSK and modemConfig");
             needsUpdate = !(areByteArraysEqual(channelSetting.getPsk().toByteArray(), mChannelPsk) && channelSetting.getModemConfig() == modemConfig);
         }
 
+        mLogger.v(TAG, "    needsUpdate: " + needsUpdate);
         if (needsUpdate) {
             writeChannelConfig(channelSet);
         }
@@ -284,7 +287,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         userPreferencesBuilder.setPhoneTimeoutSecs(ForwarderConstants.PHONE_TIMEOUT_S);
         userPreferencesBuilder.setRegion(mRegionCode);
 
-        radioConfigBuilder.setPreferences(userPreferencesBuilder);
+        radioConfigBuilder.setPreferences(userPreferencesBuilder.build());
 
         radioConfig = radioConfigBuilder.build();
 
@@ -311,23 +314,22 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
         channelSettingsBuilder.setModemConfig(modemConfig);
 
-        channelSettingsBuilder.setModemConfig(ChannelProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode));
+//        int indexToRemove = -1;
+//
+//        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+//            ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
+//            if (!mChannelName.equals(channelSetting.getName())) {
+//                continue;
+//            }
+//
+//            indexToRemove = i;
+//        }
+//
+//        if (indexToRemove != -1) {
+//            channelSetBuilder.removeSettings(indexToRemove);
+//        }
 
-        int indexToRemove = -1;
-
-        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-            ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-            if (!mChannelName.equals(channelSetting.getName())) {
-                continue;
-            }
-
-            indexToRemove = i;
-        }
-
-        if (indexToRemove != -1) {
-            channelSetBuilder.removeSettings(indexToRemove);
-        }
-
+        channelSetBuilder.clearSettings();
         channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
         channelSet = channelSetBuilder.build();
 

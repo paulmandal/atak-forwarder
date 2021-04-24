@@ -83,7 +83,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
             mLogger.d(TAG, "  POSITION_APP, parsing");
             try {
                 MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed position: " + position);
+                mLogger.d(TAG, "    parsed position: lat: " + position.getLatitudeI() + ", lon: " + position.getLongitudeI() + ", alt: " + position.getAltitude());
             } catch (InvalidProtocolBufferException e) {
                 mLogger.e(TAG, "    POSITION_APP message failed to parse");
                 e.printStackTrace();

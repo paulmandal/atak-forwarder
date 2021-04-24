@@ -11,9 +11,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 
+import com.geeksville.mesh.AppOnlyProtos;
 import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.RadioConfigProtos;
+import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
@@ -54,6 +56,7 @@ public class MeshtasticTrackerConfigurator {
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
+    private final RadioConfigProtos.RegionCode mRegionCode;
     private final String mChannelName;
     private final byte[] mPsk;
     private final ChannelProtos.ChannelSettings.ModemConfig mModemConfig;
@@ -82,6 +85,7 @@ public class MeshtasticTrackerConfigurator {
                                          MeshtasticDevice commDevice,
                                          MeshtasticDevice targetDevice,
                                          String deviceCallsign,
+                                         RadioConfigProtos.RegionCode regionCode,
                                          String channelName,
                                          byte[] psk,
                                          ChannelProtos.ChannelSettings.ModemConfig modemConfig,
@@ -98,6 +102,7 @@ public class MeshtasticTrackerConfigurator {
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;
+        mRegionCode = regionCode;
         mChannelName = channelName;
         mPsk = psk;
         mModemConfig = modemConfig;
@@ -198,11 +203,24 @@ public class MeshtasticTrackerConfigurator {
         mStartedWritingToDevice = true;
 
         try {
-            // TODO: move this to a util?
             byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
             if (radioConfigBytes == null) {
                 mLogger.e(TAG, "radioConfigBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
+                mUiThreadHandler.postDelayed(this::maybeWriteToDevice, RADIO_CONFIG_MISSING_RETRY_TIME_MS);
+                return;
+            }
+
+            byte[] channelSetBytes = null;
+            try {
+                channelSetBytes = mMeshService.getChannels();
+            } catch (RemoteException e) {
+                mLogger.e(TAG, "  channelSetBytes - RemoteException!");
+                e.printStackTrace();
+            }
+
+            if (channelSetBytes == null) {
+                mLogger.e(TAG, "  channelSetBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
                 mUiThreadHandler.postDelayed(this::maybeWriteToDevice, RADIO_CONFIG_MISSING_RETRY_TIME_MS);
                 return;
             }
@@ -215,21 +233,50 @@ public class MeshtasticTrackerConfigurator {
 
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
+            userPreferencesBuilder.setRegion(mRegionCode);
 
+            mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode);
 
-            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
-
-            radioConfigBuilder.setPreferences(userPreferencesBuilder);
+            radioConfigBuilder.setPreferences(userPreferencesBuilder.build());
             radioConfig = radioConfigBuilder.build();
 
             mMeshService.setRadioConfig(radioConfig.toByteArray());
 
-            //            ChannelProtos.ChannelSettings channelSettings = radioConfig.getChannelSettings();
-//            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = channelSettings.toBuilder();
-//            channelSettingsBuilder.setName(mChannelName);
-//            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-//            channelSettingsBuilder.setModemConfig(mModemConfig);
-//            radioConfigBuilder.setChannelSettings(channelSettingsBuilder);
+            AppOnlyProtos.ChannelSet channelSet = AppOnlyProtos.ChannelSet.parseFrom(channelSetBytes);
+            AppOnlyProtos.ChannelSet.Builder channelSetBuilder = channelSet.toBuilder();
+
+            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
+            channelSettingsBuilder.setName(mChannelName);
+            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
+            channelSettingsBuilder.setModemConfig(mModemConfig);
+//            channelSettingsBuilder.setId()
+
+            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
+                mLogger.d(TAG, "  deleting channel from Tracker: " + channelSetting.getName());
+            }
+
+            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
+//            int indexToRemove = -1;
+//
+//            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+//                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
+//                if (!mChannelName.equals(channelSetting.getName())) {
+//                    continue;
+//                }
+//
+//                indexToRemove = i;
+//            }
+//
+//            if (indexToRemove != -1) {
+//                channelSetBuilder.removeSettings(indexToRemove);
+//            }
+
+            channelSetBuilder.clearSettings();
+            channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
+            channelSet = channelSetBuilder.build();
+
+            mMeshService.setChannels(channelSet.toByteArray());
 
             if (TrackerCotGenerator.ROLES.length > 9) {
                 throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");

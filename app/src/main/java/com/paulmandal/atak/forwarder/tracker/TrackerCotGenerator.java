@@ -11,6 +11,7 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.protobuf.ContactProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobuf.TakvProtobufConverter;
@@ -83,6 +84,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     };
 
     private final InboundMessageHandler mInboundMessageHandler;
+    private final Logger mLogger;
 
     private List<TrackerUserInfo> mTrackers;
     private final String mPluginVersion;
@@ -90,8 +92,9 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     private ScheduledExecutorService mWorkerExecutor;
     private boolean mDestroyCalled = false;
 
-    public TrackerCotGenerator(List<Destroyable> destroyables, UserTracker userTracker, InboundMessageHandler inboundMessageHandler, String pluginVersion) {
+    public TrackerCotGenerator(List<Destroyable> destroyables, UserTracker userTracker, InboundMessageHandler inboundMessageHandler, Logger logger, String pluginVersion) {
         mInboundMessageHandler = inboundMessageHandler;
+        mLogger = logger;
         mPluginVersion = pluginVersion;
 
         destroyables.add(this);
@@ -139,11 +142,13 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
         CotEvent spoofedPli = new CotEvent();
 
+        String uid = String.format("%s-%s", VALUE_UID_PREFIX, tracker.meshId.replaceAll("!", ""));
+
         long lastMsgTime = System.currentTimeMillis() - tracker.lastSeenTime;
         CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(lastMsgTime);
         CoordinatedTime staleCoordinatedTime = new CoordinatedTime(System.currentTimeMillis() + STALE_TIME_OFFSET_MS);
 
-        spoofedPli.setUID(String.format("%s-%s", VALUE_UID_PREFIX, tracker.meshId.replaceAll("!", "")));
+        spoofedPli.setUID();
         spoofedPli.setType(TYPE_PLI);
         spoofedPli.setTime(lastMsgCoordinatedTime);
         spoofedPli.setStart(lastMsgCoordinatedTime);
@@ -208,6 +213,8 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         }
 
         spoofedPli.setDetail(cotDetail);
+
+        mLogger.v(TAG, "drawTracker(), uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime);
 
         mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }

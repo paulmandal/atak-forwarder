@@ -261,6 +261,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             for (String uid : toUIDs) {
                 String meshId = mUserTracker.getMeshIdForUid(uid);
                 if (meshId.isEmpty()) {
+                    mLogger.e(TAG, "sendMessageInternal() - could not get meshId for uid: " + uid);
                     continue;
                 }
 

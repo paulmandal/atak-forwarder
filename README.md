@@ -41,8 +41,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic-Android | 1.0.0 |
-| Meshtastic-device | 1.1.5 beta |
+| Meshtastic-Android | 1.2.28 |
+| Meshtastic-device | 1.2.28 |
 
 # To Do
 
@@ -86,7 +86,6 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 * Clone the ATAK-CIV repo: `git clone git@github.com:deptofdefense/AndroidTacticalAssaultKit-CIV.git`
 * Follow the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
     * Note: you will need to configure a signing key in the `local.properties` file
-    * Note: `installCivDebug` is recommended for development builds, if you would like to use `installCivRelease` instead you must add your key signature to `AtakPluginRegistry.ACCEPTABLE_KEY_LIST`
 
 ## Build the ATAK Gradle Plugin
 
@@ -107,38 +106,41 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 
 * In the Android Settings / Connected Devices or Bluetooth Settings tap `Pair a new device`
 * Pair with your Meshtastic device
-* Start ATAK, you should see an orange icon in the lower right corner of the screen
-* Tap on the icon, the plugin menu should open
-* Tap on the `Devices` tab
-* Tap on the `Refresh` button in the lower left corner of the plugin screen
-* Tap on your Meshtastic device when it shows up in the list of devices
-* Tap on the `Set Comm Device` button, this will set your primary comm device
-* The orange icon in the lower right corner of the ATAK map should turn green soon
+* Start ATAK, you should see a purple icon in the lower right corner of the screen
+* Tap on the three dots menu in the upper right corner of the ATAK screen
+* Tap on Settings
+* Tap on Tool Preferences
+* Tap on ATAK Forwarder Preferences
+* Tap on `Refresh Devices`
+* Tap on `Set Comm Device` and pick your device from the list
+* Tap on `Set Region` and pick the region you are currently in
+* The icon in the lower right corner of the ATAK map should turn red and then green
 
 ## Setting up your Channel
 
-* On one device, tap on the `Channel` tab
-* Tap on the `Edit Channel` button
-* Pick your range/speed settings, recommended to start with the fastest / lowest range setting and work from there
-* Pick a good name for your channel
-* Tap on the `Gen PSK` button
-* Tap on the `Save` button
-* Wait until your new channel settings show up in the `Status` or `Channel` tab, if they do not show up after a minute retry the edit channel steps
-* Once the channel settings are updated, click on the `Show QR` button to show a scannable QR code that you can use to configure your other devices
-* On your other devices, click on th `Scan QR` button in the `Channel` tab to scan a channel QR
+* In ATAK tap on the three dots menu in the upper right corner of the screen
+* Tap on Settings
+* Tap on Tool Preferences
+* Tap on ATAK Forwarder Preferences
+* Scroll to `Channel Name` and tap on it to set your channel name, max length is 11 characters
+* Tap on `Mode / Speed` and pick a mode, try `Short Range / Fast` to start with
+* Tap on `Generate PSK` to generate a new pre-shared key to encrypt your channel with
+* Tap on `Show QR` to show a QR code with your channel's settings
+* On your other devices, go to the same Settings screen and then tap `Scan QR` to scan the channel settings
     * You should see notifications about "discovery broadcasts" once all devices are on the same channel, if you do not check the channel name, hash, and try clicking `Broadcast Discovery` in the plugin settings menu (click the @)
     * You should soon see map markers for each of your devices
-    * Note: this plugin will configure your Meshtastic device to send out position updates once per hour and to turn the LCD off after 1 second, you can tweak those values in `Config.java`
 
-## Setting up a non-ATAK Device
+## Setting up a Tracker device
 
 The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but no phone controlling them to show up on the map with a configurable callsign, team, and icon. This can be useful for retrieving relay devices or use cases that only need to output location data (e.g. animal tracking)
 
 * Pair your extra Meshtastic devices with your phone as normal
-* In the `Devices` tab, click the `Refresh` button
-* Click on a device that is not your primary comm device, it will show up in the `Target` textview
-* Enter the settings for your non-ATAK device
-* Click on `Write to non-ATAK`
+* In ATAK tap on the three dots menu in the upper right corner of the screen
+* Tap on Settings
+* Tap on Tool Preferences
+* Tap on ATAK Forwarder Preferences
+* Scroll to `Tracker` and configure your `Team`, `Role`, and other settings
+* Click on `Write to Device` and pick your device from the dropdown, set a `Callsign` and click `OK`
 * You will see a small spinning progress bar appear on the screen, wait until it disappears before doing anything else with the plugin
 * After the spinning progress bar disappears check the devices channel on its LCD, if the channel is updated reset the device by pressing the reset button for a second or two
 * You should see your device appear on the map after it boots back up, its location should start updating once it has a GPS lock

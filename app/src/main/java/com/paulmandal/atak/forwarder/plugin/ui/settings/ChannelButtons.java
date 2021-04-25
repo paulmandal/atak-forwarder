@@ -6,12 +6,12 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.Preference;
+import android.text.InputFilter;
 import android.util.Base64;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanListPreference;
 import com.geeksville.mesh.ChannelProtos;
-import com.geeksville.mesh.MeshProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -47,6 +47,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           HashHelper hashHelper,
                           QrHelper qrHelper,
                           Logger logger,
+                          Preference channelName,
                           Preference channelMode,
                           Preference channelPsk,
                           Preference showChannelQr,
@@ -61,6 +62,11 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         PreferencesKeys.KEY_CHANNEL_PSK
                 },
                 new String[]{});
+        (PanEditTextPreference) editTextPreferenceChannelName = (PanEditTextPreference) channelName;
+        channelName.setFilters(new InputFilter[] {
+                new InputFilter.LengthFilter(11)
+        }, false);
+
         PanListPreference listPreferenceChannelMode = (PanListPreference) channelMode;
         listPreferenceChannelMode.setEntries(R.array.channel_modes);
         listPreferenceChannelMode.setEntryValues(R.array.channel_mode_values);

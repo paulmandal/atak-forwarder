@@ -92,6 +92,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 hashHelper,
                 qrHelper,
                 sLogger,
+                findPreference(PreferencesKeys.KEY_CHANNEL_NAME),
                 findPreference(PreferencesKeys.KEY_CHANNEL_MODE),
                 findPreference(PreferencesKeys.KEY_CHANNEL_PSK),
                 findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),

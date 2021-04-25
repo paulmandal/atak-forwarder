@@ -249,7 +249,6 @@ public class MeshtasticTrackerConfigurator {
             channelSettingsBuilder.setName(mChannelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
             channelSettingsBuilder.setModemConfig(mModemConfig);
-//            channelSettingsBuilder.setId()
 
             for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
                 ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
@@ -257,22 +256,21 @@ public class MeshtasticTrackerConfigurator {
             }
 
             mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
-//            int indexToRemove = -1;
-//
-//            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-//                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-//                if (!mChannelName.equals(channelSetting.getName())) {
-//                    continue;
-//                }
-//
-//                indexToRemove = i;
-//            }
-//
-//            if (indexToRemove != -1) {
-//                channelSetBuilder.removeSettings(indexToRemove);
-//            }
+            int indexToRemove = -1;
 
-            channelSetBuilder.clearSettings();
+            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
+                if (!mChannelName.equals(channelSetting.getName())) {
+                    continue;
+                }
+
+                indexToRemove = i;
+            }
+
+            if (indexToRemove != -1) {
+                channelSetBuilder.removeSettings(indexToRemove);
+            }
+
             channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
             channelSet = channelSetBuilder.build();
 

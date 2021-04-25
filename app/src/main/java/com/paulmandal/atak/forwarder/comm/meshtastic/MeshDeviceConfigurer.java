@@ -314,22 +314,21 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
         channelSettingsBuilder.setModemConfig(modemConfig);
 
-//        int indexToRemove = -1;
-//
-//        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-//            ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-//            if (!mChannelName.equals(channelSetting.getName())) {
-//                continue;
-//            }
-//
-//            indexToRemove = i;
-//        }
-//
-//        if (indexToRemove != -1) {
-//            channelSetBuilder.removeSettings(indexToRemove);
-//        }
+        int indexToRemove = -1;
 
-        channelSetBuilder.clearSettings();
+        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+            ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
+            if (!mChannelName.equals(channelSetting.getName())) {
+                continue;
+            }
+
+            indexToRemove = i;
+        }
+
+        if (indexToRemove != -1) {
+            channelSetBuilder.removeSettings(indexToRemove);
+        }
+
         channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
         channelSet = channelSetBuilder.build();
 

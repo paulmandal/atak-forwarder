@@ -11,6 +11,7 @@ import android.util.Base64;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanListPreference;
+import com.atakmap.android.gui.PanEditTextPreference;
 import com.geeksville.mesh.ChannelProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
@@ -62,8 +63,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         PreferencesKeys.KEY_CHANNEL_PSK
                 },
                 new String[]{});
-        (PanEditTextPreference) editTextPreferenceChannelName = (PanEditTextPreference) channelName;
-        channelName.setFilters(new InputFilter[] {
+        PanEditTextPreference editTextPreferenceChannelName = (PanEditTextPreference) channelName;
+        editTextPreferenceChannelName.setFilters(new InputFilter[] {
                 new InputFilter.LengthFilter(11)
         }, false);
 

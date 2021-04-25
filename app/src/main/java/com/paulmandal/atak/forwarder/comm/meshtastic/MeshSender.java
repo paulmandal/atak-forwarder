@@ -40,6 +40,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     private static final int WATCHDOG_TIMEOUT_MS = 900000; // 15 minutes
     private static final int WATCHDOG_RUN_INTERVAL_MINS = 1;
     private static final int REMOTE_EXCEPTION_RETRY_DELAY = 5000;
+    private static final int DELAY_AFTER_SEND_ERROR_MS = 5000;
     private static final int NO_ID = -1;
 
     private final SharedPreferences mSharedPreferences;
@@ -354,7 +355,12 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mLogger.i(TAG, "  Status is queued, waiting for ERROR/DELIVERED");
             // Do nothing, wait for delivered or error
         } else {
-            mLogger.i(TAG, "  Status is ERROR, resending chunk");
+            mLogger.i(TAG, "  Status is ERROR, resending chunk after " + DELAY_AFTER_SEND_ERROR_MS +  "ms");
+            try {
+                Thread.sleep(DELAY_AFTER_SEND_ERROR_MS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 //            if (mChunkInFlight == null) { TODO: maybe we need this?
 //                return;
 //            }

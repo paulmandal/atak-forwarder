@@ -59,6 +59,8 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
 
     @Override
     public void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid) {
+        mLogger.v(TAG, "onUserDiscoveryBroadcastReceived, callsign: " + callsign + ", meshId: " + meshId + ", atakUid: " + atakUid);
+
         // Check for user
         boolean foundInAtakUsers = false;
         for (UserInfo user : mAtakUsers) {
@@ -68,6 +70,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
                     user.atakUid = atakUid;
                 }
                 foundInAtakUsers = true;
+                mLogger.v(TAG, "  found: " + callsign + " in ATAK users list with atakUid: " + atakUid);
                 break;
             }
         }
@@ -77,17 +80,19 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         for (TrackerUserInfo user : mTrackers) {
             if (user.meshId.equals(meshId)) {
                 trackerUserInfo = user;
+                mLogger.v(TAG, "  found: " + callsign + " in Tracker user list with meshId: " + meshId);
                 break;
             }
         }
 
         if (trackerUserInfo != null) {
+            mLogger.v(TAG, "  removing callsign: " + callsign + " from Tracker users");
             mTrackers.remove(trackerUserInfo);
         }
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
-            mLogger.d(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
+            mLogger.v(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
             notifyChannelMembersUpdateListeners();
@@ -98,14 +103,17 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
 
     @Override
     public void onTrackerUpdated(TrackerUserInfo trackerUserInfo) {
+        mLogger.v(TAG, "onTrackerUpdated callsign: " + trackerUserInfo.callsign + ", meshId: " + trackerUserInfo.meshId + ", atakUid: " + trackerUserInfo.atakUid);
         boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(trackerUserInfo);
 
         if (userExistsInAtakUserList) {
             // Nothing else to do
+            mLogger.v(TAG, "  Tracker exists in ATAK user list, exiting");
             return;
         }
 
         boolean alreadyKnowAboutStation = mTrackers.contains(trackerUserInfo);
+        mLogger.v(TAG, "  alreadyKnowAboutStation: " + alreadyKnowAboutStation);
         if (alreadyKnowAboutStation) {
             updateTracker(trackerUserInfo);
         } else {

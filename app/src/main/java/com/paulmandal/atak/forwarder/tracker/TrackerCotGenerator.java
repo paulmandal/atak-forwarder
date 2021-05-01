@@ -130,12 +130,14 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
     private void drawTrackers() {
         for (TrackerUserInfo tracker : mTrackers) {
+            mLogger.v(TAG, "drawTracker() callsign: " + tracker.callsign + ", meshId: " + tracker.meshId + ", atakUid: " + tracker.atakUid);
             drawTracker(tracker);
         }
     }
 
     private void drawTracker(TrackerUserInfo tracker) {
         if (!tracker.gpsValid) {
+            mLogger.v(TAG, "drawTracker(), gpsValid: " + tracker.gpsValid);
             // Ignore updates that don't contain a valid GPS point
             return;
         }

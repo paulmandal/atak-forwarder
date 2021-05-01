@@ -10,8 +10,8 @@ import android.text.InputFilter;
 import android.util.Base64;
 import android.widget.ImageView;
 
-import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PanEditTextPreference;
+import com.atakmap.android.gui.PanListPreference;
 import com.geeksville.mesh.ChannelProtos;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
@@ -20,13 +20,13 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.helpers.PskHelper;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.security.SecureRandom;
 import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -46,6 +46,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           Context pluginContext,
                           DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                           HashHelper hashHelper,
+                          PskHelper pskHelper,
                           QrHelper qrHelper,
                           Logger logger,
                           Preference channelName,
@@ -77,11 +78,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                     .setTitle(pluginContext.getResources().getString(R.string.warning))
                     .setMessage(pluginContext.getResources().getString(R.string.generate_psk_warning))
                     .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
-                        SecureRandom random = new SecureRandom();
-                        byte[] psk = new byte[PSK_LENGTH];
-                        random.nextBytes(psk);
-
-                        String pskBase64 = Base64.encodeToString(psk, Base64.DEFAULT);
+                        String pskBase64 = pskHelper.genPsk();
 
                         preference.getEditor().putString(PreferencesKeys.KEY_CHANNEL_PSK, pskBase64).commit();
                     })

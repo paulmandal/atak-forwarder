@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.helpers.PskHelper;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.AdvancedButtons;
@@ -83,6 +84,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         Context settingsMenuContext = getActivity();
 
         HashHelper hashHelper = new HashHelper();
+        PskHelper pskHelper = new PskHelper();
         QrHelper qrHelper = new QrHelper();
         ChannelButtons channelButtons = new ChannelButtons(sDestroyables,
                 sSharedPreferences,
@@ -90,6 +92,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 sPluginContext,
                 sDiscoveryBroadcastEventHandler,
                 hashHelper,
+                pskHelper,
                 qrHelper,
                 sLogger,
                 findPreference(PreferencesKeys.KEY_CHANNEL_NAME),

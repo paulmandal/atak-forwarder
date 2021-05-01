@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder.preferences;
 
+import com.paulmandal.atak.forwarder.helpers.PskHelper;
+
 /**
  * These should match the values in preferences.xml
  */
@@ -12,7 +14,7 @@ public class PreferencesDefaults {
     public static final String DEFAULT_CHANNEL_NAME = "Default";
     public static final String DEFAULT_REGION = "0";
     public static final String DEFAULT_CHANNEL_MODE = "0";
-    public static final String DEFAULT_CHANNEL_PSK = "";
+    public static final String DEFAULT_CHANNEL_PSK = new PskHelper().genPsk();
     public static final String DEFAULT_TRACKER_PLI_INTERVAL = "60";
     public static final String DEFAULT_TRACKER_SCREEN_OFF_TIME = "5";
     public static final String DEFAULT_TRACKER_TEAM = "0";

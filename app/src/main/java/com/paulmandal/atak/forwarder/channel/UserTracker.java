@@ -87,7 +87,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
-            mLogger.v(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
+            mLogger.v(TAG, "  Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
             notifyChannelMembersUpdateListeners();

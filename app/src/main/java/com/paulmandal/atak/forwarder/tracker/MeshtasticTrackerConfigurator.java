@@ -57,6 +57,7 @@ public class MeshtasticTrackerConfigurator {
     private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
     private final RadioConfigProtos.RegionCode mRegionCode;
+//    private final int mLsSecs;
     private final String mChannelName;
     private final byte[] mPsk;
     private final ChannelProtos.ChannelSettings.ModemConfig mModemConfig;
@@ -86,6 +87,7 @@ public class MeshtasticTrackerConfigurator {
                                          MeshtasticDevice targetDevice,
                                          String deviceCallsign,
                                          RadioConfigProtos.RegionCode regionCode,
+//                                         int lsSecs,
                                          String channelName,
                                          byte[] psk,
                                          ChannelProtos.ChannelSettings.ModemConfig modemConfig,
@@ -103,6 +105,7 @@ public class MeshtasticTrackerConfigurator {
         mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;
         mRegionCode = regionCode;
+//        mLsSecs = lsSecs;
         mChannelName = channelName;
         mPsk = psk;
         mModemConfig = modemConfig;
@@ -232,7 +235,11 @@ public class MeshtasticTrackerConfigurator {
             RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
+            userPreferencesBuilder.setGpsUpdateInterval(mPliIntervalS);
+            userPreferencesBuilder.setSendOwnerInterval(Math.max(1, 3600 / mPliIntervalS));
+            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
+//            userPreferencesBuilder.setLsSecs(mLsSecs);
             userPreferencesBuilder.setRegion(mRegionCode);
 
             mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode);

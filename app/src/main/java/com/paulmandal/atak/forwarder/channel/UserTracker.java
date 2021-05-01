@@ -52,11 +52,6 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         trackerEventHandler.setListener(this);
     }
 
-    public List<UserInfo> getAtakUsers() {
-        return mAtakUsers;
-    }
-    public List<TrackerUserInfo> getTrackers() { return mTrackers; }
-
     @Override
     public void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid) {
         mLogger.v(TAG, "onUserDiscoveryBroadcastReceived, callsign: " + callsign + ", meshId: " + meshId + ", atakUid: " + atakUid);

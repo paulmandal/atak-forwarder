@@ -1,6 +1,7 @@
 package com.paulmandal.atak.forwarder.tracker;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.cot.event.CotDetail;
@@ -89,13 +90,19 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     private List<TrackerUserInfo> mTrackers;
     private final String mPluginVersion;
 
-    private ScheduledExecutorService mWorkerExecutor;
+    private final ScheduledExecutorService mWorkerExecutor;
     private boolean mDestroyCalled = false;
 
-    public TrackerCotGenerator(List<Destroyable> destroyables, UserTracker userTracker, InboundMessageHandler inboundMessageHandler, Logger logger, String pluginVersion) {
+    public TrackerCotGenerator(List<Destroyable> destroyables,
+                               UserTracker userTracker,
+                               InboundMessageHandler inboundMessageHandler,
+                               Logger logger,
+                               String pluginVersion,
+                               ScheduledExecutorService scheduledExecutorService) {
         mInboundMessageHandler = inboundMessageHandler;
         mLogger = logger;
         mPluginVersion = pluginVersion;
+        mWorkerExecutor = scheduledExecutorService;
 
         destroyables.add(this);
         userTracker.addTrackerUpdateListener(this);
@@ -116,12 +123,9 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     }
 
     private void startWorkerThread() {
-        mWorkerExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
-            Thread thread = new Thread(r);
-            thread.setName(TrackerCotGenerator.class.getSimpleName() + ".Worker");
-            return thread;
-        });
+        Log.e(TAG, "startWorkerThread()");
         mWorkerExecutor.scheduleAtFixedRate(() -> {
+            Log.e(TAG, "worker called: " + mDestroyCalled);
             if (!mDestroyCalled) {
                 drawTrackers();
             }
@@ -217,6 +221,10 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         spoofedPli.setDetail(cotDetail);
 
         mLogger.v(TAG, "drawTracker(), uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime + ", lat: " + tracker.lat + ", lon: " + tracker.lon + ", alt: " + tracker.altitude);
+        // TODO: REMOVE
+        long autoStaleDuration = (3 * staleCoordinatedTime.millisecondDiff(lastMsgCoordinatedTime)) / 2;
+        mLogger.e(TAG, "autoStale duration = (3 * stale - start) / 2, for this: " + autoStaleDuration);
+        mLogger.e(TAG, "now: " + System.currentTimeMillis());
 
         mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }

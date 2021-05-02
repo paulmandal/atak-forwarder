@@ -292,9 +292,17 @@ public class MeshtasticTrackerConfigurator {
 
             mLogger.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
 
-            // TODO: maybe a 10s delay here?
-            mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
-            mWroteToDevice = true;
+            // TODO: clean this up
+            mUiThreadHandler.postDelayed(() -> {
+                try {
+                    mLogger.d(TAG, "Setting device address back to Comm Device");
+                    mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
+                    mWroteToDevice = true;
+                } catch (RemoteException e) {
+                    mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }, 10000);
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
             e.printStackTrace();

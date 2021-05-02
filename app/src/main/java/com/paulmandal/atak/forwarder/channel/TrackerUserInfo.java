@@ -46,7 +46,7 @@ public class TrackerUserInfo extends UserInfo {
             this.gpsValid = updatedUserInfo.gpsValid;
         }
 
-        if (!Objects.equals(this.shortName, updatedUserInfo.shortName)) {
+        if (updatedUserInfo.shortName != null && !Objects.equals(this.shortName, updatedUserInfo.shortName)) {
             this.shortName = updatedUserInfo.shortName;
         }
 

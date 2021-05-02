@@ -66,7 +66,7 @@ public class TrackerEventHandler extends MeshEventHandler {
             mLogger.v(TAG, "  POSITION_APP, parsing");
             try {
                 MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
-                mLogger.v(TAG, "    parsed position: lat: " + position.getLatitudeI() + ", lon: " + position.getLongitudeI() + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
+                mLogger.v(TAG, "    parsed position: lat: " + position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", lon: " + position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
 
                 boolean gpsValid = position.getLatitudeI() != 0 || position.getLongitudeI() != 0 || position.getAltitude() != 0;
                 TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), position.getBatteryLevel(), position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), gpsValid, null, System.currentTimeMillis());

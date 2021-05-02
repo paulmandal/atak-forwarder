@@ -124,6 +124,8 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
         destroyables.add(this);
         userTracker.addTrackerUpdateListener(this);
 
+        refreshTrackerStaleTime(sharedPreferences);
+
         startWorkerThread();
     }
 
@@ -150,11 +152,15 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
         switch (key) {
             case PreferencesKeys.KEY_TRACKER_PLI_INTERVAL:
             case PreferencesKeys.KEY_TRACKER_STALE_AFTER_MISSED_PLIS:
-                int trackerPliInterval = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
-                int drawStaleAfterMissedPlis = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_STALE_AFTER_MISSED_PLIS, PreferencesDefaults.DEFAULT_TRACKER_STALE_AFTER_MISSED_PLIS));
-                mTrackerStaleTime = trackerPliInterval * drawStaleAfterMissedPlis * 1000;
+                refreshTrackerStaleTime(sharedPreferences);
                 break;
         }
+    }
+
+    private void refreshTrackerStaleTime(SharedPreferences sharedPreferences) {
+        int trackerPliInterval = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
+        int drawStaleAfterMissedPlis = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_STALE_AFTER_MISSED_PLIS, PreferencesDefaults.DEFAULT_TRACKER_STALE_AFTER_MISSED_PLIS));
+        mTrackerStaleTime = trackerPliInterval * drawStaleAfterMissedPlis * 1000;
     }
 
     private void startWorkerThread() {

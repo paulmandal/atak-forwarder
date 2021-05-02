@@ -318,10 +318,8 @@ public class MeshtasticTrackerConfigurator {
         mLogger.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
 
         unbind();
-        mUiThreadHandler.postDelayed(() -> {
-            mMeshSuspendController.setSuspended(false);
-            mListener.onDoneWritingToDevice();
-        }, DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE);
+        mMeshSuspendController.setSuspended(false);
+        mListener.onDoneWritingToDevice();
     }
 
     private void unbind() {

@@ -55,6 +55,10 @@
         android:defaultValue="3"
         android:inputType="number"
         android:numeric="integer" />
+    <com.atakmap.android.gui.PanSwitchPreference
+        android:key="plugin_atak_forwarder_key_comm_device_is_router"
+        android:title="@string/comm_device_is_router"
+        android:summary="@string/comm_device_is_router_summary" />
 
     <PreferenceCategory android:title="@string/category_channel_settings" />
     <com.atakmap.android.gui.PanEditTextPreference
@@ -106,6 +110,11 @@
         android:inputType="number"
         android:numeric="integer"
         android:defaultValue="5" />
+    <com.atakmap.android.gui.PanSwitchPreference
+        android:key="plugin_atak_forwarder_key_tracker_is_router"
+        android:title="@string/tracker_is_router"
+        android:summary="@string/tracker_is_router_summary"
+        android:defaultValue="true" />
     <com.atakmap.android.gui.PanListPreference
         android:key="plugin_atak_forwarder_key_tracker_team"
         android:title="@string/tracker_team"

@@ -45,6 +45,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private int mChannelMode;
     private byte[] mChannelPsk;
 
+    private boolean mIsRouter;
+
     private boolean mSetDeviceAddressCalled;
 
     public MeshDeviceConfigurer(List<Destroyable> destroyables,
@@ -59,6 +61,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 new String[] {},
                 new String[]{
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
+                        PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER,
                         PreferencesKeys.KEY_CHANNEL_NAME,
                         PreferencesKeys.KEY_CHANNEL_MODE,
                         PreferencesKeys.KEY_CHANNEL_PSK,
@@ -75,6 +78,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         meshServiceController.addConnectionStateListener(this);
 
         // TODO: clean up this hacks
+        mIsRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
         mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
@@ -106,6 +110,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     mSetDeviceAddressCalled = true;
                 } catch (RemoteException e) {
                     e.printStackTrace();
+                }
+                break;
+            case PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER:
+                boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
+
+                if (isRouter != mIsRouter) {
+                    mLogger.d(TAG, "Router config changed, isRouter: " + isRouter);
+                    mIsRouter = isRouter;
+
+                    checkRadioConfig();
                 }
                 break;
             case PreferencesKeys.KEY_REGION:
@@ -191,7 +205,9 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
 
-        if (userPreferences.getPositionBroadcastSecs() != ForwarderConstants.POSITION_BROADCAST_INTERVAL_S
+        if (userPreferences.getRegion() != mRegionCode
+                || userPreferences.getIsRouter() != mIsRouter
+                || userPreferences.getPositionBroadcastSecs() != ForwarderConstants.POSITION_BROADCAST_INTERVAL_S
                 || userPreferences.getScreenOnSecs() != ForwarderConstants.LCD_SCREEN_ON_S
                 || userPreferences.getWaitBluetoothSecs() != ForwarderConstants.WAIT_BLUETOOTH_S
                 || userPreferences.getPhoneTimeoutSecs() != ForwarderConstants.PHONE_TIMEOUT_S) {
@@ -270,7 +286,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void writeRadioConfig(RadioConfigProtos.RadioConfig radioConfig) {
-        mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode);
+        mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode + ", isRouter: " + mIsRouter);
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
@@ -289,6 +305,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         userPreferencesBuilder.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);
         userPreferencesBuilder.setPhoneTimeoutSecs(ForwarderConstants.PHONE_TIMEOUT_S);
         userPreferencesBuilder.setRegion(mRegionCode);
+        userPreferencesBuilder.setIsRouter(mIsRouter);
 
         radioConfigBuilder.setPreferences(userPreferencesBuilder.build());
 

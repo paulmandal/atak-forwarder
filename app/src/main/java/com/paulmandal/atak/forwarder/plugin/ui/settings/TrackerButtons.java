@@ -120,8 +120,9 @@ public class TrackerButtons {
                 int roleIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_ROLE, PreferencesDefaults.DEFAULT_TRACKER_ROLE));
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
+                boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -147,6 +148,7 @@ public class TrackerButtons {
                                int roleIndex,
                                int pliIntervalS,
                                int screenShutoffDelayS,
+                               boolean isRouter,
                                MeshtasticTrackerConfigurator.Listener listener) {
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext, logger);
         MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(
@@ -165,6 +167,7 @@ public class TrackerButtons {
                 roleIndex,
                 pliIntervalS,
                 screenShutoffDelayS,
+                isRouter,
                 listener,
                 logger);
         meshtasticTrackerConfigurator.writeToDevice();

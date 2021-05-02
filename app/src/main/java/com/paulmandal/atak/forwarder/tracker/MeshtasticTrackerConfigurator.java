@@ -65,6 +65,7 @@ public class MeshtasticTrackerConfigurator {
     private final int mRoleIndex;
     private final int mPliIntervalS;
     private final int mScreenShutoffDelayS;
+    private final boolean mIsRouter;
 
     private final Listener mListener;
     private final Logger mLogger;
@@ -94,6 +95,7 @@ public class MeshtasticTrackerConfigurator {
                                          int roleIndex,
                                          int pliIntervalS,
                                          int screenShutoffDelayS,
+                                         boolean isRouter,
                                          Listener listener,
                                          Logger logger) {
         mAtakContext = atakContext;
@@ -111,6 +113,7 @@ public class MeshtasticTrackerConfigurator {
         mRoleIndex = roleIndex;
         mPliIntervalS = pliIntervalS;
         mScreenShutoffDelayS = screenShutoffDelayS;
+        mIsRouter = isRouter;
         mListener = listener;
         mLogger = logger;
 
@@ -238,8 +241,9 @@ public class MeshtasticTrackerConfigurator {
             userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
             userPreferencesBuilder.setRegion(mRegionCode);
+            userPreferencesBuilder.setIsRouter(mIsRouter);
 
-            mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode);
+            mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode + ", isRouter: " + mIsRouter);
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder.build());
             radioConfig = radioConfigBuilder.build();

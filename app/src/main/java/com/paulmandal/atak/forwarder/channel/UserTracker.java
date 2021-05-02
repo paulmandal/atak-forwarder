@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
 import android.os.Handler;
-import android.util.Log;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -84,22 +83,12 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         if (trackerUserInfo != null) {
             mLogger.v(TAG, "  removing callsign: " + callsign + " from Tracker users");
             mTrackers.remove(trackerUserInfo);
-
-            Log.e(TAG + ".HONK", "mTrackers adding user");
-            for (UserInfo userInfo : mTrackers) {
-                Log.e(TAG + ".HONK", "mTrackers: " + userInfo.callsign + ", " + userInfo.meshId + ", " + userInfo.atakUid);
-            }
         }
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
             mLogger.v(TAG, "  Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
-
-            Log.e(TAG + ".HONK", "mAtakUsers adding user");
-            for (UserInfo userInfo : mAtakUsers) {
-                Log.e(TAG + ".HONK", "mAtakUsers: " + userInfo.callsign + ", " + userInfo.meshId + ", " + userInfo.atakUid);
-            }
 
             notifyChannelMembersUpdateListeners();
         }
@@ -123,13 +112,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         if (alreadyKnowAboutStation) {
             updateTracker(trackerUserInfo);
         } else {
-            // null callsign means this is just a position update
             mTrackers.add(trackerUserInfo);
-
-            Log.e(TAG + ".HONK", "mTrackers adding user");
-            for (UserInfo userInfo : mTrackers) {
-                Log.e(TAG + ".HONK", "mTrackers: " + userInfo.callsign + ", " + userInfo.meshId + ", " + userInfo.atakUid);
-            }
         }
 
         // Notify listeners

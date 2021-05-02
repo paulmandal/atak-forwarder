@@ -6,7 +6,7 @@ import androidx.annotation.Nullable;
 import java.util.Objects;
 
 public class UserInfo {
-    public static final String CALLSIGN_UNKNOWN = "unknown";
+    public static final String CALLSIGN_UNKNOWN = "callsign-unknown";
 
     public String callsign;
     public final String meshId;

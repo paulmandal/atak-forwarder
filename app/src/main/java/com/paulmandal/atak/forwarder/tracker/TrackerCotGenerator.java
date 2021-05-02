@@ -19,6 +19,7 @@ import com.paulmandal.atak.libcotshrink.protobuf.TakvProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufContact;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufTakv;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -31,6 +32,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
     private static final String TYPE_PLI = "a-f-G-U-C";
 
+    private static final int TRACKER_GOING_STALE_MS = 300000; // 5 mins
     private static final int STALE_TIME_OFFSET_MS = 75000;
     private static final double UNKNOWN_LE_CE = 9999999.0;
 
@@ -55,6 +57,8 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
     private static final int WHITE_INDEX = 0;
     private static final int TEAM_MEMBER_INDEX = 0;
+
+    private static final String CALLSIGN_PREFIX = "Tracker-";
 
     public static final String[] TEAMS = {
             "White",
@@ -87,7 +91,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     private final InboundMessageHandler mInboundMessageHandler;
     private final Logger mLogger;
 
-    private List<TrackerUserInfo> mTrackers;
+    private List<TrackerUserInfo> mTrackers = new ArrayList<>();
     private final String mPluginVersion;
 
     private final ScheduledExecutorService mWorkerExecutor;
@@ -123,9 +127,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     }
 
     private void startWorkerThread() {
-        Log.e(TAG, "startWorkerThread()");
         mWorkerExecutor.scheduleAtFixedRate(() -> {
-            Log.e(TAG, "worker called: " + mDestroyCalled);
             if (!mDestroyCalled) {
                 drawTrackers();
             }
@@ -148,11 +150,12 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
         CotEvent spoofedPli = new CotEvent();
 
-        String uid = String.format("%s-%s", VALUE_UID_PREFIX, tracker.meshId.replaceAll("!", ""));
+        String meshIdWithoutExclamation = tracker.meshId.replaceAll("!", "");
+        String uid = String.format("%s-%s", VALUE_UID_PREFIX, meshIdWithoutExclamation);
 
-        long lastMsgTime = System.currentTimeMillis() - tracker.lastSeenTime;
-        CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(lastMsgTime);
-        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(System.currentTimeMillis() + STALE_TIME_OFFSET_MS);
+        CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(tracker.lastSeenTime);
+        boolean trackerGoingStale = System.currentTimeMillis() - tracker.lastSeenTime > TRACKER_GOING_STALE_MS;
+        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(trackerGoingStale ? System.currentTimeMillis() - STALE_TIME_OFFSET_MS : System.currentTimeMillis() + STALE_TIME_OFFSET_MS);
 
         spoofedPli.setUID(uid);
         spoofedPli.setType(TYPE_PLI);
@@ -174,7 +177,8 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         mTakvProtobufConverter.maybeAddTakv(cotDetail, takv.build());
 
         ProtobufContact.Contact.Builder contact = ProtobufContact.Contact.newBuilder();
-        contact.setCallsign(tracker.callsign);
+        String callsign = tracker.callsign.equals(TrackerUserInfo.CALLSIGN_UNKNOWN) ? CALLSIGN_PREFIX + meshIdWithoutExclamation : tracker.callsign;
+        contact.setCallsign(callsign);
         ContactProtobufConverter mContactProtobufConverter = new ContactProtobufConverter();
         mContactProtobufConverter.maybeAddContact(cotDetail, contact.build(), false);
 
@@ -220,11 +224,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
         spoofedPli.setDetail(cotDetail);
 
-        mLogger.v(TAG, "drawTracker(), uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime + ", lat: " + tracker.lat + ", lon: " + tracker.lon + ", alt: " + tracker.altitude);
-        // TODO: REMOVE
-        long autoStaleDuration = (3 * staleCoordinatedTime.millisecondDiff(lastMsgCoordinatedTime)) / 2;
-        mLogger.e(TAG, "autoStale duration = (3 * stale - start) / 2, for this: " + autoStaleDuration);
-        mLogger.e(TAG, "now: " + System.currentTimeMillis());
+        mLogger.v(TAG, "drawTracker() uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime + ", lat: " + tracker.lat + ", lon: " + tracker.lon + ", alt: " + tracker.altitude);
 
         mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }

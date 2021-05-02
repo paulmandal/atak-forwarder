@@ -169,7 +169,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
             thread.setName("TrackerCotGenerator.Worker");
             return thread;
         });
-        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, userTracker, inboundMessageHandler, logger, pluginVersion, trackerCotGeneratorExecutor);
+        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, sharedPreferences, userTracker, inboundMessageHandler, logger, pluginVersion, trackerCotGeneratorExecutor);
 
 
         StatusViewModel statusViewModel = new StatusViewModel(

@@ -1,7 +1,7 @@
 package com.paulmandal.atak.forwarder.tracker;
 
 import android.content.Context;
-import android.util.Log;
+import android.content.SharedPreferences;
 
 import com.atakmap.android.maps.MapView;
 import com.atakmap.coremap.cot.event.CotDetail;
@@ -14,6 +14,9 @@ import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
+import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.libcotshrink.protobuf.ContactProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobuf.TakvProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufContact;
@@ -21,19 +24,17 @@ import com.paulmandal.atak.libcotshrink.protobufs.ProtobufTakv;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, Destroyable {
+public class TrackerCotGenerator  extends DestroyableSharedPrefsListener implements UserTracker.TrackerUpdateListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
     private static final int DRAW_MARKERS_INTERVAL_MINS = 1;
 
     private static final String TYPE_PLI = "a-f-G-U-C";
 
-    private static final int TRACKER_GOING_STALE_MS = 300000; // 5 mins
-    private static final int STALE_TIME_OFFSET_MS = 600000; // 10 mins
+    private static final int STALE_TIME_OFFSET_MS = 60000; // 1 min
     private static final double UNKNOWN_LE_CE = 9999999.0;
 
     private static final String TAG_DETAIL = "detail";
@@ -58,7 +59,10 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     private static final int WHITE_INDEX = 0;
     private static final int TEAM_MEMBER_INDEX = 0;
 
-    private static final String CALLSIGN_PREFIX = "Tracker-";
+    private static final String UNKNOWN_CALLSIGN_PREFIX = "Tracker-";
+
+    private long mLastDrawTime;
+    private int mTrackerStaleTime;
 
     public static final String[] TEAMS = {
             "White",
@@ -98,11 +102,20 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     private boolean mDestroyCalled = false;
 
     public TrackerCotGenerator(List<Destroyable> destroyables,
+                               SharedPreferences sharedPreferences,
                                UserTracker userTracker,
                                InboundMessageHandler inboundMessageHandler,
                                Logger logger,
                                String pluginVersion,
                                ScheduledExecutorService scheduledExecutorService) {
+        super(destroyables,
+                sharedPreferences,
+                new String[] {},
+                new String[] {
+                    PreferencesKeys.KEY_TRACKER_PLI_INTERVAL,
+                    PreferencesKeys.KEY_TRACKER_STALE_AFTER_MISSED_PLIS,
+                });
+
         mInboundMessageHandler = inboundMessageHandler;
         mLogger = logger;
         mPluginVersion = pluginVersion;
@@ -122,8 +135,26 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
     @Override
     public void onDestroy(Context context, MapView mapView) {
+        super.onDestroy(context, mapView);
         mDestroyCalled = true;
         mWorkerExecutor.shutdown();
+    }
+
+    @Override
+    protected void updateSettings(SharedPreferences sharedPreferences) {
+        // Do nothing
+    }
+
+    @Override
+    protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
+        switch (key) {
+            case PreferencesKeys.KEY_TRACKER_PLI_INTERVAL:
+            case PreferencesKeys.KEY_TRACKER_STALE_AFTER_MISSED_PLIS:
+                int trackerPliInterval = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
+                int drawStaleAfterMissedPlis = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_STALE_AFTER_MISSED_PLIS, PreferencesDefaults.DEFAULT_TRACKER_STALE_AFTER_MISSED_PLIS));
+                mTrackerStaleTime = trackerPliInterval * drawStaleAfterMissedPlis * 1000;
+                break;
+        }
     }
 
     private void startWorkerThread() {
@@ -135,10 +166,14 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     }
 
     private void drawTrackers() {
+        long currentTime = System.currentTimeMillis();
         for (TrackerUserInfo tracker : mTrackers) {
-            mLogger.v(TAG, "drawTracker() callsign: " + tracker.callsign + ", meshId: " + tracker.meshId + ", atakUid: " + tracker.atakUid);
-            drawTracker(tracker);
+            if (tracker.lastSeenTime > mLastDrawTime || currentTime - tracker.lastSeenTime > mTrackerStaleTime) {
+                mLogger.v(TAG, "drawTracker() callsign: " + tracker.callsign + ", meshId: " + tracker.meshId + ", atakUid: " + tracker.atakUid);
+                drawTracker(tracker);
+            }
         }
+        mLastDrawTime = System.currentTimeMillis();
     }
 
     private void drawTracker(TrackerUserInfo tracker) {
@@ -154,8 +189,11 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         String uid = String.format("%s-%s", VALUE_UID_PREFIX, meshIdWithoutExclamation);
 
         CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(tracker.lastSeenTime);
-        boolean trackerGoingStale = System.currentTimeMillis() - tracker.lastSeenTime > TRACKER_GOING_STALE_MS;
-        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(trackerGoingStale ? tracker.lastSeenTime : tracker.lastSeenTime + STALE_TIME_OFFSET_MS);
+        long currentTime = System.currentTimeMillis();
+        long timeSinceLastSeen = currentTime - tracker.lastSeenTime;
+        boolean drawTrackerStale = timeSinceLastSeen > mTrackerStaleTime;
+        mLogger.v(TAG, "  Tracker last seen: " + timeSinceLastSeen + "ms ago vs. trackerStaleTime: " + mTrackerStaleTime + ", drawing stale: " + drawTrackerStale);
+        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(drawTrackerStale ? tracker.lastSeenTime : tracker.lastSeenTime + mTrackerStaleTime + STALE_TIME_OFFSET_MS);
 
         spoofedPli.setUID(uid);
         spoofedPli.setType(TYPE_PLI);
@@ -177,7 +215,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         mTakvProtobufConverter.maybeAddTakv(cotDetail, takv.build());
 
         ProtobufContact.Contact.Builder contact = ProtobufContact.Contact.newBuilder();
-        String callsign = tracker.callsign.equals(TrackerUserInfo.CALLSIGN_UNKNOWN) ? CALLSIGN_PREFIX + meshIdWithoutExclamation : tracker.callsign;
+        String callsign = tracker.callsign.equals(TrackerUserInfo.CALLSIGN_UNKNOWN) ? UNKNOWN_CALLSIGN_PREFIX + meshIdWithoutExclamation : tracker.callsign;
         contact.setCallsign(callsign);
         ContactProtobufConverter mContactProtobufConverter = new ContactProtobufConverter();
         mContactProtobufConverter.maybeAddContact(cotDetail, contact.build(), false);

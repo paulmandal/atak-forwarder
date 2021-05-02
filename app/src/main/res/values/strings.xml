@@ -100,6 +100,12 @@
 
     <string name="choose_device_and_callsign">Choose Device and Callsign</string>
 
+    <!-- Tracker Map Drawing -->
+    <string name="category_tracker_map_drawing_settings">Tracker Map Drawing</string>
+
+    <string name="tracker_stale_after_missed_plis">Stale after X missed PLIs</string>
+    <string name="tracker_stale_after_missed_plis_summary">How many PLIs to miss before drawing the Tracker as stale</string>
+
     <!-- Advanced Settings -->
     <string name="category_advanced_settings">Advanced</string>
 

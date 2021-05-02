@@ -121,6 +121,16 @@
         android:title="@string/tracker_write_to_device"
         android:summary="@string/tracker_write_to_device_summary" />
 
+    <PreferenceCategory android:title="@string/category_tracker_map_drawing_settings" />
+    <com.atakmap.android.gui.PanEditTextPreference
+        android:key="plugin_atak_forwarder_key_tracker_stale_after_missed_plis"
+        android:title="@string/tracker_pli_interval"
+        android:summary="@string/tracker_pli_interval_summary"
+        android:dialogTitle="@string/tracker_pli_interval"
+        android:inputType="number"
+        android:numeric="integer"
+        android:defaultValue="60" />
+
     <PreferenceCategory android:title="@string/category_advanced_settings" />
     <com.atakmap.android.gui.PanPreference
         android:key="plugin_atak_forwarder_key_clear_duplicate_msg_cache"

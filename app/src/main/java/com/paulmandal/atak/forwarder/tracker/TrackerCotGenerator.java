@@ -216,7 +216,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
 
         spoofedPli.setDetail(cotDetail);
 
-        mLogger.v(TAG, "drawTracker(), uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime);
+        mLogger.v(TAG, "drawTracker(), uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime + ", lat: " + tracker.lat + ", lon: " + tracker.lon + ", alt: " + tracker.altitude);
 
         mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }

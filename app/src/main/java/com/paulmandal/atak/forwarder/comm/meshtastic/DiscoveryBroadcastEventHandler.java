@@ -120,7 +120,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         String callsign = messageSplit[2];
         boolean initialDiscoveryMessage = messageSplit[3].equals("1");
 
-        if (initialDiscoveryMessage) {
+        if (initialDiscoveryMessage && mInitialDiscoveryBroadcastSent) {
             broadcastDiscoveryMessage(false);
         }
         mDiscoveryBroadcastListener.onUserDiscoveryBroadcastReceived(callsign, meshId, atakUid);

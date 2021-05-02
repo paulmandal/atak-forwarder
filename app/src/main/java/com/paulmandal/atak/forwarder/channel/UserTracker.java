@@ -123,6 +123,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         if (alreadyKnowAboutStation) {
             updateTracker(trackerUserInfo);
         } else {
+            // null callsign means this is just a position update
             mTrackers.add(trackerUserInfo);
 
             Log.e(TAG + ".HONK", "mTrackers adding user");
@@ -189,27 +190,9 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         TrackerUserInfo userInfo = mTrackers.get(mTrackers.indexOf(trackerUserInfo));
 
         mLogger.v(TAG, "updateTracker, updating with data from: " + trackerUserInfo.callsign + ", lat: " + trackerUserInfo.lat + ", lon: " + trackerUserInfo.lon + ", alt: " + trackerUserInfo.altitude + ", batteryPercentage: " + trackerUserInfo.batteryPercentage + ", lastSeenTime: " + trackerUserInfo.lastSeenTime);
-        mLogger.v(TAG, "  overwriting: " + userInfo.callsign + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon + ", alt: " + userInfo.altitude + ", batteryPercentage: " + userInfo.batteryPercentage + ", lastSeenTime: " + userInfo.lastSeenTime);
+        mLogger.v(TAG, "  possibly overwriting: " + userInfo.callsign + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon + ", alt: " + userInfo.altitude + ", batteryPercentage: " + userInfo.batteryPercentage + ", lastSeenTime: " + userInfo.lastSeenTime);
 
-        if (!Objects.equals(userInfo.lat, trackerUserInfo.lat) && trackerUserInfo.lat != TrackerUserInfo.NO_LAT_LON_ALT_VALUE) {
-            userInfo.lat = trackerUserInfo.lat;
-        }
-
-        if (!Objects.equals(userInfo.lon, trackerUserInfo.lon) && trackerUserInfo.lon != TrackerUserInfo.NO_LAT_LON_ALT_VALUE) {
-            userInfo.lon = trackerUserInfo.lon;
-        }
-
-        if (!Objects.equals(userInfo.altitude, trackerUserInfo.altitude) && trackerUserInfo.altitude != TrackerUserInfo.NO_LAT_LON_ALT_VALUE) {
-            userInfo.altitude = trackerUserInfo.altitude;
-        }
-
-        if (!Objects.equals(userInfo.batteryPercentage, trackerUserInfo.batteryPercentage)) {
-            userInfo.batteryPercentage = trackerUserInfo.batteryPercentage;
-        }
-
-        if (!Objects.equals(userInfo.lastSeenTime, trackerUserInfo.lastSeenTime)) {
-            userInfo.lastSeenTime = trackerUserInfo.lastSeenTime;
-        }
+        userInfo.update(trackerUserInfo);
     }
 
     private void notifyTrackerUpdateListeners() {

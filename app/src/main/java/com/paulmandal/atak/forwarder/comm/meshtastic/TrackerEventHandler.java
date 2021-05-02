@@ -9,6 +9,7 @@ import com.geeksville.mesh.Portnums;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
+import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
@@ -22,7 +23,7 @@ public class TrackerEventHandler extends MeshEventHandler {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + TrackerEventHandler.class.getSimpleName();
 
 //    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = ForwarderConstants.REJECT_STALE_NODE_CHANGE_TIME_MS;
-    private static final double LAT_LON_INT_TO_DOUBLE_CONVERSION = 10000D;
+    private static final double LAT_LON_INT_TO_DOUBLE_CONVERSION = 10000000D;
 
     private TrackerListener mTrackerListener;
 
@@ -48,7 +49,7 @@ public class TrackerEventHandler extends MeshEventHandler {
     @Override
     protected void handleReceive(Context context, Intent intent) {
         if (intent.getAction() != null && intent.getAction().equals(MeshServiceConstants.ACTION_NODE_CHANGE)) {
-            mLogger.v(TAG, "  NODE_CHANGE nobody gives a shit");
+//            mLogger.v(TAG, "  NODE_CHANGE nobody gives a shit");
             return;
         }
 //            // TODO: this is probably not supported anymore, remove it a few Meshtastic versions after 1.2
@@ -89,7 +90,8 @@ public class TrackerEventHandler extends MeshEventHandler {
                 MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
                 mLogger.d(TAG, "    parsed position: lat: " + position.getLatitudeI() + ", lon: " + position.getLongitudeI() + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
 
-                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(null, payload.getFrom(), position.getBatteryLevel(), position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), true, null, 0);
+                boolean gpsValid = position.getLatitudeI() != 0 || position.getLongitudeI() != 0 || position.getAltitude() != 0;
+                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), position.getBatteryLevel(), position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), gpsValid, null, 0);
 
                 mTrackerListener.onTrackerUpdated(trackerUserInfo);
             } catch (InvalidProtocolBufferException e) {

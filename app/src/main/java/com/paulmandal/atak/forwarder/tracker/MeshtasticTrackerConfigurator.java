@@ -292,6 +292,7 @@ public class MeshtasticTrackerConfigurator {
 
             mLogger.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
 
+            // TODO: maybe a 10s delay here?
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
             mWroteToDevice = true;
         } catch (RemoteException | InvalidProtocolBufferException e) {
@@ -308,8 +309,10 @@ public class MeshtasticTrackerConfigurator {
         mLogger.d(TAG, "Got reconnect after switching back to comm device, finishing write process.");
 
         unbind();
-        mMeshSuspendController.setSuspended(false);
-        mListener.onDoneWritingToDevice();
+        mUiThreadHandler.postDelayed(() -> {
+            mMeshSuspendController.setSuspended(false);
+            mListener.onDoneWritingToDevice();
+        }, 10000);
     }
 
     private void unbind() {

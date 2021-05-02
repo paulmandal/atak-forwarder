@@ -33,6 +33,7 @@ public class MeshtasticTrackerConfigurator {
 
     private static final int DEVICE_CONNECTION_TIMEOUT = ForwarderConstants.DEVICE_CONNECTION_TIMEOUT;
     private static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = ForwarderConstants.RADIO_CONFIG_MISSING_RETRY_TIME_MS;
+    private static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE = ForwarderConstants.DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE;
 
     /**
      * Intents the Meshtastic service can send
@@ -302,7 +303,7 @@ public class MeshtasticTrackerConfigurator {
                     mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
                     e.printStackTrace();
                 }
-            }, 10000);
+            }, DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE);
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
             e.printStackTrace();
@@ -320,7 +321,7 @@ public class MeshtasticTrackerConfigurator {
         mUiThreadHandler.postDelayed(() -> {
             mMeshSuspendController.setSuspended(false);
             mListener.onDoneWritingToDevice();
-        }, 10000);
+        }, DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE);
     }
 
     private void unbind() {

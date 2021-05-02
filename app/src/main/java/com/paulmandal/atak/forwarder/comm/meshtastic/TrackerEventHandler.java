@@ -47,7 +47,10 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     @Override
     protected void handleReceive(Context context, Intent intent) {
-//        if (intent.getAction() != null && intent.getAction().equals(MeshServiceConstants.ACTION_NODE_CHANGE)) {
+        if (intent.getAction() != null && intent.getAction().equals(MeshServiceConstants.ACTION_NODE_CHANGE)) {
+            mLogger.v(TAG, "  NODE_CHANGE nobody gives a shit");
+            return;
+        }
 //            // TODO: this is probably not supported anymore, remove it a few Meshtastic versions after 1.2
 //            NodeInfo nodeInfo = intent.getParcelableExtra(MeshServiceConstants.EXTRA_NODEINFO);
 //            long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;

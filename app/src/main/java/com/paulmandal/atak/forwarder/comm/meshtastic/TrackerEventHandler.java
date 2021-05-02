@@ -60,6 +60,7 @@ public class TrackerEventHandler extends MeshEventHandler {
             TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
 
             if (trackerUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
+                mLogger.v(TAG, "    dropping NODE_CHANGE that didn't have a user: " + (trackerUserInfo == null) + " or was old, timeSinceLastSeen: " + timeSinceLastSeen);
                 // Drop updates that do not have a MeshUser attached or are >30 mins old
                 return;
             }
@@ -73,14 +74,24 @@ public class TrackerEventHandler extends MeshEventHandler {
         if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()) {
             mLogger.d(TAG, "  NODEINFO_APP, parsing");
             try {
-                MeshProtos.NodeInfo nodeInfo = MeshProtos.NodeInfo.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed NodeInfo: " + nodeInfo);
+                MeshProtos.User meshUser = MeshProtos.User.parseFrom(payload.getBytes());
+                mLogger.d(TAG, "    parsed NodeInfo: " + meshUser);
 
-                TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo);
-
-                mTrackerListener.onTrackerUpdated(trackerUserInfo);
+//                TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo);
+//
+//                mTrackerListener.onTrackerUpdated(trackerUserInfo);
             } catch (InvalidProtocolBufferException e) {
                 mLogger.e(TAG, "    NODEINFO_APP message failed to parse");
+                e.printStackTrace();
+            }
+        } else if (dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
+            mLogger.d(TAG, "  POSITION_APP, parsing");
+            try {
+                MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
+
+                mLogger.d(TAG, "    parsed position: lat: " + position.getLatitudeI() + ", lon: " + position.getLongitudeI() + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
+            } catch (InvalidProtocolBufferException e) {
+                mLogger.e(TAG, "    POSITION_APP message failed to parse");
                 e.printStackTrace();
             }
         }

@@ -73,8 +73,8 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
         } else if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()) {
             mLogger.d(TAG, "  NODEINFO_APP, parsing");
             try {
-                MeshProtos.NodeInfo nodeInfo = MeshProtos.NodeInfo.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed NodeInfo: " + nodeInfo);
+                MeshProtos.User meshUser = MeshProtos.User.parseFrom(payload.getBytes());
+                mLogger.d(TAG, "    parsed meshUser: " + meshUser);
             } catch (InvalidProtocolBufferException e) {
                 mLogger.e(TAG, "    NODEINFO_APP message failed to parse");
                 e.printStackTrace();

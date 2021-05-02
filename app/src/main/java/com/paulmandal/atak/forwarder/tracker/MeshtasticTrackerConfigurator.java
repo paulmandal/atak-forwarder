@@ -237,7 +237,7 @@ public class MeshtasticTrackerConfigurator {
 
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
             userPreferencesBuilder.setGpsUpdateInterval(mPliIntervalS);
-            userPreferencesBuilder.setSendOwnerInterval(Math.max(1, 3600 / mPliIntervalS));
+            userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10);
             userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
             userPreferencesBuilder.setRegion(mRegionCode);

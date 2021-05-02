@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.channel;
 
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -83,12 +84,22 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         if (trackerUserInfo != null) {
             mLogger.v(TAG, "  removing callsign: " + callsign + " from Tracker users");
             mTrackers.remove(trackerUserInfo);
+
+            Log.e(TAG + ".HONK", "mTrackers adding user");
+            for (UserInfo userInfo : mTrackers) {
+                Log.e(TAG + ".HONK", "mTrackers: " + userInfo.callsign + ", " + userInfo.meshId + ", " + userInfo.atakUid);
+            }
         }
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
             mLogger.v(TAG, "  Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
+
+            Log.e(TAG + ".HONK", "mAtakUsers adding user");
+            for (UserInfo userInfo : mAtakUsers) {
+                Log.e(TAG + ".HONK", "mAtakUsers: " + userInfo.callsign + ", " + userInfo.meshId + ", " + userInfo.atakUid);
+            }
 
             notifyChannelMembersUpdateListeners();
         }
@@ -113,6 +124,11 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
             updateTracker(trackerUserInfo);
         } else {
             mTrackers.add(trackerUserInfo);
+
+            Log.e(TAG + ".HONK", "mTrackers adding user");
+            for (UserInfo userInfo : mTrackers) {
+                Log.e(TAG + ".HONK", "mTrackers: " + userInfo.callsign + ", " + userInfo.meshId + ", " + userInfo.atakUid);
+            }
         }
 
         // Notify listeners
@@ -172,15 +188,18 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
     private void updateTracker(TrackerUserInfo trackerUserInfo) {
         TrackerUserInfo userInfo = mTrackers.get(mTrackers.indexOf(trackerUserInfo));
 
-        if (!Objects.equals(userInfo.lat, trackerUserInfo.lat)) {
+        mLogger.v(TAG, "updateTracker, updating with data from: " + trackerUserInfo.callsign + ", lat: " + trackerUserInfo.lat + ", lon: " + trackerUserInfo.lon + ", alt: " + trackerUserInfo.altitude + ", batteryPercentage: " + trackerUserInfo.batteryPercentage + ", lastSeenTime: " + trackerUserInfo.lastSeenTime);
+        mLogger.v(TAG, "  overwriting: " + userInfo.callsign + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon + ", alt: " + userInfo.altitude + ", batteryPercentage: " + userInfo.batteryPercentage + ", lastSeenTime: " + userInfo.lastSeenTime);
+
+        if (!Objects.equals(userInfo.lat, trackerUserInfo.lat) && trackerUserInfo.lat != TrackerUserInfo.NO_LAT_LON_ALT_VALUE) {
             userInfo.lat = trackerUserInfo.lat;
         }
 
-        if (!Objects.equals(userInfo.lon, trackerUserInfo.lon)) {
+        if (!Objects.equals(userInfo.lon, trackerUserInfo.lon) && trackerUserInfo.lon != TrackerUserInfo.NO_LAT_LON_ALT_VALUE) {
             userInfo.lon = trackerUserInfo.lon;
         }
 
-        if (!Objects.equals(userInfo.altitude, trackerUserInfo.altitude)) {
+        if (!Objects.equals(userInfo.altitude, trackerUserInfo.altitude) && trackerUserInfo.altitude != TrackerUserInfo.NO_LAT_LON_ALT_VALUE) {
             userInfo.altitude = trackerUserInfo.altitude;
         }
 

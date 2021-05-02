@@ -3,6 +3,8 @@ package com.paulmandal.atak.forwarder.channel;
 import androidx.annotation.Nullable;
 
 public class TrackerUserInfo extends UserInfo {
+    public static final int NO_LAT_LON_ALT_VALUE = -1;
+
     public double lat;
     public double lon;
     public int altitude;

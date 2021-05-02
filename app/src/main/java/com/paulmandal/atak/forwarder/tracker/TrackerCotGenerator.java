@@ -268,7 +268,7 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
 
         spoofedPli.setDetail(cotDetail);
 
-        mLogger.v(TAG, "drawTracker() uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime + ", lat: " + tracker.lat + ", lon: " + tracker.lon + ", alt: " + tracker.altitude);
+        mLogger.v(TAG, "  Drew callsign: " + callsign + ", shortName: " + tracker.shortName + ", uid: " + uid + ", lastMsgTime: " + lastMsgCoordinatedTime + ", staleTime: " + staleCoordinatedTime + ", lat: " + tracker.lat + ", lon: " + tracker.lon + ", alt: " + tracker.altitude);
 
         mInboundMessageHandler.retransmitCotToLocalhost(spoofedPli);
     }

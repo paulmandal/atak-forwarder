@@ -120,6 +120,7 @@ public class MeshtasticTrackerConfigurator {
         mTimeoutRunnable = () -> {
             mLogger.e(TAG, "Timed out writing to Tracker device!");
             cancel();
+            mMeshSuspendController.setSuspended(false);
             mListener.onDoneWritingToDevice();
         };
     }

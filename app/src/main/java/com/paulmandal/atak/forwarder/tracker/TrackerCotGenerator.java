@@ -28,12 +28,12 @@ import java.util.concurrent.TimeUnit;
 public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, Destroyable {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + TrackerCotGenerator.class.getSimpleName();
 
-    private static final int DRAW_MARKERS_INTERVAL_MINS = 3;
+    private static final int DRAW_MARKERS_INTERVAL_MINS = 1;
 
     private static final String TYPE_PLI = "a-f-G-U-C";
 
     private static final int TRACKER_GOING_STALE_MS = 300000; // 5 mins
-    private static final int STALE_TIME_OFFSET_MS = 75000;
+    private static final int STALE_TIME_OFFSET_MS = 600000; // 10 mins
     private static final double UNKNOWN_LE_CE = 9999999.0;
 
     private static final String TAG_DETAIL = "detail";
@@ -127,11 +127,11 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     }
 
     private void startWorkerThread() {
-//        mWorkerExecutor.scheduleAtFixedRate(() -> {
-//            if (!mDestroyCalled) {
-//                drawTrackers();
-//            }
-//        }, 0, DRAW_MARKERS_INTERVAL_MINS, TimeUnit.MINUTES);
+        mWorkerExecutor.scheduleAtFixedRate(() -> {
+            if (!mDestroyCalled) {
+                drawTrackers();
+            }
+        }, 0, DRAW_MARKERS_INTERVAL_MINS, TimeUnit.MINUTES);
     }
 
     private void drawTrackers() {
@@ -154,7 +154,8 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         String uid = String.format("%s-%s", VALUE_UID_PREFIX, meshIdWithoutExclamation);
 
         CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(tracker.lastSeenTime);
-        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(tracker.lastSeenTime + (30L * 24L * 60L * 60L * 1000L));
+        boolean trackerGoingStale = System.currentTimeMillis() - tracker.lastSeenTime > TRACKER_GOING_STALE_MS;
+        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(trackerGoingStale ? tracker.lastSeenTime : tracker.lastSeenTime + STALE_TIME_OFFSET_MS);
 
         spoofedPli.setUID(uid);
         spoofedPli.setType(TYPE_PLI);

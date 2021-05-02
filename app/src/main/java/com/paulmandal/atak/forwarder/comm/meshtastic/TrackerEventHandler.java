@@ -22,7 +22,6 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + TrackerEventHandler.class.getSimpleName();
 
-//    private static final int REJECT_STALE_NODE_CHANGE_TIME_MS = ForwarderConstants.REJECT_STALE_NODE_CHANGE_TIME_MS;
     private static final double LAT_LON_INT_TO_DOUBLE_CONVERSION = 10000000D;
 
     private TrackerListener mTrackerListener;
@@ -35,8 +34,7 @@ public class TrackerEventHandler extends MeshEventHandler {
                 logger,
                 new String[] {
                         MeshServiceConstants.ACTION_RECEIVED_POSITION_APP,
-                        MeshServiceConstants.ACTION_RECEIVED_NODEINFO_APP,
-                        MeshServiceConstants.ACTION_NODE_CHANGE
+                        MeshServiceConstants.ACTION_RECEIVED_NODEINFO_APP
                 },
                 destroyables,
                 meshSuspendController);
@@ -48,34 +46,14 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     @Override
     protected void handleReceive(Context context, Intent intent) {
-        if (intent.getAction() != null && intent.getAction().equals(MeshServiceConstants.ACTION_NODE_CHANGE)) {
-//            mLogger.v(TAG, "  NODE_CHANGE nobody gives a shit");
-            return;
-        }
-//            // TODO: this is probably not supported anymore, remove it a few Meshtastic versions after 1.2
-//            NodeInfo nodeInfo = intent.getParcelableExtra(MeshServiceConstants.EXTRA_NODEINFO);
-//            long timeSinceLastSeen = System.currentTimeMillis() - nodeInfo.getLastSeen() * 1000L;
-//            mLogger.v(TAG, "  NODE_CHANGE: " + nodeInfo + ", timeSinceLastSeen (ms): " + timeSinceLastSeen);
-//
-//            TrackerUserInfo trackerUserInfo = trackerUserInfoFromNodeInfo(nodeInfo, timeSinceLastSeen);
-//
-//            if (trackerUserInfo == null || timeSinceLastSeen > REJECT_STALE_NODE_CHANGE_TIME_MS) {
-//                mLogger.v(TAG, "    dropping NODE_CHANGE that didn't have a user: " + (trackerUserInfo == null) + " or was old, timeSinceLastSeen: " + timeSinceLastSeen);
-//                // Drop updates that do not have a MeshUser attached or are >30 mins old
-//                return;
-//            }
-//            mTrackerListener.onTrackerUpdated(trackerUserInfo);
-//            return;
-//        }
-
         DataPacket payload = intent.getParcelableExtra(MeshServiceConstants.EXTRA_PAYLOAD);
         int dataType = payload.getDataType();
 
         if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()) {
-            mLogger.d(TAG, "  NODEINFO_APP, parsing");
+            mLogger.v(TAG, "  NODEINFO_APP, parsing");
             try {
                 MeshProtos.User meshUser = MeshProtos.User.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed NodeInfo: " + meshUser.getId() + ", longName: " + meshUser.getLongName() + ", shortName: " + meshUser.getShortName());
+                mLogger.v(TAG, "    parsed NodeInfo: " + meshUser.getId() + ", longName: " + meshUser.getLongName() + ", shortName: " + meshUser.getShortName());
 
                 TrackerUserInfo trackerUserInfo = new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), null, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, meshUser.getShortName(), System.currentTimeMillis());
 
@@ -85,10 +63,10 @@ public class TrackerEventHandler extends MeshEventHandler {
                 e.printStackTrace();
             }
         } else if (dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
-            mLogger.d(TAG, "  POSITION_APP, parsing");
+            mLogger.v(TAG, "  POSITION_APP, parsing");
             try {
                 MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed position: lat: " + position.getLatitudeI() + ", lon: " + position.getLongitudeI() + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
+                mLogger.v(TAG, "    parsed position: lat: " + position.getLatitudeI() + ", lon: " + position.getLongitudeI() + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
 
                 boolean gpsValid = position.getLatitudeI() != 0 || position.getLongitudeI() != 0 || position.getAltitude() != 0;
                 TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), position.getBatteryLevel(), position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), gpsValid, null, System.currentTimeMillis());
@@ -100,50 +78,4 @@ public class TrackerEventHandler extends MeshEventHandler {
             }
         }
     }
-
-//    @Nullable
-//    private TrackerUserInfo trackerUserInfoFromNodeInfo(MeshProtos.NodeInfo nodeInfo) {
-//        MeshProtos.User meshUser = nodeInfo.getUser();
-//
-//        if (meshUser == null) {
-//            return null;
-//        }
-//
-//        double lat = 0.0;
-//        double lon = 0.0;
-//        int altitude = 0;
-//        boolean gpsValid = false;
-//        long timeSinceLastSeen = 0;
-//        MeshProtos.Position position = nodeInfo.getPosition();
-//        if (position != null) {
-//            lat = position.getLatitudeI();
-//            lon = position.getLongitudeI();
-//            altitude = position.getAltitude();
-//            timeSinceLastSeen = position.getTime();
-//            gpsValid = true;
-//        }
-//        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), 0, lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
-//    }
-//
-//    @Nullable
-//    private TrackerUserInfo trackerUserInfoFromNodeInfo(NodeInfo nodeInfo, long timeSinceLastSeen) {
-//        MeshUser meshUser = nodeInfo.getUser();
-//
-//        if (meshUser == null) {
-//            return null;
-//        }
-//
-//        double lat = 0.0;
-//        double lon = 0.0;
-//        int altitude = 0;
-//        boolean gpsValid = false;
-//        Position position = nodeInfo.getPosition();
-//        if (position != null) {
-//            lat = position.getLatitude();
-//            lon = position.getLongitude();
-//            altitude = position.getAltitude();
-//            gpsValid = true;
-//        }
-//        return new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), 0, lat, lon, altitude, gpsValid, meshUser.getShortName(), timeSinceLastSeen);
-//    }
 }

@@ -127,11 +127,11 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
     }
 
     private void startWorkerThread() {
-        mWorkerExecutor.scheduleAtFixedRate(() -> {
-            if (!mDestroyCalled) {
-                drawTrackers();
-            }
-        }, 0, DRAW_MARKERS_INTERVAL_MINS, TimeUnit.MINUTES);
+//        mWorkerExecutor.scheduleAtFixedRate(() -> {
+//            if (!mDestroyCalled) {
+//                drawTrackers();
+//            }
+//        }, 0, DRAW_MARKERS_INTERVAL_MINS, TimeUnit.MINUTES);
     }
 
     private void drawTrackers() {
@@ -154,8 +154,7 @@ public class TrackerCotGenerator implements UserTracker.TrackerUpdateListener, D
         String uid = String.format("%s-%s", VALUE_UID_PREFIX, meshIdWithoutExclamation);
 
         CoordinatedTime lastMsgCoordinatedTime = new CoordinatedTime(tracker.lastSeenTime);
-        boolean trackerGoingStale = System.currentTimeMillis() - tracker.lastSeenTime > TRACKER_GOING_STALE_MS;
-        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(trackerGoingStale ? tracker.lastSeenTime - STALE_TIME_OFFSET_MS : System.currentTimeMillis() + STALE_TIME_OFFSET_MS);
+        CoordinatedTime staleCoordinatedTime = new CoordinatedTime(tracker.lastSeenTime + (30L * 24L * 60L * 60L * 1000L));
 
         spoofedPli.setUID(uid);
         spoofedPli.setType(TYPE_PLI);

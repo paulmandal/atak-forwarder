@@ -172,8 +172,8 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
     private void updateTracker(TrackerUserInfo trackerUserInfo) {
         TrackerUserInfo userInfo = mTrackers.get(mTrackers.indexOf(trackerUserInfo));
 
-        mLogger.v(TAG, "updateTracker, updating with data from: " + trackerUserInfo.callsign + ", lat: " + trackerUserInfo.lat + ", lon: " + trackerUserInfo.lon + ", alt: " + trackerUserInfo.altitude + ", batteryPercentage: " + trackerUserInfo.batteryPercentage + ", lastSeenTime: " + trackerUserInfo.lastSeenTime);
-        mLogger.v(TAG, "  possibly overwriting: " + userInfo.callsign + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon + ", alt: " + userInfo.altitude + ", batteryPercentage: " + userInfo.batteryPercentage + ", lastSeenTime: " + userInfo.lastSeenTime);
+        mLogger.v(TAG, "updateTracker, updating with data from: " + trackerUserInfo.callsign + ", meshId: " + trackerUserInfo.meshId + ", lat: " + trackerUserInfo.lat + ", lon: " + trackerUserInfo.lon + ", alt: " + trackerUserInfo.altitude + ", batteryPercentage: " + trackerUserInfo.batteryPercentage + ", lastSeenTime: " + trackerUserInfo.lastSeenTime);
+        mLogger.v(TAG, "  possibly overwriting: " + userInfo.callsign + ", meshId: " + trackerUserInfo.meshId + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon + ", alt: " + userInfo.altitude + ", batteryPercentage: " + userInfo.batteryPercentage + ", lastSeenTime: " + userInfo.lastSeenTime);
 
         userInfo.update(trackerUserInfo);
     }

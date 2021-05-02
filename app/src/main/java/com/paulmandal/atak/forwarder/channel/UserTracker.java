@@ -158,7 +158,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
             if (user.meshId.equals(trackerUserInfo.meshId)) {
                 userExistsInAtakUserList = true;
 
-                if (!Objects.equals(user.batteryPercentage, trackerUserInfo.batteryPercentage)) {
+                if (trackerUserInfo.batteryPercentage != null && !Objects.equals(user.batteryPercentage, trackerUserInfo.batteryPercentage)) {
                     user.batteryPercentage = trackerUserInfo.batteryPercentage;
                 }
 

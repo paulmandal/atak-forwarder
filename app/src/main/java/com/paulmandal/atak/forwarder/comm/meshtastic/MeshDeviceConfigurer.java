@@ -281,7 +281,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
         RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
-//        userPreferencesBuilder.setLsSecs(); // TODO: we may need to set this, not sure what it does right now
         userPreferencesBuilder.setGpsUpdateInterval(ForwarderConstants.GPS_UPDATE_INTERVAL);
         userPreferencesBuilder.setSendOwnerInterval(ForwarderConstants.SEND_OWNER_INTERVAL);
         userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocDisabled);

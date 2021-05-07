@@ -5,6 +5,7 @@ import android.preference.Preference;
 import com.atakmap.android.gui.PanListPreference;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 
 import java.util.List;
@@ -14,7 +15,8 @@ public class MainButtons {
 
     public MainButtons(DevicesList devicesList,
                        Preference setCommDevicePreference,
-                       Preference refreshDevicesPreference) {
+                       Preference refreshDevicesPreference,
+                       Preference regionPreference) {
         PanListPreference commDevicePreference = (PanListPreference) setCommDevicePreference;
         updateCommDevices(commDevicePreference, devicesList.getMeshtasticDevices());
 
@@ -22,6 +24,10 @@ public class MainButtons {
             updateCommDevices(commDevicePreference, devicesList.getMeshtasticDevices());
             return true;
         });
+
+        PanListPreference listPreferenceRegion = (PanListPreference) regionPreference;
+        listPreferenceRegion.setEntries(R.array.regions);
+        listPreferenceRegion.setEntryValues(R.array.regions_values);
     }
 
     private void updateCommDevices(PanListPreference commDevicePreference,

@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.helpers.PskHelper;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.AdvancedButtons;
@@ -77,11 +78,13 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
 
         MainButtons mainButtons = new MainButtons(sDevicesList,
                 findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE),
-                findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES));
+                findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES),
+                findPreference(PreferencesKeys.KEY_REGION));
 
         Context settingsMenuContext = getActivity();
 
         HashHelper hashHelper = new HashHelper();
+        PskHelper pskHelper = new PskHelper();
         QrHelper qrHelper = new QrHelper();
         ChannelButtons channelButtons = new ChannelButtons(sDestroyables,
                 sSharedPreferences,
@@ -89,8 +92,10 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 sPluginContext,
                 sDiscoveryBroadcastEventHandler,
                 hashHelper,
+                pskHelper,
                 qrHelper,
                 sLogger,
+                findPreference(PreferencesKeys.KEY_CHANNEL_NAME),
                 findPreference(PreferencesKeys.KEY_CHANNEL_MODE),
                 findPreference(PreferencesKeys.KEY_CHANNEL_PSK),
                 findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),

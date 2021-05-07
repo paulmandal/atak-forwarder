@@ -119,12 +119,12 @@ public class StatusScreen {
     }
 
     private void handleNoServiceConnected() {
-        Toast.makeText(mAtakContext, "Meshtastic Service not connected, if the icon remains red click the 'Connect Svc' button in the status tab", Toast.LENGTH_LONG).show();
+        Toast.makeText(mAtakContext, "Meshtastic Service not connected, check that you have the Meshtastic app installed", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_no_service_connected);
     }
 
     private void handleNoDeviceConfigured() {
-        Toast.makeText(mAtakContext, "No Comm device configured, select one in the Devices tab and tap Set Comm Device", Toast.LENGTH_LONG).show();
+        Toast.makeText(mAtakContext, "No Comm Device or Region configured, go Settings -> Tool Preferences -> ATAK Forwarder to set them", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_no_device_configured);
     }
 

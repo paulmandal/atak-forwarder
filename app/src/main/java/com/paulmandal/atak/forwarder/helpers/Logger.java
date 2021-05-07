@@ -15,6 +15,7 @@ import java.util.List;
 public class Logger extends DestroyableSharedPrefsListener {
 
     private final Context mAtakContext;
+    private Toast mToast;
     private boolean mEnableLogging;
     private boolean mEnableLoggingToasts;
 
@@ -59,7 +60,12 @@ public class Logger extends DestroyableSharedPrefsListener {
 
     private void maybeToast(String tag, String message) {
         if (mEnableLoggingToasts) {
-            Toast.makeText(mAtakContext, tag + ": " + message, Toast.LENGTH_SHORT).show();
+            if (mToast != null) {
+                mToast.cancel();
+            }
+
+            mToast = Toast.makeText(mAtakContext, tag + ": " + message, Toast.LENGTH_SHORT);
+            mToast.show();
         }
     }
 

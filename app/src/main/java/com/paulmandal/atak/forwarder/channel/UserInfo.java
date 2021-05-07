@@ -1,8 +1,13 @@
 package com.paulmandal.atak.forwarder.channel;
 
+import androidx.annotation.CallSuper;
 import androidx.annotation.Nullable;
 
+import java.util.Objects;
+
 public class UserInfo {
+    public static final String CALLSIGN_UNKNOWN = "callsign-unknown";
+
     public String callsign;
     public final String meshId;
 
@@ -17,6 +22,21 @@ public class UserInfo {
         this.meshId = meshId;
         this.atakUid = atakUid;
         this.batteryPercentage = batteryPercentage;
+    }
+
+    @CallSuper
+    public void update(UserInfo updatedUserInfo) {
+        if (updatedUserInfo.callsign != null && !updatedUserInfo.callsign.equals(CALLSIGN_UNKNOWN) && !Objects.equals(this.callsign, updatedUserInfo.callsign)) {
+            this.callsign = updatedUserInfo.callsign;
+        }
+
+        if (updatedUserInfo.atakUid != null && !Objects.equals(this.atakUid, updatedUserInfo.atakUid)) {
+            this.atakUid = updatedUserInfo.atakUid;
+        }
+
+        if (updatedUserInfo.batteryPercentage != null && !Objects.equals(this.batteryPercentage, updatedUserInfo.batteryPercentage)) {
+            this.batteryPercentage = updatedUserInfo.batteryPercentage;
+        }
     }
 
     @SuppressWarnings("MethodDoesntCallSuperMethod")
@@ -34,8 +54,6 @@ public class UserInfo {
         }
 
         UserInfo otherUserInfo = (UserInfo) other;
-        return otherUserInfo.callsign.equals(this.callsign)
-                && otherUserInfo.meshId.equals(this.meshId)
-                && (otherUserInfo.atakUid == null || otherUserInfo.atakUid.equals(this.atakUid));
+        return otherUserInfo.meshId.equals(this.meshId);
     }
 }

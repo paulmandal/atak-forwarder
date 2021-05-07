@@ -5,9 +5,7 @@ import android.content.Intent;
 import android.os.Handler;
 
 import com.geeksville.mesh.DataPacket;
-import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.Portnums;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -38,7 +36,8 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
         super(atakContext,
                 logger,
                 new String[] {
-                        MeshServiceConstants.ACTION_RECEIVED_DATA
+                        MeshServiceConstants.ACTION_RECEIVED_DATA,
+                        MeshServiceConstants.ACTION_RECEIVED_ATAK_FORWARDER
                 },
                 destroyables,
                 meshSuspendController);
@@ -60,29 +59,12 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
 
         int dataType = payload.getDataType();
 
-        if (dataType == Portnums.PortNum.UNKNOWN_APP.getNumber()) {
+        mLogger.v(TAG, "handleReceive(), dataType: " + dataType);
+        if (dataType == Portnums.PortNum.ATAK_FORWARDER.getNumber()) {
             String message = new String(payload.getBytes());
             if (!message.substring(1).startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
                 mLogger.i(TAG, "<--- Received packet: " + (message.replace("\n", "").replace("\r", "")));
                 handleMessageChunk(payload.getId(), payload.getFrom(), payload.getBytes());
-            }
-        } else if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()) {
-            mLogger.d(TAG, "  NODEINFO_APP, parsing");
-            try {
-                MeshProtos.NodeInfo nodeInfo = MeshProtos.NodeInfo.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed NodeInfo: " + nodeInfo);
-            } catch (InvalidProtocolBufferException e) {
-                mLogger.e(TAG, "    NODEINFO_APP message failed to parse");
-                e.printStackTrace();
-            }
-        } else if (dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
-            mLogger.d(TAG, "  POSITION_APP, parsing");
-            try {
-                MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "    parsed position: " + position);
-            } catch (InvalidProtocolBufferException e) {
-                mLogger.e(TAG, "    POSITION_APP message failed to parse");
-                e.printStackTrace();
             }
         } else {
             mLogger.e(TAG, "Unknown payload type: " + dataType + ", id: " + payload.getId() + ", from: " + payload.getFrom() + ", text: " + payload.getText() + ", bytes: " + new String(payload.getBytes()));

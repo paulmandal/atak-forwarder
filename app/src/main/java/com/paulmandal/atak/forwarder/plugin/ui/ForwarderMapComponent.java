@@ -164,7 +164,12 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, userTracker, inboundMessageHandler, pluginVersion);
+        ScheduledExecutorService trackerCotGeneratorExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
+            Thread thread = new Thread(r);
+            thread.setName("TrackerCotGenerator.Worker");
+            return thread;
+        });
+        TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, sharedPreferences, userTracker, inboundMessageHandler, logger, pluginVersion, trackerCotGeneratorExecutor);
 
 
         StatusViewModel statusViewModel = new StatusViewModel(

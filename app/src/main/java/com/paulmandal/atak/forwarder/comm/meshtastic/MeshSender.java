@@ -15,7 +15,6 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.queue.commands.BroadcastDiscoveryCommand;
-import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.SendMessageCommand;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -41,6 +40,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     private static final int WATCHDOG_TIMEOUT_MS = 900000; // 15 minutes
     private static final int WATCHDOG_RUN_INTERVAL_MINS = 1;
     private static final int REMOTE_EXCEPTION_RETRY_DELAY = 5000;
+    private static final int DELAY_AFTER_SEND_ERROR_MS = 5000;
     private static final int NO_ID = -1;
 
     private final SharedPreferences mSharedPreferences;
@@ -262,6 +262,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             for (String uid : toUIDs) {
                 String meshId = mUserTracker.getMeshIdForUid(uid);
                 if (meshId.isEmpty()) {
+                    mLogger.e(TAG, "sendMessageInternal() - could not get meshId for uid: " + uid);
                     continue;
                 }
 
@@ -308,7 +309,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
         DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
                 mChunkInFlight.chunk,
-                Portnums.PortNum.UNKNOWN_APP.getNumber(),
+                Portnums.PortNum.ATAK_FORWARDER.getNumber(),
                 DataPacket.ID_LOCAL,
                 System.currentTimeMillis(),
                 0,
@@ -354,7 +355,12 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mLogger.i(TAG, "  Status is queued, waiting for ERROR/DELIVERED");
             // Do nothing, wait for delivered or error
         } else {
-            mLogger.i(TAG, "  Status is ERROR, resending chunk");
+            mLogger.i(TAG, "  Status is ERROR, resending chunk after " + DELAY_AFTER_SEND_ERROR_MS +  "ms");
+            try {
+                Thread.sleep(DELAY_AFTER_SEND_ERROR_MS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 //            if (mChunkInFlight == null) { TODO: maybe we need this?
 //                return;
 //            }

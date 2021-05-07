@@ -13,6 +13,7 @@ import android.os.RemoteException;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.IMeshService;
+import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -44,6 +45,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private final Intent mServiceIntent;
 
     private MeshtasticDevice mMeshDevice;
+    private RadioConfigProtos.RegionCode mRegionCode = RadioConfigProtos.RegionCode.Unset;
     private ConnectionState mConnectionState;
     private boolean mConnectedToService;
     private boolean mReceiverRegistered;
@@ -67,6 +69,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
         // Initialize comm device state
         onSharedPreferenceChanged(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
+        onSharedPreferenceChanged(sharedPreferences, PreferencesKeys.KEY_REGION);
 
         // Set up service connection
         mServiceIntent = new Intent();
@@ -158,7 +161,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
     private void updateConnectionState() {
         ConnectionState connectionState;
-        if (mMeshDevice == null) {
+        if (mMeshDevice == null || mRegionCode == null || mRegionCode == RadioConfigProtos.RegionCode.Unset || mRegionCode == RadioConfigProtos.RegionCode.UNRECOGNIZED) {
             connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
         } else if (mMeshService != null) {
             boolean connected = false;
@@ -213,6 +216,9 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         if (key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
             Gson gson = new Gson();
             mMeshDevice = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE), MeshtasticDevice.class);
+            updateConnectionState();
+        } else if (key.equals(PreferencesKeys.KEY_REGION)) {
+            mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
             updateConnectionState();
         }
     }

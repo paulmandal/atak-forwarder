@@ -52,13 +52,10 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         trackerEventHandler.setListener(this);
     }
 
-    public List<UserInfo> getAtakUsers() {
-        return mAtakUsers;
-    }
-    public List<TrackerUserInfo> getTrackers() { return mTrackers; }
-
     @Override
     public void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid) {
+        mLogger.v(TAG, "onUserDiscoveryBroadcastReceived, callsign: " + callsign + ", meshId: " + meshId + ", atakUid: " + atakUid);
+
         // Check for user
         boolean foundInAtakUsers = false;
         for (UserInfo user : mAtakUsers) {
@@ -68,6 +65,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
                     user.atakUid = atakUid;
                 }
                 foundInAtakUsers = true;
+                mLogger.v(TAG, "  found: " + callsign + " in ATAK users list with atakUid: " + atakUid);
                 break;
             }
         }
@@ -77,17 +75,19 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         for (TrackerUserInfo user : mTrackers) {
             if (user.meshId.equals(meshId)) {
                 trackerUserInfo = user;
+                mLogger.v(TAG, "  found: " + callsign + " in Tracker user list with meshId: " + meshId);
                 break;
             }
         }
 
         if (trackerUserInfo != null) {
+            mLogger.v(TAG, "  removing callsign: " + callsign + " from Tracker users");
             mTrackers.remove(trackerUserInfo);
         }
 
         // Add user to ATAK users list and notify listeners
         if (!foundInAtakUsers) {
-            mLogger.d(TAG, "Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
+            mLogger.v(TAG, "  Adding new user from discovery broadcast: " + callsign + ", atakUid: " + atakUid);
             mAtakUsers.add(new UserInfo(callsign, meshId, atakUid, null));
 
             notifyChannelMembersUpdateListeners();
@@ -98,14 +98,17 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
 
     @Override
     public void onTrackerUpdated(TrackerUserInfo trackerUserInfo) {
+        mLogger.v(TAG, "onTrackerUpdated callsign: " + trackerUserInfo.callsign + ", meshId: " + trackerUserInfo.meshId + ", atakUid: " + trackerUserInfo.atakUid);
         boolean userExistsInAtakUserList = maybeUpdateUserBatteryPercentage(trackerUserInfo);
 
         if (userExistsInAtakUserList) {
             // Nothing else to do
+            mLogger.v(TAG, "  Tracker exists in ATAK user list, exiting");
             return;
         }
 
         boolean alreadyKnowAboutStation = mTrackers.contains(trackerUserInfo);
+        mLogger.v(TAG, "  alreadyKnowAboutStation: " + alreadyKnowAboutStation);
         if (alreadyKnowAboutStation) {
             updateTracker(trackerUserInfo);
         } else {
@@ -155,7 +158,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
             if (user.meshId.equals(trackerUserInfo.meshId)) {
                 userExistsInAtakUserList = true;
 
-                if (!Objects.equals(user.batteryPercentage, trackerUserInfo.batteryPercentage)) {
+                if (trackerUserInfo.batteryPercentage != null && !Objects.equals(user.batteryPercentage, trackerUserInfo.batteryPercentage)) {
                     user.batteryPercentage = trackerUserInfo.batteryPercentage;
                 }
 
@@ -169,25 +172,10 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
     private void updateTracker(TrackerUserInfo trackerUserInfo) {
         TrackerUserInfo userInfo = mTrackers.get(mTrackers.indexOf(trackerUserInfo));
 
-        if (!Objects.equals(userInfo.lat, trackerUserInfo.lat)) {
-            userInfo.lat = trackerUserInfo.lat;
-        }
+        mLogger.v(TAG, "updateTracker, updating with data from: " + trackerUserInfo.callsign + ", meshId: " + trackerUserInfo.meshId + ", lat: " + trackerUserInfo.lat + ", lon: " + trackerUserInfo.lon + ", alt: " + trackerUserInfo.altitude + ", batteryPercentage: " + trackerUserInfo.batteryPercentage + ", lastSeenTime: " + trackerUserInfo.lastSeenTime);
+        mLogger.v(TAG, "  possibly overwriting: " + userInfo.callsign + ", meshId: " + trackerUserInfo.meshId + ", lat: " + userInfo.lat + ", lon: " + userInfo.lon + ", alt: " + userInfo.altitude + ", batteryPercentage: " + userInfo.batteryPercentage + ", lastSeenTime: " + userInfo.lastSeenTime);
 
-        if (!Objects.equals(userInfo.lon, trackerUserInfo.lon)) {
-            userInfo.lon = trackerUserInfo.lon;
-        }
-
-        if (!Objects.equals(userInfo.altitude, trackerUserInfo.altitude)) {
-            userInfo.altitude = trackerUserInfo.altitude;
-        }
-
-        if (!Objects.equals(userInfo.batteryPercentage, trackerUserInfo.batteryPercentage)) {
-            userInfo.batteryPercentage = trackerUserInfo.batteryPercentage;
-        }
-
-        if (!Objects.equals(userInfo.lastSeenTime, trackerUserInfo.lastSeenTime)) {
-            userInfo.lastSeenTime = trackerUserInfo.lastSeenTime;
-        }
+        userInfo.update(trackerUserInfo);
     }
 
     private void notifyTrackerUpdateListeners() {

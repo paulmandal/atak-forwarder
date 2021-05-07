@@ -20,7 +20,8 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.atakmap.android.gui.EditText;
 import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PluginSpinner;
-import com.geeksville.mesh.MeshProtos;
+import com.geeksville.mesh.ChannelProtos;
+import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
@@ -109,16 +110,19 @@ public class TrackerButtons {
                 MeshtasticDevice targetDevice = (MeshtasticDevice) devicesSpinner.getAdapter().getItem(devicesSpinner.getSelectedItemPosition());
                 String callsign = callsignEditText.getText().toString();
 
+                RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+
                 String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-                MeshProtos.ChannelSettings.ModemConfig channelMode = MeshProtos.ChannelSettings.ModemConfig.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
+                ChannelProtos.ChannelSettings.ModemConfig channelMode = ChannelProtos.ChannelSettings.ModemConfig.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
                 byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
 
                 int teamIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_TEAM, PreferencesDefaults.DEFAULT_TRACKER_TEAM));
                 int roleIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_ROLE, PreferencesDefaults.DEFAULT_TRACKER_ROLE));
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
+                boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -136,13 +140,15 @@ public class TrackerButtons {
                                MeshtasticDevice commDevice,
                                MeshtasticDevice targetDevice,
                                String deviceCallsign,
+                               RadioConfigProtos.RegionCode regionCode,
                                String channelName,
                                byte[] psk,
-                               MeshProtos.ChannelSettings.ModemConfig modemConfig,
+                               ChannelProtos.ChannelSettings.ModemConfig modemConfig,
                                int teamIndex,
                                int roleIndex,
                                int pliIntervalS,
                                int screenShutoffDelayS,
+                               boolean isRouter,
                                MeshtasticTrackerConfigurator.Listener listener) {
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext, logger);
         MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(
@@ -153,6 +159,7 @@ public class TrackerButtons {
                 commDevice,
                 targetDevice,
                 deviceCallsign,
+                regionCode,
                 channelName,
                 psk,
                 modemConfig,
@@ -160,6 +167,7 @@ public class TrackerButtons {
                 roleIndex,
                 pliIntervalS,
                 screenShutoffDelayS,
+                isRouter,
                 listener,
                 logger);
         meshtasticTrackerConfigurator.writeToDevice();

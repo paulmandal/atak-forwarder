@@ -18,8 +18,9 @@ import java.util.List;
 public class MessageHandlerFactory {
     public static InboundMessageHandler getInboundMessageHandler(InboundMeshMessageHandler inboundMeshMessageHandler,
                                                                  CotShrinker cotShrinker,
+                                                                 InboundMessageHandler.InboundPliListener inboundPliListener,
                                                                  Logger logger) {
-        return new InboundMessageHandler(CotMapComponent.getInternalDispatcher(), CotMapComponent.getExternalDispatcher(), inboundMeshMessageHandler, cotShrinker, logger);
+        return new InboundMessageHandler(CotMapComponent.getInternalDispatcher(), CotMapComponent.getExternalDispatcher(), inboundMeshMessageHandler, cotShrinker, inboundPliListener, logger);
     }
 
     public static OutboundMessageHandler getOutboundMessageHandler(MeshServiceController meshServiceController,

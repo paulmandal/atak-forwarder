@@ -156,6 +156,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     @Override
     public void onMessageReceived(int messageId, byte[] message) {
+        mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
     }
 }

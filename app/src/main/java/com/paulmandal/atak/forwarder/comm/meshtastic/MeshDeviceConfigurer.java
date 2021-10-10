@@ -103,10 +103,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     return;
                 }
 
+                mMeshDevice = meshtasticDevice;
+
+                if (mMeshService == null) {
+                    mLogger.v(TAG, "complexUpdate, device configured but no service connection, exiting");
+                    return;
+                }
+
                 try {
                     mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
                     mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
-                    mMeshDevice = meshtasticDevice;
                     mSetDeviceAddressCalled = true;
                 } catch (RemoteException e) {
                     e.printStackTrace();

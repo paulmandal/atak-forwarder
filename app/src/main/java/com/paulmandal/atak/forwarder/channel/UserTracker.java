@@ -4,9 +4,12 @@ import android.content.Context;
 import android.os.Handler;
 import android.widget.Toast;
 
+import com.atakmap.coremap.cot.event.CotDetail;
+import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
+import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.List;
@@ -16,8 +19,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroadcastListener,
-        TrackerEventHandler.TrackerListener {
+        TrackerEventHandler.TrackerListener,
+        InboundMessageHandler.InboundPliListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + UserTracker.class.getSimpleName();
+
+    private static final String KEY_STATUS = "status";
+    private static final String KEY_BATTERY = "battery";
 
     public interface ChannelMembersUpdateListener {
         void onChannelMembersUpdated(List<UserInfo> atakUsers, List<TrackerUserInfo> trackers);
@@ -118,6 +125,43 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         // Notify listeners
         notifyTrackerUpdateListeners();
         notifyChannelMembersUpdateListeners();
+    }
+
+    @Override
+    public void onInboundPli(CotEvent cotEvent) {
+        mLogger.v(TAG, "onInboundPli: " + cotEvent);
+
+        CotDetail cotDetail = cotEvent.getDetail();
+        if (cotDetail == null) {
+            return;
+        }
+
+        CotDetail statusDetail = cotDetail.getFirstChildByName(0, KEY_STATUS);
+        if (statusDetail == null) {
+            return;
+        }
+
+        String batteryLevelStr = statusDetail.getAttribute(KEY_BATTERY);
+        if (batteryLevelStr == null) {
+            return;
+        }
+
+        Integer batteryLevel = null;
+        try {
+            batteryLevel = Integer.parseInt(batteryLevelStr);
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+        String atakUid = cotEvent.getUID();
+        for (UserInfo userInfo : mAtakUsers) {
+            if (userInfo.atakUid != null && userInfo.atakUid.equals(atakUid)) {
+                mLogger.v(TAG, "  updating UID: " + atakUid + ", batteryLevel: " + batteryLevel);
+                userInfo.batteryPercentage = batteryLevel;
+                notifyChannelMembersUpdateListeners();
+                break;
+            }
+        }
     }
 
     public String getMeshIdForUid(String atakUid) {

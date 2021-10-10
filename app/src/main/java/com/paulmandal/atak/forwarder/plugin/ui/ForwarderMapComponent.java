@@ -150,7 +150,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         CotShrinkerFactory cotShrinkerFactory = new CotShrinkerFactory();
         CotShrinker cotShrinker = cotShrinkerFactory.createCotShrinker();
-        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(inboundMeshMessageHandler, cotShrinker, logger);
+        InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(inboundMeshMessageHandler, cotShrinker, userTracker, logger);
 
 
         CotMessageCache cotMessageCache = new CotMessageCache(destroyables, sharedPreferences, cotComparer);

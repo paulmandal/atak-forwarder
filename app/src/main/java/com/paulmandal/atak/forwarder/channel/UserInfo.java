@@ -5,7 +5,7 @@ import androidx.annotation.Nullable;
 
 import java.util.Objects;
 
-public class UserInfo {
+public class UserInfo implements Cloneable {
     public static final String CALLSIGN_UNKNOWN = "callsign-unknown";
 
     public String callsign;

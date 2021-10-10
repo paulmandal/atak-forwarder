@@ -1,7 +1,7 @@
 buildscript {
 
     ext.PLUGIN_VERSION = "1.0.0"
-    ext.ATAK_VERSION = "4.3.0"
+    ext.ATAK_VERSION = "4.3.1"
 
     def takdevVersion = '2.0.0'
 
@@ -28,18 +28,6 @@ buildscript {
 
     ext.isDevKitEnabled = { ->
         return getProperty(urlKey, null) != null
-    }
-
-    ext.generateSigningKey = { name ->
-        def timestamp = new Date().getTime()
-        def keyFile = "${rootDir}/tmp-${name}-${timestamp}.keystore"
-        def keyFilePass = 'temp123'
-        def keyAlias = "tmp-${name}-signing-key"
-        def keyPass = 'temp123'
-        exec {
-            commandLine 'bash', '-c', "echo y | keytool -genkeypair -dname \"cn=ATAK Forwarder, ou=Plugins, o=Open Source, c=US\" -alias ${keyAlias} -keypass ${keyPass} -keystore ${keyFile} -storepass ${keyFilePass} -validity 20000"
-        }
-        return new Tuple(keyFile.toString(), keyFilePass, keyAlias.toString(), keyPass)
     }
 
     ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
@@ -173,7 +161,10 @@ android {
             def debugKeyPassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyPassword')
 
             if (debugKeyFile == null) {
-                (debugKeyFile, debugKeyFilePassword, debugKeyAlias, debugKeyPassword) = generateSigningKey('debug')
+                debugKeyFile = "${rootDir}/pipeline-signing-key.keystore"
+                debugKeyFilePassword = 'keyfilepass'
+                debugKeyAlias = 'pipeline-signing-key'
+                debugKeyPassword = 'keypass'
             }
 
             storeFile file(debugKeyFile)
@@ -188,7 +179,10 @@ android {
             def releaseKeyPassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyPassword')
 
             if (releaseKeyFile == null) {
-                (releaseKeyFile, releaseKeyFilePassword, releaseKeyAlias, releaseKeyPassword) = generateSigningKey('release')
+                releaseKeyFile = "${rootDir}/pipeline-signing-key.keystore"
+                releaseKeyFilePassword = 'keyfilepass'
+                releaseKeyAlias = 'pipeline-signing-key'
+                releaseKeyPassword = 'keypass'
             }
 
             storeFile file(releaseKeyFile)
@@ -276,16 +270,6 @@ dependencies {
 
     testImplementation 'junit:junit:4.13.1'
 }
-
-task updateSubmodules(type: Exec) {
-    executable "bash"
-    args "-c", """
-            echo "Updating submodules" &&
-            git submodule update --init --recursive || true
-        """
-}
-
-preBuild.dependsOn updateSubmodules
 
 protobuf {
     protoc {

@@ -109,8 +109,8 @@
     <!-- Tracker Map Drawing -->
     <string name="category_tracker_map_drawing_settings">Tracker Map Drawing</string>
 
-    <string name="tracker_stale_after_missed_plis">Stale after X missed PLIs</string>
-    <string name="tracker_stale_after_missed_plis_summary">How many PLIs to miss before drawing the Tracker as stale</string>
+    <string name="tracker_stale_after_secs">Stale offset (secs)</string>
+    <string name="tracker_stale_after_secs_summary">How many seconds after a position update the Tracker becomes stale</string>
 
     <!-- Advanced Settings -->
     <string name="category_advanced_settings">Advanced</string>

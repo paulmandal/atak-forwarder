@@ -17,7 +17,7 @@ public class PreferencesDefaults {
     public static final String DEFAULT_CHANNEL_MODE = "0";
     public static final String DEFAULT_CHANNEL_PSK = new PskHelper().genPsk();
     public static final String DEFAULT_TRACKER_PLI_INTERVAL = "60";
-    public static final String DEFAULT_TRACKER_STALE_AFTER_MISSED_PLIS = "5";
+    public static final String DEFAULT_TRACKER_STALE_AFTER_SECS = "75";
     public static final String DEFAULT_TRACKER_SCREEN_OFF_TIME = "5";
     public static final boolean DEFAULT_TRACKER_IS_ROUTER = true;
     public static final String DEFAULT_TRACKER_TEAM = "0";

@@ -22,7 +22,7 @@ public class PreferencesKeys {
     public static final String KEY_SAVE_CHANNEL_TO_FILE = "plugin_atak_forwarder_key_save_channel_to_file";
     public static final String KEY_READ_CHANNEL_FROM_FILE = "plugin_atak_forwarder_key_read_channel_from_file";
     public static final String KEY_TRACKER_PLI_INTERVAL = "plugin_atak_forwarder_key_tracker_pli_interval";
-    public static final String KEY_TRACKER_STALE_AFTER_MISSED_PLIS = "plugin_atak_forwarder_key_tracker_stale_after_missed_plis";
+    public static final String KEY_TRACKER_STALE_AFTER_SECS = "plugin_atak_forwarder_key_tracker_stale_after_secs";
     public static final String KEY_TRACKER_SCREEN_OFF_TIME = "plugin_atak_forwarder_key_tracker_screen_off_time";
     public static final String KEY_TRACKER_IS_ROUTER = "plugin_atak_forwarder_key_tracker_is_router";
     public static final String KEY_TRACKER_TEAM = "plugin_atak_forwarder_key_tracker_team";

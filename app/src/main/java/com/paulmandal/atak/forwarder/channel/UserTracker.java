@@ -31,7 +31,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
     }
 
     public interface TrackerUpdateListener {
-        void trackersUpdated(List<TrackerUserInfo> trackers);
+        void trackerUpdated(TrackerUserInfo trackerUserInfo);
     }
 
     public static final String USER_NOT_FOUND = "";
@@ -123,7 +123,9 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         }
 
         // Notify listeners
-        notifyTrackerUpdateListeners();
+        if (trackerUserInfo.gpsValid) {
+            notifyTrackerUpdateListeners(trackerUserInfo);
+        }
         notifyChannelMembersUpdateListeners();
     }
 
@@ -222,9 +224,9 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         userInfo.update(trackerUserInfo);
     }
 
-    private void notifyTrackerUpdateListeners() {
+    private void notifyTrackerUpdateListeners(TrackerUserInfo trackerUserInfo) {
         for (TrackerUpdateListener listener : mTrackerUpdateListener) {
-            mUiThreadHandler.post(() -> listener.trackersUpdated(mTrackers));
+            mUiThreadHandler.post(() -> listener.trackerUpdated(trackerUserInfo));
         }
     }
 

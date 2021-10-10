@@ -132,13 +132,13 @@
 
     <PreferenceCategory android:title="@string/category_tracker_map_drawing_settings" />
     <com.atakmap.android.gui.PanEditTextPreference
-        android:key="plugin_atak_forwarder_key_tracker_stale_after_missed_plis"
-        android:title="@string/tracker_stale_after_missed_plis"
-        android:summary="@string/tracker_stale_after_missed_plis_summary"
-        android:dialogTitle="@string/tracker_stale_after_missed_plis"
+        android:key="plugin_atak_forwarder_key_tracker_stale_after_secs"
+        android:title="@string/tracker_stale_after_missed_secs"
+        android:summary="@string/tracker_stale_after_missed_secs_summary"
+        android:dialogTitle="@string/tracker_stale_after_missed_secs"
         android:inputType="number"
         android:numeric="integer"
-        android:defaultValue="5" />
+        android:defaultValue="75" />
 
     <PreferenceCategory android:title="@string/category_advanced_settings" />
     <com.atakmap.android.gui.PanPreference

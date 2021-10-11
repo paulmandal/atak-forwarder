@@ -29,6 +29,7 @@ import com.paulmandal.atak.forwarder.helpers.PskHelper;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.ArrayList;
@@ -152,15 +153,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
         Gson gson = new Gson();
-        String channelDataStr = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null);
-        if (channelDataStr == null) {
-            mChannelConfigs = new ArrayList<>();
-            mChannelConfigs.add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE, true));
-            saveChannels();
-            return;
-        } else {
-            mChannelConfigs = gson.fromJson(channelDataStr, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
-        }
+        mChannelConfigs = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
 
         updateChannels();
     }
@@ -199,7 +192,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             }, false);
             channelNamePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
                 String channelName = (String)newValue;
-                Log.e(TAG, "Test channel name changed: " + channelName);
+                Log.e(TAG, "Test channel name changed: " + channelName); // TODO: FIXME: remove this
                 channelConfig.name = channelName;
                 saveChannels();
                 return true;

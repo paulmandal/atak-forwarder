@@ -1,6 +1,10 @@
 package com.paulmandal.atak.forwarder.preferences;
 
-import com.paulmandal.atak.forwarder.helpers.PskHelper;
+import com.google.gson.Gson;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.channel.ChannelConfig;
+
+import java.util.ArrayList;
 
 /**
  * These should match the values in preferences.xml
@@ -13,6 +17,7 @@ public class PreferencesDefaults {
     public static final String DEFAULT_CHAT_HOP_LIMIT = "3";
     public static final String DEFAULT_OTHER_HOP_LIMIT = "3";
     public static final boolean DEFAULT_COMM_DEVICE_IS_ROUTER = false;
+    public static final String DEFAULT_CHANNEL_DATA = new Gson().toJson(new ArrayList<ChannelConfig>() {{ add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE, true)); }});
     public static final String DEFAULT_TRACKER_PLI_INTERVAL = "60";
     public static final String DEFAULT_TRACKER_STALE_AFTER_SECS = "75";
     public static final String DEFAULT_TRACKER_SCREEN_OFF_TIME = "5";

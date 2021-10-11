@@ -87,8 +87,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         });
 
         showChannelQr.setOnPreferenceClickListener((Preference preference) -> {
-            Gson gson = new Gson();
-            String channelConfigsStr = gson.toJson(mChannelConfigs);
+            String channelConfigsStr = new Gson().toJson(mChannelConfigs, ArrayList.class);
             byte[] payload = channelConfigsStr.getBytes();
 
             Bitmap bm = null;
@@ -97,7 +96,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             } catch (WriterException e) {
                 e.printStackTrace();
             }
-
 
             if (bm != null) {
                 ImageView iv = new ImageView(settingsMenuContext);
@@ -131,8 +129,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
             scannerView.setResultHandler((Result rawResult) -> {
                 String resultText = rawResult.getText();
-                Gson gson = new Gson();
-                mChannelConfigs = gson.fromJson(resultText, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                mChannelConfigs = new Gson().fromJson(resultText, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
                 saveChannels();
 
                 discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);

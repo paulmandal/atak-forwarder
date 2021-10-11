@@ -5,7 +5,7 @@ public class ForwarderConstants {
      * Pre-shared Key Length, 16 for AES128, 32 for AES256
      */
     public static final int PSK_LENGTH = 32;
-    public static final int DEFAULT_CHANNEL_MODE = 0;
+    public static final int DEFAULT_CHANNEL_MODE = 1;
     public static final String DEFAULT_CHANNEL_NAME = "Default";
     public static final byte[] DEFAULT_CHANNEL_PSK = new byte[] {
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,

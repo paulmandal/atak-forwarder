@@ -30,10 +30,10 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
                                   HashHelper hashHelper) {
         super(destroyables,
                 sharedPreferences,
+                new String[] {},
                 new String[]{
                         PreferencesKeys.KEY_CHANNEL_DATA,
-                },
-                new String[]{});
+                });
 
         mHashHelper = hashHelper;
 
@@ -61,8 +61,14 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        Gson gson = new Gson();
-        List<ChannelConfig> channelConfigs = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+        // Do nothing
+    }
+
+    @Override
+    protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
+        // This is in complexUpdate because simpleUpdate is called before the MutableLiveData are available
+        List<ChannelConfig> channelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+
         if (channelConfigs == null) {
             return;
         }
@@ -74,10 +80,5 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
                 mPskHash.postValue(mHashHelper.hashFromBytes(channelConfig.psk));
             }
         }
-    }
-
-    @Override
-    protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
-        // Do nothing
     }
 }

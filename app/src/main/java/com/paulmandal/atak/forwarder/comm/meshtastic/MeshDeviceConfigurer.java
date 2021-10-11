@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.content.SharedPreferences;
 import android.os.RemoteException;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -78,15 +79,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         // TODO: clean up this hacks
         mIsRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
         mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
-        // TODO: consolidate this w/ the code in ChannelButtons.updateSettings()
-        Gson gson = new Gson();
-        String channelDataStr = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null);
-        if (channelDataStr == null) {
-            mChannelConfigs = new ArrayList<>();
-            mChannelConfigs.add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE, true));
-        } else {
-            mChannelConfigs = gson.fromJson(channelDataStr, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
-        }
+        mChannelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
     }
 
     @Override
@@ -143,23 +136,29 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 }
                 break;
             case PreferencesKeys.KEY_CHANNEL_DATA:
-                Gson channelGson = new Gson();
-                List<ChannelConfig> channelConfigs = channelGson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                mLogger.v(TAG, "Channel config updated, checking if we need to update the radio");
+
+                List<ChannelConfig> channelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
 
                 if (channelConfigs == null) {
+                    mLogger.e(TAG, "Returning from complexUpdate on KEY_CHANNEL_DATA, channelConfigs was null, this should never happen!");
                     return;
                 }
 
                 boolean changed = false;
 
                 if (channelConfigs.size() != mChannelConfigs.size()) {
+                    mLogger.v(TAG, "  Channel count changed, need to check against radio");
                     changed = true;
                 }
 
                 for (ChannelConfig channelConfig : channelConfigs) {
                     for (ChannelConfig testChannelConfig : mChannelConfigs) {
                         if (channelConfig.name.equals(testChannelConfig.name)) {
-                            if (!areByteArraysEqual(channelConfig.psk, testChannelConfig.psk) || channelConfig.modemConfig != testChannelConfig.modemConfig) {
+                            if (!areByteArraysEqual(channelConfig.psk, testChannelConfig.psk)
+                                    || channelConfig.modemConfig != testChannelConfig.modemConfig
+                                    || channelConfig.isDefault != testChannelConfig.isDefault) {
+                                mLogger.v(TAG, "  Channel config for " + channelConfig.name + " changed, need to check against radio");
                                 changed = true;
                                 break;
                             }
@@ -268,13 +267,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
-        {
-            List<ChannelProtos.ChannelSettings> channelSettings = channelSet.getSettingsList();
-            for (ChannelProtos.ChannelSettings channelSetting : channelSettings) {
-                mLogger.v(TAG, "channel info: " + channelSetting.getName());
-                mLogger.v(TAG, "channel info: " + channelSetting.getPsk());
-            }
-
+        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+            mLogger.v(TAG, "  channel from radio: " + channelSet.getSettings(i).getName());
         }
 
         boolean needsUpdate = false;
@@ -283,9 +277,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
                 ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(i);
                 if (channelConfig.name.equals(channelSettings.getName())) {
+                    found = true;
+
                     if (!areByteArraysEqual(channelConfig.psk, channelSettings.getPsk().toByteArray()) || channelConfig.modemConfig != channelSettings.getModemConfigValue()) {
                         needsUpdate = true;
-                        found = true;
                         mLogger.v(TAG, "    channel: " + channelConfig.name + " changed!");
                         break;
                     }
@@ -359,7 +354,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void writeChannelConfig(AppOnlyProtos.ChannelSet channelSet) {
-        mLogger.v(TAG, "  Writing channels to device");
+        mLogger.v(TAG, "  Writing " + mChannelConfigs.size() + " channels to device");
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
@@ -370,6 +365,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         channelSetBuilder.clearSettings();
 
         for (ChannelConfig channelConfig : mChannelConfigs) {
+            mLogger.v(TAG, "    Adding channel: " + channelConfig.name);
             ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
             channelSettingsBuilder.setName(channelConfig.name);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(channelConfig.psk));

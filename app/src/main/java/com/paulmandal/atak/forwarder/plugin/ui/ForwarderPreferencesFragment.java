@@ -101,7 +101,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),
                 findPreference(PreferencesKeys.KEY_SCAN_CHANNEL_QR),
                 findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE),
-                findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE));
+                findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE),
+                getActivity());
 
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         TrackerButtons trackerButtons = new TrackerButtons(settingsMenuContext,

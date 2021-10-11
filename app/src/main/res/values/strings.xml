@@ -59,10 +59,12 @@
     <!-- Channel Settings -->
     <string name="category_channels">Channels</string>
 
-    <string name="channel_name">Name: </string>
-    <string name="channel_psk"> PSK: </string>
-    <string name="channel_mode"> Mode: </string>
-    <string name="channel_default"> Default Channel</string>
+    <string name="enter_channel_name">Enter the name for your channel</string>
+    <string name="click_to_delete">(click to delete)</string>
+    <string name="channel_name">Name:</string>
+    <string name="channel_psk"> PSK:</string>
+    <string name="channel_mode"> Mode:</string>
+    <string name="channel_default">Default Channel</string>
 
     <string name="delete_channel">Delete Channel</string>
     <string name="delete_channel_message">Are you sure you want to delete this channel?</string>

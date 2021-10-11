@@ -1,14 +1,17 @@
 package com.paulmandal.atak.forwarder.plugin.ui.settings;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputFilter;
 import android.util.Log;
+import android.view.Window;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanEditTextPreference;
@@ -63,13 +66,14 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           Preference showChannelQr,
                           Preference scanChannelQr,
                           Preference saveChannelToFile,
-                          Preference readChannelFromFile) {
+                          Preference readChannelFromFile,
+                          Activity activity) {
         super(destroyables,
                 sharedPreferences,
+                new String[] {},
                 new String[] {
                         PreferencesKeys.KEY_CHANNEL_DATA,
-                },
-                new String[]{});
+                });
 
         mSharedPreferences = sharedPreferences;
         mSettingsMenuContext = settingsMenuContext;
@@ -79,7 +83,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mCategoryChannels = categoryChannels;
 
         addChannel.setOnPreferenceClickListener((Preference preference) -> {
-            mChannelConfigs.add(new ChannelConfig("New", ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
+            mChannelConfigs.add(new ChannelConfig("New " + mChannelConfigs.size(), ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
             saveChannels();
             return true;
         });
@@ -105,7 +109,13 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         .setView(iv)
                         .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
-                alertDialog.show();
+                AlertDialog dialog = alertDialog.create();
+
+                Rect displayRectangle = new Rect();
+                activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
+                dialog.getWindow().setLayout((int)(displayRectangle.width() * 0.9f), (int)(displayRectangle.height() * 0.9f));
+
+                dialog.show();
             }
             return true;
         });
@@ -148,19 +158,21 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 //            // TODO: implement
 //            return true;
 //        });
+
+        complexUpdate(sharedPreferences, "");
     }
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        Gson gson = new Gson();
-        mChannelConfigs = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
-
-        updateChannels();
+        // Do nothing
     }
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
-        // Do nothing
+        // This is in complexUpdate so mCategoryChannels is available when it gets called
+        mChannelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+
+        updateChannels();
     }
 
     private void updateChannels() {
@@ -168,13 +180,18 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
         for (ChannelConfig channelConfig : mChannelConfigs) {
             PanPreference dividerPreference = new PanPreference(mSettingsMenuContext);
-            dividerPreference.setTitle(channelConfig.name);
+            dividerPreference.setTitle(channelConfig.name + " " + mPluginContext.getResources().getString(R.string.click_to_delete));
             dividerPreference.setOnPreferenceClickListener((Preference preference) -> {
                 final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mSettingsMenuContext)
                         .setTitle(mPluginContext.getResources().getString(R.string.delete_channel))
                         .setMessage(mPluginContext.getResources().getString(R.string.delete_channel_message))
                         .setPositiveButton(mPluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
                             mChannelConfigs.remove(channelConfig);
+
+                            if (mChannelConfigs.size() == 0) {
+                                mChannelConfigs = new Gson().fromJson(PreferencesDefaults.DEFAULT_CHANNEL_DATA, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                            }
+
                             saveChannels();
                         })
                         .setNegativeButton(mPluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
@@ -186,7 +203,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(dividerPreference);
 
             PanEditTextPreference channelNamePreference = new PanEditTextPreference(mSettingsMenuContext);
-            channelNamePreference.setTitle(mPluginContext.getResources().getString(R.string.channel_name) + channelConfig.name);
+            channelNamePreference.setTitle(mPluginContext.getResources().getString(R.string.channel_name) + " " + channelConfig.name);
+            channelNamePreference.setDialogMessage(mPluginContext.getResources().getString(R.string.enter_channel_name));
             channelNamePreference.setFilters(new InputFilter[] {
                 new InputFilter.LengthFilter(11)
             }, false);
@@ -200,7 +218,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(channelNamePreference);
 
             PanPreference channelPskPreference = new PanPreference(mSettingsMenuContext);
-            channelPskPreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_psk) + mHashHelper.hashFromBytes(channelConfig.psk));
+            channelPskPreference.setTitle(channelConfig.name + " " + mPluginContext.getResources().getString(R.string.channel_psk)  + " " + mHashHelper.hashFromBytes(channelConfig.psk));
             channelPskPreference.setOnPreferenceClickListener((Preference preference) -> {
                 final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mSettingsMenuContext)
                         .setTitle(mPluginContext.getResources().getString(R.string.warning))
@@ -217,7 +235,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(channelPskPreference);
 
             PanListPreference channelModePreference = new PanListPreference(mSettingsMenuContext);
-            channelModePreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_mode) + channelConfig.modemConfig);
+            channelModePreference.setTitle(channelConfig.name + " " + mPluginContext.getResources().getString(R.string.channel_mode)  + " " + channelConfig.modemConfig);
+            channelModePreference.setDialogMessage("message");
             channelModePreference.setEntries(R.array.channel_modes);
             channelModePreference.setEntryValues(R.array.channel_mode_values);
             channelModePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
@@ -228,7 +247,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(channelModePreference);
 
             PanSwitchPreference channelDefaultPreference = new PanSwitchPreference(mSettingsMenuContext);
-            channelDefaultPreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_default));
+            channelDefaultPreference.setTitle(channelConfig.name + " " + mPluginContext.getResources().getString(R.string.channel_default));
             channelDefaultPreference.setChecked(channelConfig.isDefault);
             channelDefaultPreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
                 channelConfig.isDefault = (boolean) newValue;
@@ -245,9 +264,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
     }
 
     private void saveChannels() {
-        Gson gson = new Gson();
         mSharedPreferences.edit()
-                .putString(PreferencesKeys.KEY_CHANNEL_DATA, gson.toJson(mChannelConfigs))
+                .putString(PreferencesKeys.KEY_CHANNEL_DATA, new Gson().toJson(mChannelConfigs, ArrayList.class))
                 .apply();
     }
 }

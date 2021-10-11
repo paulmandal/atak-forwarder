@@ -225,8 +225,10 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
     }
 
     private void notifyTrackerUpdateListeners(TrackerUserInfo trackerUserInfo) {
+        TrackerUserInfo userInfo = mTrackers.get(mTrackers.indexOf(trackerUserInfo));
+
         for (TrackerUpdateListener listener : mTrackerUpdateListener) {
-            mUiThreadHandler.post(() -> listener.trackerUpdated(trackerUserInfo));
+            mUiThreadHandler.post(() -> listener.trackerUpdated(userInfo));
         }
     }
 

@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceCategory;
 
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
@@ -95,9 +96,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 pskHelper,
                 qrHelper,
                 sLogger,
-                findPreference(PreferencesKeys.KEY_CHANNEL_NAME),
-                findPreference(PreferencesKeys.KEY_CHANNEL_MODE),
-                findPreference(PreferencesKeys.KEY_CHANNEL_PSK),
+                (PreferenceCategory) findPreference(PreferencesKeys.KEY_CATEGORY_CHANNELS),
                 findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),
                 findPreference(PreferencesKeys.KEY_SCAN_CHANNEL_QR),
                 findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE),

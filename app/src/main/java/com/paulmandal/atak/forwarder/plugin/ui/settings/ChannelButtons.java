@@ -6,17 +6,24 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.text.InputFilter;
 import android.util.Base64;
+import android.util.Log;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanEditTextPreference;
 import com.atakmap.android.gui.PanListPreference;
+import com.atakmap.android.gui.PanPreference;
+import com.atakmap.android.gui.PanPreferenceCategory;
 import com.geeksville.mesh.ChannelProtos;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -27,6 +34,8 @@ import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
+import java.nio.channels.Channel;
+import java.util.ArrayList;
 import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -34,11 +43,14 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView;
 public class ChannelButtons extends DestroyableSharedPrefsListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + ChannelButtons.class.getSimpleName();
 
-    private static final int PSK_LENGTH = ForwarderConstants.PSK_LENGTH;
+    private final SharedPreferences mSharedPreferences;
+    private final Context mSettingsMenuContext;
+    private final Context mPluginContext;
+    private final HashHelper mHashHelper;
+    private final PskHelper mPskHelper;
+    private final PreferenceCategory mCategoryChannels;
 
-    private String mChannelName;
-    private int mMode;
-    private byte[] mPsk;
+    private List<ChannelConfig> mChannelConfigs;
 
     public ChannelButtons(List<Destroyable> destroyables,
                           SharedPreferences sharedPreferences,
@@ -49,9 +61,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           PskHelper pskHelper,
                           QrHelper qrHelper,
                           Logger logger,
-                          Preference channelName,
-                          Preference channelMode,
-                          Preference channelPsk,
+                          PreferenceCategory categoryChannels,
                           Preference showChannelQr,
                           Preference scanChannelQr,
                           Preference saveChannelToFile,
@@ -59,44 +69,21 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         super(destroyables,
                 sharedPreferences,
                 new String[] {
-                        PreferencesKeys.KEY_CHANNEL_NAME,
-                        PreferencesKeys.KEY_CHANNEL_MODE,
-                        PreferencesKeys.KEY_CHANNEL_PSK
+                        PreferencesKeys.KEY_CHANNEL_DATA,
                 },
                 new String[]{});
-        PanEditTextPreference editTextPreferenceChannelName = (PanEditTextPreference) channelName;
-        editTextPreferenceChannelName.setFilters(new InputFilter[] {
-                new InputFilter.LengthFilter(11)
-        }, false);
 
-        PanListPreference listPreferenceChannelMode = (PanListPreference) channelMode;
-        listPreferenceChannelMode.setEntries(R.array.channel_modes);
-        listPreferenceChannelMode.setEntryValues(R.array.channel_mode_values);
-
-        channelPsk.setOnPreferenceClickListener((Preference preference) -> {
-            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
-                    .setTitle(pluginContext.getResources().getString(R.string.warning))
-                    .setMessage(pluginContext.getResources().getString(R.string.generate_psk_warning))
-                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
-                        String pskBase64 = pskHelper.genPsk();
-
-                        preference.getEditor().putString(PreferencesKeys.KEY_CHANNEL_PSK, pskBase64).commit();
-                    })
-                    .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
-
-            alertDialog.show();
-            return true;
-        });
+        mSharedPreferences = sharedPreferences;
+        mSettingsMenuContext = settingsMenuContext;
+        mPluginContext = pluginContext;
+        mHashHelper = hashHelper;
+        mPskHelper = pskHelper;
+        mCategoryChannels = categoryChannels;
 
         showChannelQr.setOnPreferenceClickListener((Preference preference) -> {
-            byte[] channelNameBytes = mChannelName.getBytes();
-            byte modemConfigByte = (byte) mMode;
-
-            byte[] payload = new byte[mPsk.length + 1 + channelNameBytes.length];
-
-            System.arraycopy(mPsk, 0, payload, 0, mPsk.length);
-            payload[mPsk.length] = modemConfigByte;
-            System.arraycopy(channelNameBytes, 0, payload, mPsk.length + 1, channelNameBytes.length);
+            Gson gson = new Gson();
+            String channelConfigsStr = gson.toJson(mChannelConfigs);
+            byte[] payload = channelConfigsStr.getBytes();
 
             Bitmap bm = null;
             try {
@@ -133,22 +120,9 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
             scannerView.setResultHandler((Result rawResult) -> {
                 String resultText = rawResult.getText();
-                byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
-
-                byte[] psk = new byte[PSK_LENGTH];
-                byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
-
-                System.arraycopy(resultBytes, 0, psk, 0, PSK_LENGTH);
-                int modemConfigValue = resultBytes[PSK_LENGTH];
-                System.arraycopy(resultBytes, PSK_LENGTH + 1, channelNameBytes, 0, resultBytes.length - PSK_LENGTH - 1);
-
-                ChannelProtos.ChannelSettings.ModemConfig modemConfig = ChannelProtos.ChannelSettings.ModemConfig.forNumber(modemConfigValue);
-
-                preference.getEditor()
-                        .putString(PreferencesKeys.KEY_CHANNEL_NAME, new String(channelNameBytes))
-                        .putString(PreferencesKeys.KEY_CHANNEL_MODE, Integer.toString(modemConfigValue))
-                        .putString(PreferencesKeys.KEY_CHANNEL_PSK, Base64.encodeToString(psk, Base64.DEFAULT))
-                        .apply();
+                Gson gson = new Gson();
+                mChannelConfigs = gson.fromJson(resultText, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                saveChannels();
 
                 discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
 
@@ -174,13 +148,80 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-        mMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-        mPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+        Gson gson = new Gson();
+        String channelDataStr = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null);
+        if (channelDataStr == null) {
+            mChannelConfigs = new ArrayList<>();
+            mChannelConfigs.add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE));
+        } else {
+            mChannelConfigs = gson.fromJson(channelDataStr, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+        }
+
+        updateChannels();
     }
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
         // Do nothing
+    }
+
+    private void updateChannels() {
+        mCategoryChannels.removeAll();
+
+        for (ChannelConfig channelConfig : mChannelConfigs) {
+            PanPreference dividerPreference = new PanPreference(mSettingsMenuContext);
+            dividerPreference.setTitle(channelConfig.name);
+
+            mCategoryChannels.addPreference(dividerPreference);
+
+            PanEditTextPreference channelNamePreference = new PanEditTextPreference(mSettingsMenuContext);
+            channelNamePreference.setTitle(mPluginContext.getResources().getString(R.string.channel_name) + channelConfig.name);
+            channelNamePreference.setFilters(new InputFilter[] {
+                new InputFilter.LengthFilter(11)
+            }, false);
+            channelNamePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
+                String channelName = (String)newValue;
+                Log.e(TAG, "Test channel name changed: " + channelName);
+                channelConfig.name = channelName;
+                saveChannels();
+                return true;
+            });
+            mCategoryChannels.addPreference(channelNamePreference);
+
+            PanPreference channelPskPreference = new PanPreference(mSettingsMenuContext);
+            channelPskPreference.setTitle(mPluginContext.getResources().getString(R.string.channel_psk) + mHashHelper.hashFromBytes(channelConfig.psk));
+            channelPskPreference.setOnPreferenceClickListener((Preference preference) -> {
+                final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mSettingsMenuContext)
+                        .setTitle(mPluginContext.getResources().getString(R.string.warning))
+                        .setMessage(mPluginContext.getResources().getString(R.string.generate_psk_warning))
+                        .setPositiveButton(mPluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
+                            channelConfig.psk = mPskHelper.genPskBytes();
+                            saveChannels();
+                        })
+                        .setNegativeButton(mPluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
+
+                alertDialog.show();
+                return true;
+            });
+            mCategoryChannels.addPreference(channelPskPreference);
+
+            PanListPreference channelModePreference = new PanListPreference(mSettingsMenuContext);
+            channelModePreference.setTitle(mPluginContext.getResources().getString(R.string.channel_mode) + channelConfig.mode);
+            channelModePreference.setEntries(R.array.channel_modes);
+            channelModePreference.setEntryValues(R.array.channel_mode_values);
+            channelModePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
+                channelConfig.mode = Integer.parseInt((String) newValue);
+                saveChannels();
+                return true;
+            });
+            mCategoryChannels.addPreference(channelModePreference);
+        }
+    }
+
+    private void saveChannels() {
+        Gson gson = new Gson();
+        mSharedPreferences.edit()
+                .putString(PreferencesKeys.KEY_CHANNEL_DATA, gson.toJson(mChannelConfigs))
+                .apply();
     }
 }

@@ -60,23 +60,9 @@
         android:title="@string/comm_device_is_router"
         android:summary="@string/comm_device_is_router_summary" />
 
-    <PreferenceCategory android:title="@string/category_channel_settings" />
-    <com.atakmap.android.gui.PanEditTextPreference
-        android:key="plugin_atak_forwarder_key_channel_name"
-        android:title="@string/channel_name"
-        android:summary="@string/channel_name_summary"
-        android:dialogTitle="@string/channel_name"
-        android:defaultValue="Default" />
-    <com.atakmap.android.gui.PanListPreference
-        android:key="plugin_atak_forwarder_key_channel_mode"
-        android:title="@string/channel_mode"
-        android:summary="@string/channel_mode_summary"
-        android:dialogTitle="@string/channel_mode"
-        android:defaultValue="0" />
-    <com.atakmap.android.gui.PanPreference
-        android:key="plugin_atak_forwarder_key_channel_psk"
-        android:title="@string/channel_psk"
-        android:summary="@string/channel_psk_summary" />
+    <PreferenceCategory android:title="@string/category_channels"
+        android:key="plugin_atak_forwarder_key_category_channels"/>
+    <PreferenceCategory android:title="@string/category_channel_controls" />
     <com.atakmap.android.gui.PanPreference
         android:key="plugin_atak_forwarder_key_show_channel_qr"
         android:title="@string/show_channel_qr"

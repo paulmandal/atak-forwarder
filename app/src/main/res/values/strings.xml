@@ -57,16 +57,22 @@
     <string name="comm_device_is_router_summary">Set your Comm Device up as Meshtastic Router</string>
 
     <!-- Channel Settings -->
-    <string name="category_channel_settings">Channel</string>
+    <string name="category_channels">Channels</string>
 
-    <string name="channel_name">Channel Name</string>
-    <string name="channel_name_summary">The name of your private channel</string>
+    <string name="channel_name">Channel Name: </string>
+    <string name="channel_psk">Channel PSK: </string>
+    <string name="channel_mode">Channel Mode: </string>
 
-    <string name="channel_mode">Mode / Speed</string>
-    <string name="channel_mode_summary">Configures the channel data rate / range setting</string>
+<!--    <string name="channel_name">Channel Name</string>-->
+<!--    <string name="channel_name_summary">The name of your private channel</string>-->
 
-    <string name="channel_psk">Generated PSK</string>
-    <string name="channel_psk_summary">Generates a new Pre-Shared Key for channel encryption</string>
+<!--    <string name="channel_mode">Mode / Speed</string>-->
+<!--    <string name="channel_mode_summary">Configures the channel data rate / range setting</string>-->
+
+<!--    <string name="channel_psk">Generated PSK</string>-->
+<!--    <string name="channel_psk_summary">Generates a new Pre-Shared Key for channel encryption</string>-->
+
+    <string name="category_channel_controls">Channel Controls</string>
 
     <string name="show_channel_qr">Show QR</string>
     <string name="show_channel_qr_summary">Show a QR code with your channel configuration for scanning on another device</string>

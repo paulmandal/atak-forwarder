@@ -250,6 +250,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
+        {
+            List<ChannelProtos.ChannelSettings> channelSettings = channelSet.getSettingsList();
+            for (ChannelProtos.ChannelSettings channelSetting : channelSettings) {
+                mLogger.v(TAG, "channel info: " + channelSetting.getName());
+                mLogger.v(TAG, "channel info: " + channelSetting.getPsk());
+            }
+
+        }
+
+
         ChannelProtos.ChannelSettings.ModemConfig modemConfig = ChannelProtos.ChannelSettings.ModemConfig.forNumber(mChannelMode);
 
         List<ChannelProtos.ChannelSettings> channelSettings = channelSet.getSettingsList();

@@ -14,9 +14,8 @@ public class PreferencesKeys {
     public static final String KEY_CHAT_HOP_LIMIT = "plugin_atak_forwarder_key_chat_hop_limit";
     public static final String KEY_OTHER_HOP_LIMIT = "plugin_atak_forwarder_key_other_hop_limit";
     public static final String KEY_COMM_DEVICE_IS_ROUTER = "plugin_atak_forwarder_key_comm_device_is_router";
-    public static final String KEY_CHANNEL_NAME = "plugin_atak_forwarder_key_channel_name";
-    public static final String KEY_CHANNEL_MODE = "plugin_atak_forwarder_key_channel_mode";
-    public static final String KEY_CHANNEL_PSK = "plugin_atak_forwarder_key_channel_psk";
+    public static final String KEY_CHANNEL_DATA = "plugin_atak_forwarder_key_channel_data";
+    public static final String KEY_CATEGORY_CHANNELS = "plugin_atak_forwarder_key_category_channels"; // for finding and populating the Channels category in the settings menu
     public static final String KEY_SHOW_CHANNEL_QR = "plugin_atak_forwarder_key_show_channel_qr";
     public static final String KEY_SCAN_CHANNEL_QR = "plugin_atak_forwarder_key_scan_channel_qr";
     public static final String KEY_SAVE_CHANNEL_TO_FILE = "plugin_atak_forwarder_key_save_channel_to_file";

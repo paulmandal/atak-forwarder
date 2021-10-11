@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.content.SharedPreferences;
 import android.os.RemoteException;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 

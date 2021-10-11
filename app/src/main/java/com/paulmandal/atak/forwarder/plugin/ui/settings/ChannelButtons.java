@@ -1,16 +1,15 @@
 package com.paulmandal.atak.forwarder.plugin.ui.settings;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputFilter;
-import android.util.Log;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ImageView;
 
@@ -66,8 +65,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           Preference showChannelQr,
                           Preference scanChannelQr,
                           Preference saveChannelToFile,
-                          Preference readChannelFromFile,
-                          Activity activity) {
+                          Preference readChannelFromFile) {
         super(destroyables,
                 sharedPreferences,
                 new String[] {},
@@ -109,11 +107,10 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         .setView(iv)
                         .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
-                AlertDialog dialog = alertDialog.create();
+                Dialog dialog = alertDialog.create();
 
-                Rect displayRectangle = new Rect();
-                activity.getWindow().getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
-                dialog.getWindow().setLayout((int)(displayRectangle.width() * 0.9f), (int)(displayRectangle.height() * 0.9f));
+                Window window = dialog.getWindow();
+                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
                 dialog.show();
             }
@@ -210,7 +207,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             }, false);
             channelNamePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
                 String channelName = (String)newValue;
-                Log.e(TAG, "Test channel name changed: " + channelName); // TODO: FIXME: remove this
                 channelConfig.name = channelName;
                 saveChannels();
                 return true;
@@ -234,9 +230,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             });
             mCategoryChannels.addPreference(channelPskPreference);
 
-            PanListPreference channelModePreference = new PanListPreference(mSettingsMenuContext);
+            PanListPreference channelModePreference = new PanListPreference(mPluginContext);
             channelModePreference.setTitle(channelConfig.name + " " + mPluginContext.getResources().getString(R.string.channel_mode)  + " " + channelConfig.modemConfig);
-            channelModePreference.setDialogMessage("message");
             channelModePreference.setEntries(R.array.channel_modes);
             channelModePreference.setEntryValues(R.array.channel_mode_values);
             channelModePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {

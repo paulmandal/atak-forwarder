@@ -14,6 +14,7 @@ import android.os.RemoteException;
 import com.geeksville.mesh.AppOnlyProtos;
 import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.IMeshService;
+import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.RadioConfigProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -22,10 +23,8 @@ import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
-import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MeshtasticTrackerConfigurator {

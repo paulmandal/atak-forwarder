@@ -59,9 +59,10 @@
     <!-- Channel Settings -->
     <string name="category_channels">Channels</string>
 
-    <string name="channel_name">Channel Name: </string>
-    <string name="channel_psk">Channel PSK: </string>
-    <string name="channel_mode">Channel Mode: </string>
+    <string name="channel_name">Name: </string>
+    <string name="channel_psk"> PSK: </string>
+    <string name="channel_mode"> Mode: </string>
+    <string name="channel_default"> Default Channel</string>
 
 <!--    <string name="channel_name">Channel Name</string>-->
 <!--    <string name="channel_name_summary">The name of your private channel</string>-->

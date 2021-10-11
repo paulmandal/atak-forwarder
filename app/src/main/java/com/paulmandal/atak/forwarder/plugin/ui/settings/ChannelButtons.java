@@ -16,6 +16,7 @@ import com.atakmap.android.gui.PanEditTextPreference;
 import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PanPreference;
 import com.atakmap.android.gui.PanPreferenceCategory;
+import com.atakmap.android.gui.PanSwitchPreference;
 import com.geeksville.mesh.ChannelProtos;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -152,7 +153,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         String channelDataStr = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null);
         if (channelDataStr == null) {
             mChannelConfigs = new ArrayList<>();
-            mChannelConfigs.add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE));
+            mChannelConfigs.add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE, true));
+            saveChannels();
         } else {
             mChannelConfigs = gson.fromJson(channelDataStr, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
         }
@@ -189,7 +191,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(channelNamePreference);
 
             PanPreference channelPskPreference = new PanPreference(mSettingsMenuContext);
-            channelPskPreference.setTitle(mPluginContext.getResources().getString(R.string.channel_psk) + mHashHelper.hashFromBytes(channelConfig.psk));
+            channelPskPreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_psk) + mHashHelper.hashFromBytes(channelConfig.psk));
             channelPskPreference.setOnPreferenceClickListener((Preference preference) -> {
                 final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mSettingsMenuContext)
                         .setTitle(mPluginContext.getResources().getString(R.string.warning))
@@ -206,7 +208,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(channelPskPreference);
 
             PanListPreference channelModePreference = new PanListPreference(mSettingsMenuContext);
-            channelModePreference.setTitle(mPluginContext.getResources().getString(R.string.channel_mode) + channelConfig.mode);
+            channelModePreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_mode) + channelConfig.mode);
             channelModePreference.setEntries(R.array.channel_modes);
             channelModePreference.setEntryValues(R.array.channel_mode_values);
             channelModePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
@@ -215,6 +217,21 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                 return true;
             });
             mCategoryChannels.addPreference(channelModePreference);
+
+            PanSwitchPreference channelDefaultPreference = new PanSwitchPreference(mSettingsMenuContext);
+            channelDefaultPreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_default));
+            channelDefaultPreference.setChecked(channelConfig.isDefault);
+            channelDefaultPreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
+                channelConfig.isDefault = (boolean) newValue;
+                for (ChannelConfig testChannelConfig : mChannelConfigs) {
+                    if (testChannelConfig != channelConfig) {
+                        testChannelConfig.isDefault = false;
+                    }
+                }
+                saveChannels();
+                return true;
+            });
+            mCategoryChannels.addPreference(channelDefaultPreference);
         }
     }
 

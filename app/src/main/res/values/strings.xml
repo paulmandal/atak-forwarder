@@ -69,6 +69,9 @@
 
     <string name="category_channel_controls">Channel Controls</string>
 
+    <string name="add_channel">Add Channel</string>
+    <string name="add_channel_summary">Add a new channel</string>
+
     <string name="show_channel_qr">Show QR</string>
     <string name="show_channel_qr_summary">Show a QR code with your channel configuration for scanning on another device</string>
 

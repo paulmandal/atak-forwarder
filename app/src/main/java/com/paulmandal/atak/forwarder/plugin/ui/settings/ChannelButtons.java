@@ -58,6 +58,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           QrHelper qrHelper,
                           Logger logger,
                           PreferenceCategory categoryChannels,
+                          Preference addChannel,
                           Preference showChannelQr,
                           Preference scanChannelQr,
                           Preference saveChannelToFile,
@@ -75,6 +76,12 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mHashHelper = hashHelper;
         mPskHelper = pskHelper;
         mCategoryChannels = categoryChannels;
+
+        addChannel.setOnPreferenceClickListener((Preference preference) -> {
+            mChannelConfigs.add(new ChannelConfig("New", ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
+            saveChannels();
+            return true;
+        });
 
         showChannelQr.setOnPreferenceClickListener((Preference preference) -> {
             Gson gson = new Gson();
@@ -150,6 +157,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mChannelConfigs = new ArrayList<>();
             mChannelConfigs.add(new ChannelConfig(ForwarderConstants.DEFAULT_CHANNEL_NAME, ForwarderConstants.DEFAULT_CHANNEL_PSK, ForwarderConstants.DEFAULT_CHANNEL_MODE, true));
             saveChannels();
+            return;
         } else {
             mChannelConfigs = gson.fromJson(channelDataStr, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
         }

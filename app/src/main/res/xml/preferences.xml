@@ -64,6 +64,10 @@
         android:key="plugin_atak_forwarder_key_category_channels"/>
     <PreferenceCategory android:title="@string/category_channel_controls" />
     <com.atakmap.android.gui.PanPreference
+        android:key="plugin_atak_forwarder_key_add_channel"
+        android:title="@string/add_channel"
+        android:summary="@string/add_channel_summary" />
+    <com.atakmap.android.gui.PanPreference
         android:key="plugin_atak_forwarder_key_show_channel_qr"
         android:title="@string/show_channel_qr"
         android:summary="@string/show_channel_qr_summary" />

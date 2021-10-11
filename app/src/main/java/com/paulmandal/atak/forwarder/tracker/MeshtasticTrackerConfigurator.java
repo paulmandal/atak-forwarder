@@ -251,26 +251,6 @@ public class MeshtasticTrackerConfigurator {
 
             AppOnlyProtos.ChannelSet channelSet = AppOnlyProtos.ChannelSet.parseFrom(channelSetBytes);
             AppOnlyProtos.ChannelSet.Builder channelSetBuilder = channelSet.toBuilder();
-
-            List<ChannelConfig> channelsFromRadio = new ArrayList<>();
-            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-
-                boolean found = false;
-
-                for (ChannelConfig channelConfig : mChannelConfigs) {
-                    if (channelSetting.getName().equals(channelConfig.name)) {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found) {
-                    channelsFromRadio.add(new ChannelConfig(channelSetting.getName(), channelSetting.getPsk().toByteArray(), channelSetting.getModemConfigValue(), i == 0));
-                }
-            }
-            mChannelConfigs.addAll(channelsFromRadio);
-
             channelSetBuilder.clearSettings();
 
             for (ChannelConfig channelConfig : mChannelConfigs) {

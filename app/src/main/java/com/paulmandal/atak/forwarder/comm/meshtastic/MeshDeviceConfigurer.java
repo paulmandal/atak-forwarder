@@ -278,26 +278,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         }
 
         boolean needsUpdate = false;
-
-        List<ChannelConfig> channelsFromRadio = new ArrayList<>();
-        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-            ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-
-            boolean found = false;
-
-            for (ChannelConfig channelConfig : mChannelConfigs) {
-                if (channelSetting.getName().equals(channelConfig.name)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                mLogger.v(TAG, "    channel: " + channelSetting.getName() + " not found in our settings!");
-                needsUpdate = true;
-            }
-        }
-
         for (ChannelConfig channelConfig : mChannelConfigs) {
             boolean found = false;
             for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
@@ -386,25 +366,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         }
 
         AppOnlyProtos.ChannelSet.Builder channelSetBuilder = channelSet.toBuilder();
-
-        List<ChannelConfig> channelsFromRadio = new ArrayList<>();
-        for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-            ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-
-            boolean found = false;
-
-            for (ChannelConfig channelConfig : mChannelConfigs) {
-                if (channelSetting.getName().equals(channelConfig.name)) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                channelsFromRadio.add(new ChannelConfig(channelSetting.getName(), channelSetting.getPsk().toByteArray(), channelSetting.getModemConfigValue(), false));
-            }
-        }
-        mChannelConfigs.addAll(channelsFromRadio);
 
         channelSetBuilder.clearSettings();
 

@@ -173,6 +173,19 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         for (ChannelConfig channelConfig : mChannelConfigs) {
             PanPreference dividerPreference = new PanPreference(mSettingsMenuContext);
             dividerPreference.setTitle(channelConfig.name);
+            dividerPreference.setOnPreferenceClickListener((Preference preference) -> {
+                final AlertDialog.Builder alertDialog = new AlertDialog.Builder(mSettingsMenuContext)
+                        .setTitle(mPluginContext.getResources().getString(R.string.delete_channel))
+                        .setMessage(mPluginContext.getResources().getString(R.string.delete_channel_message))
+                        .setPositiveButton(mPluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
+                            mChannelConfigs.remove(channelConfig);
+                            saveChannels();
+                        })
+                        .setNegativeButton(mPluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
+
+                alertDialog.show();
+                return true;
+            });
 
             mCategoryChannels.addPreference(dividerPreference);
 

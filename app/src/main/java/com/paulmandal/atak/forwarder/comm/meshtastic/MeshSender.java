@@ -158,9 +158,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mPliHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_HOP_LIMIT, PreferencesDefaults.DEFAULT_PLI_HOP_LIMIT));
             mChatHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHAT_HOP_LIMIT, PreferencesDefaults.DEFAULT_CHAT_HOP_LIMIT));
             mOtherHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_OTHER_HOP_LIMIT, PreferencesDefaults.DEFAULT_OTHER_HOP_LIMIT));
-        } else if (key.equals(PreferencesKeys.KEY_CHANNEL_NAME)
-                || key.equals(PreferencesKeys.KEY_CHANNEL_MODE)
-                || key.equals(PreferencesKeys.KEY_CHANNEL_PSK)
+        } else if (key.equals(PreferencesKeys.KEY_CHANNEL_DATA)
                 || key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
             // Reset since we may have been sending to a channel/device that won't ever ACK/NACK
             mLogger.d(TAG, "Channel settings or comm device changed, restarting message send");

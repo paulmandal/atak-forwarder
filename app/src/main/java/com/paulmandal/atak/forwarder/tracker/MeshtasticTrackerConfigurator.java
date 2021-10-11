@@ -18,11 +18,15 @@ import com.geeksville.mesh.RadioConfigProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MeshtasticTrackerConfigurator {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshtasticTrackerConfigurator.class.getSimpleName();
@@ -58,9 +62,7 @@ public class MeshtasticTrackerConfigurator {
     private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
     private final RadioConfigProtos.RegionCode mRegionCode;
-    private final String mChannelName;
-    private final byte[] mPsk;
-    private final ChannelProtos.ChannelSettings.ModemConfig mModemConfig;
+    private final List<ChannelConfig> mChannelConfigs;
     private final int mTeamIndex;
     private final int mRoleIndex;
     private final int mPliIntervalS;
@@ -88,9 +90,7 @@ public class MeshtasticTrackerConfigurator {
                                          MeshtasticDevice targetDevice,
                                          String deviceCallsign,
                                          RadioConfigProtos.RegionCode regionCode,
-                                         String channelName,
-                                         byte[] psk,
-                                         ChannelProtos.ChannelSettings.ModemConfig modemConfig,
+                                         List<ChannelConfig> channelConfigs,
                                          int teamIndex,
                                          int roleIndex,
                                          int pliIntervalS,
@@ -106,9 +106,7 @@ public class MeshtasticTrackerConfigurator {
         mTargetDevice = targetDevice;
         mDeviceCallsign = deviceCallsign;
         mRegionCode = regionCode;
-        mChannelName = channelName;
-        mPsk = psk;
-        mModemConfig = modemConfig;
+        mChannelConfigs = channelConfigs;
         mTeamIndex = teamIndex;
         mRoleIndex = roleIndex;
         mPliIntervalS = pliIntervalS;
@@ -254,33 +252,40 @@ public class MeshtasticTrackerConfigurator {
             AppOnlyProtos.ChannelSet channelSet = AppOnlyProtos.ChannelSet.parseFrom(channelSetBytes);
             AppOnlyProtos.ChannelSet.Builder channelSetBuilder = channelSet.toBuilder();
 
-            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
-            channelSettingsBuilder.setName(mChannelName);
-            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-            channelSettingsBuilder.setModemConfig(mModemConfig);
-
+            List<ChannelConfig> channelsFromRadio = new ArrayList<>();
             for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
                 ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-                mLogger.d(TAG, "  deleting channel from Tracker: " + channelSetting.getName());
-            }
 
-            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
-            int indexToRemove = -1;
+                boolean found = false;
 
-            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-                if (!mChannelName.equals(channelSetting.getName())) {
-                    continue;
+                for (ChannelConfig channelConfig : mChannelConfigs) {
+                    if (channelSetting.getName().equals(channelConfig.name)) {
+                        found = true;
+                        break;
+                    }
                 }
 
-                indexToRemove = i;
+                if (!found) {
+                    channelsFromRadio.add(new ChannelConfig(channelSetting.getName(), channelSetting.getPsk().toByteArray(), channelSetting.getModemConfigValue(), i == 0));
+                }
+            }
+            mChannelConfigs.addAll(channelsFromRadio);
+
+            channelSetBuilder.clearSettings();
+
+            for (ChannelConfig channelConfig : mChannelConfigs) {
+                ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
+                channelSettingsBuilder.setName(channelConfig.name);
+                channelSettingsBuilder.setPsk(ByteString.copyFrom(channelConfig.psk));
+                channelSettingsBuilder.setModemConfig(ChannelProtos.ChannelSettings.ModemConfig.forNumber(channelConfig.modemConfig));
+
+                if (channelConfig.isDefault) {
+                    channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
+                } else {
+                    channelSetBuilder.addSettings(channelSettingsBuilder.build());
+                }
             }
 
-            if (indexToRemove != -1) {
-                channelSetBuilder.removeSettings(indexToRemove);
-            }
-
-            channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
             channelSet = channelSetBuilder.build();
 
             mMeshService.setChannels(channelSet.toByteArray());

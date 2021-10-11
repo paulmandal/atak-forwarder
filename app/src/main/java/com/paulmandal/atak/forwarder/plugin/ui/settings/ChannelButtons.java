@@ -8,16 +8,13 @@ import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputFilter;
-import android.util.Base64;
 import android.util.Log;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanEditTextPreference;
 import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PanPreference;
-import com.atakmap.android.gui.PanPreferenceCategory;
 import com.atakmap.android.gui.PanSwitchPreference;
-import com.geeksville.mesh.ChannelProtos;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.google.zxing.Result;
@@ -32,10 +29,8 @@ import com.paulmandal.atak.forwarder.helpers.PskHelper;
 import com.paulmandal.atak.forwarder.helpers.QrHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
-import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.nio.channels.Channel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -221,11 +216,11 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             mCategoryChannels.addPreference(channelPskPreference);
 
             PanListPreference channelModePreference = new PanListPreference(mSettingsMenuContext);
-            channelModePreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_mode) + channelConfig.mode);
+            channelModePreference.setTitle(channelConfig.name + mPluginContext.getResources().getString(R.string.channel_mode) + channelConfig.modemConfig);
             channelModePreference.setEntries(R.array.channel_modes);
             channelModePreference.setEntryValues(R.array.channel_mode_values);
             channelModePreference.setOnPreferenceChangeListener((Preference preference, Object newValue) -> {
-                channelConfig.mode = Integer.parseInt((String) newValue);
+                channelConfig.modemConfig = Integer.parseInt((String) newValue);
                 saveChannels();
                 return true;
             });

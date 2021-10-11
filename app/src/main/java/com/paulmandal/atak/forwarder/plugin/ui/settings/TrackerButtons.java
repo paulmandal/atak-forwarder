@@ -23,7 +23,9 @@ import com.atakmap.android.gui.PluginSpinner;
 import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
@@ -33,6 +35,7 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.tracker.MeshtasticTrackerConfigurator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TrackerButtons {
@@ -112,9 +115,7 @@ public class TrackerButtons {
 
                 RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
 
-                String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-                ChannelProtos.ChannelSettings.ModemConfig channelMode = ChannelProtos.ChannelSettings.ModemConfig.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
-                byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+                List<ChannelConfig> channelConfigs = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
 
                 int teamIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_TEAM, PreferencesDefaults.DEFAULT_TRACKER_TEAM));
                 int roleIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_ROLE, PreferencesDefaults.DEFAULT_TRACKER_ROLE));
@@ -122,7 +123,7 @@ public class TrackerButtons {
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
                 boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelConfigs, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -141,9 +142,7 @@ public class TrackerButtons {
                                MeshtasticDevice targetDevice,
                                String deviceCallsign,
                                RadioConfigProtos.RegionCode regionCode,
-                               String channelName,
-                               byte[] psk,
-                               ChannelProtos.ChannelSettings.ModemConfig modemConfig,
+                               List<ChannelConfig> channelConfigs,
                                int teamIndex,
                                int roleIndex,
                                int pliIntervalS,
@@ -160,9 +159,7 @@ public class TrackerButtons {
                 targetDevice,
                 deviceCallsign,
                 regionCode,
-                channelName,
-                psk,
-                modemConfig,
+                channelConfigs,
                 teamIndex,
                 roleIndex,
                 pliIntervalS,

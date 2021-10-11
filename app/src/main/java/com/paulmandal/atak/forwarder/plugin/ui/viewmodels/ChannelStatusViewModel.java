@@ -1,25 +1,26 @@
 package com.paulmandal.atak.forwarder.plugin.ui.viewmodels;
 
 import android.content.SharedPreferences;
-import android.util.Base64;
 
 import androidx.annotation.CallSuper;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.geeksville.mesh.ChannelProtos;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
-import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
     private final MutableLiveData<String> mChannelName = new MutableLiveData<>();
     private final MutableLiveData<String> mPskHash = new MutableLiveData<>();
-    private final MutableLiveData<ChannelProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
+    private final MutableLiveData<Integer> mModemConfig = new MutableLiveData<>();
 
     private final HashHelper mHashHelper;
 
@@ -28,12 +29,10 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
                                   HashHelper hashHelper) {
         super(destroyables,
                 sharedPreferences,
-                new String[]{},
                 new String[]{
-                        PreferencesKeys.KEY_CHANNEL_NAME,
-                        PreferencesKeys.KEY_CHANNEL_MODE,
-                        PreferencesKeys.KEY_CHANNEL_PSK
-                });
+                        PreferencesKeys.KEY_CHANNEL_DATA,
+                },
+                new String[]{});
 
         mHashHelper = hashHelper;
 
@@ -44,7 +43,7 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
         return mChannelName;
     }
 
-    public LiveData<ChannelProtos.ChannelSettings.ModemConfig> getModemConfig() {
+    public LiveData<Integer> getModemConfig() {
         return mModemConfig;
     }
 
@@ -61,18 +60,23 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        // Do nothing
+        Gson gson = new Gson();
+        List<ChannelConfig> channelConfigs = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, null), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+        if (channelConfigs == null) {
+            return;
+        }
+
+        for (ChannelConfig channelConfig : channelConfigs) {
+            if (channelConfig.isDefault) {
+                mChannelName.postValue(channelConfig.name);
+                mModemConfig.postValue(channelConfig.modemConfig);
+                mPskHash.postValue(mHashHelper.hashFromBytes(channelConfig.psk));
+            }
+        }
     }
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
-        String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-        int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-        byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        ChannelProtos.ChannelSettings.ModemConfig modemConfig = ChannelProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
-
-        mChannelName.postValue(channelName);
-        mModemConfig.postValue(modemConfig);
-        mPskHash.postValue(mHashHelper.hashFromBytes(psk));
+        // Do nothing
     }
 }

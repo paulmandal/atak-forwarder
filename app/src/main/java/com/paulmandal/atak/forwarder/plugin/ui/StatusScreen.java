@@ -115,7 +115,7 @@ public class StatusScreen {
         });
         statusViewModel.getChannelName().observe(lifecycleOwner, channelName -> mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null));
         statusViewModel.getPskHash().observe(lifecycleOwner, mPskHash::setText);
-        statusViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
+        statusViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig) : null));
     }
 
     private void handleNoServiceConnected() {

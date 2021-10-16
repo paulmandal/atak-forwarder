@@ -2,6 +2,8 @@
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
+*IMPORTANT NOTE:* All configuration options / Tracker writing have been moved into ATAK's three button (kebab) menu under *Settings > Tool Preferences > ATAK Forwarder*
+
 ![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/plugin-disconnected-indicator.png)
 <br>
 ![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/status-view.png)

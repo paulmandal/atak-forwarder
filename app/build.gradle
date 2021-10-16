@@ -9,7 +9,7 @@ buildscript {
         ext.ATAK_VERSION = ENV_ATAK_VERSION
     }
 
-    def takdevVersion = '2.0.0'
+    def takdevVersion = '2.3.1'
 
     ext.getValueFromPropertiesFile = { propFile, key ->
         if(!propFile.isFile() || !propFile.canRead())

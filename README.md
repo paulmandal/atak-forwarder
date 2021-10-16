@@ -86,7 +86,7 @@ workspace/
 ATAK requires that plugins be signed with a whitelisted signature. In order to run your own builds of the plugin you will need to have a copy of ATAK that is signed with the same key you are using to sign your plugin build.
 
 * Clone the ATAK-CIV repo: `git clone git@github.com:deptofdefense/AndroidTacticalAssaultKit-CIV.git`
-* Follow the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
+* Follow the commands in the `.github/workflows` files or the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
     * Note: you will need to configure a signing key in the `local.properties` file
 
 ## Build the ATAK Gradle Plugin

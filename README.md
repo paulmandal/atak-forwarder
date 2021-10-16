@@ -100,7 +100,7 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 * Copy the `local.properties` file that you created while you were building ATAK to the `atak-forwarder` directory
 * Edit `local.properties` and add this line, remember to update the path to your correct path: `sdk.path=/path/to/your/AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs`
 * Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`
-* Build the `atak-forwarder` plugin and install it on your devices
+* Build the `atak-forwarder` plugin and install it on your devices (note: the environment variable `ATAK_VERSION` can be used to override the target ATAK version found in `app/build.gradle`)
 
 # Setting up the Plugin
 

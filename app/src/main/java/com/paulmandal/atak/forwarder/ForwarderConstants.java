@@ -14,10 +14,7 @@ public class ForwarderConstants {
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
     };
 
-    /**
-     * How long to wait after attempting to stop the service when the Paired button is clicked
-     */
-    public static final int DELAY_AFTER_STOPPING_SERVICE = 5000;
+    public static final int DEFAULT_QR_CODE_WIDTH = 640;
 
     /**
      * How long to wait for radioConfig to be available when writing to a Tracker device

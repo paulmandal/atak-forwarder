@@ -15,15 +15,13 @@ public class QrHelper {
     public static final int COLOR_WHITE = 0xFFFFFFFF;
     public static final int COLOR_BLACK = 0xFF000000;
 
-    private static final int WIDTH = 640;
-
-    public Bitmap encodeAsBitmap(byte[] input) throws WriterException {
+    public Bitmap encodeAsBitmap(byte[] input, int width) throws WriterException {
         String base64 = Base64.encodeToString(input, Base64.DEFAULT);
 
         BitMatrix result;
         try {
             //noinspection SuspiciousNameCombination
-            result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, WIDTH, WIDTH, null);
+            result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, width, width, null);
         } catch (IllegalArgumentException iae) {
             // Unsupported format
             return null;
@@ -38,7 +36,7 @@ public class QrHelper {
             }
         }
         Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        bitmap.setPixels(pixels, 0, WIDTH, 0, 0, w, h);
+        bitmap.setPixels(pixels, 0, width, 0, 0, w, h);
         return bitmap;
     }
 }

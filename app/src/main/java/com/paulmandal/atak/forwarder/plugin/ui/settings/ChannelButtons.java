@@ -9,9 +9,13 @@ import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputFilter;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.atakmap.android.gui.PanEditTextPreference;
 import com.atakmap.android.gui.PanListPreference;
@@ -80,6 +84,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mPskHelper = pskHelper;
         mCategoryChannels = categoryChannels;
 
+
+
         addChannel.setOnPreferenceClickListener((Preference preference) -> {
             mChannelConfigs.add(new ChannelConfig("New " + mChannelConfigs.size(), ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
             saveChannels();
@@ -90,9 +96,23 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             String channelConfigsStr = new Gson().toJson(mChannelConfigs, ArrayList.class);
             byte[] payload = channelConfigsStr.getBytes();
 
+            Log.e(TAG, "show QR, channelConfigStr.len: " + channelConfigsStr.length() + ", : " + channelConfigsStr);
+
+            StringBuilder sb = new StringBuilder();
+            for (byte b : payload) {
+                sb.append(String.format("%02X ", b));
+            }
+
+            Log.e(TAG, "show QR, payload: " + sb.toString());
+
+            WindowManager windowManager = (WindowManager) settingsMenuContext.getSystemService(Context.WINDOW_SERVICE);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            int width = (int) ((float) displayMetrics.widthPixels * 0.9);
+
             Bitmap bm = null;
             try {
-                bm = qrHelper.encodeAsBitmap(payload);
+                bm = qrHelper.encodeAsBitmap(payload, width);
             } catch (WriterException e) {
                 e.printStackTrace();
             }
@@ -105,12 +125,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                         .setView(iv)
                         .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> dialog.cancel());
 
-                Dialog dialog = alertDialog.create();
-
-                Window window = dialog.getWindow();
-                window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-                dialog.show();
+                alertDialog.show();
             }
             return true;
         });
@@ -129,10 +144,27 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
             scannerView.setResultHandler((Result rawResult) -> {
                 String resultText = rawResult.getText();
-                mChannelConfigs = new Gson().fromJson(resultText, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
-                saveChannels();
 
-                discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
+                Log.e(TAG, "read QR, rawResult.len: " + resultText.length() + ", : " + resultText);
+
+                StringBuilder sb = new StringBuilder();
+                byte[] rawBytes = rawResult.getRawBytes();
+                for (byte b : rawBytes) {
+                    sb.append(String.format("%02X ", b));
+                }
+
+                Log.e(TAG, "read QR, payload: " + sb.toString());
+
+                try {
+                    mChannelConfigs = new Gson().fromJson(resultText, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                    saveChannels();
+
+                    discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
+                } catch (IllegalStateException e) {
+                    Toast.makeText(settingsMenuContext, "Error reading QR code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    e.printStackTrace();
+                }
 
                 scannerView.stopCamera();
 

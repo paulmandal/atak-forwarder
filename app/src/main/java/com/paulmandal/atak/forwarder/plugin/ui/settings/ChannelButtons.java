@@ -86,7 +86,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mCategoryChannels = categoryChannels;
 
         addChannel.setOnPreferenceClickListener((Preference preference) -> {
-            if (mChannelConfigs.size() < MAX_CHANNELS - 1) {
+            if (mChannelConfigs.size() < MAX_CHANNELS) {
                 mChannelConfigs.add(new ChannelConfig("New " + mChannelConfigs.size(), ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
                 saveChannels();
             } else {

@@ -16,7 +16,7 @@ public class ForwarderConstants {
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
     };
 
-    public static final int MAX_CHANNELS = 5;
+    public static final int MAX_CHANNELS = 3;
 
     public static final ErrorCorrectionLevel DEFAULT_ERROR_CORRECTION_LEVEL = ErrorCorrectionLevel.M;
 

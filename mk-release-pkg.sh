@@ -6,6 +6,6 @@ then
 fi
 
 mv -v local.properties ..
-zip -r /mnt/shared/atak-forwarder-${version}-release.zip . -x build -x app/build -x images
+zip -r /mnt/shared/atak-forwarder-${version}-release.zip . -x build app/build images
 cp -v ../local.properties .
 

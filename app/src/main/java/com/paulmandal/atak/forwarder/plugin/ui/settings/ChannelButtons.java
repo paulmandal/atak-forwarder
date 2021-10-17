@@ -45,6 +45,8 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView;
 public class ChannelButtons extends DestroyableSharedPrefsListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + ChannelButtons.class.getSimpleName();
 
+    private static final int MAX_CHANNELS = ForwarderConstants.MAX_CHANNELS;
+
     private final SharedPreferences mSharedPreferences;
     private final Context mSettingsMenuContext;
     private final Context mPluginContext;
@@ -84,8 +86,12 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mCategoryChannels = categoryChannels;
 
         addChannel.setOnPreferenceClickListener((Preference preference) -> {
-            mChannelConfigs.add(new ChannelConfig("New " + mChannelConfigs.size(), ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
-            saveChannels();
+            if (mChannelConfigs.size() < MAX_CHANNELS - 1) {
+                mChannelConfigs.add(new ChannelConfig("New " + mChannelConfigs.size(), ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
+                saveChannels();
+            } else {
+                Toast.makeText(settingsMenuContext, "Reached maximum channel count: " + MAX_CHANNELS, Toast.LENGTH_SHORT).show();
+            }
             return true;
         });
 

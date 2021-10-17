@@ -385,6 +385,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             mLogger.e(TAG, "writeChannelConfig() - exception while writing channels");
             e.printStackTrace();
         }
+
+        checkChannelConfig();
     }
 
     private boolean areByteArraysEqual(byte[] lhs, byte[] rhs) {

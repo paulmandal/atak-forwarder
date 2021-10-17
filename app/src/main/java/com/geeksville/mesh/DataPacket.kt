@@ -4,6 +4,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import java.nio.charset.Charset
+
 
 @Parcelize
 enum class MessageStatus : Parcelable {
@@ -39,7 +41,7 @@ data class DataPacket(
      * Syntactic sugar to make it easy to create text messages
      */
     constructor(to: String? = ID_BROADCAST, text: String) : this(
-            to, text.toByteArray(Charsets.UTF_8),
+            to, text.toByteArray(utf8),
             Portnums.PortNum.TEXT_MESSAGE_APP_VALUE
     )
 
@@ -48,7 +50,7 @@ data class DataPacket(
      */
     val text: String?
         get() = if (dataType == Portnums.PortNum.TEXT_MESSAGE_APP_VALUE)
-            bytes?.toString(Charsets.UTF_8)
+            bytes?.toString(utf8)
         else
             null
 
@@ -63,8 +65,7 @@ data class DataPacket(
             parcel.readInt(),
             parcel.readParcelable(MessageStatus::class.java.classLoader),
             parcel.readInt()
-    ) {
-    }
+    )
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -144,6 +145,8 @@ data class DataPacket(
         override fun newArray(size: Int): Array<DataPacket?> {
             return arrayOfNulls(size)
         }
+        val utf8 = Charset.forName("UTF-8")
     }
+
 
 }

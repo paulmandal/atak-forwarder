@@ -1,5 +1,7 @@
 package com.paulmandal.atak.forwarder;
 
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+
 public class ForwarderConstants {
     /**
      * Pre-shared Key Length, 16 for AES128, 32 for AES256
@@ -14,7 +16,7 @@ public class ForwarderConstants {
             0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
     };
 
-    public static final int DEFAULT_QR_CODE_WIDTH = 640;
+    public static final ErrorCorrectionLevel DEFAULT_ERROR_CORRECTION_LEVEL = ErrorCorrectionLevel.M;
 
     /**
      * How long to wait for radioConfig to be available when writing to a Tracker device

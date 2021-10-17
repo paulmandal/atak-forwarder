@@ -1,7 +1,6 @@
 package com.paulmandal.atak.forwarder.plugin.ui.settings;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -9,10 +8,8 @@ import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.text.InputFilter;
+import android.util.Base64;
 import android.util.DisplayMetrics;
-import android.util.Log;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -22,7 +19,9 @@ import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PanPreference;
 import com.atakmap.android.gui.PanSwitchPreference;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -84,8 +83,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mPskHelper = pskHelper;
         mCategoryChannels = categoryChannels;
 
-
-
         addChannel.setOnPreferenceClickListener((Preference preference) -> {
             mChannelConfigs.add(new ChannelConfig("New " + mChannelConfigs.size(), ForwarderConstants.DEFAULT_CHANNEL_PSK, 1, false));
             saveChannels();
@@ -95,15 +92,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         showChannelQr.setOnPreferenceClickListener((Preference preference) -> {
             String channelConfigsStr = new Gson().toJson(mChannelConfigs, ArrayList.class);
             byte[] payload = channelConfigsStr.getBytes();
-
-            Log.e(TAG, "show QR, channelConfigStr.len: " + channelConfigsStr.length() + ", : " + channelConfigsStr);
-
-            StringBuilder sb = new StringBuilder();
-            for (byte b : payload) {
-                sb.append(String.format("%02X ", b));
-            }
-
-            Log.e(TAG, "show QR, payload: " + sb.toString());
 
             WindowManager windowManager = (WindowManager) settingsMenuContext.getSystemService(Context.WINDOW_SERVICE);
             DisplayMetrics displayMetrics = new DisplayMetrics();
@@ -133,6 +121,11 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         scanChannelQr.setOnPreferenceClickListener((Preference preference) -> {
             ZXingScannerView scannerView = new ZXingScannerView(pluginContext);
 
+            List<BarcodeFormat> possibleFormats = new ArrayList<>();
+            possibleFormats.add(BarcodeFormat.QR_CODE);
+
+            scannerView.setFormats(possibleFormats);
+
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
                     .setView(scannerView)
                     .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> {
@@ -144,23 +137,15 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
             scannerView.setResultHandler((Result rawResult) -> {
                 String resultText = rawResult.getText();
-
-                Log.e(TAG, "read QR, rawResult.len: " + resultText.length() + ", : " + resultText);
-
-                StringBuilder sb = new StringBuilder();
-                byte[] rawBytes = rawResult.getRawBytes();
-                for (byte b : rawBytes) {
-                    sb.append(String.format("%02X ", b));
-                }
-
-                Log.e(TAG, "read QR, payload: " + sb.toString());
+                byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
+                String json = new String(resultBytes);
 
                 try {
-                    mChannelConfigs = new Gson().fromJson(resultText, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                    mChannelConfigs = new Gson().fromJson(json, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
                     saveChannels();
 
                     discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
-                } catch (IllegalStateException e) {
+                } catch (IllegalStateException | JsonSyntaxException e) {
                     Toast.makeText(settingsMenuContext, "Error reading QR code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
                     e.printStackTrace();

@@ -270,25 +270,32 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             mLogger.v(TAG, "  channel from radio: " + channelSet.getSettings(i).getName());
         }
 
-        boolean needsUpdate = false;
-        for (ChannelConfig channelConfig : mChannelConfigs) {
-            boolean found = false;
-            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-                ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(i);
-                if (channelConfig.name.equals(channelSettings.getName())) {
-                    found = true;
+        boolean needsUpdate = mChannelConfigs.size() != channelSet.getSettingsCount();
 
-                    if (!areByteArraysEqual(channelConfig.psk, channelSettings.getPsk().toByteArray()) || channelConfig.modemConfig != channelSettings.getModemConfigValue()) {
-                        needsUpdate = true;
-                        mLogger.v(TAG, "    channel: " + channelConfig.name + " changed!");
-                        break;
+        if (needsUpdate) {
+            mLogger.v(TAG, "  channel counts differ, needsUpdate = true");
+        }
+
+        if (!needsUpdate) {
+            for (ChannelConfig channelConfig : mChannelConfigs) {
+                boolean found = false;
+                for (int i = 0; i < channelSet.getSettingsCount(); i++) {
+                    ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(i);
+                    if (channelConfig.name.equals(channelSettings.getName())) {
+                        found = true;
+
+                        if (!areByteArraysEqual(channelConfig.psk, channelSettings.getPsk().toByteArray()) || channelConfig.modemConfig != channelSettings.getModemConfigValue()) {
+                            needsUpdate = true;
+                            mLogger.v(TAG, "    channel: " + channelConfig.name + " changed!");
+                            break;
+                        }
                     }
                 }
-            }
 
-            if (!found) {
-                mLogger.v(TAG, "    channel: " + channelConfig.name + " not found on radio!");
-                needsUpdate = true;
+                if (!found) {
+                    mLogger.v(TAG, "    channel: " + channelConfig.name + " not found on radio!");
+                    needsUpdate = true;
+                }
             }
         }
 
@@ -385,8 +392,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             mLogger.e(TAG, "writeChannelConfig() - exception while writing channels");
             e.printStackTrace();
         }
-
-        checkChannelConfig();
     }
 
     private boolean areByteArraysEqual(byte[] lhs, byte[] rhs) {

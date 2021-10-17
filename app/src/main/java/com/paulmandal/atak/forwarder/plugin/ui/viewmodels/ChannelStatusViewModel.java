@@ -73,8 +73,10 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
             return;
         }
 
+        boolean first = true;
         for (ChannelConfig channelConfig : channelConfigs) {
-            if (channelConfig.isDefault) {
+            if (channelConfig.isDefault || first) {
+                first = false;
                 mChannelName.postValue(channelConfig.name);
                 mModemConfig.postValue(channelConfig.modemConfig);
                 mPskHash.postValue(mHashHelper.hashFromBytes(channelConfig.psk));

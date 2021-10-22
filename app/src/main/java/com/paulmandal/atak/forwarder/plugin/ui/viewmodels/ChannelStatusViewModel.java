@@ -72,10 +72,10 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
         // This is in complexUpdate because simpleUpdate is called before the MutableLiveData are available
-        String json = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
+        String channelJson = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
         List<ChannelConfig> channelConfigs;
         try {
-            channelConfigs = mChannelJsonHelper.listFromJson(json);
+            channelConfigs = mChannelJsonHelper.listFromJson(channelJson);
         } catch (ChannelJsonException e) {
             return;
         }

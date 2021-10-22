@@ -28,6 +28,8 @@ import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonException;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
@@ -43,6 +45,7 @@ public class TrackerButtons {
                           Handler uiThreadHandler,
                           DevicesList devicesList,
                           MeshSuspendController meshSuspendController,
+                          ChannelJsonHelper channelJsonHelper,
                           Logger logger,
                           Preference teams,
                           Preference roles,
@@ -114,7 +117,15 @@ public class TrackerButtons {
 
                 RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
 
-                List<ChannelConfig> channelConfigs = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                String channelJson = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
+
+                List<ChannelConfig> channelConfigs;
+                try {
+                    channelConfigs = channelJsonHelper.listFromJson(channelJson);
+                } catch (ChannelJsonException e) {
+                    Toast.makeText(settingsMenuContext, "Error reading channel settings, aborting write to device!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 int teamIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_TEAM, PreferencesDefaults.DEFAULT_TRACKER_TEAM));
                 int roleIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_ROLE, PreferencesDefaults.DEFAULT_TRACKER_ROLE));

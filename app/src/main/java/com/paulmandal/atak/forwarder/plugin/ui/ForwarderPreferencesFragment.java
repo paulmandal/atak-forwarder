@@ -10,11 +10,13 @@ import android.preference.PreferenceCategory;
 
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
+import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.helpers.PskHelper;
@@ -87,6 +89,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         HashHelper hashHelper = new HashHelper();
         PskHelper pskHelper = new PskHelper();
         QrHelper qrHelper = new QrHelper();
+        ChannelJsonHelper channelJsonHelper = new ChannelJsonHelper(new Gson());
         ChannelButtons channelButtons = new ChannelButtons(sDestroyables,
                 sSharedPreferences,
                 settingsMenuContext,
@@ -109,6 +112,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 uiThreadHandler,
                 sDevicesList,
                 sMeshSuspendController,
+                channelJsonHelper,
                 sLogger,
                 findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
                 findPreference(PreferencesKeys.KEY_TRACKER_ROLE),

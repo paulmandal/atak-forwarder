@@ -2,7 +2,6 @@ package com.paulmandal.atak.forwarder.helpers;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 
@@ -29,7 +28,7 @@ public class ChannelJsonHelper {
     public List<ChannelConfig> listFromJson(String json) throws ChannelJsonException {
         try {
             return mGson.fromJson(json, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
-        } catch (JsonSyntaxException e) {
+        } catch (RuntimeException e) {
             e.printStackTrace();
             throw new ChannelJsonException(e);
         }

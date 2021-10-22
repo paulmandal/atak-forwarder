@@ -28,6 +28,8 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonException;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.helpers.PskHelper;
@@ -46,12 +48,14 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + ChannelButtons.class.getSimpleName();
 
     private static final int MAX_CHANNELS = ForwarderConstants.MAX_CHANNELS;
+    private static final List<ChannelConfig> DEFAULT_CHANNEL_CONFIGS = PreferencesDefaults.DEFAULT_CHANNEL_CONFIGS;
 
     private final SharedPreferences mSharedPreferences;
     private final Context mSettingsMenuContext;
     private final Context mPluginContext;
     private final HashHelper mHashHelper;
     private final PskHelper mPskHelper;
+    private final ChannelJsonHelper mChannelJsonHelper;
     private final PreferenceCategory mCategoryChannels;
 
     private List<ChannelConfig> mChannelConfigs;
@@ -64,6 +68,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           HashHelper hashHelper,
                           PskHelper pskHelper,
                           QrHelper qrHelper,
+                          ChannelJsonHelper channelJsonHelper,
                           Logger logger,
                           PreferenceCategory categoryChannels,
                           Preference addChannel,
@@ -83,6 +88,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         mPluginContext = pluginContext;
         mHashHelper = hashHelper;
         mPskHelper = pskHelper;
+        mChannelJsonHelper = channelJsonHelper;
         mCategoryChannels = categoryChannels;
 
         addChannel.setOnPreferenceClickListener((Preference preference) -> {
@@ -96,7 +102,13 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         });
 
         showChannelQr.setOnPreferenceClickListener((Preference preference) -> {
-            String channelConfigsStr = new Gson().toJson(mChannelConfigs, ArrayList.class);
+            String channelConfigsStr;
+            try {
+                channelConfigsStr = channelJsonHelper.toJson(mChannelConfigs);
+            } catch (ChannelJsonException e) {
+                Toast.makeText(settingsMenuContext, "Error generating channel JSON!", Toast.LENGTH_SHORT).show();
+                return true;
+            }
             byte[] payload = channelConfigsStr.getBytes();
 
             WindowManager windowManager = (WindowManager) settingsMenuContext.getSystemService(Context.WINDOW_SERVICE);
@@ -147,11 +159,11 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                 String json = new String(resultBytes);
 
                 try {
-                    mChannelConfigs = new Gson().fromJson(json, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                    mChannelConfigs = mChannelJsonHelper.listFromJson(json);
                     saveChannels();
 
                     discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
-                } catch (IllegalStateException | JsonSyntaxException e) {
+                } catch (ChannelJsonException e) {
                     Toast.makeText(settingsMenuContext, "Error reading QR code: " + e.getMessage(), Toast.LENGTH_SHORT).show();
 
                     e.printStackTrace();
@@ -187,9 +199,14 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
         // This is in complexUpdate so mCategoryChannels is available when it gets called
-        mChannelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+        String channelJson = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
+        try {
+            mChannelConfigs = mChannelJsonHelper.listFromJson(channelJson);
 
-        updateChannels();
+            updateChannels();
+        } catch (ChannelJsonException e) {
+            // do nothing
+        }
     }
 
     private void updateChannels() {
@@ -206,7 +223,10 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                             mChannelConfigs.remove(channelConfig);
 
                             if (mChannelConfigs.size() == 0) {
-                                mChannelConfigs = new Gson().fromJson(PreferencesDefaults.DEFAULT_CHANNEL_DATA, new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                                mChannelConfigs = new ArrayList<>();
+                                for (ChannelConfig config : DEFAULT_CHANNEL_CONFIGS) {
+                                    mChannelConfigs.add(config.clone());
+                                }
                             }
 
                             saveChannels();
@@ -279,8 +299,16 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
     }
 
     private void saveChannels() {
+        String channelJson;
+
+        try {
+            channelJson = mChannelJsonHelper.toJson(mChannelConfigs);
+        } catch (ChannelJsonException e) {
+            return;
+        }
+
         mSharedPreferences.edit()
-                .putString(PreferencesKeys.KEY_CHANNEL_DATA, new Gson().toJson(mChannelConfigs, ArrayList.class))
+                .putString(PreferencesKeys.KEY_CHANNEL_DATA, channelJson)
                 .apply();
     }
 }

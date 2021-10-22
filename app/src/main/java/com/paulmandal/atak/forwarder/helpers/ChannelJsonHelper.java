@@ -18,7 +18,7 @@ public class ChannelJsonHelper {
 
     public String toJson(List<ChannelConfig> channelConfigs) throws ChannelJsonException {
         try {
-            mGson.toJson(channelConfigs, ArrayList.class)
+            return mGson.toJson(channelConfigs, ArrayList.class);
         } catch (JsonIOException e) {
             e.printStackTrace();
             throw new ChannelJsonException(e);

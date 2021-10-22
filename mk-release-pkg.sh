@@ -12,15 +12,16 @@ then
   sed -i "s/ext.ATAK_VERSION = \".*\"/ext.ATAK_VERSION = \"${2}\"/" app/build.gradle
 fi
 
-mv -v local.properties ..
+repoDirName=`pwd | sed s#.*/##`
+
+pushd ..
 if [ "${2}" != "" ]
 then
-  zip -r /mnt/shared/atak-forwarder-${1}-atak-${2}.zip . --exclude build app/build images
+  zip -r /mnt/shared/atak-forwarder-${1}-atak-${2}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
 else
-  zip -r /mnt/shared/atak-forwarder-${1}.zip . --exclude build app/build images
+  zip -r /mnt/shared/atak-forwarder-${1}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
 fi
-
-cp -v ../local.properties .
+popd
 
 if [ "${2}" != "" ]
 then

@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
@@ -49,8 +50,9 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
                            CommandQueue commandQueue,
-                           HashHelper hashHelper) {
-        super(destroyables, sharedPreferences, hashHelper);
+                           HashHelper hashHelper,
+                           ChannelJsonHelper channelJsonHelper) {
+        super(destroyables, sharedPreferences, hashHelper, channelJsonHelper);
 
         mDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
 

@@ -14,6 +14,7 @@ import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.app.preferences.ToolsPreferenceFragment;
+import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
@@ -33,6 +34,7 @@ import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
 import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -167,6 +169,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, sharedPreferences, userTracker, inboundMessageHandler, logger, pluginVersion);
 
 
+        ChannelJsonHelper channelJsonHelper = new ChannelJsonHelper(new Gson());
+
         StatusViewModel statusViewModel = new StatusViewModel(
                 destroyables,
                 sharedPreferences,
@@ -176,7 +180,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 meshSender,
                 inboundMeshMessageHandler,
                 commandQueue,
-                hashHelper);
+                hashHelper,
+                channelJsonHelper);
 
 
         ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,

@@ -9,6 +9,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.paulmandal.atak.forwarder.channel.ChannelConfig;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonException;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
@@ -24,10 +26,12 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
     private final MutableLiveData<Integer> mModemConfig = new MutableLiveData<>();
 
     private final HashHelper mHashHelper;
+    private final ChannelJsonHelper mChannelJsonHelper;
 
     public ChannelStatusViewModel(List<Destroyable> destroyables,
                                   SharedPreferences sharedPreferences,
-                                  HashHelper hashHelper) {
+                                  HashHelper hashHelper,
+                                  ChannelJsonHelper channelJsonHelper) {
         super(destroyables,
                 sharedPreferences,
                 new String[] {},
@@ -36,6 +40,7 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
                 });
 
         mHashHelper = hashHelper;
+        mChannelJsonHelper = channelJsonHelper;
 
         complexUpdate(sharedPreferences, "");
     }
@@ -67,9 +72,11 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
         // This is in complexUpdate because simpleUpdate is called before the MutableLiveData are available
-        List<ChannelConfig> channelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
-
-        if (channelConfigs == null) {
+        String json = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
+        List<ChannelConfig> channelConfigs;
+        try {
+            channelConfigs = mChannelJsonHelper.listFromJson(json);
+        } catch (ChannelJsonException e) {
             return;
         }
 

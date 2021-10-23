@@ -40,6 +40,8 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.tracker.TrackerCotGenerator;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
@@ -112,7 +114,15 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
         HashHelper hashHelper = new HashHelper();
-        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables, sharedPreferences, meshServiceController, meshtasticDeviceSwitcher, hashHelper, logger, callsign);
+        ChannelJsonHelper channelJsonHelper = new ChannelJsonHelper(new Gson());
+        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables,
+                sharedPreferences,
+                meshServiceController,
+                meshtasticDeviceSwitcher,
+                hashHelper,
+                channelJsonHelper,
+                logger,
+                callsign);
 
 
         UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
@@ -168,8 +178,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         }
         TrackerCotGenerator trackerCotGenerator = new TrackerCotGenerator(destroyables, sharedPreferences, userTracker, inboundMessageHandler, logger, pluginVersion);
 
-
-        ChannelJsonHelper channelJsonHelper = new ChannelJsonHelper(new Gson());
 
         StatusViewModel statusViewModel = new StatusViewModel(
                 destroyables,

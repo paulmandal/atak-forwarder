@@ -10,12 +10,13 @@ import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.gson.ChannelConfig;
 import com.paulmandal.atak.forwarder.gson.MeshtasticDevice;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonException;
+import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -23,7 +24,6 @@ import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener implements MeshServiceController.ConnectionStateListener {
@@ -33,6 +33,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private final MeshServiceController mMeshServiceController;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final HashHelper mHashHelper;
+    private final ChannelJsonHelper mChannelJsonHelper;
     private final Logger mLogger;
     private final String mCallsign;
 
@@ -55,6 +56,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                                 MeshServiceController meshServiceController,
                                 MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                 HashHelper hashHelper,
+                                ChannelJsonHelper channelJsonHelper,
                                 Logger logger,
                                 String callsign) {
         super(destroyables,
@@ -71,6 +73,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mMeshServiceController = meshServiceController;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mHashHelper = hashHelper;
+        mChannelJsonHelper = channelJsonHelper;
         mLogger = logger;
         mCallsign = callsign;
 
@@ -79,7 +82,14 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         // TODO: clean up this hacks
         mIsRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
         mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
-        mChannelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+        String json = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
+
+        try {
+            mChannelConfigs = channelJsonHelper.listFromJson(json);
+        } catch (ChannelJsonException e) {
+            mLogger.e(TAG, "Exception reading channels for the firsst time, this probably shouldn't happen");
+            mChannelConfigs = PreferencesDefaults.DEFAULT_CHANNEL_CONFIGS;
+        }
     }
 
     @Override
@@ -138,7 +148,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             case PreferencesKeys.KEY_CHANNEL_DATA:
                 mLogger.v(TAG, "Channel config updated, checking if we need to update the radio");
 
-                List<ChannelConfig> channelConfigs = new Gson().fromJson(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA), new TypeToken<ArrayList<ChannelConfig>>() {}.getType());
+                List<ChannelConfig> channelConfigs;
+                String channelJson = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_DATA, PreferencesDefaults.DEFAULT_CHANNEL_DATA);
+
+                try {
+                    channelConfigs = mChannelJsonHelper.listFromJson(channelJson);
+                } catch (ChannelJsonException e) {
+                    // Do nothing
+                    mLogger.e(TAG, "Exception reading channels from preferences, this probably shouldn't happen");
+                    return;
+                }
 
                 if (channelConfigs == null) {
                     mLogger.e(TAG, "Returning from complexUpdate on KEY_CHANNEL_DATA, channelConfigs was null, this should never happen!");

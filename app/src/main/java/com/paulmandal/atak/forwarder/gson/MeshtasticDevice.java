@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.comm.meshtastic;
+package com.paulmandal.atak.forwarder.gson;
 
 import androidx.annotation.NonNull;
 

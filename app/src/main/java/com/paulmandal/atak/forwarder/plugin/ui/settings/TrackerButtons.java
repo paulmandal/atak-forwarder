@@ -19,14 +19,12 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.atakmap.android.gui.EditText;
 import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PluginSpinner;
-import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.channel.ChannelConfig;
+import com.paulmandal.atak.forwarder.gson.ChannelConfig;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
+import com.paulmandal.atak.forwarder.gson.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.helpers.ChannelJsonException;
 import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
@@ -36,7 +34,6 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.tracker.MeshtasticTrackerConfigurator;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TrackerButtons {

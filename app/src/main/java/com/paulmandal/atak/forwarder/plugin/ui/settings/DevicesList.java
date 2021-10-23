@@ -8,7 +8,7 @@ import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
 
 import com.paulmandal.atak.forwarder.ForwarderConstants;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
+import com.paulmandal.atak.forwarder.gson.MeshtasticDevice;
 
 import java.util.ArrayList;
 import java.util.Collection;

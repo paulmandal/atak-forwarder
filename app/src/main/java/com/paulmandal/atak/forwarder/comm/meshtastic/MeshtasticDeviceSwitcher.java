@@ -11,6 +11,7 @@ import android.os.RemoteException;
 
 import com.geeksville.mesh.IMeshService;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.gson.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.ArrayList;

@@ -6,9 +6,7 @@ import androidx.annotation.CallSuper;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.paulmandal.atak.forwarder.channel.ChannelConfig;
+import com.paulmandal.atak.forwarder.gson.ChannelConfig;
 import com.paulmandal.atak.forwarder.helpers.ChannelJsonException;
 import com.paulmandal.atak.forwarder.helpers.ChannelJsonHelper;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -17,7 +15,6 @@ import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {

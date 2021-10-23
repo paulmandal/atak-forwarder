@@ -3,7 +3,7 @@ package com.paulmandal.atak.forwarder.helpers;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.reflect.TypeToken;
-import com.paulmandal.atak.forwarder.channel.ChannelConfig;
+import com.paulmandal.atak.forwarder.gson.ChannelConfig;
 
 import java.util.ArrayList;
 import java.util.List;

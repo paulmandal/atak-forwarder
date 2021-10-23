@@ -51,8 +51,8 @@
 -keep class * implements transapps.maps.plugin.lifecycle.Lifecycle {
 }
 
-# This class is parsed/marshalled by Gson
--keep class com.paulmandal.atak.forwarder.comm.meshtastic.** { *; }
+# Classes in this package are parsed/marshalled by Gson
+-keep class com.paulmandal.atak.forwarder.gson.** { *; }
 
 # These classes use Parcelable
 -keep class com.geeksville.mesh.** { *; }

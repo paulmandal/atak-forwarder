@@ -13,10 +13,10 @@ import android.os.RemoteException;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.RadioConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.gson.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.SuspendListener;

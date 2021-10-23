@@ -2,7 +2,7 @@ package com.paulmandal.atak.forwarder.preferences;
 
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
-import com.paulmandal.atak.forwarder.channel.ChannelConfig;
+import com.paulmandal.atak.forwarder.gson.ChannelConfig;
 
 import java.util.ArrayList;
 import java.util.List;

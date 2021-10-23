@@ -6,7 +6,7 @@ import com.atakmap.android.gui.PanListPreference;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
+import com.paulmandal.atak.forwarder.gson.MeshtasticDevice;
 
 import java.util.List;
 

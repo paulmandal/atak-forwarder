@@ -1,4 +1,4 @@
-package com.paulmandal.atak.forwarder.channel;
+package com.paulmandal.atak.forwarder.gson;
 
 public class ChannelConfig implements Cloneable {
     public String name;

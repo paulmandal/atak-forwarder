@@ -2,6 +2,8 @@
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
+*IMPORTANT NOTE:* All configuration options / Tracker writing have been moved into ATAK's three button (kebab) menu under *Settings > Tool Preferences > ATAK Forwarder*
+
 ![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/plugin-disconnected-indicator.png)
 <br>
 ![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/status-view.png)
@@ -41,8 +43,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic-Android | 1.2.28 |
-| Meshtastic-device | 1.2.28 |
+| Meshtastic-Android | 1.2.31 |
+| Meshtastic-device | 1.2.45 |
 
 # To Do
 
@@ -84,7 +86,7 @@ workspace/
 ATAK requires that plugins be signed with a whitelisted signature. In order to run your own builds of the plugin you will need to have a copy of ATAK that is signed with the same key you are using to sign your plugin build.
 
 * Clone the ATAK-CIV repo: `git clone git@github.com:deptofdefense/AndroidTacticalAssaultKit-CIV.git`
-* Follow the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
+* Follow the commands in the `.github/workflows` files or the instructions in `AndroidTacticalAssaultKit-CIV/BUILDING.md` to build and install ATAK
     * Note: you will need to configure a signing key in the `local.properties` file
 
 ## Build the ATAK Gradle Plugin
@@ -98,7 +100,7 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 * Copy the `local.properties` file that you created while you were building ATAK to the `atak-forwarder` directory
 * Edit `local.properties` and add this line, remember to update the path to your correct path: `sdk.path=/path/to/your/AndroidTacticalAssaultKit-CIV/atak/ATAK/app/build/libs`
 * Edit the `app` Run Configuration in `atak-forwarder` and set the Launch Options to `Nothing`
-* Build the `atak-forwarder` plugin and install it on your devices
+* Build the `atak-forwarder` plugin and install it on your devices (note: the environment variable `ATAK_VERSION` can be used to override the target ATAK version found in `app/build.gradle`)
 
 # Setting up the Plugin
 

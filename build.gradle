@@ -1,6 +1,6 @@
 
 buildscript {
-    ext.kotlin_version = '1.4.21'
+    ext.kotlin_version = '1.5.31'
 
     repositories {
         google()
@@ -10,7 +10,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.2'
+        classpath 'com.android.tools.build:gradle:4.2.2'
         classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.14"
 
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"

@@ -281,7 +281,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         try {
             String meshId = mMeshService.getMyId();
             if (meshId == null) {
-                meshId = "abcd"
+                meshId = "abcd";
             }
             String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
             String longName = String.format("%s-MX-%s", mCallsign, shortMeshId);

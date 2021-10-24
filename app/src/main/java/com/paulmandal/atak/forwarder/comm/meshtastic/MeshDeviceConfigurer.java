@@ -99,6 +99,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
+        mLogger.v(TAG, "complexUpdate, key: " + key);
         switch (key) {
             case PreferencesKeys.KEY_SET_COMM_DEVICE:
                 String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);

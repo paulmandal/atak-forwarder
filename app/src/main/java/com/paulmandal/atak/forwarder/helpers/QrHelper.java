@@ -4,10 +4,15 @@ import android.graphics.Bitmap;
 import android.util.Base64;
 
 import com.google.zxing.BarcodeFormat;
+import com.google.zxing.EncodeHintType;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class QrHelper {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + QrHelper.class.getSimpleName();
@@ -15,15 +20,17 @@ public class QrHelper {
     public static final int COLOR_WHITE = 0xFFFFFFFF;
     public static final int COLOR_BLACK = 0xFF000000;
 
-    private static final int WIDTH = 640;
+    private static final ErrorCorrectionLevel DEFAULT_ERROR_CORRECTION_LEVEL = ForwarderConstants.DEFAULT_ERROR_CORRECTION_LEVEL;
 
-    public Bitmap encodeAsBitmap(byte[] input) throws WriterException {
+    public Bitmap encodeAsBitmap(byte[] input, int width) throws WriterException {
         String base64 = Base64.encodeToString(input, Base64.DEFAULT);
 
         BitMatrix result;
         try {
             //noinspection SuspiciousNameCombination
-            result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, WIDTH, WIDTH, null);
+            Map<EncodeHintType, Object> encodingHints = new HashMap<>();
+            encodingHints.put(EncodeHintType.ERROR_CORRECTION, DEFAULT_ERROR_CORRECTION_LEVEL);
+            result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, width, width, null);
         } catch (IllegalArgumentException iae) {
             // Unsupported format
             return null;
@@ -38,7 +45,7 @@ public class QrHelper {
             }
         }
         Bitmap bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        bitmap.setPixels(pixels, 0, WIDTH, 0, 0, w, h);
+        bitmap.setPixels(pixels, 0, width, 0, 0, w, h);
         return bitmap;
     }
 }

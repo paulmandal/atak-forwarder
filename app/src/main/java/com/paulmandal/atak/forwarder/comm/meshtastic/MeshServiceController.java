@@ -128,7 +128,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         if (action.equals(MeshServiceConstants.ACTION_MESH_CONNECTED)) {
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
             boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
-            mLogger.d(TAG, "  Mesh connected: " + connected);
+            mLogger.d(TAG, "Mesh connected: " + connected);
             updateConnectionState();
         }
     }

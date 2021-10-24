@@ -8,11 +8,14 @@ import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.text.InputFilter;
 import android.util.Base64;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanEditTextPreference;
 import com.atakmap.android.gui.PanListPreference;
 import com.geeksville.mesh.ChannelProtos;
+import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -27,6 +30,7 @@ import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.dm7.barcodescanner.zxing.ZXingScannerView;
@@ -98,9 +102,14 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             payload[mPsk.length] = modemConfigByte;
             System.arraycopy(channelNameBytes, 0, payload, mPsk.length + 1, channelNameBytes.length);
 
+            WindowManager windowManager = (WindowManager) settingsMenuContext.getSystemService(Context.WINDOW_SERVICE);
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+            int width = (int) ((float) displayMetrics.widthPixels * 0.9);
+
             Bitmap bm = null;
             try {
-                bm = qrHelper.encodeAsBitmap(payload);
+                bm = qrHelper.encodeAsBitmap(payload, width);
             } catch (WriterException e) {
                 e.printStackTrace();
             }
@@ -121,6 +130,11 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
         scanChannelQr.setOnPreferenceClickListener((Preference preference) -> {
             ZXingScannerView scannerView = new ZXingScannerView(pluginContext);
+
+            List<BarcodeFormat> possibleFormats = new ArrayList<>();
+            possibleFormats.add(BarcodeFormat.QR_CODE);
+
+            scannerView.setFormats(possibleFormats);
 
             final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
                     .setView(scannerView)

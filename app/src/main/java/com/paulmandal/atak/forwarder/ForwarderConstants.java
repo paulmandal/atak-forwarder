@@ -1,15 +1,14 @@
 package com.paulmandal.atak.forwarder;
 
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
+
 public class ForwarderConstants {
     /**
      * Pre-shared Key Length, 16 for AES128, 32 for AES256
      */
     public static final int PSK_LENGTH = 32;
 
-    /**
-     * How long to wait after attempting to stop the service when the Paired button is clicked
-     */
-    public static final int DELAY_AFTER_STOPPING_SERVICE = 5000;
+    public static final ErrorCorrectionLevel DEFAULT_ERROR_CORRECTION_LEVEL = ErrorCorrectionLevel.M;
 
     /**
      * How long to wait for radioConfig to be available when writing to a Tracker device

@@ -22,7 +22,8 @@
 }
 
 # For enumeration classes, see http://proguard.sourceforge.net/manual/examples.html#enumerations
--keepclassmembers enum * {
+-keepclassmembers class * extends java.lang.Enum {
+    <fields>;
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }

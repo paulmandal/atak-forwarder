@@ -272,8 +272,7 @@ dependencies {
     implementation 'me.dm7.barcodescanner:zxing:1.9.13'
     implementation 'eo.view:batterymeter:2.0.0'
 
-//    implementation 'com.paulmandal.atak:libcotshrink:0.1.0'
-    implementation project(':libcotshrink')
+    implementation 'com.paulmandal.atak:libcotshrink:1.0.0'
 
     testImplementation 'junit:junit:4.13.2'
 }

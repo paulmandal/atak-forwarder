@@ -166,7 +166,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         } else if (mMeshService != null) {
             boolean connected = false;
                 try {
-                    connected = mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
+                    connected = mMeshService.connectionState() != null && mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }

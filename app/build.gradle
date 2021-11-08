@@ -1,6 +1,6 @@
 buildscript {
 
-    ext.PLUGIN_VERSION = "1.0.1"
+    ext.PLUGIN_VERSION = "1.0.2"
     ext.ATAK_VERSION = "4.4.0"
 
     // Attempt to read ATAK_VERSION from the environment
@@ -272,9 +272,9 @@ dependencies {
     implementation 'me.dm7.barcodescanner:zxing:1.9.13'
     implementation 'eo.view:batterymeter:2.0.0'
 
-    implementation 'com.paulmandal.atak:libcotshrink:0.1.0'
+    implementation 'com.paulmandal.atak:libcotshrink:1.0.0'
 
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 protobuf {

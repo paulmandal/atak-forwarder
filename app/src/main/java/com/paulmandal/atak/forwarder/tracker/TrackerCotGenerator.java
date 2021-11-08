@@ -15,8 +15,8 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
-import com.paulmandal.atak.libcotshrink.protobuf.ContactProtobufConverter;
-import com.paulmandal.atak.libcotshrink.protobuf.TakvProtobufConverter;
+import com.paulmandal.atak.libcotshrink.protobuf.cotevent.detail.contact.ContactProtobufConverter;
+import com.paulmandal.atak.libcotshrink.protobuf.cotevent.detail.takv.TakvProtobufConverter;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufContact;
 import com.paulmandal.atak.libcotshrink.protobufs.ProtobufTakv;
 

@@ -236,10 +236,11 @@ public class MeshtasticTrackerConfigurator {
             RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
             RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
+            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
+            userPreferencesBuilder.setGpsOperation(RadioConfigProtos.GpsOperation.GpsOpMobile);
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
             userPreferencesBuilder.setGpsUpdateInterval(mPliIntervalS);
             userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10);
-            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
             userPreferencesBuilder.setRegion(mRegionCode);
             userPreferencesBuilder.setIsRouter(mIsRouter);

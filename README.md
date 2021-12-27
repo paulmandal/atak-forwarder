@@ -43,7 +43,7 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic-Android | 1.2.31 |
+| Meshtastic-Android | 1.2.45 |
 | Meshtastic-device | 1.2.45 |
 
 # To Do

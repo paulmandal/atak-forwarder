@@ -26,5 +26,8 @@ popd
 if [ "${2}" != "" ]
 then
   sed -i "s/ext.ATAK_VERSION = \"${2}\"/ext.ATAK_VERSION = \"${currentAtakVersion}\"/" app/build.gradle
+  echo "wrote: /mnt/shared/atak-forwarder-${1}-atak-${2}.zip"
+else
+  echo "wrote: /mnt/shared/atak-forwarder-${1}.zip"
 fi
 

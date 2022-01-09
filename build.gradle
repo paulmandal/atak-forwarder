@@ -4,7 +4,6 @@ buildscript {
 
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven {
             url "https://jitpack.io"
@@ -12,7 +11,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:4.2.2'
-        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.14"
+        classpath "com.google.protobuf:protobuf-gradle-plugin:0.8.15"
 
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
@@ -22,7 +21,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
         maven {
             url "https://jitpack.io"

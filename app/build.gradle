@@ -1,7 +1,7 @@
 buildscript {
 
-    ext.PLUGIN_VERSION = "1.0.3"
-    ext.ATAK_VERSION = "4.4.0"
+    ext.PLUGIN_VERSION = "1.0.4"
+    ext.ATAK_VERSION = "4.5.1"
 
     // Attempt to read ATAK_VERSION from the environment
     def ENV_ATAK_VERSION = System.getenv('ATAK_VERSION')
@@ -42,7 +42,6 @@ buildscript {
     ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-${takdevVersion}.jar")
 
     repositories {
-        jcenter()
         google()
         mavenCentral()
         mavenLocal()
@@ -69,8 +68,8 @@ buildscript {
 
 allprojects {
     repositories {
-        jcenter()
         google()
+        jcenter()
         mavenCentral()
         mavenLocal()
         maven {

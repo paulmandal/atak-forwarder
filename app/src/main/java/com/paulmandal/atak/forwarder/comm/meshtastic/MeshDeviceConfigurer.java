@@ -306,9 +306,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
         RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
+        userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocDisabled);
+        userPreferencesBuilder.setGpsOperation(RadioConfigProtos.GpsOperation.GpsOpTimeOnly);
         userPreferencesBuilder.setGpsUpdateInterval(ForwarderConstants.GPS_UPDATE_INTERVAL);
         userPreferencesBuilder.setSendOwnerInterval(ForwarderConstants.SEND_OWNER_INTERVAL);
-        userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocDisabled);
         userPreferencesBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
         userPreferencesBuilder.setScreenOnSecs(ForwarderConstants.LCD_SCREEN_ON_S);
         userPreferencesBuilder.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);

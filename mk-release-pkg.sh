@@ -7,7 +7,7 @@ fi
 
 if [ "${2}" != "" ]
 then
-  currentAtakVersion=`grep ext.ATAK_VERSION = \".*\" | sed "s/.*ext.ATAK_VERSION = \"//" | sed "s/\"//"`
+  currentAtakVersion=`grep "ext.ATAK_VERSION = \".*\"" app/build.gradle | sed "s/.*ext.ATAK_VERSION = \"//" | sed "s/\"//"`
   echo "current atak version: $currentAtakVersion"
   sed -i "s/ext.ATAK_VERSION = \".*\"/ext.ATAK_VERSION = \"${2}\"/" app/build.gradle
 fi
@@ -17,9 +17,9 @@ repoDirName=`pwd | sed s#.*/##`
 pushd ..
 if [ "${2}" != "" ]
 then
-  zip -r /mnt/shared/atak-forwarder-${1}-atak-${2}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
+  zip -qr /mnt/shared/atak-forwarder-${1}-atak-${2}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
 else
-  zip -r /mnt/shared/atak-forwarder-${1}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
+  zip -qr /mnt/shared/atak-forwarder-${1}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
 fi
 popd
 

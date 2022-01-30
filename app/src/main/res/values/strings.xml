@@ -138,15 +138,19 @@
     <string name="tracker_callsign">Tracker Callsign</string>
 
     <string-array name="channel_modes">
+        <item>Short Range / Slow</item>
         <item>Short Range / Fast</item>
+        <item>Medium Range / Slow</item>
         <item>Medium Range / Fast</item>
-        <item>Long Range / Slower (Not Recommended)</item>
-        <item>Very Long Range / Slow (Not Recommended)</item>
+        <item>Long Range / Fast (Not Recommended)</item>
+        <item>Long Range / Slow (Not Recommended)</item>
     </string-array>
 
     <string-array name="channel_mode_values">
-        <item>1</item>
         <item>0</item>
+        <item>1</item>
+        <item>4</item>
+        <item>5</item>
         <item>2</item>
         <item>3</item>
     </string-array>

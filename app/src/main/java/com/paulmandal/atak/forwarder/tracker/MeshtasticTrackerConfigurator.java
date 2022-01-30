@@ -65,6 +65,7 @@ public class MeshtasticTrackerConfigurator {
     private final int mRoleIndex;
     private final int mPliIntervalS;
     private final int mScreenShutoffDelayS;
+    private final boolean mIsAlwaysPoweredOn;
     private final boolean mIsRouter;
 
     private final Listener mListener;
@@ -95,6 +96,7 @@ public class MeshtasticTrackerConfigurator {
                                          int roleIndex,
                                          int pliIntervalS,
                                          int screenShutoffDelayS,
+                                         boolean isAlwaysPoweredOn,
                                          boolean isRouter,
                                          Listener listener,
                                          Logger logger) {
@@ -113,6 +115,7 @@ public class MeshtasticTrackerConfigurator {
         mRoleIndex = roleIndex;
         mPliIntervalS = pliIntervalS;
         mScreenShutoffDelayS = screenShutoffDelayS;
+        mIsAlwaysPoweredOn = isAlwaysPoweredOn;
         mIsRouter = isRouter;
         mListener = listener;
         mLogger = logger;
@@ -242,6 +245,7 @@ public class MeshtasticTrackerConfigurator {
             userPreferencesBuilder.setGpsUpdateInterval(mPliIntervalS);
             userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
+            userPreferencesBuilder.setIsAlwaysPowered(mIsAlwaysPoweredOn);
             userPreferencesBuilder.setRegion(mRegionCode);
             userPreferencesBuilder.setIsRouter(mIsRouter);
 

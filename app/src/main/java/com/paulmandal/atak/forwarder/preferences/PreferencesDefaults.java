@@ -7,6 +7,7 @@ import com.paulmandal.atak.forwarder.helpers.PskHelper;
  */
 public class PreferencesDefaults {
     public static final String DEFAULT_REGION = "0";
+    public static final boolean DEFAULT_IS_ALWAYS_POWERED_ON = false;
     public static final String DEFAULT_PLI_MAX_FREQUENCY = "30";
     public static final String DEFAULT_DROP_DUPLICATE_MSGS_TTL = "20";
     public static final String DEFAULT_PLI_HOP_LIMIT = "3";
@@ -19,6 +20,7 @@ public class PreferencesDefaults {
     public static final String DEFAULT_TRACKER_PLI_INTERVAL = "60";
     public static final String DEFAULT_TRACKER_STALE_AFTER_SECS = "75";
     public static final String DEFAULT_TRACKER_SCREEN_OFF_TIME = "5";
+    public static final boolean DEFAULT_TRACKER_IS_ALWAYS_POWERED_ON = false;
     public static final boolean DEFAULT_TRACKER_IS_ROUTER = true;
     public static final String DEFAULT_TRACKER_TEAM = "0";
     public static final String DEFAULT_TRACKER_ROLE = "0";

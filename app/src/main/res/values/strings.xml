@@ -182,6 +182,8 @@
     </string-array>
 
     <string-array name="teams">
+        <item>Clear</item>
+        <item>Cyan</item>
         <item>White</item>
         <item>Yellow</item>
         <item>Orange</item>
@@ -191,7 +193,6 @@
         <item>Purple</item>
         <item>Dark Blue</item>
         <item>Blue</item>
-        <item>Cyan</item>
         <item>Teal</item>
         <item>Green</item>
         <item>Dark Green</item>

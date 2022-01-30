@@ -110,7 +110,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     public void sendDiscoveryMessage(BroadcastDiscoveryCommand broadcastDiscoveryCommand) {
-        sendMessage(MessageType.OTHER, broadcastDiscoveryCommand.discoveryMessage, null);
+        sendMessage(MessageType.PLI, broadcastDiscoveryCommand.discoveryMessage, null);
     }
 
     public void sendMessage(SendMessageCommand sendMessageCommand) {

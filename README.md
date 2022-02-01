@@ -45,8 +45,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic-Android | 1.2.45 |
-| Meshtastic-device | 1.2.45 |
+| Meshtastic-Android | 1.2.52 |
+| Meshtastic-device | 1.2.52 |
 
 # To Do
 

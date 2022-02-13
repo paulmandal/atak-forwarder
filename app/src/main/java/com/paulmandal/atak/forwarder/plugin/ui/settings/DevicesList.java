@@ -35,7 +35,7 @@ public class DevicesList {
 
         Set<BluetoothDevice> bluetoothDevices = bluetoothAdapter.getBondedDevices();
         for (BluetoothDevice device : bluetoothDevices) {
-            if (device.getName().startsWith(MARKER_MESHTASTIC)) {
+            if (device.getName() != null && device.getName().startsWith(MARKER_MESHTASTIC)) {
                 meshtasticDevices.add(new MeshtasticDevice(device.getName(), device.getAddress(), MeshtasticDevice.DeviceType.BLUETOOTH));
             }
         }

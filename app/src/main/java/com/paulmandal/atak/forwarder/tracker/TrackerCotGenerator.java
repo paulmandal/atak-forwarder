@@ -48,7 +48,7 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
     private static final String VALUE_UNKNOWN = "???";
     private static final String VALUE_GPS = "GPS";
 
-    private static final int WHITE_INDEX = 0;
+    private static final int CLEAR_INDEX = 0;
     private static final int TEAM_MEMBER_INDEX = 0;
 
     private static final String UNKNOWN_CALLSIGN_PREFIX = "Tracker-";
@@ -56,6 +56,8 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
     private int mTrackerStaleTimeMs;
 
     public static final String[] TEAMS = {
+            "Clear",
+            "Cyan",
             "White",
             "Yellow",
             "Orange",
@@ -65,7 +67,6 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
             "Purple",
             "Dark Blue",
             "Blue",
-            "Cyan",
             "Teal",
             "Green",
             "Dark Green",
@@ -184,7 +185,7 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
         precisionLocationDetail.setAttribute(TAG_GEOPOINTSRC, VALUE_GPS);
         cotDetail.addChild(precisionLocationDetail);
 
-        String team = TEAMS[WHITE_INDEX];
+        String team = TEAMS[CLEAR_INDEX];
         String role = ROLES[TEAM_MEMBER_INDEX];
         if (tracker.shortName != null && tracker.shortName.length() > 1) {
             try {
@@ -202,6 +203,9 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
+        }
+        if (tracker.team > 0) {
+            team = TEAMS[tracker.team];
         }
 
         CotDetail groupDetail = new CotDetail(TAG_GROUP);

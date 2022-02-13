@@ -7,33 +7,36 @@ import kotlinx.serialization.Serializable
 // MyNodeInfo sent via special protobuf from radio
 @Serializable
 data class MyNodeInfo(
-        val myNodeNum: Int,
-        val hasGPS: Boolean,
-        val model: String?,
-        val firmwareVersion: String?,
-        val couldUpdate: Boolean, // this application contains a software load we _could_ install if you want
-        val shouldUpdate: Boolean, // this device has old firmware
-        val currentPacketId: Long,
-        val messageTimeoutMsec: Int,
-        val minAppVersion: Int,
-        val maxChannels: Int
+    val myNodeNum: Int,
+    val hasGPS: Boolean,
+    val model: String?,
+    val firmwareVersion: String?,
+    val couldUpdate: Boolean, // this application contains a software load we _could_ install if you want
+    val shouldUpdate: Boolean, // this device has old firmware
+    val currentPacketId: Long,
+    val messageTimeoutMsec: Int,
+    val minAppVersion: Int,
+    val maxChannels: Int,
+    val channelUtilization: Float,
+    val airUtilTx: Float
 ) : Parcelable {
     /** A human readable description of the software/hardware version */
     val firmwareString: String get() = "$model $firmwareVersion"
 
     constructor(parcel: Parcel) : this(
-            parcel.readInt(),
-            parcel.readByte() != 0.toByte(),
-            parcel.readString(),
-            parcel.readString(),
-            parcel.readByte() != 0.toByte(),
-            parcel.readByte() != 0.toByte(),
-            parcel.readLong(),
-            parcel.readInt(),
-            parcel.readInt(),
-            parcel.readInt()
-    ) {
-    }
+        parcel.readInt(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readString(),
+        parcel.readString(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readByte() != 0.toByte(),
+        parcel.readLong(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readInt(),
+        parcel.readFloat(),
+        parcel.readFloat()
+        )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(myNodeNum)
@@ -46,6 +49,8 @@ data class MyNodeInfo(
         parcel.writeInt(messageTimeoutMsec)
         parcel.writeInt(minAppVersion)
         parcel.writeInt(maxChannels)
+        parcel.writeFloat(channelUtilization)
+        parcel.writeFloat(airUtilTx)
     }
 
     override fun describeContents(): Int {

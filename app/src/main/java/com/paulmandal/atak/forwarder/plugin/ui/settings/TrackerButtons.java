@@ -120,9 +120,10 @@ public class TrackerButtons {
                 int roleIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_ROLE, PreferencesDefaults.DEFAULT_TRACKER_ROLE));
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
+                boolean isAlwaysPoweredOn = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_TRACKER_IS_ALWAYS_POWERED_ON);
                 boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isAlwaysPoweredOn, isRouter, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -148,6 +149,7 @@ public class TrackerButtons {
                                int roleIndex,
                                int pliIntervalS,
                                int screenShutoffDelayS,
+                               boolean isAlwaysPoweredOn,
                                boolean isRouter,
                                MeshtasticTrackerConfigurator.Listener listener) {
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext, logger);
@@ -167,6 +169,7 @@ public class TrackerButtons {
                 roleIndex,
                 pliIntervalS,
                 screenShutoffDelayS,
+                isAlwaysPoweredOn,
                 isRouter,
                 listener,
                 logger);

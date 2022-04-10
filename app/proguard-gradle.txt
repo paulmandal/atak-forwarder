@@ -8,7 +8,7 @@
 -keepattributes SourceFile,LineNumberTable
 
 -applymapping <atak.proguard.mapping>
--repackageclasses atakplugin.PluginTemplate
+-repackageclasses atakplugin.AtakForwarder
 
 -keepattributes *Annotation*
 -keepattributes Signature, InnerClasses

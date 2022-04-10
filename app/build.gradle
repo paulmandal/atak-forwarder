@@ -86,7 +86,7 @@ apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
     dexOptions {

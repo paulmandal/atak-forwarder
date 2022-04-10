@@ -16,5 +16,12 @@
         <meta-data
             android:name="app_desc"
             android:value="@string/app_desc" />
+
+        <activity android:name="com.atakmap.app.component"
+            tools:ignore="MissingClass">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="com.atakmap.app.component" />
+            </intent-filter>
+        </activity>
     </application>
 </manifest>

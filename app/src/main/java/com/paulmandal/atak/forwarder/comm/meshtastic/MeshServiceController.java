@@ -81,7 +81,8 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
-                mUiThreadHandler.post(() -> updateConnectionState());
+//                mUiThreadHandler.post(() -> updateConnectionState());
+                updateConnectionState();
             }
 
             public void onServiceDisconnected(ComponentName className) {

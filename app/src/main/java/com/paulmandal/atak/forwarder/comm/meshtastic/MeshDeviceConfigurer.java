@@ -45,7 +45,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private int mChannelMode;
     private byte[] mChannelPsk;
 
-    private boolean mIsRouter;
+    private RadioConfigProtos.Role mDeviceRole;
     private boolean mIsAlwaysPoweredOn;
 
     private boolean mSetDeviceAddressCalled;
@@ -62,7 +62,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 new String[] {},
                 new String[]{
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
-                        PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER,
+                        PreferencesKeys.KEY_COMM_DEVICE_ROLE,
                         PreferencesKeys.KEY_CHANNEL_NAME,
                         PreferencesKeys.KEY_CHANNEL_MODE,
                         PreferencesKeys.KEY_CHANNEL_PSK,
@@ -80,7 +80,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         meshServiceController.addConnectionStateListener(this);
 
         // TODO: clean up this hacks
-        mIsRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
+        mDeviceRole = RadioConfigProtos.Role.forNumber(sharedPreferences.getInt(PreferencesKeys.KEY_COMM_DEVICE_ROLE, PreferencesDefaults.DEFAULT_DEVICE_ROLE));
         mIsAlwaysPoweredOn =  sharedPreferences.getBoolean(PreferencesKeys.KEY_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_IS_ALWAYS_POWERED_ON);
         mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
@@ -121,15 +121,15 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     e.printStackTrace();
                 }
                 break;
-            case PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER:
+            case PreferencesKeys.KEY_COMM_DEVICE_ROLE:
             case PreferencesKeys.KEY_IS_ALWAYS_POWERED_ON:
-                boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
+                RadioConfigProtos.Role deviceRole = RadioConfigProtos.Role.forNumber(sharedPreferences.getInt(PreferencesKeys.KEY_COMM_DEVICE_ROLE, PreferencesDefaults.DEFAULT_DEVICE_ROLE));
                 boolean isAlwaysPoweredOn = sharedPreferences.getBoolean(PreferencesKeys.KEY_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_IS_ALWAYS_POWERED_ON);
 
-                if (isRouter != mIsRouter || isAlwaysPoweredOn != mIsAlwaysPoweredOn) {
-                    mLogger.d(TAG, "Radio config changed, isRouter: " + isRouter);
+                if (deviceRole != mDeviceRole || isAlwaysPoweredOn != mIsAlwaysPoweredOn) {
+                    mLogger.d(TAG, "Radio config changed, deviceRole: " + deviceRole);
                     mLogger.d(TAG, "Radio config changed, isAlwaysPoweredOn: " + isAlwaysPoweredOn);
-                    mIsRouter = isRouter;
+                    mDeviceRole = deviceRole;
                     mIsAlwaysPoweredOn = isAlwaysPoweredOn;
 
                     checkRadioConfig();
@@ -219,7 +219,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
 
         if (userPreferences.getRegion() != mRegionCode
-                || userPreferences.getIsRouter() != mIsRouter
+                || userPreferences.getRole() != mDeviceRole
                 || userPreferences.getPositionBroadcastSecs() != ForwarderConstants.POSITION_BROADCAST_INTERVAL_S
                 || userPreferences.getScreenOnSecs() != ForwarderConstants.LCD_SCREEN_ON_S
                 || userPreferences.getWaitBluetoothSecs() != ForwarderConstants.WAIT_BLUETOOTH_S
@@ -302,7 +302,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void writeRadioConfig(RadioConfigProtos.RadioConfig radioConfig) {
-        mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode + ", isRouter: " + mIsRouter);
+        mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode + ", deviceRole: " + mDeviceRole);
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
@@ -313,8 +313,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
         RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
-        userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocDisabled);
-        userPreferencesBuilder.setGpsOperation(RadioConfigProtos.GpsOperation.GpsOpTimeOnly);
+        userPreferencesBuilder.setLocationShareDisabled(true);
+        userPreferencesBuilder.setGpsDisabled(true);
         userPreferencesBuilder.setGpsUpdateInterval(ForwarderConstants.GPS_UPDATE_INTERVAL);
         userPreferencesBuilder.setSendOwnerInterval(ForwarderConstants.SEND_OWNER_INTERVAL);
         userPreferencesBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
@@ -322,7 +322,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         userPreferencesBuilder.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);
         userPreferencesBuilder.setPhoneTimeoutSecs(ForwarderConstants.PHONE_TIMEOUT_S);
         userPreferencesBuilder.setRegion(mRegionCode);
-        userPreferencesBuilder.setIsRouter(mIsRouter);
+        userPreferencesBuilder.setRole(mDeviceRole);
         userPreferencesBuilder.setIsAlwaysPowered(mIsAlwaysPoweredOn);
 
         radioConfigBuilder.setPreferences(userPreferencesBuilder.build());

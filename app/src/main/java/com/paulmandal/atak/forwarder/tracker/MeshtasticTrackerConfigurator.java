@@ -66,7 +66,7 @@ public class MeshtasticTrackerConfigurator {
     private final int mPliIntervalS;
     private final int mScreenShutoffDelayS;
     private final boolean mIsAlwaysPoweredOn;
-    private final boolean mIsRouter;
+    private final RadioConfigProtos.Role mDeviceRole;
 
     private final Listener mListener;
     private final Logger mLogger;
@@ -97,7 +97,7 @@ public class MeshtasticTrackerConfigurator {
                                          int pliIntervalS,
                                          int screenShutoffDelayS,
                                          boolean isAlwaysPoweredOn,
-                                         boolean isRouter,
+                                         RadioConfigProtos.Role deviceRole,
                                          Listener listener,
                                          Logger logger) {
         mAtakContext = atakContext;
@@ -116,7 +116,7 @@ public class MeshtasticTrackerConfigurator {
         mPliIntervalS = pliIntervalS;
         mScreenShutoffDelayS = screenShutoffDelayS;
         mIsAlwaysPoweredOn = isAlwaysPoweredOn;
-        mIsRouter = isRouter;
+        mDeviceRole = deviceRole;
         mListener = listener;
         mLogger = logger;
 
@@ -239,17 +239,17 @@ public class MeshtasticTrackerConfigurator {
             RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
             RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
-            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
-            userPreferencesBuilder.setGpsOperation(RadioConfigProtos.GpsOperation.GpsOpMobile);
+            userPreferencesBuilder.setLocationShareDisabled(false);
+            userPreferencesBuilder.setGpsDisabled(false);
             userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
             userPreferencesBuilder.setGpsUpdateInterval(mPliIntervalS);
             userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10);
             userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
             userPreferencesBuilder.setIsAlwaysPowered(mIsAlwaysPoweredOn);
             userPreferencesBuilder.setRegion(mRegionCode);
-            userPreferencesBuilder.setIsRouter(mIsRouter);
+            userPreferencesBuilder.setRole(mDeviceRole);
 
-            mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode + ", isRouter: " + mIsRouter);
+            mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode + ", deviceRole: " + mDeviceRole);
 
             radioConfigBuilder.setPreferences(userPreferencesBuilder.build());
             radioConfig = radioConfigBuilder.build();

@@ -16,7 +16,8 @@ public class MainButtons {
     public MainButtons(DevicesList devicesList,
                        Preference setCommDevicePreference,
                        Preference refreshDevicesPreference,
-                       Preference regionPreference) {
+                       Preference regionPreference,
+                       Preference commDeviceRolePreference) {
         PanListPreference commDevicePreference = (PanListPreference) setCommDevicePreference;
         updateCommDevices(commDevicePreference, devicesList.getMeshtasticDevices());
 
@@ -28,6 +29,10 @@ public class MainButtons {
         PanListPreference listPreferenceRegion = (PanListPreference) regionPreference;
         listPreferenceRegion.setEntries(R.array.regions);
         listPreferenceRegion.setEntryValues(R.array.regions_values);
+
+        PanListPreference listPreferenceCommDeviceRole = (PanListPreference) commDeviceRolePreference;
+        listPreferenceCommDeviceRole.setEntries(R.array.device_roles);
+        listPreferenceCommDeviceRole.setEntries(R.array.device_roles_values);
     }
 
     private void updateCommDevices(PanListPreference commDevicePreference,

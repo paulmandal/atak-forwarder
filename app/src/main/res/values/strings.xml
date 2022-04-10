@@ -53,8 +53,9 @@
     <string name="other_hop_limit">Other Hop Limit</string>
     <string name="other_hop_limit_summary">The hop limit to set on all other messages (e.g. map markers)</string>
 
-    <string name="comm_device_is_router">Comm Device is Router</string>
-    <string name="comm_device_is_router_summary">Set your Comm Device up as Meshtastic Router</string>
+    <string name="comm_device_role">Comm Device Role</string>
+    <string name="comm_device_role_summary">Set your Comm Device up as Meshtastic Router or Client</string>
+    <string name="comm_device_role_dialog_title">Set Comm Device Role</string>
 
     <!-- Channel Settings -->
     <string name="category_channel_settings">Channel</string>
@@ -92,8 +93,9 @@
     <string name="tracker_screen_off_time">Screen Shutoff Time (s)</string>
     <string name="tracker_screen_off_time_summary">Delay before shutting off the screen on Tracker devices</string>
 
-    <string name="tracker_is_router">Tracker is Router</string>
-    <string name="tracker_is_router_summary">Set Tracker devices up as Meshtastic Routers</string>
+    <string name="tracker_device_role">Tracker Device Role</string>
+    <string name="tracker_device_role_summary">Set Tracker devices up as Meshtastic Routers or Clients</string>
+    <string name="tracker_device_role_dialog_title">Set Tracker Device Role</string>
 
     <string name="tracker_team">Team</string>
     <string name="tracker_team_summary">Team this Tracker belongs to</string>
@@ -138,21 +140,23 @@
     <string name="tracker_callsign">Tracker Callsign</string>
 
     <string-array name="channel_modes">
-        <item>Short Range / Slow</item>
         <item>Short Range / Fast</item>
-        <item>Medium Range / Slow</item>
-        <item>Medium Range / Fast</item>
-        <item>Long Range / Fast (Not Recommended)</item>
+        <item>Short Range / Slow</item>
+        <item>Mid Range / Fast</item>
+        <item>Mid Range / Slow</item>
+        <item>Long Range / Fast</item>
         <item>Long Range / Slow (Not Recommended)</item>
+        <item>Very Long Range / Slow (Not Recommended)</item>
     </string-array>
 
     <string-array name="channel_mode_values">
-        <item>0</item>
-        <item>1</item>
-        <item>4</item>
+        <item>6</item>
         <item>5</item>
-        <item>2</item>
+        <item>4</item>
         <item>3</item>
+        <item>2</item>
+        <item>1</item>
+        <item>0</item>
     </string-array>
 
     <string-array name="regions">
@@ -166,6 +170,9 @@
         <item>KR</item>
         <item>TW</item>
         <item>RU</item>
+        <item>IN</item>
+        <item>NZ865</item>
+        <item>TH</item>
     </string-array>
 
     <string-array name="regions_values">
@@ -179,6 +186,23 @@
         <item>7</item>
         <item>8</item>
         <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+    </string-array>
+
+    <string-array name="device_roles">
+        <item>Client</item>
+        <item>Mute Client</item>
+        <item>Router</item>
+        <item>Router Client</item>
+    </string-array>
+
+    <string-array name="device_roles_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
     </string-array>
 
     <string-array name="teams">
@@ -214,6 +238,7 @@
         <item>11</item>
         <item>12</item>
         <item>13</item>
+        <item>14</item>
     </string-array>
 
     <string-array name="roles">

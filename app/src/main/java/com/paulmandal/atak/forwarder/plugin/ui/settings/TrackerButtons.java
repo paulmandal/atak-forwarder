@@ -42,9 +42,14 @@ public class TrackerButtons {
                           DevicesList devicesList,
                           MeshSuspendController meshSuspendController,
                           Logger logger,
+                          Preference trackerDeviceRole,
                           Preference teams,
                           Preference roles,
                           Preference writeToDevice) {
+        PanListPreference listPreferenceCommDeviceRole = (PanListPreference) trackerDeviceRole;
+        listPreferenceCommDeviceRole.setEntries(R.array.device_roles);
+        listPreferenceCommDeviceRole.setEntries(R.array.device_roles_values);
+
         PanListPreference teamsListPreference = (PanListPreference) teams;
         teamsListPreference.setEntries(R.array.teams);
         teamsListPreference.setEntryValues(R.array.teams_values);
@@ -121,9 +126,9 @@ public class TrackerButtons {
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
                 boolean isAlwaysPoweredOn = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_TRACKER_IS_ALWAYS_POWERED_ON);
-                boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
+                RadioConfigProtos.Role deviceRole = RadioConfigProtos.Role.forNumber(sharedPreferences.getInt(PreferencesKeys.KEY_TRACKER_DEVICE_ROLE, PreferencesDefaults.DEFAULT_TRACKER_DEVICE_ROLE));
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isAlwaysPoweredOn, isRouter, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isAlwaysPoweredOn, deviceRole, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -150,7 +155,7 @@ public class TrackerButtons {
                                int pliIntervalS,
                                int screenShutoffDelayS,
                                boolean isAlwaysPoweredOn,
-                               boolean isRouter,
+                               RadioConfigProtos.Role deviceRole,
                                MeshtasticTrackerConfigurator.Listener listener) {
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext, logger);
         MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(
@@ -170,7 +175,7 @@ public class TrackerButtons {
                 pliIntervalS,
                 screenShutoffDelayS,
                 isAlwaysPoweredOn,
-                isRouter,
+                deviceRole,
                 listener,
                 logger);
         meshtasticTrackerConfigurator.writeToDevice();

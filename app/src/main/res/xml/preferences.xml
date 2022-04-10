@@ -15,6 +15,11 @@
         android:title="@string/set_region"
         android:summary="@string/set_region_summary"
         android:dialogTitle="@string/set_region"/>
+    <com.atakmap.android.gui.PanListPreference
+        android:key="plugin_atak_forwarder_key_comm_device_role"
+        android:title="@string/comm_device_role"
+        android:summary="@string/comm_device_role_summary"
+        android:dialogTitle="@string/comm_device_role_dialog_title"/>
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="plugin_atak_forwarder_key_pli_max_frequency"
         android:title="@string/pli_max_frequency"
@@ -55,10 +60,6 @@
         android:defaultValue="3"
         android:inputType="number"
         android:numeric="integer" />
-    <com.atakmap.android.gui.PanSwitchPreference
-        android:key="plugin_atak_forwarder_key_comm_device_is_router"
-        android:title="@string/comm_device_is_router"
-        android:summary="@string/comm_device_is_router_summary" />
 
     <PreferenceCategory android:title="@string/category_channel_settings" />
     <com.atakmap.android.gui.PanEditTextPreference
@@ -110,11 +111,11 @@
         android:inputType="number"
         android:numeric="integer"
         android:defaultValue="5" />
-    <com.atakmap.android.gui.PanSwitchPreference
-        android:key="plugin_atak_forwarder_key_tracker_is_router"
-        android:title="@string/tracker_is_router"
-        android:summary="@string/tracker_is_router_summary"
-        android:defaultValue="true" />
+    <com.atakmap.android.gui.PanListPreference
+        android:key="plugin_atak_forwarder_key_tracker_device_role"
+        android:title="@string/tracker_device_role"
+        android:summary="@string/tracker_device_role_summary"
+        android:dialogTitle="@string/tracker_device_role_dialog_title"/>
     <com.atakmap.android.gui.PanListPreference
         android:key="plugin_atak_forwarder_key_tracker_team"
         android:title="@string/tracker_team"

@@ -11,7 +11,6 @@ public class MeshServiceConstants {
      * Intents the Meshtastic service can send
      */
     public static final String ACTION_MESH_CONNECTED = "com.geeksville.mesh.MESH_CONNECTED";
-    public static final String ACTION_RECEIVED_DATA = "com.geeksville.mesh.RECEIVED_DATA";
     public static final String ACTION_RECEIVED_ATAK_FORWARDER = "com.geeksville.mesh.RECEIVED.ATAK_FORWARDER";
     public static final String ACTION_RECEIVED_NODEINFO_APP = "com.geeksville.mesh.RECEIVED.NODEINFO_APP";
     public static final String ACTION_RECEIVED_POSITION_APP = "com.geeksville.mesh.RECEIVED.POSITION_APP";

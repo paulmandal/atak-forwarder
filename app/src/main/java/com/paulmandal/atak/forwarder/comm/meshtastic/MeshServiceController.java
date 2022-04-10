@@ -81,7 +81,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
-                updateConnectionState();
+                mUiThreadHandler.post(() -> updateConnectionState());
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -165,12 +165,18 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
             connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
         } else if (mMeshService != null) {
             boolean connected = false;
-                try {
-                    connected = mMeshService.connectionState() != null && mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+            try {
+                mLogger.e(TAG, "connection state: " + mMeshService.connectionState());
+                connected = mMeshService.connectionState() != null && mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
             connectionState = connected ? ConnectionState.DEVICE_CONNECTED : ConnectionState.DEVICE_DISCONNECTED;
+
+            if (!connected) {
+                // Check again in 1 second
+                mUiThreadHandler.postDelayed(this::updateConnectionState, 1000);
+            }
         } else {
             connectionState = ConnectionState.NO_SERVICE_CONNECTION;
         }

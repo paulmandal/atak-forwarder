@@ -312,9 +312,11 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                 Portnums.PortNum.ATAK_FORWARDER.getNumber(),
                 DataPacket.ID_LOCAL,
                 System.currentTimeMillis(),
-                0,
+                0 /* id will be provided to us by the Meshtastic service */,
                 MessageStatus.UNKNOWN,
-                hopLimit);
+                hopLimit,
+                0, /* Channel index == 0 until we implement multiple channels */
+                0 /* send message in realtime */);
 
         try {
             mMeshService.send(dataPacket);

@@ -36,7 +36,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
         super(atakContext,
                 logger,
                 new String[] {
-                        MeshServiceConstants.ACTION_RECEIVED_DATA,
+//                        MeshServiceConstants.ACTION_RECEIVED_DATA,
                         MeshServiceConstants.ACTION_RECEIVED_ATAK_FORWARDER
                 },
                 destroyables,

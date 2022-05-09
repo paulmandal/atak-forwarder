@@ -56,7 +56,7 @@ public class TrackerEventHandler extends MeshEventHandler {
                 MeshProtos.User meshUser = MeshProtos.User.parseFrom(payload.getBytes());
                 mLogger.v(TAG, "NODEINFO_APP parsed NodeInfo: " + meshUser.getId() + ", longName: " + meshUser.getLongName() + ", shortName: " + meshUser.getShortName());
 
-                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), null, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, meshUser.getShortName(), System.currentTimeMillis(), meshUser.getTeamValue());
+                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), null, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, meshUser.getShortName(), System.currentTimeMillis());
 
                 mTrackerListener.onTrackerUpdated(trackerUserInfo);
             } catch (InvalidProtocolBufferException e) {
@@ -69,7 +69,7 @@ public class TrackerEventHandler extends MeshEventHandler {
                 mLogger.v(TAG, "POSITION_APP parsed position: lat: " + position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", lon: " + position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
 
                 boolean gpsValid = position.getLatitudeI() != 0 || position.getLongitudeI() != 0 || position.getAltitude() != 0;
-                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), null, position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), gpsValid, null, System.currentTimeMillis(), TrackerUserInfo.NO_TEAM_DATA);
+                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), null, position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), gpsValid, null, System.currentTimeMillis());
 
                 mTrackerListener.onTrackerUpdated(trackerUserInfo);
             } catch (InvalidProtocolBufferException e) {
@@ -81,7 +81,7 @@ public class TrackerEventHandler extends MeshEventHandler {
                 TelemetryProtos.Telemetry telemetry = TelemetryProtos.Telemetry.parseFrom(payload.getBytes());
                 mLogger.v(TAG, "TELEMETRY_APP parsed telemetry: batteryLevel: " + telemetry.getDeviceMetrics().getBatteryLevel());
 
-                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), telemetry.getDeviceMetrics().getBatteryLevel(), TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, null, System.currentTimeMillis(), TrackerUserInfo.NO_TEAM_DATA);
+                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), telemetry.getDeviceMetrics().getBatteryLevel(), TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, null, System.currentTimeMillis());
 
                 mTrackerListener.onTrackerUpdated(trackerUserInfo);
 

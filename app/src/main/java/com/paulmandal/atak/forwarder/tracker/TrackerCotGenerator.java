@@ -204,9 +204,6 @@ public class TrackerCotGenerator  extends DestroyableSharedPrefsListener impleme
                 e.printStackTrace();
             }
         }
-        if (tracker.team > 0) {
-            team = TEAMS[tracker.team];
-        }
 
         CotDetail groupDetail = new CotDetail(TAG_GROUP);
         groupDetail.setAttribute(TAG_ROLE, role);

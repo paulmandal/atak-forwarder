@@ -4,7 +4,7 @@ An ATAK plugin for forwarding CoT messages via a hardware layer. Currently suppo
 
 Binaries signed for the Play Store version of ATAK are available here: [Binaries](https://civtak.org/atak-forwarder)
 
-*IMPORTANT NOTE:* All configuration options / Tracker writing have been moved into ATAK's three button (kebab) menu under *Settings > Tool Preferences > ATAK Forwarder*
+*IMPORTANT NOTE:* All configuration options / Tracker writing have been moved into ATAK's three button (kebab) menu under *Settings > Tool Preferences > Specific Tool Preferences > ATAK Forwarder*
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/paypalme/paypaulmandal)
 

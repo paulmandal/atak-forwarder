@@ -9,6 +9,7 @@ import android.os.RemoteException;
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
+import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -316,7 +317,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                 MessageStatus.UNKNOWN,
                 hopLimit,
                 0, /* Channel index == 0 until we implement multiple channels */
-                0 /* send message in realtime */);
+                MeshProtos.MeshPacket.Delayed.NO_DELAY.getNumber() /* send message in realtime */
+        );
 
         try {
             mMeshService.send(dataPacket);

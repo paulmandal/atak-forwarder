@@ -46,7 +46,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
     private MeshtasticDevice mMeshDevice;
     private RadioConfigProtos.RegionCode mRegionCode = RadioConfigProtos.RegionCode.Unset;
-    private ConnectionState mConnectionState;
+    private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mConnectedToService;
     private boolean mReceiverRegistered;
 
@@ -81,17 +81,18 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
-//                mUiThreadHandler.post(() -> updateConnectionState());
-                updateConnectionState();
+                if (mMeshDevice == null || mRegionCode == null || mRegionCode == RadioConfigProtos.RegionCode.Unset) {
+                    updateConnectionState(ConnectionState.NO_DEVICE_CONFIGURED);
+                } else {
+                    updateConnectionState(ConnectionState.DEVICE_DISCONNECTED);
+                }
             }
 
             public void onServiceDisconnected(ComponentName className) {
                 logger.e(TAG, "Service has unexpectedly disconnected");
                 mMeshService = null;
                 mConnectedToService = false;
-                mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
-
-                notifyConnectionStateListeners();
+                updateConnectionState(ConnectionState.NO_SERVICE_CONNECTION);
             }
         };
 
@@ -130,7 +131,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
             boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
             mLogger.d(TAG, "Mesh connected: " + connected);
-            updateConnectionState();
+            updateConnectionState(connected ? ConnectionState.DEVICE_CONNECTED : ConnectionState.DEVICE_DISCONNECTED);
         }
     }
 
@@ -160,28 +161,8 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         stopService();
     }
 
-    private void updateConnectionState() {
-        ConnectionState connectionState;
-        if (mMeshDevice == null || mRegionCode == null || mRegionCode == RadioConfigProtos.RegionCode.Unset || mRegionCode == RadioConfigProtos.RegionCode.UNRECOGNIZED) {
-            connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
-        } else if (mMeshService != null) {
-            boolean connected = false;
-            try {
-                mLogger.e(TAG, "connection state: " + mMeshService.connectionState());
-                connected = mMeshService.connectionState() != null && mMeshService.connectionState().equals(MeshServiceConstants.STATE_CONNECTED);
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
-            connectionState = connected ? ConnectionState.DEVICE_CONNECTED : ConnectionState.DEVICE_DISCONNECTED;
-
-            if (!connected) {
-                // Check again in 1 second
-                mUiThreadHandler.postDelayed(this::updateConnectionState, 1000);
-            }
-        } else {
-            connectionState = ConnectionState.NO_SERVICE_CONNECTION;
-        }
-
+    private void updateConnectionState(ConnectionState connectionState) {
+        mLogger.d(TAG, "Updating connection state to: " + connectionState);
         if (mConnectionState != connectionState) {
             mConnectionState = connectionState;
             notifyConnectionStateListeners();
@@ -223,10 +204,8 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         if (key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
             Gson gson = new Gson();
             mMeshDevice = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE), MeshtasticDevice.class);
-            updateConnectionState();
         } else if (key.equals(PreferencesKeys.KEY_REGION)) {
             mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
-            updateConnectionState();
         }
     }
 }

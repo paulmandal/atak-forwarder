@@ -4,27 +4,37 @@ An ATAK plugin for forwarding CoT messages via a hardware layer. Currently suppo
 
 Binaries signed for the Play Store version of ATAK are available here: [Binaries](https://civtak.org/atak-forwarder)
 
-*IMPORTANT NOTE:* All configuration options / Tracker writing have been moved into ATAK's three button (kebab) menu under *Settings > Tool Preferences > ATAK Forwarder*
+*IMPORTANT NOTE:* All configuration options / Tracker writing have been moved into ATAK's three button (kebab) menu under *Settings > Tool Preferences > Specific Tool Preferences > ATAK Forwarder*
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/paypalme/paypaulmandal)
 
-![Plugin Disconnected Indicator](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/plugin-disconnected-indicator.png)
+## Share Markers and PLI
+
+![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/0-markers-and-pli.png)
 <br>
-![Status View](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/status-view.png)
+![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/1-status.png)
 <br>
-![Channel Management](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/channel-management.png)
 <br>
-![QR Configuration](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/qr-configuration.png)
+
+## Send Chat Messages
+
+![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/2-chat-messages.png)
 <br>
-![Integrated Direct Messaging](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/integrated-direct-messaging.png)
 <br>
-![Transmit Map Markers](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/transmit-map-markers.png)
+
+## Configurable Channel Settings / Share with QR
+
+![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/3-channel-config.png)
 <br>
-Supports Meshtastic devices without an ATAK EUD attached
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/non-atak-devices-configuration.png)
-![Support non-ATAK Devices](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/non-atak-devices-map-marker.png)
+![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/4-qr-code-sharing.png)
 <br>
-![Example Usage](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/example-usage.png)
+<br>
+
+## Use standalone Meshtastic devices as Trackers
+
+![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/5-write-to-tracker.png)
+<br>
+<br>
 
 # Features
 
@@ -34,7 +44,7 @@ Supports Meshtastic devices without an ATAK EUD attached
 * Support for Meshtastic devices without an ATAK EUD attached
 * Efficient comm. using libcotshrink -- can send approx 5 map markers or PLI per minute, or 2 chats, or 2.5 more complex markers
 * Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~380 bytes, group chat ~400 bytes
-* Filtering of repeated messages with a configurable TTL (e.g. auto-send markers)
+* Filtering of repeated messages with a configurable TTL (e.g. to prevent auto-send markers from flooding)
 * Message queue with priority (chat = pli > markers)
 
 # Beta Features
@@ -47,8 +57,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic-Android | 1.2.52 |
-| Meshtastic-device | 1.2.52 |
+| Meshtastic-Android | 1.2.64 |
+| Meshtastic-device | 1.2.64 |
 
 # To Do
 
@@ -116,17 +126,19 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 * Tap on the three dots menu in the upper right corner of the ATAK screen
 * Tap on Settings
 * Tap on Tool Preferences
+* Tap on Specific Tool Preferences
 * Tap on ATAK Forwarder Preferences
 * Tap on `Refresh Devices`
 * Tap on `Set Comm Device` and pick your device from the list
 * Tap on `Set Region` and pick the region you are currently in
-* The icon in the lower right corner of the ATAK map should turn red and then green
+* The red line through the icon in the lower right corner of the screen should disappear within about a minute
 
 ## Setting up your Channel
 
 * In ATAK tap on the three dots menu in the upper right corner of the screen
 * Tap on Settings
 * Tap on Tool Preferences
+* Tap on Specific Tool Preferences
 * Tap on ATAK Forwarder Preferences
 * Scroll to `Channel Name` and tap on it to set your channel name, max length is 11 characters
 * Tap on `Mode / Speed` and pick a mode, try `Short Range / Fast` to start with
@@ -144,17 +156,13 @@ The ATAK Forwarder supports configuring Meshtastic devices that have a GPS but n
 * In ATAK tap on the three dots menu in the upper right corner of the screen
 * Tap on Settings
 * Tap on Tool Preferences
+* Tap on Specific Tool Preferences
 * Tap on ATAK Forwarder Preferences
 * Scroll to `Tracker` and configure your `Team`, `Role`, and other settings
 * Click on `Write to Device` and pick your device from the dropdown, set a `Callsign` and click `OK`
 * You will see a small spinning progress bar appear on the screen, wait until it disappears before doing anything else with the plugin
 * After the spinning progress bar disappears check the devices channel on its LCD, if the channel is updated reset the device by pressing the reset button for a second or two
 * You should see your device appear on the map after it boots back up, its location should start updating once it has a GPS lock
-
-# Architecture Diagram
-
-![Architecture Diagram](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/arch-diagram.png)
-![Architecture Diagram Non-ATAK Devicess](https://github.com/paulmandal/atak-forwarder/raw/0.9.1/images/arch-diagram-non-atak-devices.png)
 
 # Notes on Message Handling
 

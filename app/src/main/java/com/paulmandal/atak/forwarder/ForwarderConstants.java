@@ -28,7 +28,6 @@ public class ForwarderConstants {
     public static final int PHONE_TIMEOUT_S = 86400;
     public static final int DEVICE_CONNECTION_TIMEOUT = 30000;
     public static final int GPS_UPDATE_INTERVAL = 0xFFFFFFFF; // MAX_INT for the device
-    public static final int SEND_OWNER_INTERVAL = 0xFFFFFFFF; // MAX_INT for the device
 
     /**
      * Tweaks to message handling

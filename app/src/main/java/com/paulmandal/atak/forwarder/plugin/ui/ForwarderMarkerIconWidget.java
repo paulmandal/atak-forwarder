@@ -116,10 +116,10 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         switch (mConnectionState) {
             case NO_SERVICE_CONNECTION:
             case DEVICE_DISCONNECTED:
-                drawableId = R.drawable.ic_status_red;
+                drawableId = R.drawable.ic_disconnected;
                 break;
             case NO_DEVICE_CONFIGURED:
-                drawableId = R.drawable.ic_status_purple;
+                drawableId = R.drawable.ic_no_device_configured;
                 break;
         }
 
@@ -138,15 +138,15 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         float percentageOfPacketsDelivered = totalDeliveredPackets / (float) PACKET_WINDOW_SIZE;
 
         if (percentageOfPacketsDelivered > 0.89F) {
-            drawableId = R.drawable.ic_status_green;
+            drawableId = R.drawable.ic_mesh_connection_90plus;
         } else if (percentageOfPacketsDelivered > 0.75F) {
-            drawableId = R.drawable.ic_status_yellow;
+            drawableId = R.drawable.ic_mesh_connection_75plus;
         } else if (percentageOfPacketsDelivered > 0.50F) {
-            drawableId = R.drawable.ic_status_orange;
+            drawableId = R.drawable.ic_mesh_connection_50plus;
         } else if (percentageOfPacketsDelivered > 0.25F) {
-            drawableId = R.drawable.ic_status_brown;
+            drawableId = R.drawable.ic_mesh_connection_25plus;
         } else {
-            drawableId = R.drawable.ic_status_grey;
+            drawableId = R.drawable.ic_mesh_connection_below_25;
         }
 
         setIcon(drawableId);

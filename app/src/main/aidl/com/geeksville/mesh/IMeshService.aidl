@@ -66,6 +66,10 @@ interface IMeshService {
     */
     void send(inout DataPacket packet);
 
+    void deleteMessage(int packetId);
+
+    void deleteAllMessages();
+
     /**
     Get the IDs of everyone on the mesh.  You should also subscribe for NODE_CHANGE broadcasts.
     */

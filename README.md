@@ -8,9 +8,8 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 
 [![](https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif)](https://www.paypal.com/paypalme/paypaulmandal)
 
-
 ## Share Markers and PLI
-<br>
+
 ![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/0-markers-and-pli.png)
 <br>
 ![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/1-status.png)
@@ -18,13 +17,13 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 <br>
 
 ## Send Chat Messages
-<br>
+
 ![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/2-chat-messages.png)
 <br>
 <br>
 
 ## Configurable Channel Settings / Share with QR
-<br>
+
 ![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/3-channel-config.png)
 <br>
 ![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/4-qr-code-sharing.png)
@@ -32,7 +31,7 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 <br>
 
 ## Use standalone Meshtastic devices as Trackers
-<br>
+
 ![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/5-write-to-tracker.png)
 <br>
 <br>

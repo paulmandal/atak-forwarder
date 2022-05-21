@@ -37,6 +37,7 @@ import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
+import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.LoggingViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 import com.paulmandal.atak.forwarder.tracker.TrackerCotGenerator;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
@@ -178,11 +179,14 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 commandQueue,
                 hashHelper);
 
+        LoggingViewModel loggingViewModel = new LoggingViewModel(logger);
+
 
         ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,
                 pluginContext,
                 atakContext,
-                statusViewModel);
+                statusViewModel,
+                loggingViewModel);
 
 
         AtakBroadcast.DocumentedIntentFilter ddFilter = new AtakBroadcast.DocumentedIntentFilter();

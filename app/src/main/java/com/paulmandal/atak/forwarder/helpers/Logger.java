@@ -65,6 +65,14 @@ public class Logger extends DestroyableSharedPrefsListener {
         notifyListeners(tag, message);
     }
 
+    public void addListener(Listener listener) {
+        mListeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        mListeners.remove(listener);
+    }
+
     private void notifyListeners(String tag, String message) {
         for(Listener listener : mListeners) {
             mUiThreadHandler.post(() -> listener.onLogMessage(tag, message));

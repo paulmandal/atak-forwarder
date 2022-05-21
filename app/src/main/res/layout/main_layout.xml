@@ -33,19 +33,11 @@
                     android:layout_height="match_parent"
                     android:layout_margin="4dp" />
 
-                <com.paulmandal.atak.forwarder.plugin.ui.tabs.ChannelTab
+                <com.paulmandal.atak.forwarder.plugin.ui.LoggingScreen
                     android:id="@+id/tab_logging"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_margin="4dp" />
-
-                <com.paulmandal.atak.forwarder.plugin.ui.tabs.DevicesTab
-                    android:id="@+id/tab_devices"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="4dp" />
-
-                <include layout="@layout/advanced_layout" />
 
             </FrameLayout>
         </LinearLayout>

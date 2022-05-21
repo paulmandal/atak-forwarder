@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.view.View;
 import android.widget.TabHost;
 
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.atak.plugins.impl.PluginLayoutInflater;
@@ -98,5 +97,4 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
     public boolean isDropDownOpen() {
         return mIsDropDownOpen;
     }
-
 }

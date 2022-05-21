@@ -78,6 +78,10 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
     }
 
     private void updateFilteredMessages() {
+        if (mUnfilteredLogMessages == null) {
+            return;
+        }
+
         List<LogMessage> messages = new ArrayList<>();
 
         for (LogMessage message : mUnfilteredLogMessages) {

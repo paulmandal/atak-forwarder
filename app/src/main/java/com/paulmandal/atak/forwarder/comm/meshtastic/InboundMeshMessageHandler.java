@@ -59,7 +59,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
 
         int dataType = payload.getDataType();
 
-        mLogger.v(TAG, "handleReceive(), dataType: " + dataType);
+        mLogger.d(TAG, "handleReceive(), dataType: " + dataType);
         if (dataType == Portnums.PortNum.ATAK_FORWARDER.getNumber()) {
             String message = new String(payload.getBytes());
             if (!message.substring(1).startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {

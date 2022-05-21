@@ -154,10 +154,6 @@
         android:title="@string/enable_logging"
         android:summary="@string/enable_logging_summary"
         android:defaultValue="true" />
-    <com.atakmap.android.gui.PanSwitchPreference
-        android:key="plugin_atak_forwarder_key_enable_logging_toasts"
-        android:title="@string/enable_logging_toasts"
-        android:summary="@string/enable_logging_toasts_summary" />
 <!--    <com.atakmap.android.gui.PanPreference-->
 <!--        android:key="plugin_atak_forwarder_key_reset_to_default"-->
 <!--        android:title="@string/reset_to_default"-->

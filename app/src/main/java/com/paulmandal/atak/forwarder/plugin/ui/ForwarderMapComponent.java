@@ -69,10 +69,10 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(atakContext);
 
         // Internal components
-        Logger logger = new Logger(destroyables, sharedPreferences, atakContext);
-
-
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
+        Logger logger = new Logger(destroyables, sharedPreferences, uiThreadHandler);
+
+
         CotComparer cotComparer = new CotComparer();
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
 

@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.helpers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -11,68 +12,68 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 public class Logger extends DestroyableSharedPrefsListener {
 
-    private final Context mAtakContext;
-    private Toast mToast;
-    private boolean mEnableLogging;
-    private boolean mEnableLoggingToasts;
+    public interface Listener {
+        void onLogMessage(String tag, String message);
+    }
 
-    public Logger(List<Destroyable> destroyables, SharedPreferences sharedPreferences, Context atakContext) {
+    private final Handler mUiThreadHandler;
+
+    private boolean mEnableLogging;
+
+    private Set<Listener> mListeners = new CopyOnWriteArraySet<>();
+
+    public Logger(List<Destroyable> destroyables, SharedPreferences sharedPreferences, Handler uiThreadHandler) {
         super(destroyables, sharedPreferences,
                 new String[] {
-                        PreferencesKeys.KEY_ENABLE_LOGGING,
-                        PreferencesKeys.KEY_ENABLE_LOGGING_TOASTS
+                        PreferencesKeys.KEY_ENABLE_LOGGING
                 },
                 new String[] {});
-
-        mAtakContext = atakContext;
+        mUiThreadHandler = uiThreadHandler;
     }
 
     public void v(String tag, String message) {
         if (mEnableLogging) {
             Log.v(tag, message);
         }
-        maybeToast(tag, message);
+        notifyListeners(tag, message);
     }
 
     public void d(String tag, String message) {
         if (mEnableLogging) {
             Log.d(tag, message);
         }
-        maybeToast(tag, message);
+        notifyListeners(tag, message);
     }
 
     public void i(String tag, String message) {
         if (mEnableLogging) {
             Log.i(tag, message);
         }
-        maybeToast(tag, message);
+        notifyListeners(tag, message);
     }
 
     public void e(String tag, String message) {
         if (mEnableLogging) {
             Log.e(tag, message);
         }
-        maybeToast(tag, message);
+        notifyListeners(tag, message);
     }
 
-    private void maybeToast(String tag, String message) {
-        if (mEnableLoggingToasts) {
-            if (mToast != null) {
-                mToast.cancel();
-            }
-
-            mToast = Toast.makeText(mAtakContext, tag + ": " + message, Toast.LENGTH_SHORT);
-            mToast.show();
+    private void notifyListeners(String tag, String message) {
+        for(Listener listener : mListeners) {
+            mUiThreadHandler.post(() -> listener.onLogMessage(tag, message));
         }
     }
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
         mEnableLogging = sharedPreferences.getBoolean(PreferencesKeys.KEY_ENABLE_LOGGING, PreferencesDefaults.DEFAULT_ENABLE_LOGGING);
-        mEnableLoggingToasts = sharedPreferences.getBoolean(PreferencesKeys.KEY_ENABLE_LOGGING_TOASTS, PreferencesDefaults.DEFAULT_ENABLE_LOGGING_TOASTS);
     }
 
     @Override

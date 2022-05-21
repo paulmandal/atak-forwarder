@@ -51,11 +51,9 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         spec.setIndicator("Logging");
         tabs.addTab(spec);
 
-        if(Build.VERSION.SDK_INT < 26) {
-            // Fix for weird rendering on 7.1.x and possibly lower
-            for (int i = 0; i < tabs.getTabWidget().getChildCount(); i++) {
+        // Fix tabs being too large
+        for (int i = 0; i < tabs.getTabWidget().getChildCount(); i++) {
                 tabs.getTabWidget().getChildAt(i).getLayoutParams().height /= 2;
-            }
         }
 
         // Set up the rest of the UI

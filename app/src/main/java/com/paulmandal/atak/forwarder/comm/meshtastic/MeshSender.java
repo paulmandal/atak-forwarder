@@ -354,9 +354,13 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mPendingMessageId = NO_ID;
             mChunkInFlight = null;
             sendNextChunk();
-        } else if (status == MessageStatus.QUEUED) {
-            mLogger.i(TAG, "  Status is queued, waiting for ERROR/DELIVERED");
+        } else if (status == MessageStatus.QUEUED || status == MessageStatus.ENROUTE || status == MessageStatus.UNKNOWN) {
+            mLogger.i(TAG, "  Status is: " + status + ", waiting for ERROR/DELIVERED");
             // Do nothing, wait for delivered or error
+        } else if (mChunkInFlight.messageType == MessageType.PLI) {
+            // Don't try to re-send PLI, just keep going
+            mPendingMessageChunks.clear();
+            sendNextChunk();
         } else {
             mLogger.i(TAG, "  Status is ERROR, resending chunk after " + DELAY_AFTER_SEND_ERROR_MS +  "ms");
             try {

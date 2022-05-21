@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.plugin.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -9,6 +10,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.paulmandal.atak.forwarder.R;
@@ -18,7 +20,7 @@ import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 import java.util.Collections;
 
-public class StatusScreen {
+public class StatusScreen extends ConstraintLayout {
     private Context mAtakContext;
 
     private final TextView mChannelName;
@@ -35,22 +37,33 @@ public class StatusScreen {
     private final ListView mGroupMembersListView;
     private final Button mBroadcastDiscoveryButton;
     
-    public StatusScreen(ViewGroup vg) {
-        mConnectionStatusTextView = vg.findViewById(R.id.textview_connection_status);
+    public StatusScreen(Context context) {
+        this(context, null);
+    }
+    
+    public StatusScreen(Context context, AttributeSet attrs) {
+        this(context, attrs, 0);
+    }
+    
+    public StatusScreen(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        inflate(context, R.layout.status_layout, this);
+        
+        mConnectionStatusTextView = findViewById(R.id.textview_connection_status);
 
-        mChannelName = vg.findViewById(R.id.channel_name);
-        mPskHash = vg.findViewById(R.id.psk_hash);
-        mModemConfig = vg.findViewById(R.id.modem_config);
+        mChannelName = findViewById(R.id.channel_name);
+        mPskHash = findViewById(R.id.psk_hash);
+        mModemConfig = findViewById(R.id.modem_config);
 
-        mMessageQueueLengthTextView = vg.findViewById(R.id.textview_message_queue_length);
-        mReceivedTextView = vg.findViewById(R.id.textview_received_messages);
-        mDelieveredTextView = vg.findViewById(R.id.textview_delivered_messages);
-        mTimedOutTextView = vg.findViewById(R.id.textview_timed_out_messages);
-        mErroredTextView = vg.findViewById(R.id.textview_errored_messages);
-        mTotalTextView = vg.findViewById(R.id.textview_total_messages);
-        mGroupMembersListView = vg.findViewById(R.id.listview_channel_members);
+        mMessageQueueLengthTextView = findViewById(R.id.textview_message_queue_length);
+        mReceivedTextView = findViewById(R.id.textview_received_messages);
+        mDelieveredTextView = findViewById(R.id.textview_delivered_messages);
+        mTimedOutTextView = findViewById(R.id.textview_timed_out_messages);
+        mErroredTextView = findViewById(R.id.textview_errored_messages);
+        mTotalTextView = findViewById(R.id.textview_total_messages);
+        mGroupMembersListView = findViewById(R.id.listview_channel_members);
 
-        mBroadcastDiscoveryButton = vg.findViewById(R.id.button_broadcast_discovery);
+        mBroadcastDiscoveryButton = findViewById(R.id.button_broadcast_discovery);
     }
 
     @SuppressLint("DefaultLocale")

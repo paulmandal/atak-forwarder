@@ -361,7 +361,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             // Don't try to re-send PLI, just keep going
             mPendingMessageChunks.clear();
             sendNextChunk();
-        } else {
+        } else if (status == MessageStatus.ERROR) {
             mLogger.i(TAG, "  Status is ERROR, resending chunk after " + DELAY_AFTER_SEND_ERROR_MS +  "ms");
             try {
                 Thread.sleep(DELAY_AFTER_SEND_ERROR_MS);
@@ -372,6 +372,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 //                return;
 //            }
             sendChunk();
+        } else {
+            mLogger.i(TAG, "We don't know how to handle status: " + status + " wait until there's a new status and hopefully we can handle that.");
         }
     }
 

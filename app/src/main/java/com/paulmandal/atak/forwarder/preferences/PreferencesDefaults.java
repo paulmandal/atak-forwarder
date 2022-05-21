@@ -27,4 +27,5 @@ public class PreferencesDefaults {
     public static final String DEFAULT_COMM_DEVICE = null;
     public static final boolean DEFAULT_ENABLE_LOGGING = true;
     public static final String DEFAULT_LOGGING_LEVEL = "2";
+    public static final boolean DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE = false;
 }

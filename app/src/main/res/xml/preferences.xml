@@ -159,6 +159,11 @@
         android:title="@string/set_logging_level"
         android:summary="@string/set_logging_level_summary"
         android:dialogTitle="@string/set_logging_level"/>
+    <com.atakmap.android.gui.PanSwitchPreference
+        android:key="plugin_atak_forwarder_key_disable_writing_to_comm_device"
+        android:title="@string/disable_writing_to_comm_device"
+        android:summary="@string/disable_writing_to_comm_device_summary"
+        android:defaultValue="false" />
 <!--    <com.atakmap.android.gui.PanPreference-->
 <!--        android:key="plugin_atak_forwarder_key_reset_to_default"-->
 <!--        android:title="@string/reset_to_default"-->

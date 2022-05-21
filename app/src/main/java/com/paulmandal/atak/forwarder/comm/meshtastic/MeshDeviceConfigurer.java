@@ -47,6 +47,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     private boolean mIsRouter;
     private boolean mIsAlwaysPoweredOn;
+    private boolean mDisableWritingToCommDevice;
 
     private boolean mSetDeviceAddressCalled;
 
@@ -59,7 +60,9 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                                 String callsign) {
         super(destroyables,
                 sharedPreferences,
-                new String[] {},
+                new String[] {
+                        PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE
+                },
                 new String[]{
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
                         PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER,
@@ -90,7 +93,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        // Do nothing
+        mDisableWritingToCommDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE);
     }
 
     @Override
@@ -194,6 +197,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
+        if (mDisableWritingToCommDevice) {
+            mLogger.v(TAG, "Writing to comm device disabled, exiting checkRadioConfig()");
+        }
+
         byte[] radioConfigBytes = null;
         try {
             radioConfigBytes = mMeshService.getRadioConfig();
@@ -233,6 +240,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
+        }
+
+        if (mDisableWritingToCommDevice) {
+            mLogger.v(TAG, "Writing to comm device disabled, exiting checkChannelConfig()");
         }
 
         byte[] channelSetBytes = null;
@@ -283,6 +294,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
+        }
+
+        if (mDisableWritingToCommDevice) {
+            mLogger.v(TAG, "Writing to comm device disabled, exiting checkOwner()");
         }
 
         try {

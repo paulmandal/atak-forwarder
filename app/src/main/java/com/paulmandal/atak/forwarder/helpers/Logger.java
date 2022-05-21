@@ -14,7 +14,6 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class Logger extends DestroyableSharedPrefsListener {

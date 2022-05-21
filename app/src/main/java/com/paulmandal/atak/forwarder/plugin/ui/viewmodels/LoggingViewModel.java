@@ -32,7 +32,7 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
     private final List<LogMessage> mUnfilteredLogMessages = new ArrayList<>();
     private final MutableLiveData<List<LogMessage>> mLogMessages = new MutableLiveData<>();
 
-    private int mLoggingLevel = Logger.LOG_LEVEL_VERBOSE;
+    private int mLoggingLevel;
 
     public LoggingViewModel(List<Destroyable> destroyables, SharedPreferences sharedPreferences, Logger logger) {
         super(destroyables, sharedPreferences,

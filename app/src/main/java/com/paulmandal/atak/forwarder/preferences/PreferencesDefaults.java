@@ -26,5 +26,5 @@ public class PreferencesDefaults {
     public static final String DEFAULT_TRACKER_ROLE = "0";
     public static final String DEFAULT_COMM_DEVICE = null;
     public static final boolean DEFAULT_ENABLE_LOGGING = true;
-    public static final boolean DEFAULT_ENABLE_LOGGING_TOASTS = false;
+    public static final String DEFAULT_LOGGING_LEVEL = "2";
 }

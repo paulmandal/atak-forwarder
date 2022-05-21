@@ -2,6 +2,8 @@ package com.paulmandal.atak.forwarder.plugin.ui.settings;
 
 import android.preference.Preference;
 
+import com.atakmap.android.gui.PanListPreference;
+import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 
@@ -10,6 +12,7 @@ public class AdvancedButtons {
                            CommandQueue commandQueue,
                            Preference clearMessageCache,
                            Preference clearCommandQueue,
+                           Preference setLoggingLevel,
                            Preference resetToDefault,
                            Preference resetToDefaultIncludingChannel) {
         clearMessageCache.setOnPreferenceClickListener((Preference preference) -> {
@@ -20,6 +23,11 @@ public class AdvancedButtons {
             commandQueue.clearData();
             return true;
         });
+
+        PanListPreference  listPreferenceSetLoggingLevel = (PanListPreference) setLoggingLevel;
+        listPreferenceSetLoggingLevel.setEntries(R.array.log_levels);
+        listPreferenceSetLoggingLevel.setEntryValues(R.array.log_levels_values);
+
 //        resetToDefault.setOnPreferenceClickListener((Preference preference) -> {
 //            // TODO: implement reset to default
 //            return true;

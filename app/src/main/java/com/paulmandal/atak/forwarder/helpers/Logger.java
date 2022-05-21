@@ -3,6 +3,7 @@ package com.paulmandal.atak.forwarder.helpers;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
+import android.util.DebugUtils;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -17,9 +18,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class Logger extends DestroyableSharedPrefsListener {
+    public static final int LOG_LEVEL_VERBOSE = 2;
+    public static final int LOG_LEVEL_DEBUG = 3;
+    public static final int LOG_LEVEL_INFO = 4;
+    public static final int LOG_LEVEL_WARN = 5;
+    public static final int LOG_LEVEL_ERROR = 6;
 
     public interface Listener {
-        void onLogMessage(String tag, String message);
+        void onLogMessage(int level, String tag, String message);
     }
 
     private final Handler mUiThreadHandler;
@@ -41,28 +47,28 @@ public class Logger extends DestroyableSharedPrefsListener {
         if (mEnableLogging) {
             Log.v(tag, message);
         }
-        notifyListeners(tag, message);
+        notifyListeners(LOG_LEVEL_VERBOSE, tag, message);
     }
 
     public void d(String tag, String message) {
         if (mEnableLogging) {
             Log.d(tag, message);
         }
-        notifyListeners(tag, message);
+        notifyListeners(LOG_LEVEL_DEBUG, tag, message);
     }
 
     public void i(String tag, String message) {
         if (mEnableLogging) {
             Log.i(tag, message);
         }
-        notifyListeners(tag, message);
+        notifyListeners(LOG_LEVEL_INFO, tag, message);
     }
 
     public void e(String tag, String message) {
         if (mEnableLogging) {
             Log.e(tag, message);
         }
-        notifyListeners(tag, message);
+        notifyListeners(LOG_LEVEL_ERROR, tag, message);
     }
 
     public void addListener(Listener listener) {
@@ -73,9 +79,9 @@ public class Logger extends DestroyableSharedPrefsListener {
         mListeners.remove(listener);
     }
 
-    private void notifyListeners(String tag, String message) {
+    private void notifyListeners(int level, String tag, String message) {
         for(Listener listener : mListeners) {
-            mUiThreadHandler.post(() -> listener.onLogMessage(tag, message));
+            mUiThreadHandler.post(() -> listener.onLogMessage(level, tag, message));
         }
     }
 

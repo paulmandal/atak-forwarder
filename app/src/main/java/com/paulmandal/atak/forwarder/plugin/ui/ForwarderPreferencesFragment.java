@@ -118,6 +118,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 sCommandQueue,
                 findPreference(PreferencesKeys.KEY_CLEAR_DUPLICATE_MSG_CACHE),
                 findPreference(PreferencesKeys.KEY_CLEAR_OUTBOUND_MSG_QUEUE),
+                findPreference(PreferencesKeys.KEY_SET_LOGGING_LEVEL),
                 findPreference(PreferencesKeys.KEY_RESET_TO_DEFAULT),
                 findPreference(PreferencesKeys.KEY_RESET_TO_DEFAULT_INCLUDING_CHANNEL));
     }

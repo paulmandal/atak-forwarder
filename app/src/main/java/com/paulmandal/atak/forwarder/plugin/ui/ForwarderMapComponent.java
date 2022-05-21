@@ -179,7 +179,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 commandQueue,
                 hashHelper);
 
-        LoggingViewModel loggingViewModel = new LoggingViewModel(logger);
+        LoggingViewModel loggingViewModel = new LoggingViewModel(destroyables, sharedPreferences, logger);
 
 
         ForwarderDropDownReceiver forwarderDropDownReceiver = new ForwarderDropDownReceiver(mapView,

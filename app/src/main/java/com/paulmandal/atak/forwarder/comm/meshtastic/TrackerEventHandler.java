@@ -64,7 +64,7 @@ public class TrackerEventHandler extends MeshEventHandler {
         } else if (dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
             try {
                 MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
-                mLogger.d(TAG, "POSITION_APP parsed position: lat: " + position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", lon: " + position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", alt: " + position.getAltitude() + ", from: " + payload.getFrom());
+                mLogger.d(TAG, "POSITION_APP parsed position: lat: " + position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", lon: " + position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", alt: " + position.getAltitude() + ", batteryLevel: " + position.getBatteryLevel() + ", from: " + payload.getFrom());
 
                 boolean gpsValid = position.getLatitudeI() != 0 || position.getLongitudeI() != 0 || position.getAltitude() != 0;
                 TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), position.getBatteryLevel(), position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION, position.getAltitude(), gpsValid, null, System.currentTimeMillis(), TrackerUserInfo.NO_TEAM_DATA);

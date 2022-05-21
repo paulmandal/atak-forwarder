@@ -58,7 +58,7 @@ public class ForwarderDropDownReceiver extends DropDownReceiver implements DropD
         statusScreen.bind(lifecycleOwner, statusViewModel, pluginContext, atakContext);
 
         LoggingScreen loggingScreen = mTemplateView.findViewById(R.id.tab_logging);
-        loggingScreen.bind(lifecycleOwner, loggingViewModel);
+        loggingScreen.bind(lifecycleOwner, pluginContext, loggingViewModel);
     }
 
     public void disposeImpl() {

@@ -6,13 +6,14 @@ import android.widget.TextView;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.LifecycleOwner;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.LoggingViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 public class LoggingScreen extends ConstraintLayout {
-    private final TextView mLoggingTextView;
+    private final RecyclerView mLoggingRecyclerView;
 
     public LoggingScreen(Context context) {
         this(context, null);
@@ -26,17 +27,15 @@ public class LoggingScreen extends ConstraintLayout {
         super(context, attrs, defStyleAttr);
         inflate(context, R.layout.logging_layout, this);
 
-        mLoggingTextView = findViewById(R.id.logging_textview);
+        mLoggingRecyclerView = findViewById(R.id.logging_recyclerview);
     }
 
     public void bind(LifecycleOwner lifecycleOwner,
+                     Context pluginContext,
                      LoggingViewModel loggingViewModel) {
         loggingViewModel.getLogMessages().observe(lifecycleOwner, logMessages -> {
-            StringBuilder sb = new StringBuilder();
-            for (LoggingViewModel.LogMessage logMessage : logMessages) {
-                sb.append(String.format("%s: %s\n", logMessage.tag, logMessage.message));
-            }
-            mLoggingTextView.setText(sb.toString());
+            LogMessageAdapter logMessageAdapter = new LogMessageAdapter(pluginContext, logMessages);
+            mLoggingRecyclerView.setAdapter(logMessageAdapter);
         });
     }
 }

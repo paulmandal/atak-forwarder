@@ -20,7 +20,7 @@ public class LogMessageDataAdapter extends ArrayAdapter<LoggingViewModel.LogMess
     private final List<LoggingViewModel.LogMessage> mLogMessages;
 
     public LogMessageDataAdapter(Context pluginContext, List<LoggingViewModel.LogMessage> logMessages) {
-        super(pluginContext, R.layout.log_message_recyclerview_item, logMessages);
+        super(pluginContext, R.layout.log_message_listview_item, logMessages);
         mPluginContext = pluginContext;
         mLogMessages = logMessages;
     }
@@ -36,7 +36,7 @@ public class LogMessageDataAdapter extends ArrayAdapter<LoggingViewModel.LogMess
         View view;
         if (convertView == null) {
             LayoutInflater inflator = (LayoutInflater) mPluginContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflator.inflate(R.layout.log_message_recyclerview_item, parent, false);
+            view = inflator.inflate(R.layout.log_message_listview_item, parent, false);
             final ViewHolder viewHolder = new ViewHolder();
             viewHolder.logMessage = view.findViewById(R.id.textview_log_message);
             view.setTag(viewHolder);

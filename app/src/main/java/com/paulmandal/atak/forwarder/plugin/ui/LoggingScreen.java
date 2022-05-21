@@ -32,8 +32,10 @@ public class LoggingScreen extends ConstraintLayout {
                      Context pluginContext,
                      LoggingViewModel loggingViewModel) {
         loggingViewModel.getLogMessages().observe(lifecycleOwner, logMessages -> {
+            int lastVisiblePosition = mLoggingListView.getLastVisiblePosition();
             LogMessageDataAdapter logMessageAdapter = new LogMessageDataAdapter(pluginContext, logMessages);
             mLoggingListView.setAdapter(logMessageAdapter);
+            mLoggingListView.smoothScrollToPosition(lastVisiblePosition);
         });
     }
 }

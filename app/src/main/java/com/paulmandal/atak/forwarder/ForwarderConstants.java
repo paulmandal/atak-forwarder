@@ -10,6 +10,8 @@ public class ForwarderConstants {
 
     public static final ErrorCorrectionLevel DEFAULT_ERROR_CORRECTION_LEVEL = ErrorCorrectionLevel.M;
 
+    public static final int MAX_LOG_MESSAGES_OUTPUT = 100;
+
     /**
      * How long to wait for radioConfig to be available when writing to a Tracker device
      */

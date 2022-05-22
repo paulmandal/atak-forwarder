@@ -85,9 +85,9 @@ public class CommandQueue {
     }
 
     @Nullable
-    public QueuedCommand popHighestPriorityCommand(boolean isServiceConnected) {
+    public QueuedCommand popHighestPriorityCommand(boolean isConnected) {
         // All commands currently require connectivity
-        if (!isServiceConnected) {
+        if (!isConnected) {
             return null;
         }
 
@@ -97,7 +97,7 @@ public class CommandQueue {
         synchronized (mQueuedCommands) {
             for (QueuedCommand queuedCommand : mQueuedCommands) {
 
-//                if (!isServiceConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
+//                if (!isConnected && (queuedCommand.commandType == CommandType.BROADCAST_DISCOVERY_MSG
 //                        || queuedCommand.commandType == CommandType.SEND_TO_INDIVIDUAL
 //                        || queuedCommand.commandType == CommandType.SEND_TO_CHANNEL)) {
 //                    // Ignore commands that require connectivity

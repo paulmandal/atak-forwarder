@@ -60,8 +60,7 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
                 return;
             }
 
-            boolean isServiceConnected = mConnectionState != ConnectionState.NO_SERVICE_CONNECTION && mConnectionState != ConnectionState.NO_DEVICE_CONFIGURED;
-            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(isServiceConnected);
+            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
 
             if (queuedCommand == null) {
                 return;

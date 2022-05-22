@@ -13,10 +13,15 @@ import java.util.List;
 public class MainButtons {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MainButtons.class.getSimpleName();
 
+    private final Gson mGson;
+
     public MainButtons(DevicesList devicesList,
                        Preference setCommDevicePreference,
                        Preference refreshDevicesPreference,
-                       Preference regionPreference) {
+                       Preference regionPreference,
+                       Gson gson) {
+        mGson = gson;
+
         PanListPreference commDevicePreference = (PanListPreference) setCommDevicePreference;
         updateCommDevices(commDevicePreference, devicesList.getMeshtasticDevices());
 
@@ -32,13 +37,12 @@ public class MainButtons {
 
     private void updateCommDevices(PanListPreference commDevicePreference,
                                    List<MeshtasticDevice> meshtasticDevices) {
-        Gson gson = new Gson();
         String[] devices = new String[meshtasticDevices.size()];
         String[] values = new String[meshtasticDevices.size()];
         for (int i = 0 ; i < meshtasticDevices.size() ; i++) {
             MeshtasticDevice meshtasticDevice = meshtasticDevices.get(i);
             devices[i] = meshtasticDevice.toString();
-            values[i] = gson.toJson(meshtasticDevice);
+            values[i] = mGson.toJson(meshtasticDevice);
         }
 
         commDevicePreference.setEntries(devices);

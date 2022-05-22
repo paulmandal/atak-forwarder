@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -16,9 +15,11 @@ import androidx.lifecycle.LifecycleOwner;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 import java.util.Collections;
+import java.util.Locale;
 
 public class StatusScreen extends ConstraintLayout {
     private Context mAtakContext;
@@ -27,6 +28,7 @@ public class StatusScreen extends ConstraintLayout {
     private final TextView mPskHash;
     private final TextView mModemConfig;
     private final TextView mConnectionStatusTextView;
+    private final TextView mDeviceIdTextView;
 
     private final TextView mMessageQueueLengthTextView;
     private final TextView mReceivedTextView;
@@ -50,6 +52,7 @@ public class StatusScreen extends ConstraintLayout {
         inflate(context, R.layout.status_layout, this);
         
         mConnectionStatusTextView = findViewById(R.id.textview_connection_status);
+        mDeviceIdTextView = findViewById(R.id.textview_device_id);
 
         mChannelName = findViewById(R.id.channel_name);
         mPskHash = findViewById(R.id.psk_hash);
@@ -129,6 +132,7 @@ public class StatusScreen extends ConstraintLayout {
         statusViewModel.getChannelName().observe(lifecycleOwner, channelName -> mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null));
         statusViewModel.getPskHash().observe(lifecycleOwner, mPskHash::setText);
         statusViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
+        statusViewModel.getCommDevice().observe(lifecycleOwner, commDevice -> mDeviceIdTextView.setText(String.format("(%s)", getShortDeviceId(commDevice))));
     }
 
     private void handleNoServiceConnected() {
@@ -149,5 +153,18 @@ public class StatusScreen extends ConstraintLayout {
     private void handleDeviceConnected() {
         Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_device_connected);
+    }
+
+    private String getShortDeviceId(MeshtasticDevice meshtasticDevice) {
+        if (meshtasticDevice == null) {
+            return "(no dev cfg)";
+        }
+
+        if (meshtasticDevice.deviceType == MeshtasticDevice.DeviceType.BLUETOOTH) {
+            String addressWithoutDelimiters = meshtasticDevice.address.replace(":", "").toLowerCase();
+            return addressWithoutDelimiters.substring(Math.max(0, addressWithoutDelimiters.length() - 4));
+        }
+
+        return meshtasticDevice.address.substring(Math.max(0, meshtasticDevice.address.length() - 4));
     }
 }

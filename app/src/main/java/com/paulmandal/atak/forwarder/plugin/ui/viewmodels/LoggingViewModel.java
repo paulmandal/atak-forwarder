@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.plugin.ui.viewmodels;
 
 import android.content.SharedPreferences;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -46,7 +47,7 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
         mLogMessages.setValue(new ArrayList<>());
     }
 
-    public MutableLiveData<List<LogMessage>> getLogMessages() {
+    public LiveData<List<LogMessage>> getLogMessages() {
         return mLogMessages;
     }
 
@@ -61,7 +62,7 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
         if(level >= mLoggingLevel) {
             List<LogMessage> messages = mLogMessages.getValue();
             messages.add(logMessage);
-            mLogMessages.setValue(messages);
+            mLogMessages.postValue(messages);
         }
     }
 
@@ -90,6 +91,6 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
             }
         }
 
-        mLogMessages.setValue(messages);
+        mLogMessages.postValue(messages);
     }
 }

@@ -14,6 +14,7 @@ import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.app.preferences.ToolsPreferenceFragment;
+import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
@@ -78,12 +79,14 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         CommandQueue commandQueue = new CommandQueue(uiThreadHandler, cotComparer);
 
 
+        Gson gson = new Gson();
         MeshSuspendController meshSuspendController = new MeshSuspendController();
         MeshServiceController meshServiceController = new MeshServiceController(destroyables,
                 sharedPreferences,
                 atakContext,
                 uiThreadHandler,
                 meshSuspendController,
+                gson,
                 logger);
 
 
@@ -111,7 +114,14 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
         HashHelper hashHelper = new HashHelper();
-        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables, sharedPreferences, meshServiceController, meshtasticDeviceSwitcher, hashHelper, logger, callsign);
+        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables,
+                sharedPreferences,
+                meshServiceController,
+                meshtasticDeviceSwitcher,
+                hashHelper,
+                gson,
+                logger,
+                callsign);
 
 
         UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
@@ -177,6 +187,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 meshSender,
                 inboundMeshMessageHandler,
                 commandQueue,
+                gson,
                 hashHelper);
 
         LoggingViewModel loggingViewModel = new LoggingViewModel(destroyables, sharedPreferences, logger);

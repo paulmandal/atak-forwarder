@@ -14,7 +14,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:text="@string/connection_status_device_disconnected"/>
+
+    <TextView
+        android:id="@+id/textview_device_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintStart_toEndOf="@id/textview_connection_status"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/channel_name"

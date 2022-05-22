@@ -165,6 +165,6 @@ public class StatusScreen extends ConstraintLayout {
             return addressWithoutDelimiters.substring(Math.max(0, addressWithoutDelimiters.length() - 4));
         }
 
-        return meshtasticDevice.address.substring(Math.max(0, meshtasticDevice.address.length() - 4));
+        return String.format("...%s", meshtasticDevice.address.substring(Math.max(0, meshtasticDevice.address.length() - 8)));
     }
 }

@@ -30,6 +30,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private final MeshServiceController mMeshServiceController;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final HashHelper mHashHelper;
+    private final Gson mGson;
     private final Logger mLogger;
     private final String mCallsign;
 
@@ -47,6 +48,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     private RadioConfigProtos.Role mDeviceRole;
     private boolean mIsAlwaysPoweredOn;
+    private boolean mDisableWritingToCommDevice;
 
     private boolean mSetDeviceAddressCalled;
 
@@ -55,11 +57,14 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                                 MeshServiceController meshServiceController,
                                 MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                 HashHelper hashHelper,
+                                Gson gson,
                                 Logger logger,
                                 String callsign) {
         super(destroyables,
                 sharedPreferences,
-                new String[] {},
+                new String[] {
+                        PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE
+                },
                 new String[]{
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
                         PreferencesKeys.KEY_COMM_DEVICE_ROLE,
@@ -74,6 +79,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mMeshServiceController = meshServiceController;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mHashHelper = hashHelper;
+        mGson = gson;
         mLogger = logger;
         mCallsign = callsign;
 
@@ -90,7 +96,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        // Do nothing
+        mDisableWritingToCommDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE);
     }
 
     @Override
@@ -98,8 +104,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         switch (key) {
             case PreferencesKeys.KEY_SET_COMM_DEVICE:
                 String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
-                Gson gson = new Gson();
-                MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
+                MeshtasticDevice meshtasticDevice = mGson.fromJson(commDeviceStr, MeshtasticDevice.class);
 
                 if (meshtasticDevice == null) {
                     mLogger.v(TAG, "complexUpdate, no device configured, exiting");
@@ -194,6 +199,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
+        if (mDisableWritingToCommDevice) {
+            mLogger.v(TAG, "Writing to comm device disabled, exiting checkRadioConfig()");
+        }
+
         byte[] radioConfigBytes = null;
         try {
             radioConfigBytes = mMeshService.getRadioConfig();
@@ -233,6 +242,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
+        }
+
+        if (mDisableWritingToCommDevice) {
+            mLogger.v(TAG, "Writing to comm device disabled, exiting checkChannelConfig()");
         }
 
         byte[] channelSetBytes = null;
@@ -283,6 +296,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
+        }
+
+        if (mDisableWritingToCommDevice) {
+            mLogger.v(TAG, "Writing to comm device disabled, exiting checkOwner()");
         }
 
         try {

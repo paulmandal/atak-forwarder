@@ -126,8 +126,11 @@
     <string name="enable_logging">Enable Logging</string>
     <string name="enable_logging_summary">Enables debug logging to logcat</string>
 
-    <string name="enable_logging_toasts">Enable Logging Toasts</string>
-    <string name="enable_logging_toasts_summary">Enables debug logging Toast messages</string>
+    <string name="set_logging_level">Set Logging Level</string>
+    <string name="set_logging_level_summary">Sets the level of logs outputted to the status screen</string>
+
+    <string name="disable_writing_to_comm_device">Disable writing to Comm Device</string>
+    <string name="disable_writing_to_comm_device_summary">Disable writing settings/channels to the comm. device, this is for users that write via the Python API</string>
 
     <string name="reset_to_default">Reset to Defaults</string>
     <string name="reset_to_default_summary">Reset the plugin to its default settings (keeps channel settings)</string>
@@ -263,4 +266,19 @@
         <item>7</item>
     </string-array>
 
+    <string-array name="log_levels">
+        <item>Verbose</item>
+        <item>Debug</item>
+        <item>Info</item>
+        <item>Warn</item>
+        <item>Error</item>
+    </string-array>
+
+    <string-array name="log_levels_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+    </string-array>
 </resources>

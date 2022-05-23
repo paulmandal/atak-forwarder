@@ -41,6 +41,7 @@ public class TrackerButtons {
                           Handler uiThreadHandler,
                           DevicesList devicesList,
                           MeshSuspendController meshSuspendController,
+                          Gson gson,
                           Logger logger,
                           Preference trackerDeviceRole,
                           Preference teams,
@@ -61,7 +62,6 @@ public class TrackerButtons {
         writeToDevice.setOnPreferenceClickListener((Preference preference) -> {
             SharedPreferences sharedPreferences = preference.getSharedPreferences();
 
-            Gson gson = new Gson();
             List<MeshtasticDevice> meshtasticDevices = devicesList.getMeshtasticDevices();
             MeshtasticDevice commDevice = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE), MeshtasticDevice.class);
 

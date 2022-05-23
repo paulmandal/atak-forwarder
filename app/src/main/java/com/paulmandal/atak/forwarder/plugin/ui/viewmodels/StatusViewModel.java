@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
@@ -49,8 +50,9 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
                            CommandQueue commandQueue,
+                           Gson gson,
                            HashHelper hashHelper) {
-        super(destroyables, sharedPreferences, hashHelper);
+        super(destroyables, sharedPreferences, gson, hashHelper);
 
         mDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
 

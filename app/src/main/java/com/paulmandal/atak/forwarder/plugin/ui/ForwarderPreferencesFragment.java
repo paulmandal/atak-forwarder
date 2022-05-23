@@ -9,6 +9,7 @@ import android.os.Looper;
 
 import com.atakmap.android.maps.MapView;
 import com.atakmap.android.preference.PluginPreferenceFragment;
+import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
@@ -76,10 +77,13 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Gson gson = new Gson();
+
         MainButtons mainButtons = new MainButtons(sDevicesList,
                 findPreference(PreferencesKeys.KEY_SET_COMM_DEVICE),
                 findPreference(PreferencesKeys.KEY_REFRESH_COMM_DEVICES),
-                findPreference(PreferencesKeys.KEY_REGION));
+                findPreference(PreferencesKeys.KEY_REGION),
+                gson);
 
         Context settingsMenuContext = getActivity();
 
@@ -109,6 +113,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 uiThreadHandler,
                 sDevicesList,
                 sMeshSuspendController,
+                gson,
                 sLogger,
                 findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
                 findPreference(PreferencesKeys.KEY_TRACKER_ROLE),
@@ -118,6 +123,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 sCommandQueue,
                 findPreference(PreferencesKeys.KEY_CLEAR_DUPLICATE_MSG_CACHE),
                 findPreference(PreferencesKeys.KEY_CLEAR_OUTBOUND_MSG_QUEUE),
+                findPreference(PreferencesKeys.KEY_SET_LOGGING_LEVEL),
                 findPreference(PreferencesKeys.KEY_RESET_TO_DEFAULT),
                 findPreference(PreferencesKeys.KEY_RESET_TO_DEFAULT_INCLUDING_CHANNEL));
     }

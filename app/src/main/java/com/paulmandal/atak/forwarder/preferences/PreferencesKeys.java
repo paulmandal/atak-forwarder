@@ -35,5 +35,6 @@ public class PreferencesKeys {
     public static final String KEY_RESET_TO_DEFAULT = "plugin_atak_forwarder_key_reset_to_default";
     public static final String KEY_RESET_TO_DEFAULT_INCLUDING_CHANNEL = "plugin_atak_forwarder_key_reset_to_default_including_channel";
     public static final String KEY_ENABLE_LOGGING = "plugin_atak_forwarder_key_enable_logging";
-    public static final String KEY_ENABLE_LOGGING_TOASTS = "plugin_atak_forwarder_key_enable_logging_toasts";
+    public static final String KEY_SET_LOGGING_LEVEL = "plugin_atak_forwarder_key_set_logging_level";
+    public static final String KEY_DISABLE_WRITING_TO_COMM_DEVICE = "plugin_atak_forwarder_key_disable_writing_to_comm_device";
 }

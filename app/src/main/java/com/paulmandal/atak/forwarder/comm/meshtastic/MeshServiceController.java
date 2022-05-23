@@ -36,6 +36,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private final Context mAtakContext;
     private final Handler mUiThreadHandler;
     private final SharedPreferences mSharedPreferences;
+    private final Gson mGson;
     private final Logger mLogger;
 
     private IMeshService mMeshService;
@@ -57,9 +58,11 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                                  Context atakContext,
                                  Handler uiThreadHandler,
                                  MeshSuspendController meshSuspendController,
+                                 Gson gson,
                                  Logger logger) {
         mAtakContext = atakContext;
         mUiThreadHandler = uiThreadHandler;
+        mGson = gson;
         mLogger = logger;
         mSharedPreferences = sharedPreferences;
 
@@ -202,8 +205,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
-            Gson gson = new Gson();
-            mMeshDevice = gson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE), MeshtasticDevice.class);
+            mMeshDevice = mGson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE), MeshtasticDevice.class);
         } else if (key.equals(PreferencesKeys.KEY_REGION)) {
             mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         }

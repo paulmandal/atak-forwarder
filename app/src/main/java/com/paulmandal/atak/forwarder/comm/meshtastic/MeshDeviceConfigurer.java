@@ -201,6 +201,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         if (mDisableWritingToCommDevice) {
             mLogger.v(TAG, "Writing to comm device disabled, exiting checkRadioConfig()");
+            return;
         }
 
         byte[] radioConfigBytes = null;
@@ -246,6 +247,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         if (mDisableWritingToCommDevice) {
             mLogger.v(TAG, "Writing to comm device disabled, exiting checkChannelConfig()");
+            return;
         }
 
         byte[] channelSetBytes = null;
@@ -300,6 +302,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         if (mDisableWritingToCommDevice) {
             mLogger.v(TAG, "Writing to comm device disabled, exiting checkOwner()");
+            return;
         }
 
         try {

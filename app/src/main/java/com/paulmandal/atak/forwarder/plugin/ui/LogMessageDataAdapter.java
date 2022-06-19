@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 
 import com.paulmandal.atak.forwarder.R;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.LoggingViewModel;
 
 import java.util.List;
@@ -46,7 +47,24 @@ public class LogMessageDataAdapter extends ArrayAdapter<LoggingViewModel.LogMess
         LoggingViewModel.LogMessage logMessage = mLogMessages.get(position);
 
         ViewHolder holder = (ViewHolder) view.getTag();
-        holder.logMessage.setText(String.format("%s: %s", logMessage.tag, logMessage.message));
+        holder.logMessage.setText(String.format("%s/%s: %s", logMessage.tag, logLevelToStr(logMessage.level), logMessage.message));
         return view;
+    }
+
+    private String logLevelToStr(int level) {
+        switch (level) {
+            case Logger.LOG_LEVEL_VERBOSE:
+                return "V";
+            case Logger.LOG_LEVEL_DEBUG:
+                return "D";
+            case Logger.LOG_LEVEL_INFO:
+                return "I";
+            case Logger.LOG_LEVEL_WARN:
+                return "W";
+            case Logger.LOG_LEVEL_ERROR:
+                return "E";
+            default:
+                return "?";
+        }
     }
 }

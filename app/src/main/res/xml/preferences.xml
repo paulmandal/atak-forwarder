@@ -66,6 +66,7 @@
         android:title="@string/channel_name"
         android:summary="@string/channel_name_summary"
         android:dialogTitle="@string/channel_name"
+        android:singleLine="true"
         android:defaultValue="Default" />
     <com.atakmap.android.gui.PanListPreference
         android:key="plugin_atak_forwarder_key_channel_mode"

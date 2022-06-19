@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHand
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -27,7 +28,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         CommandQueue.Listener,
         MeshServiceController.ConnectionStateListener,
         MeshSender.MessageAckNackListener,
-        InboundMeshMessageHandler.MessageListener {
+        InboundMeshMessageHandler.MessageListener,
+        TrackerEventHandler.TrackerListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
     private final DiscoveryBroadcastEventHandler mDiscoveryBroadcastEventHandler;
@@ -48,6 +50,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
                            DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
+                           TrackerEventHandler trackerEventHandler,
                            CommandQueue commandQueue,
                            Gson gson,
                            HashHelper hashHelper) {
@@ -67,6 +70,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         meshServiceController.addConnectionStateListener(this);
         meshSender.addMessageAckNackListener(this);
         inboundMeshMessageHandler.addMessageListener(this);
+        trackerEventHandler.addListener(this);
     }
 
     @Override
@@ -149,6 +153,12 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     @Override
     public void onMessageReceived(int messageId, byte[] message) {
+        mTotalMessages.setValue(mTotalMessages.getValue() + 1);
+        mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
+    }
+
+    @Override
+    public void onTrackerUpdated(TrackerUserInfo trackerUserInfo) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
     }

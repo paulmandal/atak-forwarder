@@ -40,7 +40,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
     public StatusViewModel(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,
@@ -60,7 +59,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         mTotalMessages.setValue(0);
         mErroredMessages.setValue(0);
         mDeliveredMessages.setValue(0);
-        mErrorsInARow.setValue(0);
         mTimedOutMessages.setValue(0);
         mReceivedMessages.setValue(0);
 
@@ -129,11 +127,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         return mDeliveredMessages;
     }
 
-    @NonNull
-    public LiveData<Integer> getErrorsInARow() {
-        return mErrorsInARow;
-    }
-
     public void broadcastDiscoveryMessage() {
         mDiscoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
     }
@@ -142,10 +135,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     public void onMessageAckNack(int messageId, boolean isAck) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         if (isAck) {
-            mErrorsInARow.setValue(0);
             mDeliveredMessages.setValue(mDeliveredMessages.getValue() + 1);
         } else {
-            mErrorsInARow.setValue(mErrorsInARow.getValue() + 1);
             mErroredMessages.setValue(mErroredMessages.getValue() + 1);
         }
     }

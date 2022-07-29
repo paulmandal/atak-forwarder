@@ -56,7 +56,7 @@ public class UserTracker implements DiscoveryBroadcastEventHandler.DiscoveryBroa
         mLogger = logger;
 
         discoveryBroadcastEventHandler.setListener(this);
-        trackerEventHandler.setListener(this);
+        trackerEventHandler.addListener(this);
     }
 
     @Override

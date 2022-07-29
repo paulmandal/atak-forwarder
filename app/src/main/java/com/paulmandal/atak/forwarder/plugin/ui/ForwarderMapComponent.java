@@ -186,6 +186,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 discoveryBroadcastEventHandler,
                 meshSender,
                 inboundMeshMessageHandler,
+                trackerEventHandler,
                 commandQueue,
                 gson,
                 hashHelper);

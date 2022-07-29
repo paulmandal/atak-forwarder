@@ -16,6 +16,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHand
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -27,7 +28,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         CommandQueue.Listener,
         MeshServiceController.ConnectionStateListener,
         MeshSender.MessageAckNackListener,
-        InboundMeshMessageHandler.MessageListener {
+        InboundMeshMessageHandler.MessageListener,
+        TrackerEventHandler.TrackerListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + StatusViewModel.class.getSimpleName();
 
     private final DiscoveryBroadcastEventHandler mDiscoveryBroadcastEventHandler;
@@ -40,7 +42,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mErrorsInARow = new MutableLiveData<>();
 
     public StatusViewModel(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,
@@ -49,6 +50,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
                            DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
+                           TrackerEventHandler trackerEventHandler,
                            CommandQueue commandQueue,
                            Gson gson,
                            HashHelper hashHelper) {
@@ -60,7 +62,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         mTotalMessages.setValue(0);
         mErroredMessages.setValue(0);
         mDeliveredMessages.setValue(0);
-        mErrorsInARow.setValue(0);
         mTimedOutMessages.setValue(0);
         mReceivedMessages.setValue(0);
 
@@ -69,6 +70,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         meshServiceController.addConnectionStateListener(this);
         meshSender.addMessageAckNackListener(this);
         inboundMeshMessageHandler.addMessageListener(this);
+        trackerEventHandler.addListener(this);
     }
 
     @Override
@@ -129,11 +131,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         return mDeliveredMessages;
     }
 
-    @NonNull
-    public LiveData<Integer> getErrorsInARow() {
-        return mErrorsInARow;
-    }
-
     public void broadcastDiscoveryMessage() {
         mDiscoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
     }
@@ -142,10 +139,8 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     public void onMessageAckNack(int messageId, boolean isAck) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         if (isAck) {
-            mErrorsInARow.setValue(0);
             mDeliveredMessages.setValue(mDeliveredMessages.getValue() + 1);
         } else {
-            mErrorsInARow.setValue(mErrorsInARow.getValue() + 1);
             mErroredMessages.setValue(mErroredMessages.getValue() + 1);
         }
     }
@@ -158,6 +153,12 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     @Override
     public void onMessageReceived(int messageId, byte[] message) {
+        mTotalMessages.setValue(mTotalMessages.getValue() + 1);
+        mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
+    }
+
+    @Override
+    public void onTrackerUpdated(TrackerUserInfo trackerUserInfo) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
     }

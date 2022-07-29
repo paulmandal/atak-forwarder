@@ -19,7 +19,7 @@ public class ForwarderConstants {
 
     public static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_CHANNEL_CHANGE = 3000;
 
-    public static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE = 10000;
+    public static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE = 3000;
 
     /**
      * Meshtastic Radio Config

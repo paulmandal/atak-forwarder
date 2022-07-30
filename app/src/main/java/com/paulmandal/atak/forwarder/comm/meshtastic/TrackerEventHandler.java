@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
 import android.util.ArraySet;
 
 import com.geeksville.mesh.DataPacket;
@@ -29,9 +30,12 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     private CopyOnWriteArraySet<TrackerListener> mTrackerListeners = new CopyOnWriteArraySet<>();
 
+    private Handler mUiThreadHandler;
+
     public TrackerEventHandler(Context atakContext,
                                Logger logger,
                                List<Destroyable> destroyables,
+                               Handler uiThreadHandler,
                                MeshSuspendController meshSuspendController) {
         super(atakContext,
                 logger,
@@ -41,6 +45,8 @@ public class TrackerEventHandler extends MeshEventHandler {
                 },
                 destroyables,
                 meshSuspendController);
+
+        mUiThreadHandler = uiThreadHandler;
     }
 
     public void addListener(TrackerListener listener) {
@@ -82,7 +88,7 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     private void notifyListeners(TrackerUserInfo trackerUserInfo) {
         for (TrackerListener listener : mTrackerListeners) {
-            listener.onTrackerUpdated(trackerUserInfo);
+            mUiThreadHandler.post(() -> listener.onTrackerUpdated(trackerUserInfo));
         }
     }
 }

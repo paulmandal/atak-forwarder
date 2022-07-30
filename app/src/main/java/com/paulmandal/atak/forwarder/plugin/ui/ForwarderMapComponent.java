@@ -109,6 +109,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 atakContext,
                 logger,
                 destroyables,
+                uiThreadHandler,
                 meshSuspendController);
 
 

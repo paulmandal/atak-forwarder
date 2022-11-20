@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.ConfigProtos;
@@ -84,11 +85,13 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
+                ConnectionState connectionState = ConnectionState.DEVICE_CONNECTED;
+
                 if (mMeshDevice == null || mRegionCode == null || mRegionCode == Config.LoRaConfig.RegionCode.UNSET) {
-                    updateConnectionState(ConnectionState.NO_DEVICE_CONFIGURED);
-                } else {
-                    updateConnectionState(ConnectionState.DEVICE_DISCONNECTED);
+                    connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
                 }
+
+                updateConnectionState(connectionState);
             }
 
             public void onServiceDisconnected(ComponentName className) {
@@ -132,12 +135,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
         if (action.equals(MeshServiceConstants.ACTION_MESH_CONNECTED)) {
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
-            ConnectionState connectionState = ConnectionState.DEVICE_DISCONNECTED;
-
-            if (extraConnected.equals(MeshServiceConstants.STATE_CONNECTED)
-                || extraConnected.equals(MeshServiceConstants.STATE_DEVICE_SLEEP)) {
-                connectionState = ConnectionState.DEVICE_CONNECTED;
-            }
+            ConnectionState connectionState = connectionStateFromServiceState(extraConnected);
 
             mLogger.d(TAG, "Connection changed: " + connectionState);
             updateConnectionState(connectionState);
@@ -215,5 +213,16 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         } else if (key.equals(PreferencesKeys.KEY_REGION)) {
             mRegionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         }
+    }
+
+    private ConnectionState connectionStateFromServiceState(String connectionString) {
+        ConnectionState connectionState = ConnectionState.DEVICE_DISCONNECTED;
+
+        if (connectionString.equals(MeshServiceConstants.STATE_CONNECTED)
+                || connectionString.equals(MeshServiceConstants.STATE_DEVICE_SLEEP)) {
+            connectionState = ConnectionState.DEVICE_CONNECTED;
+        }
+
+        return connectionState;
     }
 }

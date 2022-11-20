@@ -134,10 +134,9 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
             ConnectionState connectionState = ConnectionState.DEVICE_DISCONNECTED;
 
-            if (extraConnected.equals(MeshServiceConstants.STATE_CONNECTED)) {
+            if (extraConnected.equals(MeshServiceConstants.STATE_CONNECTED)
+                || extraConnected.equals(MeshServiceConstants.STATE_DEVICE_SLEEP)) {
                 connectionState = ConnectionState.DEVICE_CONNECTED;
-            } else if (extraConnected.equals(MeshServiceConstants.STATE_DEVICE_SLEEP)) {
-                connectionState = ConnectionState.DEVICE_SLEEP;
             }
 
             mLogger.d(TAG, "Connection changed: " + connectionState);

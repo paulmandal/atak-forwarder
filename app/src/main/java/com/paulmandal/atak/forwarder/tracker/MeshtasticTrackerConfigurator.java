@@ -246,17 +246,17 @@ public class MeshtasticTrackerConfigurator {
 
             mMeshService.setConfig(config.toByteArray());
 
-            AppOnlyProtos.ChannelSet.Builder channelSetBuilder = AppOnlyProtos.ChannelSet.newBuilder();
-            channelSetBuilder.setLoraConfig(loRaConfigBuilder);
+            ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
             ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
             channelSettingsBuilder.setName(mChannelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
 
-            channelSetBuilder.addSettings(channelSettingsBuilder);
-            AppOnlyProtos.ChannelSet channelSet = channelSetBuilder.build();
+            channelBuilder.setSettings(channelSettingsBuilder);
 
-            mMeshService.setChannel(channelSet.toByteArray());
+            ChannelProtos.Channel channel = channelBuilder.build();
+
+            mMeshService.setChannel(channel.toByteArray());
 
             if (TrackerCotGenerator.ROLES.length > 9) {
                 throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");

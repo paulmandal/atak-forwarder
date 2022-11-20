@@ -247,7 +247,11 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         bluetoothConfigBuilder.setEnabled(mMeshDevice == null || mMeshDevice.address.startsWith("x")); // TODO: re-evaluate
         configBuilder.setBluetooth(bluetoothConfigBuilder);
 
-        configBuilder.setLora(createLoRaConfig());
+        Config.LoRaConfig.Builder loRaConfigBuilder = Config.LoRaConfig.newBuilder();
+        loRaConfigBuilder.setRegion(mRegionCode);
+        Config.LoRaConfig.ModemPreset modemPreset = Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
+        loRaConfigBuilder.setModemPreset(modemPreset);
+        configBuilder.setLora(loRaConfigBuilder);
 
 //        Config.NetworkConfig.Builder networkConfigBuilder = Config.NetworkConfig.newBuilder();
         // TODO: expose network settings
@@ -289,30 +293,22 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
-        AppOnlyProtos.ChannelSet.Builder channelSetBuilder = AppOnlyProtos.ChannelSet.newBuilder();
-        channelSetBuilder.setLoraConfig(createLoRaConfig());
+        ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
         ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
         channelSettingsBuilder.setName(mChannelName);
         channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
 
-        channelSetBuilder.addSettings(channelSettingsBuilder);
-        AppOnlyProtos.ChannelSet channelSet = channelSetBuilder.build();
+        channelBuilder.setSettings(channelSettingsBuilder);
+
+        ChannelProtos.Channel channel = channelBuilder.build();
 
         try {
-            mMeshService.setChannel(channelSet.toByteArray());
+            mMeshService.setChannel(channel.toByteArray());
         } catch (RemoteException e) {
             mLogger.e(TAG, "writeChannelConfig() - exception while writing channels");
             e.printStackTrace();
         }
-    }
-
-    private Config.LoRaConfig createLoRaConfig() {
-        Config.LoRaConfig.Builder loRaConfigBuilder = Config.LoRaConfig.newBuilder();
-        loRaConfigBuilder.setRegion(mRegionCode);
-        Config.LoRaConfig.ModemPreset modemPreset = Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
-        loRaConfigBuilder.setModemPreset(modemPreset);
-        return loRaConfigBuilder.build();
     }
 
     private boolean areByteArraysEqual(byte[] lhs, byte[] rhs) {

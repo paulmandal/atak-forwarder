@@ -3,6 +3,7 @@ package com.geeksville.mesh
 import android.os.Parcelable
 import com.geeksville.mesh.util.bearing
 import com.geeksville.mesh.util.latLongToMeter
+
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 

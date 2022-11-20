@@ -308,32 +308,31 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
         int hopLimit = getHopLimit(mChunkInFlight.messageType);
 
-//        DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
-//                mChunkInFlight.chunk,
-//                Portnums.PortNum.ATAK_FORWARDER.getNumber(),
-//                DataPacket.ID_LOCAL,
-//                System.currentTimeMillis(),
-//                0,
-//                MessageStatus.UNKNOWN,
-//                hopLimit,
-//                0,
-//                MeshProtos.MeshPacket.Delayed.NO_DELAY.getNumber());
+        DataPacket dataPacket = new DataPacket(mChunkInFlight.targetUid,
+                mChunkInFlight.chunk,
+                Portnums.PortNum.ATAK_FORWARDER.getNumber(),
+                DataPacket.ID_LOCAL,
+                System.currentTimeMillis(),
+                0,
+                MessageStatus.UNKNOWN,
+                hopLimit,
+                0);
 
-//        try {
-//            mMeshService.send(dataPacket);
+        try {
+            mMeshService.send(dataPacket);
             mLastMessageSentTime = System.currentTimeMillis();
-//            mPendingMessageId = dataPacket.getId();
+            mPendingMessageId = dataPacket.getId();
             OutboundMessageChunk chunkInFlight = mChunkInFlight;
 
             String chunkAsStr = new String(chunkInFlight.chunk).replace("\n", "").replace("\r", "");
             mLogger.i(TAG, "---> Sent packet: " + chunkAsStr);
             mLogger.i(TAG, "        messageChunk: " + (chunkInFlight.index + 1) + "/" + chunkInFlight.count + " to: " + chunkInFlight.targetUid + ", waiting for ack/nack id: " + mPendingMessageId);
-//        } catch (RemoteException e) {
-//            maybeSaveState();
-//            mUiThreadHandler.postDelayed(() -> maybeRestoreState(), REMOTE_EXCEPTION_RETRY_DELAY);
-//            mLogger.e(TAG, "sendChunk(), RemoteException: " + e.getMessage());
-//            e.printStackTrace();
-//        }
+        } catch (RemoteException e) {
+            maybeSaveState();
+            mUiThreadHandler.postDelayed(() -> maybeRestoreState(), REMOTE_EXCEPTION_RETRY_DELAY);
+            mLogger.e(TAG, "sendChunk(), RemoteException: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {

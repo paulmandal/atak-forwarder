@@ -9,7 +9,6 @@ import android.os.RemoteException;
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -87,7 +86,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         super(atakContext,
                 logger,
                 new String[]{
-                        MeshServiceConstants.ACTION_MESSAGE_STATUS
+                        MeshServiceConstants.ACTION_MESSAGE_STATUS_CHANGED
                 },
                 destroyables,
                 meshSuspendController);
@@ -179,6 +178,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     @Override
     protected void handleReceive(Context context, Intent intent) {
+        mLogger.v(TAG, "handleReceive: " + intent.getExtras().toString());
         int id = intent.getIntExtra(MeshServiceConstants.EXTRA_PACKET_ID, 0);
         MessageStatus status = intent.getParcelableExtra(MeshServiceConstants.EXTRA_STATUS);
         handleMessageStatusChange(id, status);

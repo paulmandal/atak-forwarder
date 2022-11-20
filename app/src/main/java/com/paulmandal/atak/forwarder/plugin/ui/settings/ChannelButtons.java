@@ -14,7 +14,6 @@ import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanEditTextPreference;
 import com.atakmap.android.gui.PanListPreference;
-import com.geeksville.mesh.ConfigProtos;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.Result;
 import com.google.zxing.WriterException;

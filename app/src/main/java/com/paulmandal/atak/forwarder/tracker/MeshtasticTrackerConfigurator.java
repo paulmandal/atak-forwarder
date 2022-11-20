@@ -253,7 +253,7 @@ public class MeshtasticTrackerConfigurator {
             channelSettingsBuilder.setName(mChannelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
 
-            channelSetBuilder.setSettings(0, channelSettingsBuilder);
+            channelSetBuilder.addSettings(channelSettingsBuilder);
             AppOnlyProtos.ChannelSet channelSet = channelSetBuilder.build();
 
             mMeshService.setChannel(channelSet.toByteArray());

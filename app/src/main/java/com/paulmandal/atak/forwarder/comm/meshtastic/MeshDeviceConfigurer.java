@@ -294,7 +294,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         channelSettingsBuilder.setName(mChannelName);
         channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
 
-        channelSetBuilder.setSettings(0, channelSettingsBuilder);
+        channelSetBuilder.addSettings(channelSettingsBuilder);
         AppOnlyProtos.ChannelSet channelSet = channelSetBuilder.build();
 
         try {

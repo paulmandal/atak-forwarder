@@ -255,10 +255,6 @@ def getVersionCode() {
 
     return revision
 }
-//
-//sourceSets {
-//    main.java.srcDirs += "${protobuf.generatedFilesBaseDir}/main/javalite"
-//}
 
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"

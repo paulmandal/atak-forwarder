@@ -262,10 +262,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         positionConfigBuilder.setGpsEnabled(false);
         configBuilder.setPosition(positionConfigBuilder);
 
-        ModuleConfigProtos.ModuleConfig.Builder moduleConfigBuilder = ModuleConfigProtos.ModuleConfig.newBuilder();
-        ModuleConfigProtos.ModuleConfig.TelemetryConfig.Builder telemetryConfigBuilder = ModuleConfigProtos.ModuleConfig.TelemetryConfig.newBuilder();
-        telemetryConfigBuilder.setDeviceUpdateInterval(ForwarderConstants.SEND_OWNER_INTERVAL); // TODO: this doesn't map exactly
-        moduleConfigBuilder.setTelemetry(telemetryConfigBuilder);
+//        ModuleConfigProtos.ModuleConfig.Builder moduleConfigBuilder = ModuleConfigProtos.ModuleConfig.newBuilder();
+//        ModuleConfigProtos.ModuleConfig.TelemetryConfig.Builder telemetryConfigBuilder = ModuleConfigProtos.ModuleConfig.TelemetryConfig.newBuilder();
+//        telemetryConfigBuilder.setDeviceUpdateInterval(ForwarderConstants.SEND_OWNER_INTERVAL); // TODO: this doesn't map exactly
+//        moduleConfigBuilder.setTelemetry(telemetryConfigBuilder);
 
         //userPreferencesBuilder.setLocationShare(ConfigProtos.Config.LocationSharing.LocDisabled); // TODO: does this map to anything?
         //userPreferencesBuilder.setPhoneTimeoutSecs(ForwarderConstants.PHONE_TIMEOUT_S); // TODO: does this map to anything?

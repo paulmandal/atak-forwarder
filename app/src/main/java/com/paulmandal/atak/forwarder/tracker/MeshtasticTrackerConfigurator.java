@@ -211,84 +211,52 @@ public class MeshtasticTrackerConfigurator {
         mStartedWritingToDevice = true;
 
         try {
-            byte[] radioConfigBytes = mMeshService.getRadioConfig();
 
-            if (radioConfigBytes == null) {
-                mLogger.e(TAG, "radioConfigBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
-                mUiThreadHandler.postDelayed(this::maybeWriteToDevice, RADIO_CONFIG_MISSING_RETRY_TIME_MS);
-                return;
-            }
+            ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
-            byte[] channelSetBytes = null;
-            try {
-                channelSetBytes = mMeshService.getChannels();
-            } catch (RemoteException e) {
-                mLogger.e(TAG, "  channelSetBytes - RemoteException!");
-                e.printStackTrace();
-            }
+            ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
+            deviceConfigBuilder.setRole(mIsRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER : ConfigProtos.Config.DeviceConfig.Role.CLIENT);
+            configBuilder.setDevice(deviceConfigBuilder);
 
-            if (channelSetBytes == null) {
-                mLogger.e(TAG, "  channelSetBytes was null, retrying in: " + RADIO_CONFIG_MISSING_RETRY_TIME_MS + "ms");
-                mUiThreadHandler.postDelayed(this::maybeWriteToDevice, RADIO_CONFIG_MISSING_RETRY_TIME_MS);
-                return;
-            }
+            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
+            displayConfigBuilder.setScreenOnSecs(mScreenShutoffDelayS);
+            configBuilder.setDisplay(displayConfigBuilder);
 
-            RadioConfigProtos.RadioConfig radioConfig = RadioConfigProtos.RadioConfig.parseFrom(radioConfigBytes);
-            RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+            ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
+            loRaConfigBuilder.setRegion(mRegionCode);
+            loRaConfigBuilder.setModemPreset(mModemPreset);
+            configBuilder.setLora(loRaConfigBuilder);
 
-            RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
-            RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+            ConfigProtos.Config.PowerConfig.Builder powerConfig = ConfigProtos.Config.PowerConfig.newBuilder();
+            powerConfig.setIsPowerSaving(!mIsAlwaysPoweredOn); // TODO: evaluate
+            configBuilder.setPower(powerConfig);
 
-            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled);
-            userPreferencesBuilder.setGpsOperation(RadioConfigProtos.GpsOperation.GpsOpMobile);
-            userPreferencesBuilder.setPositionBroadcastSecs(mPliIntervalS);
-            userPreferencesBuilder.setGpsUpdateInterval(mPliIntervalS);
-            userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10);
-            userPreferencesBuilder.setScreenOnSecs(mScreenShutoffDelayS);
-            userPreferencesBuilder.setIsAlwaysPowered(mIsAlwaysPoweredOn);
-            userPreferencesBuilder.setRegion(mRegionCode);
-            userPreferencesBuilder.setIsRouter(mIsRouter);
+            ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
+            positionConfigBuilder.setGpsUpdateInterval(mPliIntervalS);
+            positionConfigBuilder.setPositionBroadcastSecs(mPliIntervalS);
+            positionConfigBuilder.setGpsEnabled(true);
+            configBuilder.setPosition(positionConfigBuilder);
+
+//            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled); // TODO: what does this map to?
+//            userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10); // TODO: fix this
 
             mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode + ", isRouter: " + mIsRouter);
 
-            radioConfigBuilder.setPreferences(userPreferencesBuilder.build());
-            radioConfig = radioConfigBuilder.build();
+            ConfigProtos.Config config = configBuilder.build();
 
-            mMeshService.setRadioConfig(radioConfig.toByteArray());
+            mMeshService.setConfig(config.toByteArray());
 
-            AppOnlyProtos.ChannelSet channelSet = AppOnlyProtos.ChannelSet.parseFrom(channelSetBytes);
-            AppOnlyProtos.ChannelSet.Builder channelSetBuilder = channelSet.toBuilder();
+            AppOnlyProtos.ChannelSet.Builder channelSetBuilder = AppOnlyProtos.ChannelSet.newBuilder();
+            channelSetBuilder.setLoraConfig(loRaConfigBuilder);
 
             ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
             channelSettingsBuilder.setName(mChannelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-            channelSettingsBuilder.setModemConfig(mModemPreset);
 
-            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-                mLogger.d(TAG, "  deleting channel from Tracker: " + channelSetting.getName());
-            }
+            channelSetBuilder.setSettings(0, channelSettingsBuilder);
+            AppOnlyProtos.ChannelSet channelSet = channelSetBuilder.build();
 
-            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemPreset.getNumber());
-            int indexToRemove = -1;
-
-            for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
-                ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
-                if (!mChannelName.equals(channelSetting.getName())) {
-                    continue;
-                }
-
-                indexToRemove = i;
-            }
-
-            if (indexToRemove != -1) {
-                channelSetBuilder.removeSettings(indexToRemove);
-            }
-
-            channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
-            channelSet = channelSetBuilder.build();
-
-            mMeshService.setChannels(channelSet.toByteArray());
+            mMeshService.setChannel(channelSet.toByteArray());
 
             if (TrackerCotGenerator.ROLES.length > 9) {
                 throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
@@ -309,7 +277,7 @@ public class MeshtasticTrackerConfigurator {
                     e.printStackTrace();
                 }
             }, DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE);
-        } catch (RemoteException | InvalidProtocolBufferException e) {
+        } catch (RemoteException e) {
             mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
             e.printStackTrace();
         }

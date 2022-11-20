@@ -31,7 +31,6 @@ data class DataPacket(
     var status: MessageStatus? = MessageStatus.UNKNOWN,
     var hopLimit: Int = 0,
     var channel: Int = 0, // channel index
-    var delayed: Int = 0 // S&F MeshProtos.MeshPacket.Delayed.(...)_VALUE
 ) : Parcelable {
 
     /**
@@ -42,9 +41,11 @@ data class DataPacket(
     /**
      * Syntactic sugar to make it easy to create text messages
      */
-    constructor(to: String? = ID_BROADCAST, text: String) : this(
-        to, text.toByteArray(utf8),
-        Portnums.PortNum.TEXT_MESSAGE_APP_VALUE
+    constructor(to: String?, channel: Int, text: String) : this(
+        to = to,
+        bytes = text.toByteArray(utf8),
+        dataType = Portnums.PortNum.TEXT_MESSAGE_APP_VALUE,
+        channel = channel
     )
 
     /**
@@ -53,6 +54,12 @@ data class DataPacket(
     val text: String?
         get() = if (dataType == Portnums.PortNum.TEXT_MESSAGE_APP_VALUE)
             bytes?.toString(utf8)
+        else
+            null
+
+    val waypoint: MeshProtos.Waypoint?
+        get() = if (dataType == Portnums.PortNum.WAYPOINT_APP_VALUE)
+            MeshProtos.Waypoint.parseFrom(bytes)
         else
             null
 
@@ -68,7 +75,6 @@ data class DataPacket(
         parcel.readParcelable(MessageStatus::class.java.classLoader),
         parcel.readInt(),
         parcel.readInt(),
-        parcel.readInt()
     )
 
     override fun equals(other: Any?): Boolean {
@@ -100,7 +106,6 @@ data class DataPacket(
         result = 31 * result + status.hashCode()
         result = 31 * result + hopLimit
         result = 31 * result + channel
-        result = 31 * result + delayed
         return result
     }
 
@@ -114,7 +119,6 @@ data class DataPacket(
         parcel.writeParcelable(status, flags)
         parcel.writeInt(hopLimit)
         parcel.writeInt(channel)
-        parcel.writeInt(delayed)
     }
 
     override fun describeContents(): Int {
@@ -132,7 +136,6 @@ data class DataPacket(
         status = parcel.readParcelable(MessageStatus::class.java.classLoader)
         hopLimit = parcel.readInt()
         channel = parcel.readInt()
-        delayed = parcel.readInt()
     }
 
     companion object CREATOR : Parcelable.Creator<DataPacket> {
@@ -156,8 +159,7 @@ data class DataPacket(
         override fun newArray(size: Int): Array<DataPacket?> {
             return arrayOfNulls(size)
         }
+
         val utf8: Charset = Charset.forName("UTF-8")
     }
-
-
 }

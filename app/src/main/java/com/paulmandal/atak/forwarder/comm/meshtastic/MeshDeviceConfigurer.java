@@ -6,10 +6,10 @@ import android.util.Base64;
 
 import androidx.annotation.Nullable;
 
-import com.geeksville.mesh.AppOnlyProtos;
 import com.geeksville.mesh.ChannelProtos;
+import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.RadioConfigProtos;
+import com.geeksville.mesh.ConfigProtos.Config;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
@@ -40,7 +40,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     @Nullable
     private MeshtasticDevice mMeshDevice;
 
-    private RadioConfigProtos.RegionCode mRegionCode;
+    private ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
 
     private String mChannelName;
     private int mChannelMode;
@@ -88,7 +88,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         // TODO: clean up this hacks
         mIsRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
         mIsAlwaysPoweredOn =  sharedPreferences.getBoolean(PreferencesKeys.KEY_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_IS_ALWAYS_POWERED_ON);
-        mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+        mRegionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
@@ -141,7 +141,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 }
                 break;
             case PreferencesKeys.KEY_REGION:
-                RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+                ConfigProtos.Config.LoRaConfig.RegionCode regionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
 
                 if (regionCode != mRegionCode) {
                     mLogger.d(TAG, "Region config changed, new region: " + regionCode + ", checking if radio is up to date");
@@ -217,16 +217,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             return;
         }
 
-        RadioConfigProtos.RadioConfig radioConfig = null;
+        ConfigProtos.Config.RadioConfig radioConfig = null;
         try {
-            radioConfig = RadioConfigProtos.RadioConfig.parseFrom(radioConfigBytes);
+            radioConfig = ConfigProtos.Config.RadioConfig.parseFrom(radioConfigBytes);
         } catch (InvalidProtocolBufferException e) {
             mLogger.e(TAG, "  checkRadioConfig() - exception parsing radioConfig protobuf");
             e.printStackTrace();
             return;
         }
 
-        RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+        ConfigProtos.Config.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
 
         if (userPreferences.getRegion() != mRegionCode
                 || userPreferences.getIsRouter() != mIsRouter
@@ -321,20 +321,20 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         }
     }
 
-    private void writeRadioConfig(RadioConfigProtos.RadioConfig radioConfig) {
+    private void writeRadioConfig(ConfigProtos.Config.LoRaConfig radioConfig) {
         mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode + ", isRouter: " + mIsRouter);
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
         }
 
-        RadioConfigProtos.RadioConfig.UserPreferences userPreferences = radioConfig.getPreferences();
+        ConfigProtos.Config.LoRaConfig.UserPreferences userPreferences = radioConfig.getPreferences();
 
-        RadioConfigProtos.RadioConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
-        RadioConfigProtos.RadioConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
+        ConfigProtos.Config.LoRaConfig.Builder radioConfigBuilder = radioConfig.toBuilder();
+        ConfigProtos.Config.LoRaConfig.UserPreferences.Builder userPreferencesBuilder = userPreferences.toBuilder();
 
-        userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocDisabled);
-        userPreferencesBuilder.setGpsOperation(RadioConfigProtos.GpsOperation.GpsOpTimeOnly);
+        userPreferencesBuilder.setLocationShare(ConfigProtos.Config.LocationSharing.LocDisabled);
+        userPreferencesBuilder.setGpsOperation(ConfigProtos.Config.GpsOperation.GpsOpTimeOnly);
         userPreferencesBuilder.setGpsUpdateInterval(ForwarderConstants.GPS_UPDATE_INTERVAL);
         userPreferencesBuilder.setSendOwnerInterval(ForwarderConstants.SEND_OWNER_INTERVAL);
         userPreferencesBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
@@ -390,12 +390,12 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         channelSetBuilder.addSettings(0, channelSettingsBuilder.build());
         channelSet = channelSetBuilder.build();
 
-        try {
+/*        try {
             mMeshService.setChannels(channelSet.toByteArray());
         } catch (RemoteException e) {
             mLogger.e(TAG, "writeChannelConfig() - exception while writing channels");
             e.printStackTrace();
-        }
+        }*/
     }
 
     private boolean areByteArraysEqual(byte[] lhs, byte[] rhs) {

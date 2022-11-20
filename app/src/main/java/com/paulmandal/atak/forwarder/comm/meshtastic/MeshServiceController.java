@@ -12,8 +12,9 @@ import android.os.IBinder;
 import android.os.RemoteException;
 
 import com.atakmap.android.maps.MapView;
+import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.RadioConfigProtos;
+import com.geeksville.mesh.ConfigProtos.Config;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -46,7 +47,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     private final Intent mServiceIntent;
 
     private MeshtasticDevice mMeshDevice;
-    private RadioConfigProtos.RegionCode mRegionCode = RadioConfigProtos.RegionCode.Unset;
+    private ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode = Config.LoRaConfig.RegionCode.UNSET;
     private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
     private boolean mConnectedToService;
     private boolean mReceiverRegistered;
@@ -84,7 +85,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
-                if (mMeshDevice == null || mRegionCode == null || mRegionCode == RadioConfigProtos.RegionCode.Unset) {
+                if (mMeshDevice == null || mRegionCode == null || mRegionCode == Config.LoRaConfig.RegionCode.UNSET) {
                     updateConnectionState(ConnectionState.NO_DEVICE_CONFIGURED);
                 } else {
                     updateConnectionState(ConnectionState.DEVICE_DISCONNECTED);
@@ -207,7 +208,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
         if (key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
             mMeshDevice = mGson.fromJson(sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE), MeshtasticDevice.class);
         } else if (key.equals(PreferencesKeys.KEY_REGION)) {
-            mRegionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+            mRegionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         }
     }
 }

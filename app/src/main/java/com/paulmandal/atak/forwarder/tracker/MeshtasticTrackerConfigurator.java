@@ -13,8 +13,8 @@ import android.os.RemoteException;
 
 import com.geeksville.mesh.AppOnlyProtos;
 import com.geeksville.mesh.ChannelProtos;
+import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.RadioConfigProtos;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -57,10 +57,10 @@ public class MeshtasticTrackerConfigurator {
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshtasticDevice mTargetDevice;
     private final String mDeviceCallsign;
-    private final RadioConfigProtos.RegionCode mRegionCode;
+    private final ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
     private final String mChannelName;
     private final byte[] mPsk;
-    private final ChannelProtos.ChannelSettings.ModemConfig mModemConfig;
+    private final ConfigProtos.Config.LoRaConfig.ModemPreset mModemPreset;
     private final int mTeamIndex;
     private final int mRoleIndex;
     private final int mPliIntervalS;
@@ -88,10 +88,10 @@ public class MeshtasticTrackerConfigurator {
                                          MeshtasticDevice commDevice,
                                          MeshtasticDevice targetDevice,
                                          String deviceCallsign,
-                                         RadioConfigProtos.RegionCode regionCode,
+                                         ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
                                          String channelName,
                                          byte[] psk,
-                                         ChannelProtos.ChannelSettings.ModemConfig modemConfig,
+                                         ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset,
                                          int teamIndex,
                                          int roleIndex,
                                          int pliIntervalS,
@@ -110,7 +110,7 @@ public class MeshtasticTrackerConfigurator {
         mRegionCode = regionCode;
         mChannelName = channelName;
         mPsk = psk;
-        mModemConfig = modemConfig;
+        mModemPreset = modemPreset;
         mTeamIndex = teamIndex;
         mRoleIndex = roleIndex;
         mPliIntervalS = pliIntervalS;
@@ -262,14 +262,14 @@ public class MeshtasticTrackerConfigurator {
             ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
             channelSettingsBuilder.setName(mChannelName);
             channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-            channelSettingsBuilder.setModemConfig(mModemConfig);
+            channelSettingsBuilder.setModemConfig(mModemPreset);
 
             for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
                 ChannelProtos.ChannelSettings channelSetting = channelSet.getSettings(i);
                 mLogger.d(TAG, "  deleting channel from Tracker: " + channelSetting.getName());
             }
 
-            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemConfig.getNumber());
+            mLogger.d(TAG, "Setting Tracker device channel: " + mChannelName + " / " + new HashHelper().hashFromBytes(mPsk) + " / " + mModemPreset.getNumber());
             int indexToRemove = -1;
 
             for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
@@ -295,7 +295,7 @@ public class MeshtasticTrackerConfigurator {
             }
 
             mLogger.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
-            mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex));
+            mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex), false);
 
             mLogger.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
 

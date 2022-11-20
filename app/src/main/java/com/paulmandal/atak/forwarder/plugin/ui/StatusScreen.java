@@ -19,7 +19,6 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
 
 import java.util.Collections;
-import java.util.Locale;
 
 public class StatusScreen extends ConstraintLayout {
     private Context mAtakContext;
@@ -126,7 +125,7 @@ public class StatusScreen extends ConstraintLayout {
         statusViewModel.getTotalMessage().observe(lifecycleOwner, totalMessages -> mTotalTextView.setText(String.format("%d", totalMessages)));
         statusViewModel.getChannelName().observe(lifecycleOwner, channelName -> mChannelName.setText(channelName != null ? String.format("#%s", channelName) : null));
         statusViewModel.getPskHash().observe(lifecycleOwner, mPskHash::setText);
-        statusViewModel.getModemConfig().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
+        statusViewModel.getModemPreset().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
         statusViewModel.getCommDevice().observe(lifecycleOwner, commDevice -> mDeviceIdTextView.setText(String.format("(%s)", getShortDeviceId(commDevice))));
     }
 

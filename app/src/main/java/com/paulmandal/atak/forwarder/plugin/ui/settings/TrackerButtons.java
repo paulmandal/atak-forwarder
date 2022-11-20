@@ -20,8 +20,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import com.atakmap.android.gui.EditText;
 import com.atakmap.android.gui.PanListPreference;
 import com.atakmap.android.gui.PluginSpinner;
-import com.geeksville.mesh.ChannelProtos;
-import com.geeksville.mesh.RadioConfigProtos;
+import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
@@ -110,10 +109,10 @@ public class TrackerButtons {
                 MeshtasticDevice targetDevice = (MeshtasticDevice) devicesSpinner.getAdapter().getItem(devicesSpinner.getSelectedItemPosition());
                 String callsign = callsignEditText.getText().toString();
 
-                RadioConfigProtos.RegionCode regionCode = RadioConfigProtos.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+                ConfigProtos.Config.LoRaConfig.RegionCode regionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
 
                 String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-                ChannelProtos.ChannelSettings.ModemConfig channelMode = ChannelProtos.ChannelSettings.ModemConfig.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
+                ConfigProtos.Config.LoRaConfig.ModemPreset channelModemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE)));
                 byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
 
                 int teamIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_TEAM, PreferencesDefaults.DEFAULT_TRACKER_TEAM));
@@ -123,7 +122,7 @@ public class TrackerButtons {
                 boolean isAlwaysPoweredOn = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_TRACKER_IS_ALWAYS_POWERED_ON);
                 boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelMode, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isAlwaysPoweredOn, isRouter, () -> {
+                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelModemPreset, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isAlwaysPoweredOn, isRouter, () -> {
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -141,10 +140,10 @@ public class TrackerButtons {
                                MeshtasticDevice commDevice,
                                MeshtasticDevice targetDevice,
                                String deviceCallsign,
-                               RadioConfigProtos.RegionCode regionCode,
+                               ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
                                String channelName,
                                byte[] psk,
-                               ChannelProtos.ChannelSettings.ModemConfig modemConfig,
+                               ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig,
                                int teamIndex,
                                int roleIndex,
                                int pliIntervalS,

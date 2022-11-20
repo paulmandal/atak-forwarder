@@ -94,7 +94,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        complexUpdate(sharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE); // TODO: do we need this?
     }
 
     @Override
@@ -124,6 +123,9 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 try {
                     mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
                     mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
+                    writeRadioConfig();
+                    writeChannelConfig();
+
                     mSetDeviceAddressCalled = true;
                 } catch (RemoteException e) {
                     e.printStackTrace();

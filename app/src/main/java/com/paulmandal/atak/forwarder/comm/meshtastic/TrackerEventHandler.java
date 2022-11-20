@@ -7,6 +7,7 @@ import android.os.Handler;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.Portnums;
+import com.geeksville.mesh.TelemetryProtos;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
@@ -56,20 +57,19 @@ public class TrackerEventHandler extends MeshEventHandler {
         DataPacket payload = intent.getParcelableExtra(MeshServiceConstants.EXTRA_PAYLOAD);
         int dataType = payload.getDataType();
 
-        if (dataType == Portnums.PortNum.NODEINFO_APP.getNumber()) {
+        if (dataType == Portnums.PortNum.NODEINFO_APP_VALUE) {
             try {
-                MeshProtos.NodeInfo nodeInfo = MeshProtos.NodeInfo.parseFrom(payload.getBytes());
-                MeshProtos.User meshUser = nodeInfo.getUser();
-                mLogger.i(TAG, "NODEINFO_APP parsed NodeInfo: " + meshUser.getId() + ", longName: " + meshUser.getLongName() + ", shortName: " + meshUser.getShortName() + ", batteryLevel: " + nodeInfo.getDeviceMetrics().getBatteryLevel());
+                MeshProtos.User meshUser = MeshProtos.User.parseFrom(payload.getBytes());
+                mLogger.i(TAG, "NODEINFO_APP parsed NodeInfo: " + meshUser.getId() + ", longName: " + meshUser.getLongName() + ", shortName: " + meshUser.getShortName());
 
-                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), nodeInfo.getDeviceMetrics().getBatteryLevel(), TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, meshUser.getShortName(), System.currentTimeMillis());
+                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(meshUser.getLongName(), meshUser.getId(), null, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, meshUser.getShortName(), System.currentTimeMillis());
 
                 notifyListeners(trackerUserInfo);
             } catch (InvalidProtocolBufferException e) {
                 mLogger.e(TAG, "NODEINFO_APP message failed to parse");
                 e.printStackTrace();
             }
-        } else if (dataType == Portnums.PortNum.POSITION_APP.getNumber()) {
+        } else if (dataType == Portnums.PortNum.POSITION_APP_VALUE) {
             try {
                 MeshProtos.Position position = MeshProtos.Position.parseFrom(payload.getBytes());
                 mLogger.i(TAG, "POSITION_APP parsed position: lat: " + position.getLatitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", lon: " + position.getLongitudeI() / LAT_LON_INT_TO_DOUBLE_CONVERSION + ", alt: " + position.getAltitudeHae() + ", from: " + payload.getFrom());
@@ -80,6 +80,18 @@ public class TrackerEventHandler extends MeshEventHandler {
                 notifyListeners(trackerUserInfo);
             } catch (InvalidProtocolBufferException e) {
                 mLogger.e(TAG, "POSITION_APP message failed to parse");
+                e.printStackTrace();
+            }
+        } else if (dataType == Portnums.PortNum.TELEMETRY_APP_VALUE) {
+            try {
+                TelemetryProtos.Telemetry telemetry = TelemetryProtos.Telemetry.parseFrom(payload.getBytes());
+                mLogger.i(TAG, "TELEMETRY_APP parsed Telemetry: batteryLevel: " + telemetry.getDeviceMetrics().getBatteryLevel());
+
+                TrackerUserInfo trackerUserInfo = new TrackerUserInfo(UserInfo.CALLSIGN_UNKNOWN, payload.getFrom(), telemetry.getDeviceMetrics().getBatteryLevel(), TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, TrackerUserInfo.NO_LAT_LON_ALT_VALUE, false, null, System.currentTimeMillis());
+
+                notifyListeners(trackerUserInfo);
+            } catch (InvalidProtocolBufferException e) {
+                mLogger.e(TAG, "TELEMETRY_APP message failed to parse");
                 e.printStackTrace();
             }
         }

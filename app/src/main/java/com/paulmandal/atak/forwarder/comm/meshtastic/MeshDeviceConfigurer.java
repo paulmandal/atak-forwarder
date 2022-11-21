@@ -53,6 +53,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private boolean mDisableWritingToCommDevice;
 
     private boolean mSetDeviceAddressCalled;
+    private boolean mDeviceConfigured;
 
     public MeshDeviceConfigurer(List<Destroyable> destroyables,
                                 SharedPreferences sharedPreferences,
@@ -123,8 +124,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                 try {
                     mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
                     mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
-                    writeRadioConfig();
-                    writeChannelConfig();
+
+                    mDeviceConfigured = false;
+//                    writeRadioConfig();
+//                    writeChannelConfig();
 
                     mSetDeviceAddressCalled = true;
                 } catch (RemoteException e) {
@@ -190,7 +193,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             complexUpdate(mSharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
         }
 
-        if (connectionState == ConnectionState.DEVICE_CONNECTED) {
+        if (connectionState == ConnectionState.DEVICE_CONNECTED && !mDeviceConfigured) {
             writeOwner();
             writeRadioConfig();
             writeChannelConfig();

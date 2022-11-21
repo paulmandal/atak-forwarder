@@ -84,7 +84,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mMeshService = IMeshService.Stub.asInterface(service);
                 mConnectedToService = true;
 
-                ConnectionState connectionState = ConnectionState.DEVICE_CONNECTED;
+                ConnectionState connectionState = ConnectionState.DEVICE_DISCONNECTED;
 
                 if (mMeshDevice == null || mRegionCode == null || mRegionCode == Config.LoRaConfig.RegionCode.UNSET) {
                     connectionState = ConnectionState.NO_DEVICE_CONFIGURED;
@@ -215,6 +215,7 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
     }
 
     private ConnectionState connectionStateFromServiceState(String connectionString) {
+        mLogger.d(TAG, "ConnectionStateString: " + connectionString);
         ConnectionState connectionState = ConnectionState.DEVICE_DISCONNECTED;
 
         if (connectionString.equals(MeshServiceConstants.STATE_CONNECTED)

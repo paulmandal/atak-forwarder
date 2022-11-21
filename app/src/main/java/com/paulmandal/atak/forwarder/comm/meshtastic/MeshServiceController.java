@@ -9,7 +9,6 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.RemoteException;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.ConfigProtos;

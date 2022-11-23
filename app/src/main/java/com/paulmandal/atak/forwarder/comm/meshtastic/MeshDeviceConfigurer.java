@@ -182,7 +182,9 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         }
 
         if (!mSetDeviceAddressCalled) {
-
+            mLogger.d(TAG, "onConnectionStateChanged: set device address not called yet, calling complexUpdate()");
+            complexUpdate(mSharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
+            return;
         }
 
         boolean connected = connectionState == ConnectionState.DEVICE_CONNECTED;

@@ -76,7 +76,6 @@ public class MeshtasticTrackerConfigurator {
 
     private boolean mBound;
 
-    private boolean mStartedWritingToDevice = false;
     private boolean mWroteToDevice = false;
     private boolean mSetOwnerCalled;
     private boolean mSetConfigRouterCalled;
@@ -274,6 +273,8 @@ public class MeshtasticTrackerConfigurator {
                 ChannelProtos.Channel channel = channelBuilder.build();
 
                 mMeshService.setChannel(channel.toByteArray());
+
+                mSetChannelCalled = true;
             }
 
 //            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();

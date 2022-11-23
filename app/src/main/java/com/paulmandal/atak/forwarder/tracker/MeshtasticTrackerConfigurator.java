@@ -78,6 +78,10 @@ public class MeshtasticTrackerConfigurator {
 
     private boolean mStartedWritingToDevice = false;
     private boolean mWroteToDevice = false;
+    private boolean mSetOwnerCalled;
+    private boolean mSetConfigRouterCalled;
+    private boolean mSetConfigLoRaCalled;
+    private boolean mSetChannelCalled;
 
     private final Runnable mTimeoutRunnable;
 
@@ -204,68 +208,95 @@ public class MeshtasticTrackerConfigurator {
 
     @SuppressLint("DefaultLocale")
     private void maybeWriteToDevice() {
-        if (mWroteToDevice || mStartedWritingToDevice) {
+        if (mWroteToDevice || (mSetOwnerCalled && mSetConfigRouterCalled && mSetConfigLoRaCalled && mSetChannelCalled)) {
+            try {
+                mLogger.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
+            } catch (RemoteException e) {
+                mLogger.e(TAG, "RemoteException writing to Tracker device: " + e.getMessage());
+                e.printStackTrace();
+            }
             return;
         }
 
-        mStartedWritingToDevice = true;
-
         try {
-
-            ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
-
-            ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
-            deviceConfigBuilder.setRole(mIsRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER : ConfigProtos.Config.DeviceConfig.Role.CLIENT);
-            configBuilder.setDevice(deviceConfigBuilder);
-
-            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
-            displayConfigBuilder.setScreenOnSecs(mScreenShutoffDelayS);
-            configBuilder.setDisplay(displayConfigBuilder);
-
-            ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
-            loRaConfigBuilder.setRegion(mRegionCode);
-            loRaConfigBuilder.setModemPreset(mModemPreset);
-            configBuilder.setLora(loRaConfigBuilder);
-
-            ConfigProtos.Config.PowerConfig.Builder powerConfig = ConfigProtos.Config.PowerConfig.newBuilder();
-            powerConfig.setIsPowerSaving(!mIsAlwaysPoweredOn); // TODO: evaluate
-            configBuilder.setPower(powerConfig);
-
-            ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
-            positionConfigBuilder.setGpsUpdateInterval(mPliIntervalS);
-            positionConfigBuilder.setPositionBroadcastSecs(mPliIntervalS);
-            positionConfigBuilder.setGpsEnabled(true);
-            configBuilder.setPosition(positionConfigBuilder);
-
-//            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled); // TODO: what does this map to?
-//            userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10); // TODO: fix this
-
-            mLogger.d(TAG, "Setting Tracker device region: " + mRegionCode + ", isRouter: " + mIsRouter);
-
-            ConfigProtos.Config config = configBuilder.build();
-
-            mMeshService.setConfig(config.toByteArray());
-
-            ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
-
-            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
-            channelSettingsBuilder.setName(mChannelName);
-            channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
-
-            channelBuilder.setSettings(channelSettingsBuilder);
-
-            ChannelProtos.Channel channel = channelBuilder.build();
-
-            mMeshService.setChannel(channel.toByteArray());
-
             if (TrackerCotGenerator.ROLES.length > 9) {
                 throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
             }
 
-            mLogger.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
-            mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex), false);
+            ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
-            mLogger.d(TAG, "Tracker device NodeInfo: " + mMeshService.getMyNodeInfo());
+            if (!mSetOwnerCalled) {
+                mLogger.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
+                mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex), false);
+
+                mSetOwnerCalled = true;
+                return;
+            }
+
+            if (!mSetConfigRouterCalled) {
+                mLogger.d(TAG, "Setting Tracker device isRouter: " + mIsRouter);
+
+                ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
+                deviceConfigBuilder.setRole(mIsRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER : ConfigProtos.Config.DeviceConfig.Role.CLIENT);
+                configBuilder.setDevice(deviceConfigBuilder);
+                ConfigProtos.Config config = configBuilder.build();
+
+                mMeshService.setConfig(config.toByteArray());
+
+                mSetConfigRouterCalled = true;
+                return;
+            }
+
+            if (!mSetConfigLoRaCalled) {
+                mLogger.d(TAG, "Setting Tracker LoRa config region: " + mRegionCode);
+
+                ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
+                loRaConfigBuilder.setRegion(mRegionCode);
+                loRaConfigBuilder.setModemPreset(mModemPreset);
+                configBuilder.setLora(loRaConfigBuilder);
+                ConfigProtos.Config config = configBuilder.build();
+
+                mMeshService.setConfig(config.toByteArray());
+
+                mSetConfigLoRaCalled = true;
+                return;
+            }
+
+            if (!mSetChannelCalled) {
+                ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
+
+                ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
+                channelSettingsBuilder.setName(mChannelName);
+                channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
+
+                channelBuilder.setSettings(channelSettingsBuilder);
+
+                ChannelProtos.Channel channel = channelBuilder.build();
+
+                mMeshService.setChannel(channel.toByteArray());
+            }
+
+//            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
+//            displayConfigBuilder.setScreenOnSecs(mScreenShutoffDelayS);
+//            configBuilder.setDisplay(displayConfigBuilder);
+//
+//            ConfigProtos.Config.PowerConfig.Builder powerConfig = ConfigProtos.Config.PowerConfig.newBuilder();
+//            powerConfig.setIsPowerSaving(!mIsAlwaysPoweredOn); // TODO: evaluate
+//            configBuilder.setPower(powerConfig);
+//
+//            ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
+//            positionConfigBuilder.setGpsUpdateInterval(mPliIntervalS);
+//            positionConfigBuilder.setPositionBroadcastSecs(mPliIntervalS);
+//            positionConfigBuilder.setGpsEnabled(true);
+//            configBuilder.setPosition(positionConfigBuilder);
+
+//            userPreferencesBuilder.setLocationShare(RadioConfigProtos.LocationSharing.LocEnabled); // TODO: what does this map to?
+//            userPreferencesBuilder.setSendOwnerInterval(mPliIntervalS * 10); // TODO: fix this
+
+
+//            ConfigProtos.Config config = configBuilder.build();
+//
+//            mMeshService.setConfig(config.toByteArray());
 
             mUiThreadHandler.postDelayed(() -> {
                 try {

@@ -6,15 +6,12 @@ import android.util.Base64;
 
 import androidx.annotation.Nullable;
 
-import com.geeksville.mesh.AppOnlyProtos;
 import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.ConfigProtos.Config;
-import com.geeksville.mesh.ModuleConfigProtos;
 import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -39,9 +36,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     @Nullable
     private IMeshService mMeshService;
 
-    @Nullable
-    private MeshtasticDevice mMeshDevice;
-
     private ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
 
     private String mChannelName;
@@ -53,7 +47,9 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     private boolean mDisableWritingToCommDevice;
 
     private boolean mSetDeviceAddressCalled;
-    private boolean mDeviceConfigured;
+    private boolean mSetOwnerCalled;
+    private boolean mSetConfigCalled;
+    private boolean mSetChannelCalled;
 
     public MeshDeviceConfigurer(List<Destroyable> destroyables,
                                 SharedPreferences sharedPreferences,
@@ -114,8 +110,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     return;
                 }
 
-                mMeshDevice = meshtasticDevice;
-
                 if (mMeshService == null) {
                     mLogger.v(TAG, "complexUpdate, device configured but no service connection, exiting");
                     return;
@@ -125,11 +119,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
                     mLogger.v(TAG, "complexUpdate, calling setDeviceAddress: " + meshtasticDevice);
                     mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, meshtasticDevice);
 
-                    mDeviceConfigured = false;
-//                    writeRadioConfig();
-//                    writeChannelConfig();
-
                     mSetDeviceAddressCalled = true;
+                    mSetConfigCalled = false;
+                    mSetOwnerCalled = false;
+                    mSetChannelCalled = false;
                 } catch (RemoteException e) {
                     e.printStackTrace();
                 }
@@ -189,13 +182,22 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         }
 
         if (!mSetDeviceAddressCalled) {
-            mLogger.d(TAG, "onConnectionStateChanged: set device address not called yet, calling complexUpdate()");
-            complexUpdate(mSharedPreferences, PreferencesKeys.KEY_SET_COMM_DEVICE);
+
         }
 
-        if (connectionState == ConnectionState.DEVICE_CONNECTED && !mDeviceConfigured) {
+        boolean connected = connectionState == ConnectionState.DEVICE_CONNECTED;
+
+        if (connected && !mSetOwnerCalled) {
             writeOwner();
+            return;
+        }
+
+        if (connected && !mSetConfigCalled) {
             writeRadioConfig();
+            return;
+        }
+
+        if (connected && !mSetChannelCalled) {
             writeChannelConfig();
         }
     }
@@ -222,6 +224,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
             String shortName = mCallsign.substring(0, 1);
             mLogger.v(TAG, "  Setting radio owner longName: " + longName + ", shortName: " + shortName + ", isLicensed: false");
             mMeshService.setOwner(null, longName, shortName, false);
+
+            mSetOwnerCalled = true;
         } catch (RemoteException e) {
             mLogger.e(TAG, "checkOwner() -- RemoteException!");
             e.printStackTrace();
@@ -238,17 +242,17 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
         Config.DeviceConfig.Builder deviceConfigBuilder = Config.DeviceConfig.newBuilder();
-        deviceConfigBuilder.setRole(mIsRouter ? Config.DeviceConfig.Role.ROUTER_CLIENT : Config.DeviceConfig.Role.CLIENT);
-        deviceConfigBuilder.setSerialEnabled(mMeshDevice == null || mMeshDevice.address.startsWith("s")); // TODO: re-evaluate
-        configBuilder.setDevice(deviceConfigBuilder);
-
-        Config.DisplayConfig.Builder displayConfigBuilder = Config.DisplayConfig.newBuilder();
-        displayConfigBuilder.setScreenOnSecs(ForwarderConstants.LCD_SCREEN_ON_S);
-        configBuilder.setDisplay(displayConfigBuilder);
-
-        Config.BluetoothConfig.Builder bluetoothConfigBuilder = Config.BluetoothConfig.newBuilder();
-        bluetoothConfigBuilder.setEnabled(mMeshDevice == null || mMeshDevice.address.startsWith("x")); // TODO: re-evaluate
-        configBuilder.setBluetooth(bluetoothConfigBuilder);
+//        deviceConfigBuilder.setRole(mIsRouter ? Config.DeviceConfig.Role.ROUTER_CLIENT : Config.DeviceConfig.Role.CLIENT);
+//        deviceConfigBuilder.setSerialEnabled(mMeshDevice == null || mMeshDevice.address.startsWith("s")); // TODO: re-evaluate
+//        configBuilder.setDevice(deviceConfigBuilder);
+//
+//        Config.DisplayConfig.Builder displayConfigBuilder = Config.DisplayConfig.newBuilder();
+//        displayConfigBuilder.setScreenOnSecs(ForwarderConstants.LCD_SCREEN_ON_S);
+//        configBuilder.setDisplay(displayConfigBuilder);
+//
+//        Config.BluetoothConfig.Builder bluetoothConfigBuilder = Config.BluetoothConfig.newBuilder();
+//        bluetoothConfigBuilder.setEnabled(mMeshDevice == null || mMeshDevice.address.startsWith("x")); // TODO: re-evaluate
+//        configBuilder.setBluetooth(bluetoothConfigBuilder);
 
         Config.LoRaConfig.Builder loRaConfigBuilder = Config.LoRaConfig.newBuilder();
         loRaConfigBuilder.setRegion(mRegionCode);
@@ -260,16 +264,16 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         // TODO: expose network settings
 //        configBuilder.setNetwork(networkConfigBuilder);
 
-        Config.PowerConfig.Builder powerConfig = Config.PowerConfig.newBuilder();
-        powerConfig.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);
-        powerConfig.setIsPowerSaving(!mIsAlwaysPoweredOn); // TODO: evaluate
-        configBuilder.setPower(powerConfig);
-
-        Config.PositionConfig.Builder positionConfigBuilder = Config.PositionConfig.newBuilder();
-        positionConfigBuilder.setGpsUpdateInterval(ForwarderConstants.GPS_UPDATE_INTERVAL);
-        positionConfigBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
-        positionConfigBuilder.setGpsEnabled(false);
-        configBuilder.setPosition(positionConfigBuilder);
+//        Config.PowerConfig.Builder powerConfig = Config.PowerConfig.newBuilder();
+//        powerConfig.setWaitBluetoothSecs(ForwarderConstants.WAIT_BLUETOOTH_S);
+//        powerConfig.setIsPowerSaving(!mIsAlwaysPoweredOn); // TODO: evaluate
+//        configBuilder.setPower(powerConfig);
+//
+//        Config.PositionConfig.Builder positionConfigBuilder = Config.PositionConfig.newBuilder();
+//        positionConfigBuilder.setGpsUpdateInterval(ForwarderConstants.GPS_UPDATE_INTERVAL);
+//        positionConfigBuilder.setPositionBroadcastSecs(ForwarderConstants.POSITION_BROADCAST_INTERVAL_S);
+//        positionConfigBuilder.setGpsEnabled(false);
+//        configBuilder.setPosition(positionConfigBuilder);
 
 //        ModuleConfigProtos.ModuleConfig.Builder moduleConfigBuilder = ModuleConfigProtos.ModuleConfig.newBuilder();
 //        ModuleConfigProtos.ModuleConfig.TelemetryConfig.Builder telemetryConfigBuilder = ModuleConfigProtos.ModuleConfig.TelemetryConfig.newBuilder();
@@ -283,6 +287,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         try {
             mMeshService.setConfig(config.toByteArray());
+
+            mSetConfigCalled = true;
         } catch (RemoteException e) {
             mLogger.e(TAG, "writeRadioConfig() - exception while writing config");
             e.printStackTrace();
@@ -308,6 +314,8 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         try {
             mMeshService.setChannel(channel.toByteArray());
+
+            mSetChannelCalled = true;
         } catch (RemoteException e) {
             mLogger.e(TAG, "writeChannelConfig() - exception while writing channels");
             e.printStackTrace();

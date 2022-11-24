@@ -189,11 +189,6 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         boolean connected = connectionState == ConnectionState.DEVICE_CONNECTED;
 
-        if (connected && !mSetOwnerCalled) {
-            writeOwner();
-            return;
-        }
-
         if (connected && !mSetConfigCalled) {
             writeRadioConfig();
             return;
@@ -201,6 +196,10 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         if (connected && !mSetChannelCalled) {
             writeChannelConfig();
+        }
+
+        if (connected && !mSetOwnerCalled) {
+            writeOwner();
         }
     }
 
@@ -235,7 +234,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
     }
 
     private void writeRadioConfig() {
-        mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode + ", isRouter: " + mIsRouter);
+        mLogger.v(TAG, "  Writing radio config to device, region: " + mRegionCode + ", isRouter: " + mIsRouter + ", preset: " + mChannelMode);
         if (mMeshService == null) {
             mLogger.v(TAG, "  Not connected to MeshService");
             return;
@@ -260,6 +259,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         loRaConfigBuilder.setRegion(mRegionCode);
         Config.LoRaConfig.ModemPreset modemPreset = Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
         loRaConfigBuilder.setModemPreset(modemPreset);
+        loRaConfigBuilder.setTxEnabled(true);
         configBuilder.setLora(loRaConfigBuilder);
 
 //        Config.NetworkConfig.Builder networkConfigBuilder = Config.NetworkConfig.newBuilder();

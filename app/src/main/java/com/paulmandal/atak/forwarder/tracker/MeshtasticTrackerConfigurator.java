@@ -125,6 +125,12 @@ public class MeshtasticTrackerConfigurator {
 
         mTimeoutRunnable = () -> {
             mLogger.e(TAG, "Timed out writing to Tracker device!");
+            try {
+                mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshService, mCommDevice);
+            } catch (RemoteException e) {
+                mLogger.e(TAG, "RemoteException setting device address: " + e.getMessage());
+                e.printStackTrace();
+            }
             cancel();
             mMeshSuspendController.setSuspended(false);
             mListener.onDoneWritingToDevice();
@@ -224,11 +230,19 @@ public class MeshtasticTrackerConfigurator {
 
             ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
-            if (!mSetOwnerCalled) {
-                mLogger.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
-                mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex), false);
+            if (!mSetConfigLoRaCalled) {
+                mLogger.d(TAG, "Setting Tracker LoRa config region: " + mRegionCode);
 
-                mSetOwnerCalled = true;
+                ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
+                loRaConfigBuilder.setRegion(mRegionCode);
+                loRaConfigBuilder.setModemPreset(mModemPreset);
+                loRaConfigBuilder.setTxEnabled(true);
+                configBuilder.setLora(loRaConfigBuilder);
+                ConfigProtos.Config config = configBuilder.build();
+
+                mMeshService.setConfig(config.toByteArray());
+
+                mSetConfigLoRaCalled = true;
                 return;
             }
 
@@ -246,21 +260,6 @@ public class MeshtasticTrackerConfigurator {
                 return;
             }
 
-            if (!mSetConfigLoRaCalled) {
-                mLogger.d(TAG, "Setting Tracker LoRa config region: " + mRegionCode);
-
-                ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
-                loRaConfigBuilder.setRegion(mRegionCode);
-                loRaConfigBuilder.setModemPreset(mModemPreset);
-                configBuilder.setLora(loRaConfigBuilder);
-                ConfigProtos.Config config = configBuilder.build();
-
-                mMeshService.setConfig(config.toByteArray());
-
-                mSetConfigLoRaCalled = true;
-                return;
-            }
-
             if (!mSetChannelCalled) {
                 ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
@@ -275,6 +274,13 @@ public class MeshtasticTrackerConfigurator {
                 mMeshService.setChannel(channel.toByteArray());
 
                 mSetChannelCalled = true;
+            }
+
+            if (!mSetOwnerCalled) {
+                mLogger.d(TAG, "Setting Tracker device owner: " + mDeviceCallsign + ", " + String.format("%d%d", mRoleIndex, mTeamIndex));
+                mMeshService.setOwner(null, mDeviceCallsign, String.format("%d%d", mRoleIndex, mTeamIndex), false);
+
+                mSetOwnerCalled = true;
             }
 
 //            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();

@@ -9,6 +9,7 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.RemoteException;
 
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.ConfigProtos;
@@ -85,6 +86,11 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
                 mConnectedToService = true;
 
                 ConnectionState connectionState = ConnectionState.DEVICE_DISCONNECTED;
+                try {
+                    connectionState = connectionStateFromServiceState(mMeshService.connectionState());
+                } catch (RemoteException e) {
+                    e.printStackTrace();
+                }
 
                 if (mMeshDevice == null || mRegionCode == null || mRegionCode == Config.LoRaConfig.RegionCode.UNSET) {
                     connectionState = ConnectionState.NO_DEVICE_CONFIGURED;

@@ -140,6 +140,8 @@
     <string name="cancel">Cancel</string>
     <string name="tracker_callsign">Tracker Callsign</string>
 
+    <string name="group_member_listview_tak_icon">TAK Icon</string>
+
     <string-array name="channel_modes">
         <item>Short Range / Fast</item>
         <item>Short Range / Slow</item>

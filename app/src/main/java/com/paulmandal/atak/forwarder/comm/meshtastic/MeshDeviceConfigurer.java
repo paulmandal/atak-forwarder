@@ -242,7 +242,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
 
         ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
-        Config.DeviceConfig.Builder deviceConfigBuilder = Config.DeviceConfig.newBuilder();
+//        Config.DeviceConfig.Builder deviceConfigBuilder = Config.DeviceConfig.newBuilder();
 //        deviceConfigBuilder.setRole(mIsRouter ? Config.DeviceConfig.Role.ROUTER_CLIENT : Config.DeviceConfig.Role.CLIENT);
 //        deviceConfigBuilder.setSerialEnabled(mMeshDevice == null || mMeshDevice.address.startsWith("s")); // TODO: re-evaluate
 //        configBuilder.setDevice(deviceConfigBuilder);

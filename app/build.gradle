@@ -69,7 +69,6 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
         mavenCentral()
         mavenLocal()
         maven {
@@ -258,7 +257,7 @@ def getVersionCode() {
 
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 
     implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.9'
 

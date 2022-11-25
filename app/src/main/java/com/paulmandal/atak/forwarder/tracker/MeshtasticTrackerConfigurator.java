@@ -268,6 +268,7 @@ public class MeshtasticTrackerConfigurator {
                 channelSettingsBuilder.setPsk(ByteString.copyFrom(mPsk));
 
                 channelBuilder.setSettings(channelSettingsBuilder);
+                channelBuilder.setRole(ChannelProtos.Channel.Role.PRIMARY);
 
                 ChannelProtos.Channel channel = channelBuilder.build();
 

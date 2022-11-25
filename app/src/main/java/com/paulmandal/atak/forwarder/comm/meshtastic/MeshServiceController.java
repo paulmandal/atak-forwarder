@@ -175,10 +175,8 @@ public class MeshServiceController extends BroadcastReceiver implements Destroya
 
     private void updateConnectionState(ConnectionState connectionState) {
         mLogger.d(TAG, "Updating connection state to: " + connectionState);
-        if (mConnectionState != connectionState) {
-            mConnectionState = connectionState;
-            notifyConnectionStateListeners();
-        }
+        mConnectionState = connectionState;
+        notifyConnectionStateListeners();
     }
 
     private void notifyConnectionStateListeners() {

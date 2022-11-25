@@ -311,6 +311,7 @@ public class MeshDeviceConfigurer extends DestroyableSharedPrefsListener impleme
         channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
 
         channelBuilder.setSettings(channelSettingsBuilder);
+        channelBuilder.setRole(ChannelProtos.Channel.Role.PRIMARY);
 
         ChannelProtos.Channel channel = channelBuilder.build();
 

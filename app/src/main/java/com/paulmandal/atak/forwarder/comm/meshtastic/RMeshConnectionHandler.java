@@ -48,6 +48,10 @@ public class RMeshConnectionHandler implements RMeshServiceController.ServiceCon
         mListeners.add(listener);
     }
 
+    public void removeListener(DeviceConnectionStateListener listener) {
+        mListeners.remove(listener);
+    }
+
     private DeviceConnectionState connectionStateFromServiceState(String connectionString) {
         mLogger.d(TAG, "ConnectionStateString: " + connectionString);
         DeviceConnectionState connectionState = DeviceConnectionState.DISCONNECTED;

@@ -2,19 +2,16 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.os.RemoteException;
 
-import androidx.annotation.Nullable;
-
-import com.atakmap.math.Mesh;
 import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.LocalOnlyProtos;
-import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.NodeInfo;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 
 import java.util.List;
@@ -25,9 +22,9 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshDeviceConfigurator.class.getSimpleName();
 
     public enum ConfigurationState {
-        CHECKING,
-        WRITING,
-        FINISHED
+        STARTED,
+        FINISHED,
+        FAILED
     }
 
     public interface ConfigurationStateListener {
@@ -35,7 +32,14 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
     }
 
     private final RMeshServiceController mMeshServiceController;
+    private final RMeshConnectionHandler mMeshConnectionHandler;
+    private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
+    private final HashHelper mHashHelper;
     private final Logger mLogger;
+
+    private final Set<ConfigurationStateListener> mListeners = new CopyOnWriteArraySet<>();
+
+    private final MeshtasticDevice mMeshtasticDevice;
 
     private final String mLongName;
     private final String mShortName;
@@ -48,14 +52,14 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
 
     private final ConfigProtos.Config.DeviceConfig.Role mDeviceRole;
 
-    private final Set<ConfigurationStateListener> mListeners = new CopyOnWriteArraySet<>();
+    private boolean mStarted;
 
-    private boolean mConfigurationChecked;
-    private boolean mConfigurationWritten;
-
-    public RMeshDeviceConfigurator(RMeshConnectionHandler meshConnectionHandler,
+    public RMeshDeviceConfigurator(RMeshServiceController meshServiceController,
+                                   RMeshConnectionHandler meshConnectionHandler,
+                                   MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
+                                   HashHelper hashHelper,
                                    Logger logger,
-                                   RMeshServiceController meshServiceController,
+                                   MeshtasticDevice meshtasticDevice,
                                    String longName,
                                    String shortName,
                                    ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
@@ -64,7 +68,11 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
                                    byte[] channelPsk,
                                    ConfigProtos.Config.DeviceConfig.Role deviceRole) {
         mMeshServiceController = meshServiceController;
+        mMeshConnectionHandler = meshConnectionHandler;
+        mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
+        mHashHelper = hashHelper;
         mLogger = logger;
+        mMeshtasticDevice = meshtasticDevice;
         mLongName = longName;
         mShortName = shortName;
         mRegionCode = regionCode;
@@ -72,88 +80,111 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
         mChannelMode = channelMode;
         mChannelPsk = channelPsk;
         mDeviceRole = deviceRole;
-
-        meshConnectionHandler.addListener(this);
     }
 
     @Override
     public void onDeviceConnectionStateChanged(RMeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
         if (deviceConnectionState == RMeshConnectionHandler.DeviceConnectionState.CONNECTED) {
-            if (!mConfigurationChecked) {
-                notifyListeners(ConfigurationState.CHECKING);
-
-                if (maybeWriteConfig()) {
-                    return;
-                }
+            if (!mStarted) {
+                notifyListeners(ConfigurationState.STARTED);
+                mStarted = true;
             }
-
-            if (mConfigurationWritten) {
-                notifyListeners(ConfigurationState.FINISHED);
-            }
+            maybeWriteConfig();
         }
     }
 
-    private boolean maybeWriteConfig() {
+    public void start() {
         try {
+            mMeshConnectionHandler.addListener(this);
+            mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshServiceController.getMeshService(), mMeshtasticDevice);
+        } catch (RemoteException e) {
+            mLogger.e(TAG, "Error attempting to switch device: " + e.getMessage());
+            e.printStackTrace();
+            sendFailed();
+        }
+    }
+
+    public void addListener(ConfigurationStateListener listener) {
+        mListeners.add(listener);
+    }
+
+    public void removeListener(ConfigurationStateListener listener) {
+        mListeners.remove(listener);
+    }
+
+    private void maybeWriteConfig() {
+        try {
+            mLogger.v(TAG, "Checking existing device config.");
+            boolean needsWrite;
+
             IMeshService meshService = mMeshServiceController.getMeshService();
             LocalOnlyProtos.LocalConfig localConfig = LocalOnlyProtos.LocalConfig.parseFrom(meshService.getConfig());
 
             ConfigProtos.Config.LoRaConfig loRaConfig = localConfig.getLora();
             ConfigProtos.Config.DeviceConfig deviceConfig = localConfig.getDevice();
-            if (mRegionCode != loRaConfig.getRegion()
-                || mChannelMode != loRaConfig.getModemPresetValue()
-                || !loRaConfig.getTxEnabled()
-                || mDeviceRole != deviceConfig.getRole()) {
+            needsWrite = mRegionCode != loRaConfig.getRegion()
+                    || mChannelMode != loRaConfig.getModemPresetValue()
+                    || !loRaConfig.getTxEnabled()
+                    || mDeviceRole != deviceConfig.getRole();
 
-                ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
+            if (!needsWrite) {
+                int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
 
-                ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
-                deviceConfigBuilder.setRole(mDeviceRole);
-                configBuilder.setDevice(deviceConfigBuilder);
+                NodeInfo localNode = null;
+                List<NodeInfo> nodes = meshService.getNodes();
+                for (int i = 0; i < nodes.size(); i++) {
+                    NodeInfo node = nodes.get(i);
+                    if (node.getNum() == nodeNum) {
+                        localNode = node;
+                    }
+                }
 
-                ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
-                loRaConfigBuilder.setRegion(mRegionCode);
-                ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
-                loRaConfigBuilder.setModemPreset(modemPreset);
-                loRaConfigBuilder.setTxEnabled(true);
-                configBuilder.setLora(loRaConfigBuilder);
+                if (localNode == null) {
+                    sendFailed();
+                    return;
+                }
 
-                ConfigProtos.Config config = configBuilder.build();
+                MeshUser meshUser = localNode.getUser();
 
-                meshService.setConfig(config.toByteArray());
-                return true;
-            }
+                if (meshUser == null) {
+                    sendFailed();
+                    return;
+                }
 
-            int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
+                String longName = meshUser.getLongName();
+                String shortName = meshUser.getShortName();
 
-            NodeInfo localNode = null;
-            List<NodeInfo> nodes = meshService.getNodes();
-            for (int i = 0 ; i < nodes.size() ; i++) {
-                NodeInfo node = nodes.get(i);
-                if (node.getNum() == nodeNum) {
-                    localNode = node;
+                if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
+                    needsWrite = true;
                 }
             }
 
-            if (localNode == null) {
-                // TODO: error handling
-                return true; // TODO: return code? or enum?
+            if (!needsWrite) {
+                mLogger.v(TAG, "Finished writing to device.");
+                sendFinished();
+                return;
             }
 
-            MeshUser meshUser = localNode.getUser();
+            mLogger.v(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mDeviceRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
 
-            if (meshUser == null) {
-                // TODO: error handling
-                return true; // TODO: return code? or enum?
-            }
+            ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
-            String longName = meshUser.getLongName();
-            String shortName = meshUser.getShortName();
+            ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
+            deviceConfigBuilder.setRole(mDeviceRole);
+            configBuilder.setDevice(deviceConfigBuilder);
 
-            if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
-                meshService.setOwner(null, mLongName, mShortName, false);
-                return true;
-            }
+            ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
+            loRaConfigBuilder.setRegion(mRegionCode);
+            ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
+            loRaConfigBuilder.setModemPreset(modemPreset);
+            loRaConfigBuilder.setTxEnabled(true);
+            configBuilder.setLora(loRaConfigBuilder);
+
+            ConfigProtos.Config config = configBuilder.build();
+
+            meshService.setConfig(config.toByteArray());
+
+            meshService.setOwner(null, mLongName, mShortName, false);
 
             ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
@@ -167,19 +198,20 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
             ChannelProtos.Channel channel = channelBuilder.build();
 
             meshService.setChannel(channel.toByteArray());
-
-            // TODO: we don't have to do this in parts we can start a transaction and commit everything at the end
-
-            mConfigurationWritten = true;
-            mConfigurationChecked = true;
-            return false;
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "Error getting/parsing config protocol buffer: " + e.getMessage());
             e.printStackTrace();
         }
+    }
 
-        // TODO: error handling for try/catch
-        // TODO: notify listeners
+    private void sendFinished() {
+        mMeshConnectionHandler.removeListener(this);
+        notifyListeners(ConfigurationState.FINISHED);
+    }
+
+    private void sendFailed() {
+        mMeshConnectionHandler.removeListener(this);
+        notifyListeners(ConfigurationState.FAILED);
     }
 
     private void notifyListeners(ConfigurationState configurationState) {

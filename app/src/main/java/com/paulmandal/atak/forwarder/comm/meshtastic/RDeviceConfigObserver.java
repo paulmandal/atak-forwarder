@@ -18,7 +18,7 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
 
     public interface DeviceConfigListener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
-        void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, boolean isRouter);
+        void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole);
     }
 
     private final Gson mGson;
@@ -85,9 +85,9 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
         }
     }
 
-    private void notifyConfigListeners(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, boolean isRouter) {
+    private void notifyConfigListeners(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole) {
         for (DeviceConfigListener listener : mListeners) {
-            listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, isRouter);
+            listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, deviceRole);
         }
     }
 }

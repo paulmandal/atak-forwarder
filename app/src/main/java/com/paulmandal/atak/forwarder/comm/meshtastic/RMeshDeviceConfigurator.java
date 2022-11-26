@@ -86,14 +86,16 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
     public void onDeviceConnectionStateChanged(RMeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
         if (deviceConnectionState == RMeshConnectionHandler.DeviceConnectionState.CONNECTED) {
             if (!mStarted) {
-                notifyListeners(ConfigurationState.STARTED);
                 mStarted = true;
+                notifyListeners(ConfigurationState.STARTED);
             }
             maybeWriteConfig();
         }
     }
 
     public void start() {
+        mStarted = false;
+
         try {
             mMeshConnectionHandler.addListener(this);
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshServiceController.getMeshService(), mMeshtasticDevice);
@@ -182,10 +184,6 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
 
             ConfigProtos.Config config = configBuilder.build();
 
-            meshService.setConfig(config.toByteArray());
-
-            meshService.setOwner(null, mLongName, mShortName, false);
-
             ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
             ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
@@ -197,7 +195,13 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
 
             ChannelProtos.Channel channel = channelBuilder.build();
 
+            meshService.beginEditSettings();
+
+            meshService.setConfig(config.toByteArray());
+            meshService.setOwner(null, mLongName, mShortName, false);
             meshService.setChannel(channel.toByteArray());
+
+            meshService.commitEditSettings();
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "Error getting/parsing config protocol buffer: " + e.getMessage());
             e.printStackTrace();

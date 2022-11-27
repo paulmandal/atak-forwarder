@@ -5,6 +5,8 @@ import android.util.Base64;
 
 import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
+import com.paulmandal.atak.forwarder.ForwarderConstants;
+import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.DestroyableSharedPrefsListener;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
@@ -15,18 +17,21 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + DeviceConfigObserver.class.getSimpleName();
 
     public interface Listener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
         void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole);
     }
 
+    private final Logger mLogger;
     private final Gson mGson;
 
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     public DeviceConfigObserver(List<Destroyable> destroyables,
                                 SharedPreferences sharedPreferences,
+                                Logger logger,
                                 Gson gson) {
         super(destroyables,
                 sharedPreferences,
@@ -42,6 +47,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
                         PreferencesKeys.KEY_REGION
                 });
 
+        mLogger = logger;
         mGson = gson;
     }
 
@@ -81,12 +87,14 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
     }
 
     private void notifySelectedDeviceListeners(MeshtasticDevice meshtasticDevice) {
+        mLogger.v(TAG, "Selected device changed, notifying listeners");
         for (Listener listener : mListeners) {
             listener.onSelectedDeviceChanged(meshtasticDevice);
         }
     }
 
     private void notifyConfigListeners(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole) {
+        mLogger.v(TAG, "Config changed, notifying listeners");
         for (Listener listener : mListeners) {
             listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, routingRole);
         }

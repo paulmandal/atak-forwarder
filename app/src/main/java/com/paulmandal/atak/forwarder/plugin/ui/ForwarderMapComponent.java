@@ -105,7 +105,12 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory = new MeshDeviceConfiguratorFactory();
-        DeviceConfigObserver deviceConfigObserver = new DeviceConfigObserver(destroyables, sharedPreferences, gson);
+        DeviceConfigObserver deviceConfigObserver = new DeviceConfigObserver(
+                destroyables,
+                sharedPreferences,
+                logger,
+                gson
+        );
         String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
         MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
         MeshDeviceConfigurationController meshDeviceConfigurationController = new MeshDeviceConfigurationController(

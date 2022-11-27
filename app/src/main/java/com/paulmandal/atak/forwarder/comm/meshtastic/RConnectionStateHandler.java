@@ -65,7 +65,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
     }
 
     @Override
-    public void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole) {
+    public void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole) {
         // do nothing
     }
 

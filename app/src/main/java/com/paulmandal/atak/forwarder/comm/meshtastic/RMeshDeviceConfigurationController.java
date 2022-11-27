@@ -43,7 +43,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
 
     @Nullable
     private MeshtasticDevice mMeshtasticDevice;
-    private ConfigProtos.Config.DeviceConfig.Role mDeviceRole;
+    private ConfigProtos.Config.DeviceConfig.Role mRoutingRole;
     private ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
 
     private String mChannelName;
@@ -88,7 +88,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
         mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        mDeviceRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
+        mRoutingRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER) ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
     }
 
     @Override
@@ -150,7 +150,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
                 mChannelName,
                 mChannelMode,
                 mChannelPsk,
-                mDeviceRole);
+                mRoutingRole);
 
         if (mActiveConfigurator == null) {
             setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
@@ -161,12 +161,12 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     }
 
     @Override
-    public void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole) {
+    public void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole) {
         mRegionCode = regionCode;
         mChannelName = channelName;
         mChannelMode = channelMode;
         mChannelPsk = channelPsk;
-        mDeviceRole = deviceRole;
+        mRoutingRole = routingRole;
 
         RMeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
@@ -181,7 +181,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
                 mChannelName,
                 mChannelMode,
                 mChannelPsk,
-                mDeviceRole);
+                mRoutingRole);
 
         if (mActiveConfigurator == null) {
             setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
@@ -229,7 +229,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
                         String channelName,
                         int channelMode,
                         byte[] channelPsk,
-                        ConfigProtos.Config.DeviceConfig.Role deviceRole) {
+                        ConfigProtos.Config.DeviceConfig.Role routingRole) {
 
         RMeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
@@ -244,7 +244,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
                 channelName,
                 channelMode,
                 channelPsk,
-                deviceRole);
+                routingRole);
 
         if (mActiveConfigurator == null) {
             setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_TRACKER);

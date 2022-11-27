@@ -18,7 +18,7 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
 
     public interface Listener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
-        void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole);
+        void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole);
     }
 
     private final Gson mGson;
@@ -69,8 +69,9 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
                 int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
                 byte[] channelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
                 boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
+                ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
 
-                notifyConfigListeners(regionCode, channelName, channelMode, channelPsk, isRouter);
+                notifyConfigListeners(regionCode, channelName, channelMode, channelPsk, routingRole);
                 break;
         }
     }
@@ -85,9 +86,9 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
         }
     }
 
-    private void notifyConfigListeners(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole) {
+    private void notifyConfigListeners(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole) {
         for (Listener listener : mListeners) {
-            listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, deviceRole);
+            listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, routingRole);
         }
     }
 }

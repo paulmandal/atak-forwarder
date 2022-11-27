@@ -50,7 +50,7 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
     private final int mChannelMode;
     private final byte[] mChannelPsk;
 
-    private final ConfigProtos.Config.DeviceConfig.Role mDeviceRole;
+    private final ConfigProtos.Config.DeviceConfig.Role mRoutingRole;
 
     private boolean mStarted;
 
@@ -66,7 +66,7 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
                                    String channelName,
                                    int channelMode,
                                    byte[] channelPsk,
-                                   ConfigProtos.Config.DeviceConfig.Role deviceRole) {
+                                   ConfigProtos.Config.DeviceConfig.Role routingRole) {
         mMeshServiceController = meshServiceController;
         mMeshConnectionHandler = meshConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
@@ -79,7 +79,7 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
         mChannelName = channelName;
         mChannelMode = channelMode;
         mChannelPsk = channelPsk;
-        mDeviceRole = deviceRole;
+        mRoutingRole = routingRole;
     }
 
     @Override
@@ -127,7 +127,7 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
             needsWrite = mRegionCode != loRaConfig.getRegion()
                     || mChannelMode != loRaConfig.getModemPresetValue()
                     || !loRaConfig.getTxEnabled()
-                    || mDeviceRole != deviceConfig.getRole();
+                    || mRoutingRole != deviceConfig.getRole();
 
             if (!needsWrite) {
                 int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
@@ -167,12 +167,12 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceCon
                 return;
             }
 
-            mLogger.v(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mDeviceRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
+            mLogger.v(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
 
             ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
             ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
-            deviceConfigBuilder.setRole(mDeviceRole);
+            deviceConfigBuilder.setRole(mRoutingRole);
             configBuilder.setDevice(deviceConfigBuilder);
 
             ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();

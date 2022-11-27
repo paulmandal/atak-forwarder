@@ -17,6 +17,8 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import kotlinx.serialization.descriptors.StructureKind;
+
 public class MeshDeviceConfigurationController implements DeviceConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurationController.class.getSimpleName();
 
@@ -54,9 +56,10 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
 
     private boolean mSetDeviceAddressCalled;
 
-    private MeshDeviceConfigurator mActiveConfigurator;
-    private MeshDeviceConfigurator mStagedTrackerConfigurator;
+    private MeshDeviceConfigurator mActiveCommConfigurator;
+    private MeshDeviceConfigurator mActiveTrackerConfigurator;
     private MeshDeviceConfigurator mStagedCommConfigurator;
+    private MeshDeviceConfigurator mStagedTrackerConfigurator;
 
     public MeshDeviceConfigurationController(MeshServiceController meshServiceController,
                                              DeviceConnectionHandler deviceConnectionHandler,
@@ -64,7 +67,6 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                                              MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory,
                                              DeviceConfigObserver deviceConfigObserver,
                                              HashHelper hashHelper,
-                                             Gson gson,
                                              Logger logger,
                                              SharedPreferences sharedPreferences,
                                              @Nullable MeshtasticDevice meshtasticDevice,
@@ -91,13 +93,13 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
 
     @Override
     public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
-        // TODO: is there a timing issue here?
         if (serviceConnectionState == MeshServiceController.ServiceConnectionState.CONNECTED && !mSetDeviceAddressCalled) {
             if (mMeshtasticDevice == null) {
                 return;
             }
 
             try {
+                mLogger.v(TAG, "Calling setDeviceAddress: " + mMeshtasticDevice.address);
                 mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshServiceController.getMeshService(), mMeshtasticDevice);
             } catch (RemoteException e) {
                 mLogger.e(TAG, "RemoteException calling setDeviceAddress: " + e.getMessage());
@@ -133,6 +135,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
 
     @Override
     public void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice) {
+        mLogger.v(TAG, "Selected device changed: " + meshtasticDevice.address);
         mMeshtasticDevice = meshtasticDevice;
 
         MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
@@ -152,16 +155,18 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 mChannelPsk,
                 mRoutingRole);
 
-        if (mActiveConfigurator == null) {
-            setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
+        if (mActiveCommConfigurator != null) {
+            mStagedCommConfigurator = meshDeviceConfigurator;
             return;
         }
 
-        mStagedCommConfigurator = meshDeviceConfigurator;
+        maybeCancelAndRemoveActiveCommConfigurator();
+        setActiveCommConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
     }
 
     @Override
     public void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole) {
+        mLogger.v(TAG, "Device configuration changed");
         mRegionCode = regionCode;
         mChannelName = channelName;
         mChannelMode = channelMode;
@@ -185,29 +190,40 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 mChannelPsk,
                 mRoutingRole);
 
-        if (mActiveConfigurator == null) {
-            setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
+        if (mActiveCommConfigurator != null) {
+            mStagedCommConfigurator = meshDeviceConfigurator;
             return;
         }
 
-        mStagedCommConfigurator = meshDeviceConfigurator;
+        maybeCancelAndRemoveActiveCommConfigurator();
+        setActiveCommConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
     }
 
     @Override
     public void onConfigurationStateChanged(MeshDeviceConfigurator.ConfigurationState configurationState) {
         if (configurationState == MeshDeviceConfigurator.ConfigurationState.FINISHED) {
-            mActiveConfigurator.removeListener(this);
-            mActiveConfigurator = null;
+            if (mActiveCommConfigurator != null) {
+                mActiveCommConfigurator.removeListener(this);
+                mActiveCommConfigurator = null;
+            }
 
-            if (mStagedTrackerConfigurator != null) {
-                setActiveConfigurator(mStagedTrackerConfigurator, ConfigurationState.WRITING_TRACKER);
-                mStagedTrackerConfigurator = null;
+            // Promote another configurator
+            if (mStagedCommConfigurator != null) {
+                setActiveCommConfigurator(mStagedCommConfigurator, ConfigurationState.WRITING_COMM);
+                mStagedCommConfigurator = null;
                 return;
             }
 
-            if (mStagedCommConfigurator != null) {
-                setActiveConfigurator(mStagedCommConfigurator, ConfigurationState.WRITING_COMM);
-                mStagedCommConfigurator = null;
+            if (mActiveTrackerConfigurator != null) {
+                mActiveTrackerConfigurator.removeListener(this);
+                mActiveTrackerConfigurator = null;
+            }
+
+            if (mStagedTrackerConfigurator != null) {
+                mActiveTrackerConfigurator = mStagedTrackerConfigurator;
+                mActiveTrackerConfigurator.addListener(this);
+                mActiveTrackerConfigurator.start();
+                notifyListeners(ConfigurationState.WRITING_TRACKER);
                 return;
             }
 
@@ -215,8 +231,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         }
 
         if (configurationState == MeshDeviceConfigurator.ConfigurationState.FAILED) {
-            // TODO: max retries?
-            mActiveConfigurator.start();
+            mLogger.e(TAG, "Writing to device failed");
         }
     }
 
@@ -254,16 +269,26 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 routingRole);
         meshDeviceConfigurator.addListener(listener);
 
-        if (mActiveConfigurator == null) {
-            setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_TRACKER);
+        if (mActiveCommConfigurator != null || mActiveTrackerConfigurator != null) {
+            mStagedTrackerConfigurator = meshDeviceConfigurator;
             return;
         }
 
-        mStagedTrackerConfigurator = meshDeviceConfigurator;
+        mActiveTrackerConfigurator = meshDeviceConfigurator;
+        meshDeviceConfigurator.addListener(this);
+        notifyListeners(ConfigurationState.WRITING_TRACKER);
+        meshDeviceConfigurator.start();
     }
 
-    private void setActiveConfigurator(MeshDeviceConfigurator meshDeviceConfigurator, ConfigurationState configurationState) {
-        mActiveConfigurator = meshDeviceConfigurator;
+    private void maybeCancelAndRemoveActiveCommConfigurator() {
+        if (mActiveCommConfigurator != null) {
+            mActiveCommConfigurator.cancel();
+            mActiveCommConfigurator.removeListener(this);
+        }
+    }
+
+    private void setActiveCommConfigurator(MeshDeviceConfigurator meshDeviceConfigurator, ConfigurationState configurationState) {
+        mActiveCommConfigurator = meshDeviceConfigurator;
         meshDeviceConfigurator.addListener(this);
         notifyListeners(configurationState);
         meshDeviceConfigurator.start();

@@ -103,6 +103,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         mStarted = false;
 
         try {
+            mLogger.v(TAG, "Calling setDeviceAddress: " + mMeshtasticDevice.address);
             mDeviceConnectionHandler.addListener(this);
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshServiceController.getMeshService(), mMeshtasticDevice);
         } catch (RemoteException e) {
@@ -110,6 +111,10 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             e.printStackTrace();
             sendFailed();
         }
+    }
+
+    public void cancel() {
+        mDeviceConnectionHandler.removeListener(this);
     }
 
     public void addListener(Listener listener) {

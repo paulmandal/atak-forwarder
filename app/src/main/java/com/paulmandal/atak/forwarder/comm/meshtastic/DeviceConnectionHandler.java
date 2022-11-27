@@ -42,7 +42,10 @@ public class DeviceConnectionHandler implements MeshServiceController.Listener {
                 mLogger.e(TAG, "RemoteException calling connectionState(): " + e.getMessage());
                 e.printStackTrace();
             }
+            return;
         }
+
+        notifyListeners(DeviceConnectionState.DISCONNECTED);
     }
 
     public void addListener(Listener listener) {

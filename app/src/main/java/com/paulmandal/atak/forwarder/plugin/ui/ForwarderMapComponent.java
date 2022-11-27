@@ -111,7 +111,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 meshDeviceConfiguratorFactory,
                 deviceConfigObserver,
                 hashHelper,
-                gson,
                 logger,
                 sharedPreferences,
                 meshtasticDevice,

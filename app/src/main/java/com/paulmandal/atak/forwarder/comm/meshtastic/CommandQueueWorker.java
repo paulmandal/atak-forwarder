@@ -56,11 +56,11 @@ public class CommandQueueWorker implements Destroyable, ConnectionStateHandler.L
 
     private void startWorker() {
         mExecutor.scheduleAtFixedRate(() -> {
-            if (mDestroyed || mMeshSender.isSendingMessage() || mMeshSender.isSuspended()) {
+            if (mDestroyed || mMeshSender.isSendingMessage() || mConnectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
                 return;
             }
 
-            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED);
+            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(true);
 
             if (queuedCommand == null) {
                 return;

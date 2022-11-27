@@ -30,7 +30,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
 
     public InboundMeshMessageHandler(Context atakContext,
                                      List<Destroyable> destroyables,
-                                     MeshSuspendController meshSuspendController,
+                                     ConnectionStateHandler connectionStateHandler,
                                      Handler uiThreadHandler,
                                      Logger logger) {
         super(atakContext,
@@ -39,7 +39,7 @@ public class InboundMeshMessageHandler extends MeshEventHandler {
                         MeshServiceConstants.ACTION_RECEIVED_ATAK_FORWARDER
                 },
                 destroyables,
-                meshSuspendController);
+                connectionStateHandler);
 
         mUiThreadHandler = uiThreadHandler;
     }

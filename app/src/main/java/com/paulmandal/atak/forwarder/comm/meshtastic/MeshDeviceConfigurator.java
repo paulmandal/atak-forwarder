@@ -27,7 +27,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
         FAILED
     }
 
-    public interface ConfigurationStateListener {
+    public interface Listener {
         void onConfigurationStateChanged(ConfigurationState configurationState);
     }
 
@@ -37,7 +37,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
     private final HashHelper mHashHelper;
     private final Logger mLogger;
 
-    private final Set<ConfigurationStateListener> mListeners = new CopyOnWriteArraySet<>();
+    private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     private final MeshtasticDevice mMeshtasticDevice;
 
@@ -106,11 +106,11 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
         }
     }
 
-    public void addListener(ConfigurationStateListener listener) {
+    public void addListener(Listener listener) {
         mListeners.add(listener);
     }
 
-    public void removeListener(ConfigurationStateListener listener) {
+    public void removeListener(Listener listener) {
         mListeners.remove(listener);
     }
 
@@ -219,7 +219,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
     }
 
     private void notifyListeners(ConfigurationState configurationState) {
-        for (ConfigurationStateListener listener : mListeners) {
+        for (Listener listener : mListeners) {
             listener.onConfigurationStateChanged(configurationState);
         }
     }

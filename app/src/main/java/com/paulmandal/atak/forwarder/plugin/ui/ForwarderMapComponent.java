@@ -23,7 +23,6 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
@@ -80,7 +79,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         Gson gson = new Gson();
-        MeshSuspendController meshSuspendController = new MeshSuspendController();
 
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
@@ -97,9 +95,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 commandQueue,
                 queuedCommandFactory,
                 destroyables,
-                meshSuspendController,
-                meshServiceController,
                 connectionStateHandler,
+                meshServiceController,
                 atakUid,
                 callsign);
 
@@ -109,7 +106,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 logger,
                 destroyables,
                 uiThreadHandler,
-                meshSuspendController);
+                connectionStateHandler);
 
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
@@ -126,11 +123,10 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         MeshSender meshSender = new MeshSender(atakContext,
                 destroyables,
                 sharedPreferences,
-                meshSuspendController,
                 uiThreadHandler,
                 logger,
-                meshServiceController,
                 connectionStateHandler,
+                meshServiceController,
                 userTracker,
                 meshSenderExecutor);
 
@@ -146,7 +142,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         InboundMeshMessageHandler inboundMeshMessageHandler = new InboundMeshMessageHandler(
                 atakContext,
                 destroyables,
-                meshSuspendController,
+                connectionStateHandler,
                 uiThreadHandler,
                 logger);
 
@@ -213,7 +209,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                                 destroyables,
                                 sharedPreferences,
                                 devicesList,
-                                meshSuspendController,
+                                meshDeviceConfigurationController,
                                 discoveryBroadcastEventHandler,
                                 cotMessageCache,
                                 commandQueue,

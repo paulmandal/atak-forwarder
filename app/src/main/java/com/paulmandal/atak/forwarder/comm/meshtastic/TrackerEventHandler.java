@@ -35,7 +35,7 @@ public class TrackerEventHandler extends MeshEventHandler {
                                Logger logger,
                                List<Destroyable> destroyables,
                                Handler uiThreadHandler,
-                               MeshSuspendController meshSuspendController) {
+                               ConnectionStateHandler connectionStateHandler) {
         super(atakContext,
                 logger,
                 new String[] {
@@ -43,7 +43,7 @@ public class TrackerEventHandler extends MeshEventHandler {
                         MeshServiceConstants.ACTION_RECEIVED_NODEINFO_APP
                 },
                 destroyables,
-                meshSuspendController);
+                connectionStateHandler);
 
         mUiThreadHandler = uiThreadHandler;
     }

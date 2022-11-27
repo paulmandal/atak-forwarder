@@ -17,7 +17,7 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class MeshDeviceConfigurationController implements MeshConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.ConfigurationStateListener {
+public class MeshDeviceConfigurationController implements MeshConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurationController.class.getSimpleName();
 
     public enum ConfigurationState {
@@ -223,13 +223,14 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
     }
 
     public void writeTracker(MeshtasticDevice meshtasticDevice,
-                        String longName,
-                        String shortName,
-                        ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
-                        String channelName,
-                        int channelMode,
-                        byte[] channelPsk,
-                        ConfigProtos.Config.DeviceConfig.Role routingRole) {
+                             String longName,
+                             String shortName,
+                             ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
+                             String channelName,
+                             int channelMode,
+                             byte[] channelPsk,
+                             ConfigProtos.Config.DeviceConfig.Role routingRole,
+                             MeshDeviceConfigurator.Listener listener) {
 
         MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
@@ -245,6 +246,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
                 channelMode,
                 channelPsk,
                 routingRole);
+        meshDeviceConfigurator.addListener(listener);
 
         if (mActiveConfigurator == null) {
             setActiveConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_TRACKER);

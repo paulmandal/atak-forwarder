@@ -1,10 +1,10 @@
 package com.paulmandal.atak.forwarder.plugin.ui.settings;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.os.Handler;
 import android.preference.Preference;
 import android.util.Base64;
 import android.view.LayoutInflater;
@@ -23,25 +23,22 @@ import com.atakmap.android.gui.PluginSpinner;
 import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurationController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurator;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
-import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.ui.EditTextValidator;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
-import com.paulmandal.atak.forwarder.tracker.MeshtasticTrackerConfigurator;
+import com.paulmandal.atak.forwarder.tracker.TrackerCotGenerator;
 
 import java.util.List;
 
 public class TrackerButtons {
     public TrackerButtons(Context settingsMenuContext,
                           Context pluginContext,
-                          Handler uiThreadHandler,
                           DevicesList devicesList,
-                          MeshSuspendController meshSuspendController,
+                          MeshDeviceConfigurationController meshDeviceConfigurationController,
                           Gson gson,
-                          Logger logger,
                           Preference teams,
                           Preference roles,
                           Preference writeToDevice) {
@@ -122,7 +119,10 @@ public class TrackerButtons {
                 boolean isAlwaysPoweredOn = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_TRACKER_IS_ALWAYS_POWERED_ON);
                 boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
-                writeToDevice(settingsMenuContext, uiThreadHandler, meshSuspendController, logger, commDevice, targetDevice, callsign, regionCode, channelName, psk, channelModemPreset, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isAlwaysPoweredOn, isRouter, () -> {
+                writeToDevice(meshDeviceConfigurationController, targetDevice, callsign, regionCode, channelName, psk, channelModemPreset, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, (configurationState) -> {
+                    if (configurationState != MeshDeviceConfigurator.ConfigurationState.FINISHED && configurationState != MeshDeviceConfigurator.ConfigurationState.FAILED) {
+                        return;
+                    }
                     progressBar.setVisibility(View.GONE);
                     Toast.makeText(settingsMenuContext, "Done writing to Tracker!", Toast.LENGTH_SHORT).show();
                     dialog.dismiss();
@@ -133,11 +133,7 @@ public class TrackerButtons {
         });
     }
 
-    private void writeToDevice(Context settingsMenuContext,
-                               Handler uiThreadHandler,
-                               MeshSuspendController meshSuspendController,
-                               Logger logger,
-                               MeshtasticDevice commDevice,
+    private void writeToDevice(MeshDeviceConfigurationController meshDeviceConfigurationController,
                                MeshtasticDevice targetDevice,
                                String deviceCallsign,
                                ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
@@ -148,30 +144,16 @@ public class TrackerButtons {
                                int roleIndex,
                                int pliIntervalS,
                                int screenShutoffDelayS,
-                               boolean isAlwaysPoweredOn,
                                boolean isRouter,
-                               MeshtasticTrackerConfigurator.Listener listener) {
-        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(settingsMenuContext, logger);
-        MeshtasticTrackerConfigurator meshtasticTrackerConfigurator = new MeshtasticTrackerConfigurator(
-                settingsMenuContext,
-                uiThreadHandler,
-                meshSuspendController,
-                meshtasticDeviceSwitcher,
-                commDevice,
-                targetDevice,
-                deviceCallsign,
-                regionCode,
-                channelName,
-                psk,
-                modemConfig,
-                teamIndex,
-                roleIndex,
-                pliIntervalS,
-                screenShutoffDelayS,
-                isAlwaysPoweredOn,
-                isRouter,
-                listener,
-                logger);
-        meshtasticTrackerConfigurator.writeToDevice();
+                               MeshDeviceConfigurator.Listener listener) {
+        if (TrackerCotGenerator.ROLES.length > 9) {
+            throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
+        }
+
+        ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
+
+        @SuppressLint("DefaultLocale")
+        String shortName = String.format("%d%d", roleIndex, teamIndex);
+        meshDeviceConfigurationController.writeTracker(targetDevice, deviceCallsign, shortName, regionCode, channelName, modemConfig.getNumber(), psk, routingRole, listener);
     }
 }

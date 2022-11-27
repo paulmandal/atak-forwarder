@@ -35,9 +35,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
                                           CommandQueue commandQueue,
                                           QueuedCommandFactory queuedCommandFactory,
                                           List<Destroyable> destroyables,
-                                          MeshSuspendController meshSuspendController,
-                                          MeshServiceController meshServiceController,
                                           ConnectionStateHandler connectionStateHandler,
+                                          MeshServiceController meshServiceController,
                                           String atakUid,
                                           String callsign) {
         super(atakContext,
@@ -46,7 +45,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
                         MeshServiceConstants.ACTION_RECEIVED_ATAK_FORWARDER
                 },
                 destroyables,
-                meshSuspendController);
+                connectionStateHandler);
 
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;

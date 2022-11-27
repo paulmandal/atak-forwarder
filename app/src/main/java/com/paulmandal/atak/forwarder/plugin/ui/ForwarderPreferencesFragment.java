@@ -13,7 +13,7 @@ import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurationController;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
@@ -37,7 +37,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
     private static SharedPreferences sSharedPreferences;
     @SuppressLint("StaticFieldLeak")
     private static DevicesList sDevicesList;
-    private static MeshSuspendController sMeshSuspendController;
+    private static MeshDeviceConfigurationController sMeshDeviceConfigurationController;
     @SuppressLint("StaticFieldLeak")
     private static DiscoveryBroadcastEventHandler sDiscoveryBroadcastEventHandler;
     private static CotMessageCache sCotMessageCache;
@@ -54,7 +54,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                                         final List<Destroyable> destroyables,
                                         final SharedPreferences sharedPreferences,
                                         final DevicesList devicesList,
-                                        final MeshSuspendController meshSuspendController,
+                                        final MeshDeviceConfigurationController meshDeviceConfigurationController,
                                         final DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                                         final CotMessageCache cotMessageCache,
                                         final CommandQueue commandQueue,
@@ -64,7 +64,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sDestroyables = destroyables;
         this.sSharedPreferences = sharedPreferences;
         this.sDevicesList = devicesList;
-        this.sMeshSuspendController = meshSuspendController;
+        this.sMeshDeviceConfigurationController = meshDeviceConfigurationController;
         this.sDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
         this.sCotMessageCache = cotMessageCache;
         this.sCommandQueue = commandQueue;
@@ -110,11 +110,9 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         Handler uiThreadHandler = new Handler(Looper.getMainLooper());
         TrackerButtons trackerButtons = new TrackerButtons(settingsMenuContext,
                 pluginContext,
-                uiThreadHandler,
                 sDevicesList,
-                sMeshSuspendController,
+                sMeshDeviceConfigurationController,
                 gson,
-                sLogger,
                 findPreference(PreferencesKeys.KEY_TRACKER_TEAM),
                 findPreference(PreferencesKeys.KEY_TRACKER_ROLE),
                 findPreference(PreferencesKeys.KEY_TRACKER_WRITE_TO_DEVICE));

@@ -21,6 +21,7 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
+import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -29,7 +30,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MeshSender extends MeshEventHandler implements MeshConnectionHandler.Listener, MeshServiceController.Listener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MeshSender extends MeshEventHandler implements ConnectionStateHandler.Listener, MeshServiceController.Listener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
         void onMessageTimedOut(int messageId);
@@ -46,7 +47,7 @@ public class MeshSender extends MeshEventHandler implements MeshConnectionHandle
     private final SharedPreferences mSharedPreferences;
     private final Handler mUiThreadHandler;
     private final MeshServiceController mMeshServiceController;
-    private final MeshConnectionHandler mMeshConnectionHandler;
+    private final ConnectionStateHandler mConnectionStateHandler;
     private final UserTracker mUserTracker;
     private final ScheduledExecutorService mExecutor;
 
@@ -58,8 +59,7 @@ public class MeshSender extends MeshEventHandler implements MeshConnectionHandle
     private int mChatHopLimit;
     private int mOtherHopLimit;
 
-    private MeshConnectionHandler.DeviceConnectionState mConnectionState = MeshConnectionHandler.DeviceConnectionState.DISCONNECTED;
-    private boolean mSuspended = false;
+    private ConnectionStateHandler.ConnectionState mConnectionState = ConnectionStateHandler.ConnectionState.DEVICE_DISCONNECTED;
     private boolean mSendingMessage = false;
     private boolean mStateSaved = false;
 
@@ -78,11 +78,10 @@ public class MeshSender extends MeshEventHandler implements MeshConnectionHandle
     public MeshSender(Context atakContext,
                       List<Destroyable> destroyables,
                       SharedPreferences sharedPreferences,
-                      MeshSuspendController meshSuspendController,
                       Handler uiThreadHandler,
                       Logger logger,
+                      ConnectionStateHandler connectionStateHandler,
                       MeshServiceController meshServiceController,
-                      MeshConnectionHandler meshConnectionHandler,
                       UserTracker userTracker,
                       ScheduledExecutorService scheduledExecutorService) {
         super(atakContext,
@@ -91,18 +90,18 @@ public class MeshSender extends MeshEventHandler implements MeshConnectionHandle
                         MeshServiceConstants.ACTION_MESSAGE_STATUS_CHANGED
                 },
                 destroyables,
-                meshSuspendController);
+                connectionStateHandler);
 
         mSharedPreferences = sharedPreferences;
         mUiThreadHandler = uiThreadHandler;
         mMeshServiceController = meshServiceController;
-        mMeshConnectionHandler = meshConnectionHandler;
+        mConnectionStateHandler = connectionStateHandler;
         mUserTracker = userTracker;
         mExecutor = scheduledExecutorService;
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
         meshServiceController.addListener(this);
-        meshConnectionHandler.addListener(this);
+        connectionStateHandler.addListener(this);
 
         startWatchdog();
 
@@ -121,23 +120,8 @@ public class MeshSender extends MeshEventHandler implements MeshConnectionHandle
         sendMessage(sendMessageCommand.messageType, sendMessageCommand.message, sendMessageCommand.toUIDs);
     }
 
-    public boolean isSuspended() {
-        return mSuspended;
-    }
-
     public boolean isSendingMessage() {
         return mSendingMessage;
-    }
-
-    @Override
-    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
-        mConnectionState = deviceConnectionState;
-
-        if (deviceConnectionState != MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
-            maybeSaveState();
-        } else {
-            maybeRestoreState();
-        }
     }
 
     @Override
@@ -146,12 +130,12 @@ public class MeshSender extends MeshEventHandler implements MeshConnectionHandle
     }
 
     @Override
-    public void onSuspendedChanged(boolean suspended) {
-        super.onSuspendedChanged(suspended);
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        super.onConnectionStateChanged(connectionState);
 
-        mSuspended = suspended;
+        mConnectionState = connectionState;
 
-        if (suspended) {
+        if (connectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             maybeSaveState();
         } else {
             maybeRestoreState();

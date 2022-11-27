@@ -149,7 +149,7 @@ public class TrackerButtons {
             throw new RuntimeException("TrackerCotGenerator.ROLES.length > 9, but our shortName format depends on it only ever being 1 digit long");
         }
 
-        ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
+        ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
 
         @SuppressLint("DefaultLocale")
         String shortName = String.format("%d%d", roleIndex, teamIndex);

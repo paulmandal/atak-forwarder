@@ -97,7 +97,11 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
         HashHelper hashHelper = new HashHelper();
-        DeviceConnectionHandler deviceConnectionHandler = new DeviceConnectionHandler(meshServiceController, logger);
+        DeviceConnectionHandler deviceConnectionHandler = new DeviceConnectionHandler(
+                atakContext,
+                destroyables,
+                meshServiceController,
+                logger);
 
 
         MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory = new MeshDeviceConfiguratorFactory();

@@ -1,14 +1,21 @@
 package com.paulmandal.atak.forwarder.comm.meshtastic;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.RemoteException;
 
+import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class DeviceConnectionHandler implements MeshServiceController.Listener {
+public class DeviceConnectionHandler extends BroadcastReceiver implements MeshServiceController.Listener, Destroyable {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + DeviceConnectionHandler.class.getSimpleName();
 
     public enum DeviceConnectionState {
@@ -20,16 +27,27 @@ public class DeviceConnectionHandler implements MeshServiceController.Listener {
         void onDeviceConnectionStateChanged(DeviceConnectionState deviceConnectionState);
     }
 
+    private final Context mAtakContext;
     private final MeshServiceController mMeshServiceController;
     private final Logger mLogger;
+    private final IntentFilter mIntentFilter;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    public DeviceConnectionHandler(MeshServiceController meshServiceController,
+    public DeviceConnectionHandler(Context atakContext,
+                                   List<Destroyable> destroyables,
+                                   MeshServiceController meshServiceController,
                                    Logger logger) {
+        mAtakContext = atakContext;
         mMeshServiceController = meshServiceController;
         mLogger = logger;
 
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(MeshServiceConstants.ACTION_MESH_CONNECTED);
+        mIntentFilter = intentFilter;
+
+        destroyables.add(this);
         meshServiceController.addListener(this);
+        atakContext.registerReceiver(this, intentFilter);
     }
 
     @Override
@@ -48,12 +66,29 @@ public class DeviceConnectionHandler implements MeshServiceController.Listener {
         notifyListeners(DeviceConnectionState.DISCONNECTED);
     }
 
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
+
+        if (action.equals(MeshServiceConstants.ACTION_MESH_CONNECTED)) {
+            String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
+            boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
+            mLogger.d(TAG, "Mesh connected: " + connected);
+            notifyListeners(connected ? DeviceConnectionState.CONNECTED : DeviceConnectionState.DISCONNECTED);
+        }
+    }
+
     public void addListener(Listener listener) {
         mListeners.add(listener);
     }
 
     public void removeListener(Listener listener) {
         mListeners.remove(listener);
+    }
+
+    @Override
+    public void onDestroy(Context context, MapView mapView) {
+        mAtakContext.unregisterReceiver(this);
     }
 
     private DeviceConnectionState connectionStateFromServiceState(String connectionString) {

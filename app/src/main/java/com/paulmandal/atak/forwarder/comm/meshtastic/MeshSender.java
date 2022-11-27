@@ -29,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MeshSender extends MeshEventHandler implements MeshServiceController.ConnectionStateListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MeshSender extends MeshEventHandler implements RMeshConnectionHandler.Listener, RMeshServiceController.Listener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
         void onMessageTimedOut(int messageId);
@@ -45,7 +45,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     private final SharedPreferences mSharedPreferences;
     private final Handler mUiThreadHandler;
-    private final MeshServiceController mMeshServiceController;
+    private final RMeshServiceController mMeshServiceController;
+    private final RMeshConnectionHandler mMeshConnectionHandler;
     private final UserTracker mUserTracker;
     private final ScheduledExecutorService mExecutor;
 
@@ -57,7 +58,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     private int mChatHopLimit;
     private int mOtherHopLimit;
 
-    private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
+    private RMeshConnectionHandler.DeviceConnectionState mConnectionState = RMeshConnectionHandler.DeviceConnectionState.DISCONNECTED;
     private boolean mSuspended = false;
     private boolean mSendingMessage = false;
     private boolean mStateSaved = false;
@@ -80,7 +81,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                       MeshSuspendController meshSuspendController,
                       Handler uiThreadHandler,
                       Logger logger,
-                      MeshServiceController meshServiceController,
+                      RMeshServiceController meshServiceController,
+                      RMeshConnectionHandler meshConnectionHandler,
                       UserTracker userTracker,
                       ScheduledExecutorService scheduledExecutorService) {
         super(atakContext,
@@ -94,11 +96,13 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         mSharedPreferences = sharedPreferences;
         mUiThreadHandler = uiThreadHandler;
         mMeshServiceController = meshServiceController;
+        mMeshConnectionHandler = meshConnectionHandler;
         mUserTracker = userTracker;
         mExecutor = scheduledExecutorService;
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        meshServiceController.addConnectionStateListener(this);
+        meshServiceController.addListener(this);
+        meshConnectionHandler.addListener(this);
 
         startWatchdog();
 
@@ -126,15 +130,19 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
-        mConnectionState = connectionState;
-        mMeshService = mMeshServiceController.getMeshService();
+    public void onDeviceConnectionStateChanged(RMeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
+        mConnectionState = deviceConnectionState;
 
-        if (connectionState != ConnectionState.DEVICE_CONNECTED) {
+        if (deviceConnectionState != RMeshConnectionHandler.DeviceConnectionState.CONNECTED) {
             maybeSaveState();
         } else {
             maybeRestoreState();
         }
+    }
+
+    @Override
+    public void onServiceConnectionStateChanged(RMeshServiceController.ServiceConnectionState serviceConnectionState) {
+        mMeshService = mMeshServiceController.getMeshService();
     }
 
     @Override

@@ -23,7 +23,7 @@ public class RMeshServiceController implements Destroyable {
         CONNECTED
     }
 
-    public interface ServiceConnectionStateListener {
+    public interface Listener {
         void onServiceConnectionStateChanged(ServiceConnectionState serviceConnectionState);
     }
 
@@ -41,7 +41,7 @@ public class RMeshServiceController implements Destroyable {
     private ServiceConnectionState mConnectionState = ServiceConnectionState.DISCONNECTED;
     private boolean mConnectedToService;
 
-    private final Set<ServiceConnectionStateListener> mConnectionStateListeners = new CopyOnWriteArraySet<>();
+    private final Set<Listener> mConnectionStateListeners = new CopyOnWriteArraySet<>();
 
     public RMeshServiceController(List<Destroyable> destroyables,
                                  Context atakContext,
@@ -84,11 +84,11 @@ public class RMeshServiceController implements Destroyable {
         return mConnectionState;
     }
 
-    public void addConnectionStateListener(ServiceConnectionStateListener listener) {
+    public void addListener(Listener listener) {
         mConnectionStateListeners.add(listener);
     }
 
-    public void removeConnectionStateListener(ServiceConnectionStateListener listener) {
+    public void removeListener(Listener listener) {
         mConnectionStateListeners.remove(listener);
     }
 
@@ -114,7 +114,7 @@ public class RMeshServiceController implements Destroyable {
     }
 
     private void notifyConnectionStateListeners() {
-        for (ServiceConnectionStateListener listener : mConnectionStateListeners) {
+        for (Listener listener : mConnectionStateListeners) {
             mUiThreadHandler.post(() -> listener.onServiceConnectionStateChanged(mConnectionState));
         }
     }

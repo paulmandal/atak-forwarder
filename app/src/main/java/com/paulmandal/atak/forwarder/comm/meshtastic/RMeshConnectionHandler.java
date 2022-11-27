@@ -8,7 +8,7 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshConnectionHandler implements RMeshServiceController.ServiceConnectionStateListener {
+public class RMeshConnectionHandler implements RMeshServiceController.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshConnectionHandler.class.getSimpleName();
 
     public enum DeviceConnectionState {
@@ -16,20 +16,20 @@ public class RMeshConnectionHandler implements RMeshServiceController.ServiceCon
         CONNECTED
     }
 
-    public interface DeviceConnectionStateListener {
+    public interface Listener {
         void onDeviceConnectionStateChanged(DeviceConnectionState deviceConnectionState);
     }
 
     private final RMeshServiceController mMeshServiceController;
     private final Logger mLogger;
-    private final Set<DeviceConnectionStateListener> mListeners = new CopyOnWriteArraySet<>();
+    private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     public RMeshConnectionHandler(RMeshServiceController meshServiceController,
                                   Logger logger) {
         mMeshServiceController = meshServiceController;
         mLogger = logger;
 
-        meshServiceController.addConnectionStateListener(this);
+        meshServiceController.addListener(this);
     }
 
     @Override
@@ -44,11 +44,11 @@ public class RMeshConnectionHandler implements RMeshServiceController.ServiceCon
         }
     }
 
-    public void addListener(DeviceConnectionStateListener listener) {
+    public void addListener(Listener listener) {
         mListeners.add(listener);
     }
 
-    public void removeListener(DeviceConnectionStateListener listener) {
+    public void removeListener(Listener listener) {
         mListeners.remove(listener);
     }
 
@@ -65,7 +65,7 @@ public class RMeshConnectionHandler implements RMeshServiceController.ServiceCon
     }
 
     private void notifyListeners(DeviceConnectionState deviceConnectionState) {
-        for (DeviceConnectionStateListener listener : mListeners) {
+        for (Listener listener : mListeners) {
             listener.onDeviceConnectionStateChanged(deviceConnectionState);
         }
     }

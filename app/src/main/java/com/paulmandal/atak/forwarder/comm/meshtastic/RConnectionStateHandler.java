@@ -7,7 +7,7 @@ import com.geeksville.mesh.ConfigProtos;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RConnectionStateHandler implements RMeshDeviceConfigurationController.Listener, RMeshServiceController.ServiceConnectionStateListener, RMeshConnectionHandler.DeviceConnectionStateListener, RDeviceConfigObserver.Listener {
+public class RConnectionStateHandler implements RMeshDeviceConfigurationController.Listener, RMeshServiceController.Listener, RMeshConnectionHandler.Listener, RDeviceConfigObserver.Listener {
     public enum ConnectionState {
         NO_DEVICE_CONFIGURED,
         NO_SERVICE_CONNECTION,
@@ -35,7 +35,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
         mMeshtasticDevice = meshtasticDevice;
 
         meshDeviceConfigurationController.addListener(this);
-        meshServiceController.addConnectionStateListener(this);
+        meshServiceController.addListener(this);
         meshConnectionHandler.addListener(this);
         deviceConfigObserver.addListener(this);
     }

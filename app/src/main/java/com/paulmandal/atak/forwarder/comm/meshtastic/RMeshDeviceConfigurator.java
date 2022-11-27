@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshDeviceConfigurator implements RMeshConnectionHandler.DeviceConnectionStateListener {
+public class RMeshDeviceConfigurator implements RMeshConnectionHandler.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshDeviceConfigurator.class.getSimpleName();
 
     public enum ConfigurationState {

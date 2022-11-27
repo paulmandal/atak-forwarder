@@ -140,6 +140,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 uiThreadHandler,
                 logger,
                 meshServiceController,
+                meshConnectionHandler,
                 userTracker,
                 meshSenderExecutor);
 

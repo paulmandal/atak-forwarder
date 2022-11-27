@@ -17,7 +17,7 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshDeviceConfigurationController implements RMeshConnectionHandler.DeviceConnectionStateListener, RDeviceConfigObserver.Listener, RMeshServiceController.ServiceConnectionStateListener, RMeshDeviceConfigurator.ConfigurationStateListener {
+public class RMeshDeviceConfigurationController implements RMeshConnectionHandler.Listener, RDeviceConfigObserver.Listener, RMeshServiceController.Listener, RMeshDeviceConfigurator.ConfigurationStateListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshDeviceConfigurationController.class.getSimpleName();
 
     public enum ConfigurationState {
@@ -78,7 +78,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
         mLogger = logger;
         mCallsign = callsign;
 
-        meshServiceController.addConnectionStateListener(this);
+        meshServiceController.addListener(this);
         meshConnectionHandler.addListener(this);
         deviceConfigObserver.addListener(this);
 

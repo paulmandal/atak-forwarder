@@ -10,7 +10,6 @@ import androidx.annotation.CallSuper;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
-import com.paulmandal.atak.forwarder.plugin.SuspendListener;
 
 import java.util.Arrays;
 import java.util.List;

@@ -47,7 +47,6 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
     private final SharedPreferences mSharedPreferences;
     private final Handler mUiThreadHandler;
     private final MeshServiceController mMeshServiceController;
-    private final ConnectionStateHandler mConnectionStateHandler;
     private final UserTracker mUserTracker;
     private final ScheduledExecutorService mExecutor;
 
@@ -59,15 +58,11 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
     private int mChatHopLimit;
     private int mOtherHopLimit;
 
-    private ConnectionStateHandler.ConnectionState mConnectionState = ConnectionStateHandler.ConnectionState.DEVICE_DISCONNECTED;
     private boolean mSendingMessage = false;
     private boolean mStateSaved = false;
 
-    private byte[] mPendingMessage;
-    private String[] mPendingMessageTargets;
-
-    private Queue<OutboundMessageChunk> mPendingMessageChunks = new LinkedList<>();
-    private Queue<OutboundMessageChunk> mRestoreChunksAfterSuspend = new LinkedList<>();
+    private final Queue<OutboundMessageChunk> mPendingMessageChunks = new LinkedList<>();
+    private final Queue<OutboundMessageChunk> mRestoreChunksAfterSuspend = new LinkedList<>();
 
     private final Object mSyncLock = new Object();
 
@@ -95,7 +90,6 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
         mSharedPreferences = sharedPreferences;
         mUiThreadHandler = uiThreadHandler;
         mMeshServiceController = meshServiceController;
-        mConnectionStateHandler = connectionStateHandler;
         mUserTracker = userTracker;
         mExecutor = scheduledExecutorService;
 
@@ -132,8 +126,6 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
     @Override
     public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
         super.onConnectionStateChanged(connectionState);
-
-        mConnectionState = connectionState;
 
         if (connectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             maybeSaveState();
@@ -222,9 +214,6 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
 
     private void sendMessageInternal(MessageType messageType, byte[] message, String[] toUIDs) {
         mSendingMessage = true;
-
-        mPendingMessage = message;
-        mPendingMessageTargets = toUIDs;
 
         int messageChunkLength = ForwarderConstants.MESHTASTIC_MESSAGE_CHUNK_LENGTH;
 

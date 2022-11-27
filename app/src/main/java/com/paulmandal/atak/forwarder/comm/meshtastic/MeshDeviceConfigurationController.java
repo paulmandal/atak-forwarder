@@ -36,7 +36,6 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshDeviceConfiguratorFactory mMeshDeviceConfiguratorFactory;
     private final HashHelper mHashHelper;
-    private final Gson mGson;
     private final Logger mLogger;
     private final String mCallsign;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
@@ -68,13 +67,12 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
                                              Gson gson,
                                              Logger logger,
                                              SharedPreferences sharedPreferences,
-                                             MeshtasticDevice meshtasticDevice,
+                                             @Nullable MeshtasticDevice meshtasticDevice,
                                              String callsign) {
         mMeshServiceController = meshServiceController;
         mMeshConnectionHandler = meshConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mMeshDeviceConfiguratorFactory = meshDeviceConfiguratorFactory;
-        mGson = gson;
         mHashHelper = hashHelper;
         mLogger = logger;
         mMeshtasticDevice = meshtasticDevice;

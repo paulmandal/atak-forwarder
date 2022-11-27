@@ -27,9 +27,9 @@ public class TrackerEventHandler extends MeshEventHandler {
 
     private static final double LAT_LON_INT_TO_DOUBLE_CONVERSION = 10000000D;
 
-    private CopyOnWriteArraySet<TrackerListener> mTrackerListeners = new CopyOnWriteArraySet<>();
+    private final CopyOnWriteArraySet<TrackerListener> mTrackerListeners = new CopyOnWriteArraySet<>();
 
-    private Handler mUiThreadHandler;
+    private final Handler mUiThreadHandler;
 
     public TrackerEventHandler(Context atakContext,
                                Logger logger,

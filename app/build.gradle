@@ -257,6 +257,7 @@ def getVersionCode() {
 
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
+    //noinspection GradleDependency
     implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.9'

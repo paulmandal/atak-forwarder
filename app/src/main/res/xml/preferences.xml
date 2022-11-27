@@ -97,14 +97,12 @@
         android:summary="@string/tracker_pli_interval_summary"
         android:dialogTitle="@string/tracker_pli_interval"
         android:inputType="number"
-        android:numeric="integer"
         android:defaultValue="60" />
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="plugin_atak_forwarder_key_tracker_screen_off_time"
         android:title="@string/tracker_screen_off_time"
         android:summary="@string/tracker_screen_off_time_summary"
         android:inputType="number"
-        android:numeric="integer"
         android:defaultValue="5" />
     <com.atakmap.android.gui.PanSwitchPreference
         android:key="plugin_atak_forwarder_key_tracker_is_router"
@@ -133,7 +131,6 @@
         android:summary="@string/tracker_stale_after_secs_summary"
         android:dialogTitle="@string/tracker_stale_after_secs"
         android:inputType="number"
-        android:numeric="integer"
         android:defaultValue="75" />
 
     <PreferenceCategory android:title="@string/category_advanced_settings" />

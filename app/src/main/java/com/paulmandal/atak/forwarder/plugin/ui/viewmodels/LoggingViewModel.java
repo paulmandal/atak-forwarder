@@ -19,9 +19,9 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
     private static final int MAX_LOG_MESSAGES_OUTPUT = ForwarderConstants.MAX_LOG_MESSAGES_OUTPUT;
 
     public static class LogMessage {
-        public int level;
-        public String tag;
-        public String message;
+        public final int level;
+        public final String tag;
+        public final String message;
 
         public LogMessage(int level, String tag, String message) {
             this.level = level;

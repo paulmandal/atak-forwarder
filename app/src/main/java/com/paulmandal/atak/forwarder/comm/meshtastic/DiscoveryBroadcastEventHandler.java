@@ -73,6 +73,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
 
     @Override
     public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        super.onConnectionStateChanged(connectionState);
+
         if (connectionState == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             mMeshId = null;
             try {

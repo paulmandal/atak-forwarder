@@ -61,7 +61,7 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         boolean isChat = MessageType.fromCotEventType(eventType) == MessageType.CHAT;
         if (mConnectionStateHandler.getConnectionState() == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED && !isChat) {
             if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                mLogger.v(TAG, "  Discarding recently sent event: " + cotEvent.toString());
+                mLogger.v(TAG, "  Discarding recently sent event: " + cotEvent);
                 return;
             }
             mCotMessageCache.cacheEvent(cotEvent);

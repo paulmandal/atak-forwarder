@@ -14,6 +14,7 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
@@ -90,6 +91,10 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
         mRoutingRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER) ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
+
+        if (meshtasticDevice != null) {
+            updateLongNameAndShortName();
+        }
     }
 
     @Override
@@ -119,20 +124,6 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
             return;
         }
 
-        String meshId = "00000";
-        try {
-            meshId = mMeshServiceController.getMeshService().getMyId();
-        } catch (RemoteException e) {
-            mLogger.e(TAG, "RemoteException calling getMyId(): " + e.getMessage());
-            e.printStackTrace();
-        }
-        if (meshId == null) {
-            meshId = "00000";
-        }
-        String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
-        mLongName = String.format("%s-MX-%s", mCallsign, shortMeshId);
-        mShortName = mCallsign.substring(0, 1);
-
         if (!mInitialDeviceWriteStarted) {
             mLogger.v(TAG, "Doing initial comm device check/write");
             mInitialDeviceWriteStarted = true;
@@ -147,6 +138,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mLogger.v(TAG, "Selected device changed: " + meshtasticDevice.address);
         mMeshtasticDevice = meshtasticDevice;
 
+        updateLongNameAndShortName();
         writeCommDevice();
     }
 
@@ -248,6 +240,19 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         meshDeviceConfigurator.start();
 
         mStagedCommConfigurator = createCommDeviceConfigurator();
+    }
+
+    private void updateLongNameAndShortName() {
+        if (mMeshtasticDevice == null) {
+            return;
+        }
+
+        String meshId = mMeshtasticDevice.address.replace(":", "").toLowerCase();
+        String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 4);
+        char lastChar = (char) (shortMeshId.charAt(shortMeshId.length() - 1) - 2);
+        shortMeshId = shortMeshId.substring(0, shortMeshId.length() - 1) + lastChar; // TODO: this may be device specific
+        mLongName = String.format("%s-MX-%s", mCallsign, shortMeshId);
+        mShortName = mCallsign.substring(0, 1);
     }
 
     private void writeCommDevice() {

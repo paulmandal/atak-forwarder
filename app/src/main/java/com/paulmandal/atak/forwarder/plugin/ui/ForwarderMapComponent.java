@@ -27,6 +27,8 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
+import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.RMeshServiceController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -81,18 +83,16 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         Gson gson = new Gson();
         MeshSuspendController meshSuspendController = new MeshSuspendController();
-        MeshServiceController meshServiceController = new MeshServiceController(destroyables,
-                sharedPreferences,
-                atakContext,
-                uiThreadHandler,
-                meshSuspendController,
-                gson,
-                logger);
-
 
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
+        RMeshServiceController meshServiceController = new RMeshServiceController(destroyables,
+                atakContext,
+                uiThreadHandler,
+                logger);
+        RConnectionStateHandler connectionStateHandler = new RConnectionStateHandler();
+
         DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler = new DiscoveryBroadcastEventHandler(
                 atakContext,
                 logger,
@@ -151,7 +151,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
             thread.setName("CommandQueueWorker.Worker");
             return thread;
         });
-        CommandQueueWorker commandQueueWorker = new CommandQueueWorker(destroyables, meshServiceController, commandQueue, meshSender, commandQueueExecutor);
+        CommandQueueWorker commandQueueWorker = new CommandQueueWorker(destroyables, connectionStateHandler, commandQueue, meshSender, commandQueueExecutor);
 
 
         InboundMeshMessageHandler inboundMeshMessageHandler = new InboundMeshMessageHandler(

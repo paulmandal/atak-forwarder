@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class CommandQueueWorker implements Destroyable, MeshServiceController.ConnectionStateListener {
+public class CommandQueueWorker implements Destroyable, RConnectionStateHandler.Listener {
     private static final String TAG =  ForwarderConstants.DEBUG_TAG_PREFIX + CommandQueueWorker.class.getSimpleName();
 
     private static final int CHECK_MESSAGE_QUEUE_INTERVAL_MS = 300;
@@ -23,11 +23,11 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
     private final CommandQueue mCommandQueue;
     private final MeshSender mMeshSender;
 
-    private ConnectionState mConnectionState;
+    private RConnectionStateHandler.ConnectionState mConnectionState;
     private boolean mDestroyed = false;
 
     public CommandQueueWorker(List<Destroyable> destroyables,
-                              MeshServiceController meshServiceController,
+                              RConnectionStateHandler connectionStateHandler,
                               CommandQueue commandQueue,
                               MeshSender meshSender,
                               ScheduledExecutorService scheduledExecutorService) {
@@ -36,9 +36,9 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
         mMeshSender = meshSender;
 
         destroyables.add(this);
-        meshServiceController.addConnectionStateListener(this);
+        connectionStateHandler.addListener(this);
 
-        mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
+        mConnectionState = RConnectionStateHandler.ConnectionState.NO_SERVICE_CONNECTION;
 
         startWorker();
     }
@@ -50,7 +50,7 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
+    public void onConnectionStateChanged(RConnectionStateHandler.ConnectionState connectionState) {
         mConnectionState = connectionState;
     }
 
@@ -60,7 +60,7 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
                 return;
             }
 
-            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
+            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == RConnectionStateHandler.ConnectionState.DEVICE_CONNECTED);
 
             if (queuedCommand == null) {
                 return;

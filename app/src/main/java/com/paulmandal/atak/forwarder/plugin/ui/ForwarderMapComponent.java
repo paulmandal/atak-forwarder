@@ -20,9 +20,14 @@ import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshConnectionHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurationController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfiguratorFactory;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
@@ -39,6 +44,8 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.plugin.ui.settings.DevicesList;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.LoggingViewModel;
 import com.paulmandal.atak.forwarder.plugin.ui.viewmodels.StatusViewModel;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import com.paulmandal.atak.forwarder.tracker.TrackerCotGenerator;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
@@ -87,7 +94,39 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 atakContext,
                 uiThreadHandler,
                 logger);
-        ConnectionStateHandler connectionStateHandler = new ConnectionStateHandler();
+
+        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
+        HashHelper hashHelper = new HashHelper();
+        MeshConnectionHandler meshConnectionHandler = new MeshConnectionHandler(meshServiceController, logger);
+
+
+        MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory = new MeshDeviceConfiguratorFactory();
+        DeviceConfigObserver deviceConfigObserver = new DeviceConfigObserver(destroyables, sharedPreferences, gson);
+        String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
+        MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
+        MeshDeviceConfigurationController meshDeviceConfigurationController = new MeshDeviceConfigurationController(
+                meshServiceController,
+                meshConnectionHandler,
+                meshtasticDeviceSwitcher,
+                meshDeviceConfiguratorFactory,
+                deviceConfigObserver,
+                hashHelper,
+                gson,
+                logger,
+                sharedPreferences,
+                meshtasticDevice,
+                callsign
+        );
+
+
+        ConnectionStateHandler connectionStateHandler = new ConnectionStateHandler(
+                meshtasticDevice,
+                meshDeviceConfigurationController,
+                meshServiceController,
+                meshConnectionHandler,
+                deviceConfigObserver
+        );
+
 
         DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler = new DiscoveryBroadcastEventHandler(
                 atakContext,
@@ -109,10 +148,14 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 connectionStateHandler);
 
 
-        MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
-        HashHelper hashHelper = new HashHelper();
 
-        UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
+        UserTracker userTracker = new UserTracker(
+                atakContext,
+                uiThreadHandler,
+                logger,
+                discoveryBroadcastEventHandler,
+                trackerEventHandler
+        );
 
 
         ScheduledExecutorService meshSenderExecutor = Executors.newSingleThreadScheduledExecutor((Runnable r) -> {
@@ -136,7 +179,13 @@ public class ForwarderMapComponent extends DropDownMapComponent {
             thread.setName("CommandQueueWorker.Worker");
             return thread;
         });
-        CommandQueueWorker commandQueueWorker = new CommandQueueWorker(destroyables, connectionStateHandler, commandQueue, meshSender, commandQueueExecutor);
+        CommandQueueWorker commandQueueWorker = new CommandQueueWorker(
+                destroyables,
+                connectionStateHandler,
+                commandQueue,
+                meshSender,
+                commandQueueExecutor
+        );
 
 
         InboundMeshMessageHandler inboundMeshMessageHandler = new InboundMeshMessageHandler(
@@ -153,7 +202,15 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         CotMessageCache cotMessageCache = new CotMessageCache(destroyables, sharedPreferences, cotComparer);
-        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(connectionStateHandler, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, destroyables, logger);
+        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(
+                connectionStateHandler,
+                commandQueue,
+                queuedCommandFactory,
+                cotMessageCache,
+                cotShrinker,
+                destroyables,
+                logger
+        );
 
 
         String pluginVersion = "0.0";

@@ -137,7 +137,7 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
         this.sDestroyables = null;
         this.sSharedPreferences = null;
         this.sDevicesList = null;
-        this.sMeshSuspendController = null;
+        this.sMeshDeviceConfigurationController = null;
         this.sDiscoveryBroadcastEventHandler = null;
         this.sCotMessageCache = null;
         this.sCommandQueue = null;

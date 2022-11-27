@@ -116,7 +116,6 @@ public class TrackerButtons {
                 int roleIndex = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_ROLE, PreferencesDefaults.DEFAULT_TRACKER_ROLE));
                 int pliIntervalS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_PLI_INTERVAL, PreferencesDefaults.DEFAULT_TRACKER_PLI_INTERVAL));
                 int screenShutoffDelayS = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_TRACKER_SCREEN_OFF_TIME, PreferencesDefaults.DEFAULT_TRACKER_SCREEN_OFF_TIME));
-                boolean isAlwaysPoweredOn = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ALWAYS_POWERED_ON, PreferencesDefaults.DEFAULT_TRACKER_IS_ALWAYS_POWERED_ON);
                 boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_TRACKER_IS_ROUTER, PreferencesDefaults.DEFAULT_TRACKER_IS_ROUTER);
 
                 writeToDevice(meshDeviceConfigurationController, targetDevice, callsign, regionCode, channelName, psk, channelModemPreset, teamIndex, roleIndex, pliIntervalS, screenShutoffDelayS, isRouter, (configurationState) -> {

@@ -141,7 +141,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 uiThreadHandler,
                 logger,
                 meshServiceController,
-                meshConnectionHandler,
+                connectionStateHandler,
                 userTracker,
                 meshSenderExecutor);
 
@@ -168,7 +168,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         CotMessageCache cotMessageCache = new CotMessageCache(destroyables, sharedPreferences, cotComparer);
-        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(meshServiceController, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, destroyables, logger);
+        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(connectionStateHandler, commandQueue, queuedCommandFactory, cotMessageCache, cotShrinker, destroyables, logger);
 
 
         String pluginVersion = "0.0";
@@ -185,7 +185,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 destroyables,
                 sharedPreferences,
                 userTracker,
-                meshConnectionHandler,
+                connectionStateHandler,
                 discoveryBroadcastEventHandler,
                 meshSender,
                 inboundMeshMessageHandler,

@@ -73,7 +73,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
         mListeners.add(listener);
     }
 
-    private ConnectionState determineConnectionState() {
+    public ConnectionState getConnectionState() {
         if (mMeshtasticDevice == null) {
             return ConnectionState.NO_DEVICE_CONFIGURED;
         }
@@ -98,7 +98,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
     }
 
     private void notifyListeners() {
-        ConnectionState connectionState = determineConnectionState();
+        ConnectionState connectionState = getConnectionState();
         for (Listener listener : mListeners) {
             listener.onConnectionStateChanged(connectionState);
         }

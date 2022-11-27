@@ -153,6 +153,18 @@ public class TrackerButtons {
 
         @SuppressLint("DefaultLocale")
         String shortName = String.format("%d%d", roleIndex, teamIndex);
-        meshDeviceConfigurationController.writeTracker(targetDevice, deviceCallsign, shortName, regionCode, channelName, modemConfig.getNumber(), psk, routingRole, listener);
+        meshDeviceConfigurationController.writeTracker(
+                targetDevice,
+                deviceCallsign,
+                shortName,
+                regionCode,
+                pliIntervalS,
+                screenShutoffDelayS,
+                channelName,
+                modemConfig.getNumber(),
+                psk,
+                routingRole,
+                listener
+        );
     }
 }

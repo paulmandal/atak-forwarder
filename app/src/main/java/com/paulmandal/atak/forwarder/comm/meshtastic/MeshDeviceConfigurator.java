@@ -45,6 +45,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
     private final String mShortName;
 
     private final ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
+    private final int mPliUpdateInterval;
+    private final int mScreenOnSecs;
 
     private final String mChannelName;
     private final int mChannelMode;
@@ -63,6 +65,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                                   String longName,
                                   String shortName,
                                   ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
+                                  int pliUpdateInterval,
+                                  int screenOnSecs,
                                   String channelName,
                                   int channelMode,
                                   byte[] channelPsk,
@@ -76,6 +80,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         mLongName = longName;
         mShortName = shortName;
         mRegionCode = regionCode;
+        mPliUpdateInterval = pliUpdateInterval;
+        mScreenOnSecs = screenOnSecs;
         mChannelName = channelName;
         mChannelMode = channelMode;
         mChannelPsk = channelPsk;
@@ -181,6 +187,15 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             loRaConfigBuilder.setModemPreset(modemPreset);
             loRaConfigBuilder.setTxEnabled(true);
             configBuilder.setLora(loRaConfigBuilder);
+
+            ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
+            positionConfigBuilder.setPositionBroadcastSecs(mPliUpdateInterval);
+            configBuilder.setPosition(positionConfigBuilder);
+            configBuilder.setPosition(positionConfigBuilder);
+
+            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
+            displayConfigBuilder.setScreenOnSecs(mScreenOnSecs);
+            configBuilder.setDisplay(displayConfigBuilder);
 
             ConfigProtos.Config config = configBuilder.build();
 

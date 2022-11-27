@@ -101,6 +101,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 destroyables,
                 meshSuspendController,
                 meshServiceController,
+                connectionStateHandler,
                 atakUid,
                 callsign);
 

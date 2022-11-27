@@ -14,7 +14,7 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
-public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements MeshServiceController.ConnectionStateListener {
+public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements RConnectionStateHandler.Listener {
     public interface DiscoveryBroadcastListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
     }
@@ -24,7 +24,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     private DiscoveryBroadcastListener mDiscoveryBroadcastListener;
     private final CommandQueue mCommandQueue;
     private final QueuedCommandFactory mQueuedCommandFactory;
-    private final MeshServiceController mMeshServiceController;
+    private final RMeshServiceController mMeshServiceController;
 
     private String mMeshId;
     private final String mAtakUid;
@@ -37,7 +37,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
                                           QueuedCommandFactory queuedCommandFactory,
                                           List<Destroyable> destroyables,
                                           MeshSuspendController meshSuspendController,
-                                          MeshServiceController meshServiceController,
+                                          RMeshServiceController meshServiceController,
+                                          RConnectionStateHandler connectionStateHandler,
                                           String atakUid,
                                           String callsign) {
         super(atakContext,
@@ -56,7 +57,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
 
         mMeshId = "";
 
-        meshServiceController.addConnectionStateListener(this);
+        connectionStateHandler.addListener(this);
     }
 
     public void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
@@ -73,11 +74,11 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
-        if (connectionState == ConnectionState.DEVICE_CONNECTED) {
+    public void onConnectionStateChanged(RConnectionStateHandler.ConnectionState connectionState) {
+        if (connectionState == RConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             mMeshId = null;
             try {
-              mMeshId = mMeshServiceController.getMeshService().getMyId();
+                mMeshId = mMeshServiceController.getMeshService().getMyId();
             } catch (RemoteException e) {
                 mLogger.e(TAG, "Exception getting meshId");
                 e.printStackTrace();

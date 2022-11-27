@@ -140,6 +140,10 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                     || !loRaConfig.getTxEnabled()
                     || mRoutingRole != deviceConfig.getRole();
 
+            if (needsWrite) {
+                mLogger.d(TAG, "regionCode: " + loRaConfig.getRegion() + " -> " + mRegionCode + ", channelMode: " + loRaConfig.getModemPresetValue() + " -> " + mChannelMode + ", txEnabled: " + loRaConfig.getTxEnabled() + " -> true, routingRole: " + deviceConfig.getRole() + " -> " + mRoutingRole);
+            }
+
             if (!needsWrite) {
                 int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
 
@@ -168,6 +172,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 String shortName = meshUser.getShortName();
 
                 if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
+                    mLogger.d(TAG, "longName: " + longName + " -> " + mLongName + ", shortName: " + shortName + " -> " + mShortName);
                     needsWrite = true;
                 }
             }
@@ -178,31 +183,38 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 return;
             }
 
-            mLogger.v(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
+            mLogger.d(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
+
+            meshService.beginEditSettings();
 
             ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
             ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
             deviceConfigBuilder.setRole(mRoutingRole);
             configBuilder.setDevice(deviceConfigBuilder);
+            meshService.setConfig(configBuilder.build().toByteArray());
 
+            configBuilder = ConfigProtos.Config.newBuilder();
             ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
             loRaConfigBuilder.setRegion(mRegionCode);
             ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
             loRaConfigBuilder.setModemPreset(modemPreset);
             loRaConfigBuilder.setTxEnabled(true);
             configBuilder.setLora(loRaConfigBuilder);
+            meshService.setConfig(configBuilder.build().toByteArray());
 
+            configBuilder = ConfigProtos.Config.newBuilder();
             ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
             positionConfigBuilder.setPositionBroadcastSecs(mPliUpdateInterval);
             configBuilder.setPosition(positionConfigBuilder);
             configBuilder.setPosition(positionConfigBuilder);
+            meshService.setConfig(configBuilder.build().toByteArray());
 
+            configBuilder = ConfigProtos.Config.newBuilder();
             ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
             displayConfigBuilder.setScreenOnSecs(mScreenOnSecs);
             configBuilder.setDisplay(displayConfigBuilder);
-
-            ConfigProtos.Config config = configBuilder.build();
+            meshService.setConfig(configBuilder.build().toByteArray());
 
             ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
@@ -215,9 +227,6 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
             ChannelProtos.Channel channel = channelBuilder.build();
 
-            meshService.beginEditSettings();
-
-            meshService.setConfig(config.toByteArray());
             meshService.setOwner(null, mLongName, mShortName, false);
             meshService.setChannel(channel.toByteArray());
 

@@ -33,6 +33,8 @@ public class DeviceConnectionHandler extends BroadcastReceiver implements MeshSe
     private final IntentFilter mIntentFilter;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
+    private boolean mReceiverRegistered;
+
     public DeviceConnectionHandler(Context atakContext,
                                    List<Destroyable> destroyables,
                                    MeshServiceController meshServiceController,
@@ -47,13 +49,17 @@ public class DeviceConnectionHandler extends BroadcastReceiver implements MeshSe
 
         destroyables.add(this);
         meshServiceController.addListener(this);
-        atakContext.registerReceiver(this, intentFilter);
     }
 
     @Override
     public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
         mLogger.v(TAG, "Service connection state changed to: " + serviceConnectionState);
         if (serviceConnectionState == MeshServiceController.ServiceConnectionState.CONNECTED) {
+            if (!mReceiverRegistered) {
+                mAtakContext.registerReceiver(this, mIntentFilter);
+                mReceiverRegistered = true;
+            }
+
             try {
                 notifyListeners(connectionStateFromServiceState(mMeshServiceController.getMeshService().connectionState()));
             } catch (RemoteException e) {
@@ -73,7 +79,6 @@ public class DeviceConnectionHandler extends BroadcastReceiver implements MeshSe
         if (action.equals(MeshServiceConstants.ACTION_MESH_CONNECTED)) {
             String extraConnected = intent.getStringExtra(MeshServiceConstants.EXTRA_CONNECTED);
             boolean connected = extraConnected.equals(MeshServiceConstants.STATE_CONNECTED);
-            mLogger.d(TAG, "Mesh connected: " + connected);
             notifyListeners(connected ? DeviceConnectionState.CONNECTED : DeviceConnectionState.DISCONNECTED);
         }
     }
@@ -89,6 +94,7 @@ public class DeviceConnectionHandler extends BroadcastReceiver implements MeshSe
     @Override
     public void onDestroy(Context context, MapView mapView) {
         mAtakContext.unregisterReceiver(this);
+        mReceiverRegistered = false;
     }
 
     private DeviceConnectionState connectionStateFromServiceState(String connectionString) {

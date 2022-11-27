@@ -143,17 +143,15 @@ public class StatusScreen extends ConstraintLayout {
     }
 
     private void handleDeviceDisconnected() {
-        Toast.makeText(mAtakContext, "Comm Device disconnected, check that it is turned on and paired", Toast.LENGTH_LONG).show();
+        Toast.makeText(mAtakContext, "Comm Device disconnected, check that it is turned on and paired", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_device_disconnected);
     }
 
     private void handleDeviceWriting() {
-        Toast.makeText(mAtakContext, "Comm Device is being configured", Toast.LENGTH_LONG).show();
         mConnectionStatusTextView.setText(R.string.connection_status_device_writing);
     }
 
     private void handleDeviceConnected() {
-        Toast.makeText(mAtakContext, "Comm device connected", Toast.LENGTH_SHORT).show();
         mConnectionStatusTextView.setText(R.string.connection_status_device_connected);
     }
 

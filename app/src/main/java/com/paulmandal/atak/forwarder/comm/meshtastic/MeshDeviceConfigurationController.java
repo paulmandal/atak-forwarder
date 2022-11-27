@@ -55,6 +55,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     private String mShortName;
 
     private boolean mSetDeviceAddressCalled;
+    private boolean mInitialDeviceWriteStarted;
 
     private MeshDeviceConfigurator mActiveCommConfigurator;
     private MeshDeviceConfigurator mActiveTrackerConfigurator;
@@ -131,6 +132,14 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 5);
         mLongName = String.format("%s-MX-%s", mCallsign, shortMeshId);
         mShortName = mCallsign.substring(0, 1);
+
+        if (!mInitialDeviceWriteStarted) {
+            mLogger.v(TAG, "Doing initial comm device check/write");
+            mInitialDeviceWriteStarted = true;
+            if (mMeshtasticDevice != null) {
+                writeCommDevice();
+            }
+        }
     }
 
     @Override
@@ -138,30 +147,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mLogger.v(TAG, "Selected device changed: " + meshtasticDevice.address);
         mMeshtasticDevice = meshtasticDevice;
 
-        MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
-                mMeshServiceController,
-                mDeviceConnectionHandler,
-                mMeshtasticDeviceSwitcher,
-                mHashHelper,
-                mLogger,
-                meshtasticDevice,
-                mLongName,
-                mShortName,
-                mRegionCode,
-                ForwarderConstants.POSITION_BROADCAST_INTERVAL_S,
-                ForwarderConstants.LCD_SCREEN_ON_S,
-                mChannelName,
-                mChannelMode,
-                mChannelPsk,
-                mRoutingRole);
-
-        if (mActiveCommConfigurator != null) {
-            mStagedCommConfigurator = meshDeviceConfigurator;
-            return;
-        }
-
-        maybeCancelAndRemoveActiveCommConfigurator();
-        setActiveCommConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
+        writeCommDevice();
     }
 
     @Override
@@ -173,35 +159,13 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mChannelPsk = channelPsk;
         mRoutingRole = routingRole;
 
-        MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
-                mMeshServiceController,
-                mDeviceConnectionHandler,
-                mMeshtasticDeviceSwitcher,
-                mHashHelper,
-                mLogger,
-                mMeshtasticDevice,
-                mLongName,
-                mShortName,
-                mRegionCode,
-                ForwarderConstants.POSITION_BROADCAST_INTERVAL_S,
-                ForwarderConstants.LCD_SCREEN_ON_S,
-                mChannelName,
-                mChannelMode,
-                mChannelPsk,
-                mRoutingRole);
-
-        if (mActiveCommConfigurator != null) {
-            mStagedCommConfigurator = meshDeviceConfigurator;
-            return;
-        }
-
-        maybeCancelAndRemoveActiveCommConfigurator();
-        setActiveCommConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
+        writeCommDevice();
     }
 
     @Override
     public void onConfigurationStateChanged(MeshDeviceConfigurator.ConfigurationState configurationState) {
         if (configurationState == MeshDeviceConfigurator.ConfigurationState.FINISHED) {
+            mLogger.v(TAG, "Device writing finished, checking for any further configurators");
             if (mActiveCommConfigurator != null) {
                 mActiveCommConfigurator.removeListener(this);
                 mActiveCommConfigurator = null;
@@ -209,17 +173,20 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
 
             // Promote another configurator
             if (mStagedCommConfigurator != null) {
+                mLogger.v(TAG, "Promoting staged comm configurator");
                 setActiveCommConfigurator(mStagedCommConfigurator, ConfigurationState.WRITING_COMM);
                 mStagedCommConfigurator = null;
                 return;
             }
 
             if (mActiveTrackerConfigurator != null) {
+                mLogger.v(TAG, "Removing listeners for tracker configurator");
                 mActiveTrackerConfigurator.removeListener(this);
                 mActiveTrackerConfigurator = null;
             }
 
             if (mStagedTrackerConfigurator != null) {
+                mLogger.v(TAG, "Promoting staged tracker configurator");
                 mActiveTrackerConfigurator = mStagedTrackerConfigurator;
                 mActiveTrackerConfigurator.addListener(this);
                 mActiveTrackerConfigurator.start();
@@ -274,10 +241,45 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
             return;
         }
 
+        mLogger.v(TAG, "Starting tracker configurator");
         mActiveTrackerConfigurator = meshDeviceConfigurator;
         meshDeviceConfigurator.addListener(this);
         notifyListeners(ConfigurationState.WRITING_TRACKER);
         meshDeviceConfigurator.start();
+
+        mStagedCommConfigurator = createCommDeviceConfigurator();
+    }
+
+    private void writeCommDevice() {
+        mLogger.v(TAG, "Spawning comm device configurator");
+        MeshDeviceConfigurator meshDeviceConfigurator = createCommDeviceConfigurator();
+
+        if (mActiveCommConfigurator != null) {
+            mStagedCommConfigurator = meshDeviceConfigurator;
+            return;
+        }
+
+        maybeCancelAndRemoveActiveCommConfigurator();
+        setActiveCommConfigurator(meshDeviceConfigurator, ConfigurationState.WRITING_COMM);
+    }
+
+    private MeshDeviceConfigurator createCommDeviceConfigurator() {
+        return mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
+                mMeshServiceController,
+                mDeviceConnectionHandler,
+                mMeshtasticDeviceSwitcher,
+                mHashHelper,
+                mLogger,
+                mMeshtasticDevice,
+                mLongName,
+                mShortName,
+                mRegionCode,
+                ForwarderConstants.POSITION_BROADCAST_INTERVAL_S,
+                ForwarderConstants.LCD_SCREEN_ON_S,
+                mChannelName,
+                mChannelMode,
+                mChannelPsk,
+                mRoutingRole);
     }
 
     private void maybeCancelAndRemoveActiveCommConfigurator() {

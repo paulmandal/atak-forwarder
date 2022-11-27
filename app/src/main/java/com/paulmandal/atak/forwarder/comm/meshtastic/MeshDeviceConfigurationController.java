@@ -17,8 +17,8 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshDeviceConfigurationController implements RMeshConnectionHandler.Listener, RDeviceConfigObserver.Listener, RMeshServiceController.Listener, RMeshDeviceConfigurator.ConfigurationStateListener {
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshDeviceConfigurationController.class.getSimpleName();
+public class MeshDeviceConfigurationController implements MeshConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.ConfigurationStateListener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurationController.class.getSimpleName();
 
     public enum ConfigurationState {
         DISCONNECTED,
@@ -31,8 +31,8 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
         void onConfigurationStateChanged(ConfigurationState configurationState);
     }
 
-    private final RMeshServiceController mMeshServiceController;
-    private final RMeshConnectionHandler mMeshConnectionHandler;
+    private final MeshServiceController mMeshServiceController;
+    private final MeshConnectionHandler mMeshConnectionHandler;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshDeviceConfiguratorFactory mMeshDeviceConfiguratorFactory;
     private final HashHelper mHashHelper;
@@ -55,20 +55,20 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
 
     private boolean mSetDeviceAddressCalled;
 
-    private RMeshDeviceConfigurator mActiveConfigurator;
-    private RMeshDeviceConfigurator mStagedTrackerConfigurator;
-    private RMeshDeviceConfigurator mStagedCommConfigurator;
+    private MeshDeviceConfigurator mActiveConfigurator;
+    private MeshDeviceConfigurator mStagedTrackerConfigurator;
+    private MeshDeviceConfigurator mStagedCommConfigurator;
 
-    public RMeshDeviceConfigurationController(RMeshServiceController meshServiceController,
-                                              RMeshConnectionHandler meshConnectionHandler,
-                                              MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
-                                              MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory,
-                                              RDeviceConfigObserver deviceConfigObserver,
-                                              HashHelper hashHelper,
-                                              Gson gson,
-                                              Logger logger,
-                                              SharedPreferences sharedPreferences,
-                                              String callsign) {
+    public MeshDeviceConfigurationController(MeshServiceController meshServiceController,
+                                             MeshConnectionHandler meshConnectionHandler,
+                                             MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
+                                             MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory,
+                                             DeviceConfigObserver deviceConfigObserver,
+                                             HashHelper hashHelper,
+                                             Gson gson,
+                                             Logger logger,
+                                             SharedPreferences sharedPreferences,
+                                             String callsign) {
         mMeshServiceController = meshServiceController;
         mMeshConnectionHandler = meshConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
@@ -92,9 +92,9 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     }
 
     @Override
-    public void onServiceConnectionStateChanged(RMeshServiceController.ServiceConnectionState serviceConnectionState) {
+    public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
         // TODO: is there a timing issue here?
-        if (serviceConnectionState == RMeshServiceController.ServiceConnectionState.CONNECTED && !mSetDeviceAddressCalled) {
+        if (serviceConnectionState == MeshServiceController.ServiceConnectionState.CONNECTED && !mSetDeviceAddressCalled) {
             if (mMeshtasticDevice == null) {
                 return;
             }
@@ -113,8 +113,8 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     }
 
     @Override
-    public void onDeviceConnectionStateChanged(RMeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
-        if (deviceConnectionState != RMeshConnectionHandler.DeviceConnectionState.CONNECTED) {
+    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
+        if (deviceConnectionState != MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
             return;
         }
 
@@ -137,7 +137,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     public void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice) {
         mMeshtasticDevice = meshtasticDevice;
 
-        RMeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
+        MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
                 mMeshConnectionHandler,
                 mMeshtasticDeviceSwitcher,
@@ -168,7 +168,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
         mChannelPsk = channelPsk;
         mRoutingRole = routingRole;
 
-        RMeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
+        MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
                 mMeshConnectionHandler,
                 mMeshtasticDeviceSwitcher,
@@ -192,8 +192,8 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     }
 
     @Override
-    public void onConfigurationStateChanged(RMeshDeviceConfigurator.ConfigurationState configurationState) {
-        if (configurationState == RMeshDeviceConfigurator.ConfigurationState.FINISHED) {
+    public void onConfigurationStateChanged(MeshDeviceConfigurator.ConfigurationState configurationState) {
+        if (configurationState == MeshDeviceConfigurator.ConfigurationState.FINISHED) {
             mActiveConfigurator.removeListener(this);
             mActiveConfigurator = null;
 
@@ -212,7 +212,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
             notifyListeners(ConfigurationState.READY);
         }
 
-        if (configurationState == RMeshDeviceConfigurator.ConfigurationState.FAILED) {
+        if (configurationState == MeshDeviceConfigurator.ConfigurationState.FAILED) {
             // TODO: max retries?
             mActiveConfigurator.start();
         }
@@ -231,7 +231,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
                         byte[] channelPsk,
                         ConfigProtos.Config.DeviceConfig.Role routingRole) {
 
-        RMeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
+        MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
                 mMeshConnectionHandler,
                 mMeshtasticDeviceSwitcher,
@@ -254,7 +254,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
         mStagedTrackerConfigurator = meshDeviceConfigurator;
     }
 
-    private void setActiveConfigurator(RMeshDeviceConfigurator meshDeviceConfigurator, ConfigurationState configurationState) {
+    private void setActiveConfigurator(MeshDeviceConfigurator meshDeviceConfigurator, ConfigurationState configurationState) {
         mActiveConfigurator = meshDeviceConfigurator;
         meshDeviceConfigurator.addListener(this);
         notifyListeners(configurationState);

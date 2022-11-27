@@ -14,7 +14,7 @@ import com.paulmandal.atak.forwarder.channel.UserTracker;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
-import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -25,7 +25,7 @@ import java.util.List;
 
 public class StatusViewModel extends ChannelStatusViewModel implements UserTracker.ChannelMembersUpdateListener,
         CommandQueue.Listener,
-        RConnectionStateHandler.Listener,
+        ConnectionStateHandler.Listener,
         MeshSender.MessageAckNackListener,
         InboundMeshMessageHandler.MessageListener,
         TrackerEventHandler.TrackerListener {
@@ -35,7 +35,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
     private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
-    private final MutableLiveData<RConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>();
+    private final MutableLiveData<ConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>();
     private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
@@ -45,7 +45,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     public StatusViewModel(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,
                            UserTracker userTracker,
-                           RConnectionStateHandler connectionStateHandler,
+                           ConnectionStateHandler connectionStateHandler,
                            DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
@@ -96,7 +96,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     @NonNull
-    public LiveData<RConnectionStateHandler.ConnectionState> getConnectionState() {
+    public LiveData<ConnectionStateHandler.ConnectionState> getConnectionState() {
         return mConnectionState;
     }
 
@@ -158,7 +158,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     @Override
-    public void onConnectionStateChanged(RConnectionStateHandler.ConnectionState connectionState) {
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
         mConnectionState.setValue(connectionState);
     }
 }

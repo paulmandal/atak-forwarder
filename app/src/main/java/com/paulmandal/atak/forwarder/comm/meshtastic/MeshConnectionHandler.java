@@ -8,8 +8,8 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshConnectionHandler implements RMeshServiceController.Listener {
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshConnectionHandler.class.getSimpleName();
+public class MeshConnectionHandler implements MeshServiceController.Listener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshConnectionHandler.class.getSimpleName();
 
     public enum DeviceConnectionState {
         DISCONNECTED,
@@ -20,12 +20,12 @@ public class RMeshConnectionHandler implements RMeshServiceController.Listener {
         void onDeviceConnectionStateChanged(DeviceConnectionState deviceConnectionState);
     }
 
-    private final RMeshServiceController mMeshServiceController;
+    private final MeshServiceController mMeshServiceController;
     private final Logger mLogger;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    public RMeshConnectionHandler(RMeshServiceController meshServiceController,
-                                  Logger logger) {
+    public MeshConnectionHandler(MeshServiceController meshServiceController,
+                                 Logger logger) {
         mMeshServiceController = meshServiceController;
         mLogger = logger;
 
@@ -33,8 +33,8 @@ public class RMeshConnectionHandler implements RMeshServiceController.Listener {
     }
 
     @Override
-    public void onServiceConnectionStateChanged(RMeshServiceController.ServiceConnectionState serviceConnectionState) {
-        if (serviceConnectionState == RMeshServiceController.ServiceConnectionState.CONNECTED) {
+    public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
+        if (serviceConnectionState == MeshServiceController.ServiceConnectionState.CONNECTED) {
             try {
                 notifyListeners(connectionStateFromServiceState(mMeshServiceController.getMeshService().connectionState()));
             } catch (RemoteException e) {

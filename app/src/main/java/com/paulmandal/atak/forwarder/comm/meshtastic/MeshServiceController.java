@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshServiceController implements Destroyable {
+public class MeshServiceController implements Destroyable {
     public enum ServiceConnectionState {
         DISCONNECTED,
         CONNECTED
@@ -27,7 +27,7 @@ public class RMeshServiceController implements Destroyable {
         void onServiceConnectionStateChanged(ServiceConnectionState serviceConnectionState);
     }
 
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshServiceController.class.getSimpleName();
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshServiceController.class.getSimpleName();
 
     private final Context mAtakContext;
     private final Handler mUiThreadHandler;
@@ -43,7 +43,7 @@ public class RMeshServiceController implements Destroyable {
 
     private final Set<Listener> mConnectionStateListeners = new CopyOnWriteArraySet<>();
 
-    public RMeshServiceController(List<Destroyable> destroyables,
+    public MeshServiceController(List<Destroyable> destroyables,
                                  Context atakContext,
                                  Handler uiThreadHandler,
                                  Logger logger) {

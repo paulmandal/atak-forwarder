@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshDeviceConfigurator implements RMeshConnectionHandler.Listener {
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshDeviceConfigurator.class.getSimpleName();
+public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurator.class.getSimpleName();
 
     public enum ConfigurationState {
         STARTED,
@@ -31,8 +31,8 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.Listener 
         void onConfigurationStateChanged(ConfigurationState configurationState);
     }
 
-    private final RMeshServiceController mMeshServiceController;
-    private final RMeshConnectionHandler mMeshConnectionHandler;
+    private final MeshServiceController mMeshServiceController;
+    private final MeshConnectionHandler mMeshConnectionHandler;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final HashHelper mHashHelper;
     private final Logger mLogger;
@@ -54,19 +54,19 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.Listener 
 
     private boolean mStarted;
 
-    public RMeshDeviceConfigurator(RMeshServiceController meshServiceController,
-                                   RMeshConnectionHandler meshConnectionHandler,
-                                   MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
-                                   HashHelper hashHelper,
-                                   Logger logger,
-                                   MeshtasticDevice meshtasticDevice,
-                                   String longName,
-                                   String shortName,
-                                   ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
-                                   String channelName,
-                                   int channelMode,
-                                   byte[] channelPsk,
-                                   ConfigProtos.Config.DeviceConfig.Role routingRole) {
+    public MeshDeviceConfigurator(MeshServiceController meshServiceController,
+                                  MeshConnectionHandler meshConnectionHandler,
+                                  MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
+                                  HashHelper hashHelper,
+                                  Logger logger,
+                                  MeshtasticDevice meshtasticDevice,
+                                  String longName,
+                                  String shortName,
+                                  ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
+                                  String channelName,
+                                  int channelMode,
+                                  byte[] channelPsk,
+                                  ConfigProtos.Config.DeviceConfig.Role routingRole) {
         mMeshServiceController = meshServiceController;
         mMeshConnectionHandler = meshConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
@@ -83,8 +83,8 @@ public class RMeshDeviceConfigurator implements RMeshConnectionHandler.Listener 
     }
 
     @Override
-    public void onDeviceConnectionStateChanged(RMeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
-        if (deviceConnectionState == RMeshConnectionHandler.DeviceConnectionState.CONNECTED) {
+    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
+        if (deviceConnectionState == MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
             if (!mStarted) {
                 mStarted = true;
                 notifyListeners(ConfigurationState.STARTED);

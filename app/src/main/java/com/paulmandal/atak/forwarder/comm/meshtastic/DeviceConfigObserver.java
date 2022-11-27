@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
+public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
 
     public interface Listener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
@@ -25,9 +25,9 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
 
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    public RDeviceConfigObserver(List<Destroyable> destroyables,
-                                 SharedPreferences sharedPreferences,
-                                 Gson gson) {
+    public DeviceConfigObserver(List<Destroyable> destroyables,
+                                SharedPreferences sharedPreferences,
+                                Gson gson) {
         super(destroyables,
                 sharedPreferences,
                 new String[]{

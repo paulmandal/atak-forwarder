@@ -15,13 +15,13 @@ import com.atakmap.android.widgets.RootLayoutWidget;
 import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
-import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
 public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable,
-        RConnectionStateHandler.Listener,
+        ConnectionStateHandler.Listener,
         MapWidget.OnClickListener,
         MeshSender.MessageAckNackListener {
     private final static int ICON_WIDTH = 32;
@@ -35,12 +35,12 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     private final boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
     private int mWindowIndex;
 
-    private RConnectionStateHandler.ConnectionState mConnectionState;
+    private ConnectionStateHandler.ConnectionState mConnectionState;
 
     public ForwarderMarkerIconWidget(MapView mapView,
                                      List<Destroyable> destroyables,
                                      ForwarderDropDownReceiver forwarderDropDownReceiver,
-                                     RConnectionStateHandler connectionStateHandler,
+                                     ConnectionStateHandler connectionStateHandler,
                                      MeshSender meshSender) {
         mForwarderDropDownReceiver = forwarderDropDownReceiver;
 
@@ -78,7 +78,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     }
 
     @Override
-    public void onConnectionStateChanged(RConnectionStateHandler.ConnectionState connectionState) {
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
         mConnectionState = connectionState;
         updateIcon();
     }

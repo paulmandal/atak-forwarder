@@ -4,7 +4,7 @@ import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.comms.CommsMapComponent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
-import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
@@ -23,7 +23,7 @@ public class MessageHandlerFactory {
         return new InboundMessageHandler(CotMapComponent.getInternalDispatcher(), CotMapComponent.getExternalDispatcher(), inboundMeshMessageHandler, cotShrinker, inboundPliListener, logger);
     }
 
-    public static OutboundMessageHandler getOutboundMessageHandler(RConnectionStateHandler connectionStateHandler,
+    public static OutboundMessageHandler getOutboundMessageHandler(ConnectionStateHandler connectionStateHandler,
                                                                    CommandQueue commandQueue,
                                                                    QueuedCommandFactory queuedCommandFactory,
                                                                    CotMessageCache cotMessageCache,

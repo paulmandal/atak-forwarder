@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.RemoteException;
 
 import com.geeksville.mesh.DataPacket;
-import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -14,7 +13,7 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
-public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements RConnectionStateHandler.Listener {
+public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements ConnectionStateHandler.Listener {
     public interface DiscoveryBroadcastListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
     }
@@ -24,7 +23,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     private DiscoveryBroadcastListener mDiscoveryBroadcastListener;
     private final CommandQueue mCommandQueue;
     private final QueuedCommandFactory mQueuedCommandFactory;
-    private final RMeshServiceController mMeshServiceController;
+    private final MeshServiceController mMeshServiceController;
 
     private String mMeshId;
     private final String mAtakUid;
@@ -37,8 +36,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
                                           QueuedCommandFactory queuedCommandFactory,
                                           List<Destroyable> destroyables,
                                           MeshSuspendController meshSuspendController,
-                                          RMeshServiceController meshServiceController,
-                                          RConnectionStateHandler connectionStateHandler,
+                                          MeshServiceController meshServiceController,
+                                          ConnectionStateHandler connectionStateHandler,
                                           String atakUid,
                                           String callsign) {
         super(atakContext,
@@ -74,8 +73,8 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     }
 
     @Override
-    public void onConnectionStateChanged(RConnectionStateHandler.ConnectionState connectionState) {
-        if (connectionState == RConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        if (connectionState == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             mMeshId = null;
             try {
                 mMeshId = mMeshServiceController.getMeshService().getMyId();

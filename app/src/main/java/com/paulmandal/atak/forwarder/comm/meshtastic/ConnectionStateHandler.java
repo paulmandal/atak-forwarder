@@ -7,7 +7,7 @@ import com.geeksville.mesh.ConfigProtos;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RConnectionStateHandler implements RMeshDeviceConfigurationController.Listener, RMeshServiceController.Listener, RMeshConnectionHandler.Listener, RDeviceConfigObserver.Listener {
+public class ConnectionStateHandler implements MeshDeviceConfigurationController.Listener, MeshServiceController.Listener, MeshConnectionHandler.Listener, DeviceConfigObserver.Listener {
     public enum ConnectionState {
         NO_DEVICE_CONFIGURED,
         NO_SERVICE_CONNECTION,
@@ -22,16 +22,16 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
 
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    private RMeshConnectionHandler.DeviceConnectionState mDeviceConnectionState;
-    private RMeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState;
-    private RMeshServiceController.ServiceConnectionState mServiceConnectionState;
+    private MeshConnectionHandler.DeviceConnectionState mDeviceConnectionState;
+    private MeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState;
+    private MeshServiceController.ServiceConnectionState mServiceConnectionState;
     private MeshtasticDevice mMeshtasticDevice;
 
-    public RConnectionStateHandler(@Nullable MeshtasticDevice meshtasticDevice,
-                                   RMeshDeviceConfigurationController meshDeviceConfigurationController,
-                                   RMeshServiceController meshServiceController,
-                                   RMeshConnectionHandler meshConnectionHandler,
-                                   RDeviceConfigObserver deviceConfigObserver) {
+    public ConnectionStateHandler(@Nullable MeshtasticDevice meshtasticDevice,
+                                  MeshDeviceConfigurationController meshDeviceConfigurationController,
+                                  MeshServiceController meshServiceController,
+                                  MeshConnectionHandler meshConnectionHandler,
+                                  DeviceConfigObserver deviceConfigObserver) {
         mMeshtasticDevice = meshtasticDevice;
 
         meshDeviceConfigurationController.addListener(this);
@@ -41,19 +41,19 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
     }
 
     @Override
-    public void onDeviceConnectionStateChanged(RMeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
+    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
         mDeviceConnectionState = deviceConnectionState;
         notifyListeners();
     }
 
     @Override
-    public void onConfigurationStateChanged(RMeshDeviceConfigurationController.ConfigurationState configurationState) {
+    public void onConfigurationStateChanged(MeshDeviceConfigurationController.ConfigurationState configurationState) {
         mDeviceConfigurationState = configurationState;
         notifyListeners();
     }
 
     @Override
-    public void onServiceConnectionStateChanged(RMeshServiceController.ServiceConnectionState serviceConnectionState) {
+    public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
         mServiceConnectionState = serviceConnectionState;
         notifyListeners();
     }
@@ -78,19 +78,19 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
             return ConnectionState.NO_DEVICE_CONFIGURED;
         }
 
-        if (mServiceConnectionState == RMeshServiceController.ServiceConnectionState.DISCONNECTED) {
+        if (mServiceConnectionState == MeshServiceController.ServiceConnectionState.DISCONNECTED) {
             return ConnectionState.NO_SERVICE_CONNECTION;
         }
 
-        if (mDeviceConfigurationState != RMeshDeviceConfigurationController.ConfigurationState.READY) {
+        if (mDeviceConfigurationState != MeshDeviceConfigurationController.ConfigurationState.READY) {
             return ConnectionState.WRITING_CONFIG;
         }
 
-        if (mDeviceConnectionState == RMeshConnectionHandler.DeviceConnectionState.DISCONNECTED) {
+        if (mDeviceConnectionState == MeshConnectionHandler.DeviceConnectionState.DISCONNECTED) {
             return ConnectionState.DEVICE_DISCONNECTED;
         }
 
-        if (mDeviceConnectionState == RMeshConnectionHandler.DeviceConnectionState.CONNECTED) {
+        if (mDeviceConnectionState == MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
             return ConnectionState.DEVICE_CONNECTED;
         }
 

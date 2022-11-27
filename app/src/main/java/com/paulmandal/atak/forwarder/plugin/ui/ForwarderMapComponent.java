@@ -25,8 +25,8 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
-import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
-import com.paulmandal.atak.forwarder.comm.meshtastic.RMeshServiceController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -85,11 +85,11 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         String callsign = mapView.getDeviceCallsign();
         String atakUid = mapView.getSelfMarker().getUID();
         QueuedCommandFactory queuedCommandFactory = new QueuedCommandFactory();
-        RMeshServiceController meshServiceController = new RMeshServiceController(destroyables,
+        MeshServiceController meshServiceController = new MeshServiceController(destroyables,
                 atakContext,
                 uiThreadHandler,
                 logger);
-        RConnectionStateHandler connectionStateHandler = new RConnectionStateHandler();
+        ConnectionStateHandler connectionStateHandler = new ConnectionStateHandler();
 
         DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler = new DiscoveryBroadcastEventHandler(
                 atakContext,

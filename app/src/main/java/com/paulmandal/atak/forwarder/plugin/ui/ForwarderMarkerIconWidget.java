@@ -14,15 +14,14 @@ import com.atakmap.android.widgets.MarkerIconWidget;
 import com.atakmap.android.widgets.RootLayoutWidget;
 import com.atakmap.coremap.maps.assets.Icon;
 import com.paulmandal.atak.forwarder.R;
-import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
 public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destroyable,
-        MeshServiceController.ConnectionStateListener,
+        RConnectionStateHandler.Listener,
         MapWidget.OnClickListener,
         MeshSender.MessageAckNackListener {
     private final static int ICON_WIDTH = 32;
@@ -36,18 +35,18 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     private final boolean[] mDeliveredPacketsWindow = new boolean[PACKET_WINDOW_SIZE];
     private int mWindowIndex;
 
-    private ConnectionState mConnectionState;
+    private RConnectionStateHandler.ConnectionState mConnectionState;
 
     public ForwarderMarkerIconWidget(MapView mapView,
                                      List<Destroyable> destroyables,
                                      ForwarderDropDownReceiver forwarderDropDownReceiver,
-                                     MeshServiceController meshServiceController,
+                                     RConnectionStateHandler connectionStateHandler,
                                      MeshSender meshSender) {
         mForwarderDropDownReceiver = forwarderDropDownReceiver;
 
         destroyables.add(this);
 
-        meshServiceController.addConnectionStateListener(this);
+        connectionStateHandler.addListener(this);
         meshSender.addMessageAckNackListener(this);
 
         setName("Forwarder Status");
@@ -61,7 +60,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
             mDeliveredPacketsWindow[i] = true;
         }
 
-        mConnectionState = meshServiceController.getConnectionState();
+        mConnectionState = connectionStateHandler.getConnectionState();
         updateIcon();
     }
 
@@ -79,11 +78,10 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
+    public void onConnectionStateChanged(RConnectionStateHandler.ConnectionState connectionState) {
         mConnectionState = connectionState;
         updateIcon();
     }
-
     @Override
     public void onDestroy(Context context, MapView mapView) {
         RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");
@@ -120,6 +118,9 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
                 break;
             case NO_DEVICE_CONFIGURED:
                 drawableId = R.drawable.ic_no_device_configured;
+                break;
+            case WRITING_CONFIG:
+                drawableId = R.drawable.ic_writing_config;
                 break;
         }
 

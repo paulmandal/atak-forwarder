@@ -12,7 +12,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
         NO_DEVICE_CONFIGURED,
         NO_SERVICE_CONNECTION,
         DEVICE_DISCONNECTED,
-        DEVICE_UNCONFIGURED,
+        WRITING_CONFIG,
         DEVICE_CONNECTED,
     }
 
@@ -83,7 +83,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
         }
 
         if (mDeviceConfigurationState != RMeshDeviceConfigurationController.ConfigurationState.READY) {
-            return ConnectionState.DEVICE_UNCONFIGURED;
+            return ConnectionState.WRITING_CONFIG;
         }
 
         if (mDeviceConnectionState == RMeshConnectionHandler.DeviceConnectionState.DISCONNECTED) {

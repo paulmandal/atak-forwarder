@@ -209,7 +209,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         registerDropDownReceiver(forwarderDropDownReceiver, ddFilter);
 
 
-        new ForwarderMarkerIconWidget(mapView, destroyables, forwarderDropDownReceiver, meshServiceController, meshSender);
+        new ForwarderMarkerIconWidget(mapView, destroyables, forwarderDropDownReceiver, connectionStateHandler, meshSender);
 
 
         DevicesList devicesList = new DevicesList(atakContext);

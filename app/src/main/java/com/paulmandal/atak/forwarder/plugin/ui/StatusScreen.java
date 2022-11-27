@@ -93,7 +93,7 @@ public class StatusScreen extends ConstraintLayout {
                 case DEVICE_DISCONNECTED:
                     handleDeviceDisconnected();
                     break;
-                case DEVICE_UNCONFIGURED:
+                case WRITING_CONFIG:
                     handleDeviceWriting();
                     break;
                 case DEVICE_CONNECTED:

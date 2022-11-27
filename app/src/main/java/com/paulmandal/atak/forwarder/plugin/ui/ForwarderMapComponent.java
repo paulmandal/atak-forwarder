@@ -22,9 +22,7 @@ import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurer;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSuspendController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDeviceSwitcher;
 import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
@@ -116,15 +114,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
         HashHelper hashHelper = new HashHelper();
-        MeshDeviceConfigurer meshDeviceConfigurer = new MeshDeviceConfigurer(destroyables,
-                sharedPreferences,
-                meshServiceController,
-                meshtasticDeviceSwitcher,
-                hashHelper,
-                gson,
-                logger,
-                callsign);
-
 
         UserTracker userTracker = new UserTracker(atakContext, uiThreadHandler, logger, discoveryBroadcastEventHandler, trackerEventHandler);
 

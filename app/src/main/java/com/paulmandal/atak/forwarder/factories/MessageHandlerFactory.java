@@ -4,7 +4,6 @@ import com.atakmap.android.cot.CotMapComponent;
 import com.atakmap.comms.CommsMapComponent;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.RConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;

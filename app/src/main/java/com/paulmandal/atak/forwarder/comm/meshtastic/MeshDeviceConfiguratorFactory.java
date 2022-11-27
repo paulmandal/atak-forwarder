@@ -6,7 +6,7 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 
 public class MeshDeviceConfiguratorFactory {
     public MeshDeviceConfigurator createMeshDeviceConfigurator(MeshServiceController meshServiceController,
-                                                               MeshConnectionHandler meshConnectionHandler,
+                                                               DeviceConnectionHandler deviceConnectionHandler,
                                                                MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                                                HashHelper hashHelper,
                                                                Logger logger,
@@ -20,7 +20,7 @@ public class MeshDeviceConfiguratorFactory {
                                                                ConfigProtos.Config.DeviceConfig.Role routingRole) {
         return new MeshDeviceConfigurator(
                 meshServiceController,
-                meshConnectionHandler,
+                deviceConnectionHandler,
                 meshtasticDeviceSwitcher,
                 hashHelper,
                 logger,

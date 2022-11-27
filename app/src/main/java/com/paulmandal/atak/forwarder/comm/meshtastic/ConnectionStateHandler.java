@@ -7,7 +7,7 @@ import com.geeksville.mesh.ConfigProtos;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class ConnectionStateHandler implements MeshDeviceConfigurationController.Listener, MeshServiceController.Listener, MeshConnectionHandler.Listener, DeviceConfigObserver.Listener {
+public class ConnectionStateHandler implements MeshDeviceConfigurationController.Listener, MeshServiceController.Listener, DeviceConnectionHandler.Listener, DeviceConfigObserver.Listener {
     public enum ConnectionState {
         NO_DEVICE_CONFIGURED,
         NO_SERVICE_CONNECTION,
@@ -22,7 +22,7 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
 
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    private MeshConnectionHandler.DeviceConnectionState mDeviceConnectionState;
+    private DeviceConnectionHandler.DeviceConnectionState mDeviceConnectionState;
     private MeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState;
     private MeshServiceController.ServiceConnectionState mServiceConnectionState;
     private MeshtasticDevice mMeshtasticDevice;
@@ -30,18 +30,18 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
     public ConnectionStateHandler(@Nullable MeshtasticDevice meshtasticDevice,
                                   MeshDeviceConfigurationController meshDeviceConfigurationController,
                                   MeshServiceController meshServiceController,
-                                  MeshConnectionHandler meshConnectionHandler,
+                                  DeviceConnectionHandler deviceConnectionHandler,
                                   DeviceConfigObserver deviceConfigObserver) {
         mMeshtasticDevice = meshtasticDevice;
 
         meshDeviceConfigurationController.addListener(this);
         meshServiceController.addListener(this);
-        meshConnectionHandler.addListener(this);
+        deviceConnectionHandler.addListener(this);
         deviceConfigObserver.addListener(this);
     }
 
     @Override
-    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
+    public void onDeviceConnectionStateChanged(DeviceConnectionHandler.DeviceConnectionState deviceConnectionState) {
         mDeviceConnectionState = deviceConnectionState;
         notifyListeners();
     }
@@ -86,11 +86,11 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
             return ConnectionState.WRITING_CONFIG;
         }
 
-        if (mDeviceConnectionState == MeshConnectionHandler.DeviceConnectionState.DISCONNECTED) {
+        if (mDeviceConnectionState == DeviceConnectionHandler.DeviceConnectionState.DISCONNECTED) {
             return ConnectionState.DEVICE_DISCONNECTED;
         }
 
-        if (mDeviceConnectionState == MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
+        if (mDeviceConnectionState == DeviceConnectionHandler.DeviceConnectionState.CONNECTED) {
             return ConnectionState.DEVICE_CONNECTED;
         }
 

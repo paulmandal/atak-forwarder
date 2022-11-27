@@ -17,7 +17,7 @@ import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class MeshDeviceConfigurationController implements MeshConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.Listener {
+public class MeshDeviceConfigurationController implements DeviceConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurationController.class.getSimpleName();
 
     public enum ConfigurationState {
@@ -32,7 +32,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
     }
 
     private final MeshServiceController mMeshServiceController;
-    private final MeshConnectionHandler mMeshConnectionHandler;
+    private final DeviceConnectionHandler mDeviceConnectionHandler;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshDeviceConfiguratorFactory mMeshDeviceConfiguratorFactory;
     private final HashHelper mHashHelper;
@@ -59,7 +59,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
     private MeshDeviceConfigurator mStagedCommConfigurator;
 
     public MeshDeviceConfigurationController(MeshServiceController meshServiceController,
-                                             MeshConnectionHandler meshConnectionHandler,
+                                             DeviceConnectionHandler deviceConnectionHandler,
                                              MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                              MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory,
                                              DeviceConfigObserver deviceConfigObserver,
@@ -70,7 +70,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
                                              @Nullable MeshtasticDevice meshtasticDevice,
                                              String callsign) {
         mMeshServiceController = meshServiceController;
-        mMeshConnectionHandler = meshConnectionHandler;
+        mDeviceConnectionHandler = deviceConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mMeshDeviceConfiguratorFactory = meshDeviceConfiguratorFactory;
         mHashHelper = hashHelper;
@@ -79,7 +79,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
         mCallsign = callsign;
 
         meshServiceController.addListener(this);
-        meshConnectionHandler.addListener(this);
+        deviceConnectionHandler.addListener(this);
         deviceConfigObserver.addListener(this);
 
         mRegionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
@@ -111,8 +111,8 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
     }
 
     @Override
-    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
-        if (deviceConnectionState != MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
+    public void onDeviceConnectionStateChanged(DeviceConnectionHandler.DeviceConnectionState deviceConnectionState) {
+        if (deviceConnectionState != DeviceConnectionHandler.DeviceConnectionState.CONNECTED) {
             return;
         }
 
@@ -137,7 +137,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
 
         MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
-                mMeshConnectionHandler,
+                mDeviceConnectionHandler,
                 mMeshtasticDeviceSwitcher,
                 mHashHelper,
                 mLogger,
@@ -168,7 +168,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
 
         MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
-                mMeshConnectionHandler,
+                mDeviceConnectionHandler,
                 mMeshtasticDeviceSwitcher,
                 mHashHelper,
                 mLogger,
@@ -232,7 +232,7 @@ public class MeshDeviceConfigurationController implements MeshConnectionHandler.
 
         MeshDeviceConfigurator meshDeviceConfigurator = mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
-                mMeshConnectionHandler,
+                mDeviceConnectionHandler,
                 mMeshtasticDeviceSwitcher,
                 mHashHelper,
                 mLogger,

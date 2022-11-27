@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
+public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurator.class.getSimpleName();
 
     public enum ConfigurationState {
@@ -32,7 +32,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
     }
 
     private final MeshServiceController mMeshServiceController;
-    private final MeshConnectionHandler mMeshConnectionHandler;
+    private final DeviceConnectionHandler mDeviceConnectionHandler;
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final HashHelper mHashHelper;
     private final Logger mLogger;
@@ -55,7 +55,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
     private boolean mStarted;
 
     public MeshDeviceConfigurator(MeshServiceController meshServiceController,
-                                  MeshConnectionHandler meshConnectionHandler,
+                                  DeviceConnectionHandler deviceConnectionHandler,
                                   MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
                                   HashHelper hashHelper,
                                   Logger logger,
@@ -68,7 +68,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
                                   byte[] channelPsk,
                                   ConfigProtos.Config.DeviceConfig.Role routingRole) {
         mMeshServiceController = meshServiceController;
-        mMeshConnectionHandler = meshConnectionHandler;
+        mDeviceConnectionHandler = deviceConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
         mHashHelper = hashHelper;
         mLogger = logger;
@@ -83,8 +83,8 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
     }
 
     @Override
-    public void onDeviceConnectionStateChanged(MeshConnectionHandler.DeviceConnectionState deviceConnectionState) {
-        if (deviceConnectionState == MeshConnectionHandler.DeviceConnectionState.CONNECTED) {
+    public void onDeviceConnectionStateChanged(DeviceConnectionHandler.DeviceConnectionState deviceConnectionState) {
+        if (deviceConnectionState == DeviceConnectionHandler.DeviceConnectionState.CONNECTED) {
             if (!mStarted) {
                 mStarted = true;
                 notifyListeners(ConfigurationState.STARTED);
@@ -97,7 +97,7 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
         mStarted = false;
 
         try {
-            mMeshConnectionHandler.addListener(this);
+            mDeviceConnectionHandler.addListener(this);
             mMeshtasticDeviceSwitcher.setDeviceAddress(mMeshServiceController.getMeshService(), mMeshtasticDevice);
         } catch (RemoteException e) {
             mLogger.e(TAG, "Error attempting to switch device: " + e.getMessage());
@@ -209,12 +209,12 @@ public class MeshDeviceConfigurator implements MeshConnectionHandler.Listener {
     }
 
     private void sendFinished() {
-        mMeshConnectionHandler.removeListener(this);
+        mDeviceConnectionHandler.removeListener(this);
         notifyListeners(ConfigurationState.FINISHED);
     }
 
     private void sendFailed() {
-        mMeshConnectionHandler.removeListener(this);
+        mDeviceConnectionHandler.removeListener(this);
         notifyListeners(ConfigurationState.FAILED);
     }
 

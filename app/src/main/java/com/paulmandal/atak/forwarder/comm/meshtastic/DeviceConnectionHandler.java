@@ -8,8 +8,8 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class MeshConnectionHandler implements MeshServiceController.Listener {
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshConnectionHandler.class.getSimpleName();
+public class DeviceConnectionHandler implements MeshServiceController.Listener {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + DeviceConnectionHandler.class.getSimpleName();
 
     public enum DeviceConnectionState {
         DISCONNECTED,
@@ -24,8 +24,8 @@ public class MeshConnectionHandler implements MeshServiceController.Listener {
     private final Logger mLogger;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    public MeshConnectionHandler(MeshServiceController meshServiceController,
-                                 Logger logger) {
+    public DeviceConnectionHandler(MeshServiceController meshServiceController,
+                                   Logger logger) {
         mMeshServiceController = meshServiceController;
         mLogger = logger;
 

@@ -23,7 +23,7 @@ import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshConnectionHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConnectionHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurationController;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfiguratorFactory;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
@@ -97,7 +97,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         MeshtasticDeviceSwitcher meshtasticDeviceSwitcher = new MeshtasticDeviceSwitcher(atakContext, logger);
         HashHelper hashHelper = new HashHelper();
-        MeshConnectionHandler meshConnectionHandler = new MeshConnectionHandler(meshServiceController, logger);
+        DeviceConnectionHandler deviceConnectionHandler = new DeviceConnectionHandler(meshServiceController, logger);
 
 
         MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory = new MeshDeviceConfiguratorFactory();
@@ -106,7 +106,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
         MeshDeviceConfigurationController meshDeviceConfigurationController = new MeshDeviceConfigurationController(
                 meshServiceController,
-                meshConnectionHandler,
+                deviceConnectionHandler,
                 meshtasticDeviceSwitcher,
                 meshDeviceConfiguratorFactory,
                 deviceConfigObserver,
@@ -123,7 +123,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 meshtasticDevice,
                 meshDeviceConfigurationController,
                 meshServiceController,
-                meshConnectionHandler,
+                deviceConnectionHandler,
                 deviceConfigObserver
         );
 

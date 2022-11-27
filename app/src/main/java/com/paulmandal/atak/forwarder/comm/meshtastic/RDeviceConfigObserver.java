@@ -16,14 +16,14 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
 
-    public interface DeviceConfigListener {
+    public interface Listener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
         void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole);
     }
 
     private final Gson mGson;
 
-    private final Set<DeviceConfigListener> mListeners = new CopyOnWriteArraySet<>();
+    private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     public RDeviceConfigObserver(List<Destroyable> destroyables,
                                  SharedPreferences sharedPreferences,
@@ -75,18 +75,18 @@ public class RDeviceConfigObserver extends DestroyableSharedPrefsListener {
         }
     }
 
-    public void addListener(DeviceConfigListener listener) {
+    public void addListener(Listener listener) {
         mListeners.add(listener);
     }
 
     private void notifySelectedDeviceListeners(MeshtasticDevice meshtasticDevice) {
-        for (DeviceConfigListener listener : mListeners) {
+        for (Listener listener : mListeners) {
             listener.onSelectedDeviceChanged(meshtasticDevice);
         }
     }
 
     private void notifyConfigListeners(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role deviceRole) {
-        for (DeviceConfigListener listener : mListeners) {
+        for (Listener listener : mListeners) {
             listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, deviceRole);
         }
     }

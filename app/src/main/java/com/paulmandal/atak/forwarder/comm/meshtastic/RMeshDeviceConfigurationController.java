@@ -1,18 +1,23 @@
 package com.paulmandal.atak.forwarder.comm.meshtastic;
 
+import android.content.SharedPreferences;
 import android.os.RemoteException;
+import android.util.Base64;
 
 import androidx.annotation.Nullable;
 
 import com.geeksville.mesh.ConfigProtos;
+import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
+import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RMeshDeviceConfigurationController implements RMeshConnectionHandler.DeviceConnectionStateListener, RDeviceConfigObserver.DeviceConfigListener, RMeshServiceController.ServiceConnectionStateListener, RMeshDeviceConfigurator.ConfigurationStateListener {
+public class RMeshDeviceConfigurationController implements RMeshConnectionHandler.DeviceConnectionStateListener, RDeviceConfigObserver.Listener, RMeshServiceController.ServiceConnectionStateListener, RMeshDeviceConfigurator.ConfigurationStateListener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + RMeshDeviceConfigurationController.class.getSimpleName();
 
     public enum ConfigurationState {
@@ -31,6 +36,7 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     private final MeshtasticDeviceSwitcher mMeshtasticDeviceSwitcher;
     private final MeshDeviceConfiguratorFactory mMeshDeviceConfiguratorFactory;
     private final HashHelper mHashHelper;
+    private final Gson mGson;
     private final Logger mLogger;
     private final String mCallsign;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
@@ -56,17 +62,18 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
     public RMeshDeviceConfigurationController(RMeshServiceController meshServiceController,
                                               RMeshConnectionHandler meshConnectionHandler,
                                               MeshtasticDeviceSwitcher meshtasticDeviceSwitcher,
-                                              @Nullable MeshtasticDevice meshtasticDevice,
                                               MeshDeviceConfiguratorFactory meshDeviceConfiguratorFactory,
                                               RDeviceConfigObserver deviceConfigObserver,
                                               HashHelper hashHelper,
+                                              Gson gson,
                                               Logger logger,
+                                              SharedPreferences sharedPreferences,
                                               String callsign) {
         mMeshServiceController = meshServiceController;
         mMeshConnectionHandler = meshConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
-        mMeshtasticDevice = meshtasticDevice;
         mMeshDeviceConfiguratorFactory = meshDeviceConfiguratorFactory;
+        mGson = gson;
         mHashHelper = hashHelper;
         mLogger = logger;
         mCallsign = callsign;
@@ -74,10 +81,19 @@ public class RMeshDeviceConfigurationController implements RMeshConnectionHandle
         meshServiceController.addConnectionStateListener(this);
         meshConnectionHandler.addListener(this);
         deviceConfigObserver.addListener(this);
+
+        String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
+        mMeshtasticDevice = mGson.fromJson(commDeviceStr, MeshtasticDevice.class);
+        mRegionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+        mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
+        mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
+        mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+        mDeviceRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
     }
 
     @Override
     public void onServiceConnectionStateChanged(RMeshServiceController.ServiceConnectionState serviceConnectionState) {
+        // TODO: is there a timing issue here?
         if (serviceConnectionState == RMeshServiceController.ServiceConnectionState.CONNECTED && !mSetDeviceAddressCalled) {
             if (mMeshtasticDevice == null) {
                 return;

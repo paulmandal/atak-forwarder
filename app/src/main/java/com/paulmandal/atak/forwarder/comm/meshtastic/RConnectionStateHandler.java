@@ -7,7 +7,7 @@ import com.geeksville.mesh.ConfigProtos;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-public class RConnectionStateHandler implements RMeshDeviceConfigurationController.Listener, RMeshServiceController.ServiceConnectionStateListener, RMeshConnectionHandler.DeviceConnectionStateListener, RDeviceConfigObserver.DeviceConfigListener {
+public class RConnectionStateHandler implements RMeshDeviceConfigurationController.Listener, RMeshServiceController.ServiceConnectionStateListener, RMeshConnectionHandler.DeviceConnectionStateListener, RDeviceConfigObserver.Listener {
     public enum ConnectionState {
         NO_DEVICE_CONFIGURED,
         NO_SERVICE_CONNECTION,
@@ -16,11 +16,11 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
         DEVICE_CONNECTED,
     }
 
-    public interface ConnectionStateListener {
+    public interface Listener {
         void onConnectionStateChanged(ConnectionState connectionState);
     }
 
-    private final Set<ConnectionStateListener> mListeners = new CopyOnWriteArraySet<>();
+    private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     private RMeshConnectionHandler.DeviceConnectionState mDeviceConnectionState;
     private RMeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState;
@@ -95,7 +95,7 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
 
     private void notifyListeners() {
         ConnectionState connectionState = determineConnectionState();
-        for (ConnectionStateListener listener : mListeners) {
+        for (Listener listener : mListeners) {
             listener.onConnectionStateChanged(connectionState);
         }
     }

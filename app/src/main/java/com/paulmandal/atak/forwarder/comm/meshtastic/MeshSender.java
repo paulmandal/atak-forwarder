@@ -120,6 +120,10 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
 
     @Override
     public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
+        if (serviceConnectionState != MeshServiceController.ServiceConnectionState.CONNECTED) {
+            return;
+        }
+
         mMeshService = mMeshServiceController.getMeshService();
     }
 

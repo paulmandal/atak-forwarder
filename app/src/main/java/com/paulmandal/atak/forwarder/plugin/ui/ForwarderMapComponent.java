@@ -120,6 +120,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         ConnectionStateHandler connectionStateHandler = new ConnectionStateHandler(
+                logger,
                 meshtasticDevice,
                 meshDeviceConfigurationController,
                 meshServiceController,

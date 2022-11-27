@@ -34,6 +34,7 @@ public class DeviceConnectionHandler implements MeshServiceController.Listener {
 
     @Override
     public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
+        mLogger.v(TAG, "Service connection state changed to: " + serviceConnectionState);
         if (serviceConnectionState == MeshServiceController.ServiceConnectionState.CONNECTED) {
             try {
                 notifyListeners(connectionStateFromServiceState(mMeshServiceController.getMeshService().connectionState()));
@@ -53,7 +54,6 @@ public class DeviceConnectionHandler implements MeshServiceController.Listener {
     }
 
     private DeviceConnectionState connectionStateFromServiceState(String connectionString) {
-        mLogger.d(TAG, "ConnectionStateString: " + connectionString);
         DeviceConnectionState connectionState = DeviceConnectionState.DISCONNECTED;
 
         if (connectionString.equals(MeshServiceConstants.STATE_CONNECTED)
@@ -65,6 +65,7 @@ public class DeviceConnectionHandler implements MeshServiceController.Listener {
     }
 
     private void notifyListeners(DeviceConnectionState deviceConnectionState) {
+        mLogger.v(TAG, "Notifying listeners of device connection state: " + deviceConnectionState);
         for (Listener listener : mListeners) {
             listener.onDeviceConnectionStateChanged(deviceConnectionState);
         }

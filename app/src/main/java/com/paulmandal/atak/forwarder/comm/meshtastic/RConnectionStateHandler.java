@@ -69,6 +69,10 @@ public class RConnectionStateHandler implements RMeshDeviceConfigurationControll
         // do nothing
     }
 
+    public void addListener(Listener listener) {
+        mListeners.add(listener);
+    }
+
     private ConnectionState determineConnectionState() {
         if (mMeshtasticDevice == null) {
             return ConnectionState.NO_DEVICE_CONFIGURED;

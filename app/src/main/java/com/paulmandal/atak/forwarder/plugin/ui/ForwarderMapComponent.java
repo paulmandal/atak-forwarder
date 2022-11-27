@@ -184,7 +184,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 destroyables,
                 sharedPreferences,
                 userTracker,
-                meshServiceController,
+                meshConnectionHandler,
                 discoveryBroadcastEventHandler,
                 meshSender,
                 inboundMeshMessageHandler,

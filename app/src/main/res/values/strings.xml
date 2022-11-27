@@ -8,6 +8,7 @@
 
     <string name="connection_status_no_service_connected">Svc Disconnected</string>
     <string name="connection_status_no_device_configured">No Dvc Cfg</string>
+    <string name="connection_status_device_writing">Writing</string>
     <string name="connection_status_device_disconnected">Disconnected</string>
     <string name="connection_status_device_connected">Connected</string>
 

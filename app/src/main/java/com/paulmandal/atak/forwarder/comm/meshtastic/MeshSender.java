@@ -9,7 +9,6 @@ import android.os.RemoteException;
 import com.atakmap.android.maps.MapView;
 import com.geeksville.mesh.DataPacket;
 import com.geeksville.mesh.IMeshService;
-import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MessageStatus;
 import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
@@ -30,7 +29,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MeshSender extends MeshEventHandler implements MeshServiceController.ConnectionStateListener, SharedPreferences.OnSharedPreferenceChangeListener {
+public class MeshSender extends MeshEventHandler implements ConnectionStateHandler.Listener, MeshServiceController.Listener, SharedPreferences.OnSharedPreferenceChangeListener {
     public interface MessageAckNackListener {
         void onMessageAckNack(int messageId, boolean isAck);
         void onMessageTimedOut(int messageId);
@@ -58,16 +57,11 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     private int mChatHopLimit;
     private int mOtherHopLimit;
 
-    private ConnectionState mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
-    private boolean mSuspended = false;
     private boolean mSendingMessage = false;
     private boolean mStateSaved = false;
 
-    private byte[] mPendingMessage;
-    private String[] mPendingMessageTargets;
-
-    private Queue<OutboundMessageChunk> mPendingMessageChunks = new LinkedList<>();
-    private Queue<OutboundMessageChunk> mRestoreChunksAfterSuspend = new LinkedList<>();
+    private final Queue<OutboundMessageChunk> mPendingMessageChunks = new LinkedList<>();
+    private final Queue<OutboundMessageChunk> mRestoreChunksAfterSuspend = new LinkedList<>();
 
     private final Object mSyncLock = new Object();
 
@@ -78,9 +72,9 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
     public MeshSender(Context atakContext,
                       List<Destroyable> destroyables,
                       SharedPreferences sharedPreferences,
-                      MeshSuspendController meshSuspendController,
                       Handler uiThreadHandler,
                       Logger logger,
+                      ConnectionStateHandler connectionStateHandler,
                       MeshServiceController meshServiceController,
                       UserTracker userTracker,
                       ScheduledExecutorService scheduledExecutorService) {
@@ -90,7 +84,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                         MeshServiceConstants.ACTION_MESSAGE_STATUS
                 },
                 destroyables,
-                meshSuspendController);
+                connectionStateHandler);
 
         mSharedPreferences = sharedPreferences;
         mUiThreadHandler = uiThreadHandler;
@@ -99,7 +93,8 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         mExecutor = scheduledExecutorService;
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
-        meshServiceController.addConnectionStateListener(this);
+        meshServiceController.addListener(this);
+        connectionStateHandler.addListener(this);
 
         startWatchdog();
 
@@ -118,33 +113,24 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
         sendMessage(sendMessageCommand.messageType, sendMessageCommand.message, sendMessageCommand.toUIDs);
     }
 
-    public boolean isSuspended() {
-        return mSuspended;
-    }
-
     public boolean isSendingMessage() {
         return mSendingMessage;
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
-        mConnectionState = connectionState;
-        mMeshService = mMeshServiceController.getMeshService();
-
-        if (connectionState != ConnectionState.DEVICE_CONNECTED) {
-            maybeSaveState();
-        } else {
-            maybeRestoreState();
+    public void onServiceConnectionStateChanged(MeshServiceController.ServiceConnectionState serviceConnectionState) {
+        if (serviceConnectionState != MeshServiceController.ServiceConnectionState.CONNECTED) {
+            return;
         }
+
+        mMeshService = mMeshServiceController.getMeshService();
     }
 
     @Override
-    public void onSuspendedChanged(boolean suspended) {
-        super.onSuspendedChanged(suspended);
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        super.onConnectionStateChanged(connectionState);
 
-        mSuspended = suspended;
-
-        if (suspended) {
+        if (connectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             maybeSaveState();
         } else {
             maybeRestoreState();
@@ -159,14 +145,6 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mPliHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_PLI_HOP_LIMIT, PreferencesDefaults.DEFAULT_PLI_HOP_LIMIT));
             mChatHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHAT_HOP_LIMIT, PreferencesDefaults.DEFAULT_CHAT_HOP_LIMIT));
             mOtherHopLimit = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_OTHER_HOP_LIMIT, PreferencesDefaults.DEFAULT_OTHER_HOP_LIMIT));
-        } else if (key.equals(PreferencesKeys.KEY_CHANNEL_NAME)
-                || key.equals(PreferencesKeys.KEY_CHANNEL_MODE)
-                || key.equals(PreferencesKeys.KEY_CHANNEL_PSK)
-                || key.equals(PreferencesKeys.KEY_SET_COMM_DEVICE)) {
-            // Reset since we may have been sending to a channel/device that won't ever ACK/NACK
-            mLogger.d(TAG, "Channel settings or comm device changed, restarting message send");
-            maybeSaveState();
-            mUiThreadHandler.postDelayed(() -> maybeRestoreState(), ForwarderConstants.DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_CHANNEL_CHANGE);
         }
     }
 
@@ -179,6 +157,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     @Override
     protected void handleReceive(Context context, Intent intent) {
+        mLogger.v(TAG, "handleReceive: " + intent.getExtras().toString());
         int id = intent.getIntExtra(MeshServiceConstants.EXTRA_PACKET_ID, 0);
         MessageStatus status = intent.getParcelableExtra(MeshServiceConstants.EXTRA_STATUS);
         handleMessageStatusChange(id, status);
@@ -230,9 +209,6 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
 
     private void sendMessageInternal(MessageType messageType, byte[] message, String[] toUIDs) {
         mSendingMessage = true;
-
-        mPendingMessage = message;
-        mPendingMessageTargets = toUIDs;
 
         int messageChunkLength = ForwarderConstants.MESHTASTIC_MESSAGE_CHUNK_LENGTH;
 
@@ -316,8 +292,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
                 0,
                 MessageStatus.UNKNOWN,
                 hopLimit,
-                0,
-                MeshProtos.MeshPacket.Delayed.NO_DELAY.getNumber());
+                0);
 
         try {
             mMeshService.send(dataPacket);
@@ -330,7 +305,7 @@ public class MeshSender extends MeshEventHandler implements MeshServiceControlle
             mLogger.i(TAG, "        messageChunk: " + (chunkInFlight.index + 1) + "/" + chunkInFlight.count + " to: " + chunkInFlight.targetUid + ", waiting for ack/nack id: " + mPendingMessageId);
         } catch (RemoteException e) {
             maybeSaveState();
-            mUiThreadHandler.postDelayed(() -> maybeRestoreState(), REMOTE_EXCEPTION_RETRY_DELAY);
+            mUiThreadHandler.postDelayed(this::maybeRestoreState, REMOTE_EXCEPTION_RETRY_DELAY);
             mLogger.e(TAG, "sendChunk(), RemoteException: " + e.getMessage());
             e.printStackTrace();
         }

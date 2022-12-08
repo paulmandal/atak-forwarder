@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.RemoteException;
 
 import com.geeksville.mesh.DataPacket;
-import com.geeksville.mesh.Portnums;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
@@ -14,7 +13,7 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 
 import java.util.List;
 
-public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements MeshServiceController.ConnectionStateListener {
+public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements ConnectionStateHandler.Listener {
     public interface DiscoveryBroadcastListener {
         void onUserDiscoveryBroadcastReceived(String callsign, String meshId, String atakUid);
     }
@@ -36,18 +35,17 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
                                           CommandQueue commandQueue,
                                           QueuedCommandFactory queuedCommandFactory,
                                           List<Destroyable> destroyables,
-                                          MeshSuspendController meshSuspendController,
+                                          ConnectionStateHandler connectionStateHandler,
                                           MeshServiceController meshServiceController,
                                           String atakUid,
                                           String callsign) {
         super(atakContext,
                 logger,
                 new String[]{
-                        MeshServiceConstants.ACTION_RECEIVED_DATA,
                         MeshServiceConstants.ACTION_RECEIVED_ATAK_FORWARDER
                 },
                 destroyables,
-                meshSuspendController);
+                connectionStateHandler);
 
         mCommandQueue = commandQueue;
         mQueuedCommandFactory = queuedCommandFactory;
@@ -57,7 +55,7 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
 
         mMeshId = "";
 
-        meshServiceController.addConnectionStateListener(this);
+        connectionStateHandler.addListener(this);
     }
 
     public void broadcastDiscoveryMessage(boolean initialDiscoveryMessage) {
@@ -74,11 +72,13 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
-        if (connectionState == ConnectionState.DEVICE_CONNECTED) {
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        super.onConnectionStateChanged(connectionState);
+
+        if (connectionState == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             mMeshId = null;
             try {
-              mMeshId = mMeshServiceController.getMeshService().getMyId();
+                mMeshId = mMeshServiceController.getMeshService().getMyId();
             } catch (RemoteException e) {
                 mLogger.e(TAG, "Exception getting meshId");
                 e.printStackTrace();
@@ -98,10 +98,6 @@ public class DiscoveryBroadcastEventHandler extends MeshEventHandler implements 
         int dataType = payload.getDataType();
 
         mLogger.v(TAG, "handleReceive(), dataType: " + dataType);
-        if (dataType != Portnums.PortNum.ATAK_FORWARDER.getNumber()) {
-            return;
-        }
-
         String message = new String(payload.getBytes()).substring(1);
         if (!message.startsWith(ForwarderConstants.DISCOVERY_BROADCAST_MARKER)) {
             return;

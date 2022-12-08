@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class CommandQueueWorker implements Destroyable, MeshServiceController.ConnectionStateListener {
+public class CommandQueueWorker implements Destroyable, ConnectionStateHandler.Listener {
     private static final String TAG =  ForwarderConstants.DEBUG_TAG_PREFIX + CommandQueueWorker.class.getSimpleName();
 
     private static final int CHECK_MESSAGE_QUEUE_INTERVAL_MS = 300;
@@ -23,11 +23,11 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
     private final CommandQueue mCommandQueue;
     private final MeshSender mMeshSender;
 
-    private ConnectionState mConnectionState;
+    private ConnectionStateHandler.ConnectionState mConnectionState;
     private boolean mDestroyed = false;
 
     public CommandQueueWorker(List<Destroyable> destroyables,
-                              MeshServiceController meshServiceController,
+                              ConnectionStateHandler connectionStateHandler,
                               CommandQueue commandQueue,
                               MeshSender meshSender,
                               ScheduledExecutorService scheduledExecutorService) {
@@ -36,9 +36,9 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
         mMeshSender = meshSender;
 
         destroyables.add(this);
-        meshServiceController.addConnectionStateListener(this);
+        connectionStateHandler.addListener(this);
 
-        mConnectionState = ConnectionState.NO_SERVICE_CONNECTION;
+        mConnectionState = ConnectionStateHandler.ConnectionState.NO_SERVICE_CONNECTION;
 
         startWorker();
     }
@@ -50,17 +50,17 @@ public class CommandQueueWorker implements Destroyable, MeshServiceController.Co
     }
 
     @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
         mConnectionState = connectionState;
     }
 
     private void startWorker() {
         mExecutor.scheduleAtFixedRate(() -> {
-            if (mDestroyed || mMeshSender.isSendingMessage() || mMeshSender.isSuspended()) {
+            if (mDestroyed || mMeshSender.isSendingMessage() || mConnectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
                 return;
             }
 
-            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(mConnectionState == ConnectionState.DEVICE_CONNECTED);
+            QueuedCommand queuedCommand = mCommandQueue.popHighestPriorityCommand(true);
 
             if (queuedCommand == null) {
                 return;

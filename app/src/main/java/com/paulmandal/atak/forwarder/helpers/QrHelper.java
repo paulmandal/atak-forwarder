@@ -27,7 +27,6 @@ public class QrHelper {
 
         BitMatrix result;
         try {
-            //noinspection SuspiciousNameCombination
             Map<EncodeHintType, Object> encodingHints = new HashMap<>();
             encodingHints.put(EncodeHintType.ERROR_CORRECTION, DEFAULT_ERROR_CORRECTION_LEVEL);
             result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, width, width, null);

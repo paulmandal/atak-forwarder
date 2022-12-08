@@ -10,26 +10,25 @@ import androidx.annotation.CallSuper;
 import com.atakmap.android.maps.MapView;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
-import com.paulmandal.atak.forwarder.plugin.SuspendListener;
 
 import java.util.Arrays;
 import java.util.List;
 
-public abstract class MeshEventHandler extends BroadcastReceiver implements SuspendListener, Destroyable {
+public abstract class MeshEventHandler extends BroadcastReceiver implements ConnectionStateHandler.Listener, Destroyable {
     private final Context mAtakContext;
     protected final Logger mLogger;
     private final IntentFilter mIntentFilter;
 
     private final List<String> mActionsToHandle;
 
-    private boolean mIsSuspended = false;
+    private ConnectionStateHandler.ConnectionState mConnectionState;
     private boolean mReceiverRegistered;
 
     public MeshEventHandler(Context atakContext,
                             Logger logger,
                             String[] actionsToHandle,
                             List<Destroyable> destroyables,
-                            MeshSuspendController meshSuspendController) {
+                            ConnectionStateHandler connectionStateHandler) {
         mAtakContext = atakContext;
         mLogger = logger;
         mActionsToHandle = Arrays.asList(actionsToHandle);
@@ -41,13 +40,13 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
         mIntentFilter = intentFilter;
 
         destroyables.add(this);
-        meshSuspendController.addSuspendListener(this);
+        connectionStateHandler.addListener(this);
         mAtakContext.registerReceiver(this, intentFilter);
     }
 
     @Override
     public final void onReceive(Context context, Intent intent) {
-        if (mIsSuspended) {
+        if (mConnectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             return;
         }
 
@@ -64,13 +63,14 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
 
     @Override
     @CallSuper
-    public void onSuspendedChanged(boolean suspended) {
-        mIsSuspended = suspended;
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        mConnectionState = connectionState;
 
-        if (suspended && mReceiverRegistered) {
+        boolean connected = connectionState == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED;
+        if (!connected && mReceiverRegistered) {
             mReceiverRegistered = false;
             mAtakContext.unregisterReceiver(this);
-        } else if (!suspended && !mReceiverRegistered) {
+        } else if (connected && !mReceiverRegistered) {
             mReceiverRegistered = true;
             mAtakContext.registerReceiver(this, mIntentFilter);
         }
@@ -79,7 +79,7 @@ public abstract class MeshEventHandler extends BroadcastReceiver implements Susp
     @Override
     @CallSuper
     public void onDestroy(Context context, MapView mapView) {
-        if (mIsSuspended) {
+        if (mConnectionState != ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED) {
             return;
         }
         mAtakContext.unregisterReceiver(this);

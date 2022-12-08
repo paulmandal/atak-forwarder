@@ -11,11 +11,10 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionState;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshServiceController;
+import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -26,7 +25,7 @@ import java.util.List;
 
 public class StatusViewModel extends ChannelStatusViewModel implements UserTracker.ChannelMembersUpdateListener,
         CommandQueue.Listener,
-        MeshServiceController.ConnectionStateListener,
+        ConnectionStateHandler.Listener,
         MeshSender.MessageAckNackListener,
         InboundMeshMessageHandler.MessageListener,
         TrackerEventHandler.TrackerListener {
@@ -36,7 +35,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
     private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
-    private final MutableLiveData<ConnectionState> mConnectionState = new MutableLiveData<>();
+    private final MutableLiveData<ConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>();
     private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
@@ -46,7 +45,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     public StatusViewModel(List<Destroyable> destroyables,
                            SharedPreferences sharedPreferences,
                            UserTracker userTracker,
-                           MeshServiceController meshServiceController,
+                           ConnectionStateHandler connectionStateHandler,
                            DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
@@ -67,7 +66,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
         userTracker.addUpdateListener(this);
         commandQueue.setListener(this);
-        meshServiceController.addConnectionStateListener(this);
+        connectionStateHandler.addListener(this);
         meshSender.addMessageAckNackListener(this);
         inboundMeshMessageHandler.addMessageListener(this);
         trackerEventHandler.addListener(this);
@@ -86,11 +85,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         mMessageQueueSize.setValue(size);
     }
 
-    @Override
-    public void onConnectionStateChanged(ConnectionState connectionState) {
-        mConnectionState.setValue(connectionState);
-    }
-
     @NonNull
     public LiveData<List<UserInfo>> getUserInfoList() {
         return mUserInfoList;
@@ -102,7 +96,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     }
 
     @NonNull
-    public LiveData<ConnectionState> getConnectionState() {
+    public LiveData<ConnectionStateHandler.ConnectionState> getConnectionState() {
         return mConnectionState;
     }
 
@@ -161,5 +155,10 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     public void onTrackerUpdated(TrackerUserInfo trackerUserInfo) {
         mTotalMessages.setValue(mTotalMessages.getValue() + 1);
         mReceivedMessages.setValue(mReceivedMessages.getValue() + 1);
+    }
+
+    @Override
+    public void onConnectionStateChanged(ConnectionStateHandler.ConnectionState connectionState) {
+        mConnectionState.setValue(connectionState);
     }
 }

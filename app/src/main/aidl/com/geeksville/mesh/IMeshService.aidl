@@ -49,7 +49,7 @@ interface IMeshService {
 
     If myId is null, then the existing unique node ID is preserved, only the human visible longName/shortName is changed
     */
-    void setOwner(String myId, String longName, String shortName);
+    void setOwner(String myId, String longName, String shortName, boolean isLicensed);
 
     /// Return my unique user ID string
     String getMyId();
@@ -66,34 +66,45 @@ interface IMeshService {
     */
     void send(inout DataPacket packet);
 
-    void deleteMessage(int packetId);
-
-    void deleteAllMessages();
-
     /**
     Get the IDs of everyone on the mesh.  You should also subscribe for NODE_CHANGE broadcasts.
     */
     List<NodeInfo> getNodes();
 
-    /// Return an list of MeshPacket protobuf (byte arrays) which were received while your client app was offline (recent messages only).
-    /// Also includes any messages we have sent recently (useful for finding current message status)
-    List<DataPacket> getOldMessages();
+    /// This method is only intended for use in our GUI, so the user can set radio options
+    /// It returns a DeviceConfig protobuf.
+    byte []getConfig();
+    /// It sets a Config protobuf via admin packet
+    void setConfig(in byte []payload);
 
     /// This method is only intended for use in our GUI, so the user can set radio options
-    /// It returns a RadioConfig protobuf.
-    byte []getRadioConfig();
+    /// It sets a ModuleConfig protobuf via admin packet
+    void setModuleConfig(in byte []payload);
 
     /// This method is only intended for use in our GUI, so the user can set radio options
-    /// It sets a RadioConfig protobuf
-    void setRadioConfig(in byte []payload);
+    /// It sets a Channel protobuf via admin packet
+    void setChannel(in byte []payload);
 
-    /// This method is only intended for use in our GUI, so the user can set radio options
-    /// It returns a ChannelSet protobuf.
-    byte []getChannels();
+    /// Send beginEditSettings admin packet to nodeNum
+    void beginEditSettings();
 
-    /// This method is only intended for use in our GUI, so the user can set radio options
-    /// It sets a ChannelSet protobuf
-    void setChannels(in byte []payload);
+    /// Send commitEditSettings admin packet to nodeNum
+    void commitEditSettings();
+
+    /// Send position packet with wantResponse to nodeNum
+    void requestPosition(in int idNum, in double lat, in double lon, in int alt);
+
+    /// Send Shutdown admin packet to nodeNum
+    void requestShutdown(in int idNum);
+
+    /// Send Reboot admin packet to nodeNum
+    void requestReboot(in int idNum);
+
+    /// Send FactoryReset admin packet to nodeNum
+    void requestFactoryReset(in int idNum);
+
+    /// Send NodedbReset admin packet to nodeNum
+    void requestNodedbReset(in int idNum);
 
     /**
     Is the packet radio currently connected to the phone?  Returns a ConnectionState string.
@@ -116,11 +127,8 @@ interface IMeshService {
     /// Return a number 0-100 for firmware update progress. -1 for completed and success, -2 for failure
     int getUpdateStatus();
 
-    int getRegion();
-    void setRegion(int regionCode);
-
     /// Start providing location (from phone GPS) to mesh
-    void setupProvideLocation();
+    void startProvideLocation();
 
     /// Stop providing location (from phone GPS) to mesh
     void stopProvideLocation();

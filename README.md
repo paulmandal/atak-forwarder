@@ -1,4 +1,4 @@
-# ATAK Forwarder 
+# ATAK Forwarder
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
@@ -10,29 +10,29 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 
 ## Share Markers and PLI
 
-![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/0-markers-and-pli.png)
+![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/2.0.0/images/0-markers-and-pli.png)
 <br>
-![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/1-status.png)
+![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/2.0.0/images/1-status.png)
 <br>
 <br>
 
 ## Send Chat Messages
 
-![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/2-chat-messages.png)
+![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/2.0.0/images/2-chat-messages.png)
 <br>
 <br>
 
 ## Configurable Channel Settings / Share with QR
 
-![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/3-channel-config.png)
+![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/2.0.0/images/3-channel-config.png)
 <br>
-![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/4-qr-code-sharing.png)
+![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/2.0.0/images/4-qr-code-sharing.png)
 <br>
 <br>
 
 ## Use standalone Meshtastic devices as Trackers
 
-![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/1.0.7/images/5-write-to-tracker.png)
+![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/2.0.0/images/5-write-to-tracker.png)
 <br>
 <br>
 
@@ -46,10 +46,7 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 * Typical msg sizes, PLI: ~190 bytes, simple shape ~200 bytes, complex shape ~250 bytes, ~380 bytes, group chat ~400 bytes
 * Filtering of repeated messages with a configurable TTL (e.g. to prevent auto-send markers from flooding)
 * Message queue with priority (chat = pli > markers)
-
-# Beta Features
-
-* Support for USB devices -- early stage, you might need to pair the device in the Meshtastic app to get USB permissions before setting it up in ATAK
+* Support for USB devices
 
 # Supported Versions
 
@@ -57,21 +54,12 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic-Android | 1.2.64 |
-| Meshtastic-device | 1.2.64 |
+| Meshtastic App | 2.0.6 |
+| Meshtastic Firmware | 2.0.6 |
 
 # To Do
 
-* Remote channel management / updating
-* Automatically adjust link speed / range based on # of lost messages
-* Use T-Beam as a GPS source (if it proves to be more accurate than the phone's)
-* Message IDs and receipt confirmation
-* Improve chat message shrinking further
-* Smarter sending -- Map Markers get higher priority unless PLI has not gotten sent in ~5 minutes
-* Smarter sending -- Send a list of map markers to group, other clients can reply with which marker they are missing, build up a list of missing markers if more than 1 person is missing send to group, otherwise send to individuals
 * Needs more real-world stability testing
-* Re-add GoTenna support with a proper abstraction for communication layer
-* Bridge between multiple comm. devices? E.g. Meshtastic + goTenna on one device. Alternative is to break that into more than one plugin instance since their preSendProcessors will see each other's messages.
 * Use Dagger 2
 * Get a proper CI setup going (GitHub Actions?)
 
@@ -91,9 +79,9 @@ workspace/
 
 ## Set Up Meshtastic
 
-* Flash your devices with the lastest [Meshtastic Firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) (The plugin has been tested with 1.1.5 beta, if you have issues try that version)
+* Flash your devices with the supported version of the [Meshtastic Firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) from the table above
 * Install the [Meshtastic App](https://play.google.com/store/apps/details?id=com.geeksville.mesh) from the Play Store.
-* That's all, you don't need to open the app to continue
+* Open the Meshtastic App, click on the Settings (gear) icon on the right of the screen, then click the `+` icon, the app will ask for Bluetooh permissions, grant them.
 
 ## Build + Install ATAK
 
@@ -171,7 +159,6 @@ Message handling follows a few simple rules:
 - Messages from ATAK that are not chat are checked against a Recently Sent cache, if a message was recently sent it was dropped. This prevents spamming of auto-send map markers.
 - Messages are then queued in a prioritized queue, with the priority: chat = pli > marker
 - If a similar message already exists in the queue (e.g. PLI) it will be overwritten with the new message, this way a queued PLI won't be sent with out of date data if newer data is available
-- This compares Lat/Lon exactly so device GPS imprecision will probably cause PLIs to get queued up, either way there should never be more than 1 PLI in the queue
 - Messages are fetched from this queue by the CommHardware class and sent
 
 - The plugin will attempt to first use a "minimal" protobuf that saves space, but if it will result in dropped fields or a failed mapping on the receiving size it will fall back to the regular protobufs
@@ -179,11 +166,7 @@ Message handling follows a few simple rules:
 
 # Contributing
 
-Areas I'd especially like help are: 
+Areas I'd especially like help are:
 
 * reducing the message sizes without affecting features in ATAK (e.g. removing `detail.contact.endpoint` kills chat) -- check out https://github.com/paulmandal/libcotshrink for this effort
 * increasing resilience of this plugin, it is basically fire-and-forget (and maybe lose your message) right now
-* re-introducing goTenna Mesh support
-
-The hardware/communication layer is (kinda) abstracted behind a `CommHardware` interface, this interface can be implemented against other hardware -- if you would like to give it a shot with another hardware layer please reach out to me and let me know how it goes.
-

@@ -1,8 +1,8 @@
 package com.geeksville.mesh
 
 import android.os.Parcelable
-import com.geeksville.mesh.ui.bearing
-import com.geeksville.mesh.ui.latLongToMeter
+import com.geeksville.mesh.util.bearing
+import com.geeksville.mesh.util.latLongToMeter
 
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -18,12 +18,12 @@ data class MeshUser(
     val id: String,
     val longName: String,
     val shortName: String,
-    val hwModel: MeshProtos.HardwareModel
-) :
-    Parcelable {
+    val hwModel: MeshProtos.HardwareModel,
+    val isLicensed: Boolean,
+) : Parcelable {
 
     override fun toString(): String {
-        return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName}, hwModel=${hwModelString})"
+        return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName}, hwModel=${hwModelString}, isLicensed=${isLicensed})"
     }
 
     /** a string version of the hardware model, converted into pretty lowercase and changing _ to -, and p to dot
@@ -31,10 +31,8 @@ data class MeshUser(
      * */
     val hwModelString: String?
         get() =
-            if (hwModel == MeshProtos.HardwareModel.UNSET)
-                null
-            else
-                hwModel.name.replace('_', '-').replace('p', '.').toLowerCase()
+            if (hwModel == MeshProtos.HardwareModel.UNSET) null
+            else hwModel.name.replace('_', '-').replace('p', '.').lowercase()
 }
 
 @Serializable
@@ -43,8 +41,7 @@ data class Position(
     val latitude: Double,
     val longitude: Double,
     val altitude: Int,
-    val time: Int = currentTime(), // default to current time in secs (NOT MILLISECONDS!)
-    val batteryPctLevel: Int = 0
+    val time: Int = currentTime() // default to current time in secs (NOT MILLISECONDS!)
 ) : Parcelable {
     companion object {
         /// Convert to a double representation of degrees
@@ -61,8 +58,7 @@ data class Position(
         degD(p.latitudeI),
         degD(p.longitudeI),
         p.altitude,
-        if (p.time != 0) p.time else defaultTime,
-        p.batteryLevel
+        if (p.time != 0) p.time else defaultTime
     )
 
     /// @return distance in meters to some other node (or null if unknown)
@@ -73,16 +69,76 @@ data class Position(
 
     // If GPS gives a crap position don't crash our app
     fun isValid(): Boolean {
-        return (latitude <= 90.0 && latitude >= -90) &&
-                latitude != 0.0 &&
-                longitude != 0.0
+        return latitude != 0.0 && longitude != 0.0 &&
+                (latitude >= -90 && latitude <= 90.0) &&
+                (longitude >= -180 && longitude <= 180)
     }
 
     override fun toString(): String {
-        return "Position(lat=${latitude}, lon=${longitude}, alt=${altitude}, time=${time}, batteryPctLevel=${batteryPctLevel})"
+        return "Position(lat=${latitude}, lon=${longitude}, alt=${altitude}, time=${time})"
     }
 }
 
+
+@Serializable
+@Parcelize
+data class DeviceMetrics(
+    val time: Int = currentTime(), // default to current time in secs (NOT MILLISECONDS!)
+    val batteryLevel: Int = 0,
+    val voltage: Float,
+    val channelUtilization: Float,
+    val airUtilTx: Float
+) : Parcelable {
+    companion object {
+        fun currentTime() = (System.currentTimeMillis() / 1000).toInt()
+    }
+
+    /** Create our model object from a protobuf.
+     */
+    constructor(p: TelemetryProtos.DeviceMetrics, telemetryTime: Int = currentTime()) : this(
+        telemetryTime,
+        p.batteryLevel,
+        p.voltage,
+        p.channelUtilization,
+        p.airUtilTx
+    )
+
+    override fun toString(): String {
+        return "DeviceMetrics(time=${time}, batteryLevel=${batteryLevel}, voltage=${voltage}, channelUtilization=${channelUtilization}, airUtilTx=${airUtilTx})"
+    }
+}
+
+@Serializable
+@Parcelize
+data class EnvironmentMetrics(
+    val time: Int = currentTime(), // default to current time in secs (NOT MILLISECONDS!)
+    val temperature: Float,
+    val relativeHumidity: Float,
+    val barometricPressure: Float,
+    val gasResistance: Float,
+    val voltage: Float,
+    val current: Float,
+) : Parcelable {
+    companion object {
+        fun currentTime() = (System.currentTimeMillis() / 1000).toInt()
+    }
+
+    /** Create our model object from a protobuf.
+     */
+    constructor(t: TelemetryProtos.EnvironmentMetrics, telemetryTime: Int = currentTime()) : this(
+        telemetryTime,
+        t.temperature,
+        t.relativeHumidity,
+        t.barometricPressure,
+        t.gasResistance,
+        t.voltage,
+        t.current
+    )
+
+    override fun toString(): String {
+        return "EnvironmentMetrics(time=${time}, temperature=${temperature}, humidity=${relativeHumidity}, pressure=${barometricPressure}), resistance=${gasResistance}, voltage=${voltage}, current=${current}"
+    }
+}
 
 @Serializable
 @Parcelize
@@ -92,14 +148,25 @@ data class NodeInfo(
     var position: Position? = null,
     var snr: Float = Float.MAX_VALUE,
     var rssi: Int = Int.MAX_VALUE,
-    var lastHeard: Int = 0 // the last time we've seen this node in secs since 1970
+    var lastHeard: Int = 0, // the last time we've seen this node in secs since 1970
+    var deviceMetrics: DeviceMetrics? = null,
+    var environmentMetrics: EnvironmentMetrics? = null,
 ) : Parcelable {
 
-    /**
-     * Return the last time we've seen this node in secs since 1970
-     */
+    val batteryLevel get() = deviceMetrics?.batteryLevel
+    val voltage get() = deviceMetrics?.voltage
+    val batteryStr get() = if (batteryLevel in 1..100) String.format("%d%%", batteryLevel) else ""
 
-    val batteryPctLevel get() = position?.batteryPctLevel
+    private fun envFormat(f: String, unit: String, env: Float?): String =
+        if (env != null && env > 0f) String.format(f + unit, env) else ""
+
+    val envMetricStr
+        get() = envFormat("%.1f", "°C ", environmentMetrics?.temperature) +
+                envFormat("%.0f", "%% ", environmentMetrics?.relativeHumidity) +
+                envFormat("%.1f", "hPa ", environmentMetrics?.barometricPressure) +
+                envFormat("%.0f", "mΩ ", environmentMetrics?.gasResistance) +
+                envFormat("%.2f", "V ", environmentMetrics?.voltage) +
+                envFormat("%.1f", "mA", environmentMetrics?.current)
 
     /**
      * true if the device was heard from recently
@@ -126,10 +193,14 @@ data class NodeInfo(
     fun distance(o: NodeInfo?): Int? {
         val p = validPosition
         val op = o?.validPosition
-        return if (p != null && op != null)
-            p.distance(op).toInt()
-        else
-            null
+        return if (p != null && op != null) p.distance(op).toInt() else null
+    }
+
+    /// @return bearing to the other position in degrees
+    fun bearing(o: NodeInfo?): Int? {
+        val p = validPosition
+        val op = o?.validPosition
+        return if (p != null && op != null) p.bearing(op).toInt() else null
     }
 
     /// @return a nice human readable string for the distance, or null for unknown

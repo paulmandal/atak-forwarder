@@ -8,6 +8,7 @@
 
     <string name="connection_status_no_service_connected">Svc Disconnected</string>
     <string name="connection_status_no_device_configured">No Dvc Cfg</string>
+    <string name="connection_status_device_writing">Writing</string>
     <string name="connection_status_device_disconnected">Disconnected</string>
     <string name="connection_status_device_connected">Connected</string>
 
@@ -140,35 +141,43 @@
     <string name="cancel">Cancel</string>
     <string name="tracker_callsign">Tracker Callsign</string>
 
+    <string name="group_member_listview_tak_icon">TAK Icon</string>
+
     <string-array name="channel_modes">
-        <item>Short Range / Slow</item>
         <item>Short Range / Fast</item>
-        <item>Medium Range / Slow</item>
+        <item>Short Range / Slow</item>
         <item>Medium Range / Fast</item>
-        <item>Long Range / Fast (Not Recommended)</item>
-        <item>Long Range / Slow (Not Recommended)</item>
+        <item>Medium Range / Slow</item>
+        <item>Long Range / Fast</item>
+        <item>Long Range / Slow</item>
+        <item>Very Long Range / Slow</item>
     </string-array>
 
     <string-array name="channel_mode_values">
+        <item>6</item>
+        <item>5</item>
+        <item>4</item>
+        <item>3</item>
         <item>0</item>
         <item>1</item>
-        <item>4</item>
-        <item>5</item>
         <item>2</item>
-        <item>3</item>
     </string-array>
 
     <string-array name="regions">
         <item>Unset</item>
         <item>US</item>
-        <item>EU433</item>
-        <item>EU865</item>
+        <item>EU_433</item>
+        <item>EU_868</item>
         <item>CN</item>
         <item>JP</item>
         <item>ANZ</item>
         <item>KR</item>
         <item>TW</item>
         <item>RU</item>
+        <item>IN</item>
+        <item>NZ_865</item>
+        <item>TH</item>
+        <item>LORA_24</item>
     </string-array>
 
     <string-array name="regions_values">
@@ -182,6 +191,10 @@
         <item>7</item>
         <item>8</item>
         <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
     </string-array>
 
     <string-array name="teams">

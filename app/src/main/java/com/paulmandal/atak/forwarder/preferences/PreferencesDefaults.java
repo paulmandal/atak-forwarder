@@ -15,7 +15,7 @@ public class PreferencesDefaults {
     public static final String DEFAULT_OTHER_HOP_LIMIT = "3";
     public static final boolean DEFAULT_COMM_DEVICE_IS_ROUTER = false;
     public static final String DEFAULT_CHANNEL_NAME = "Default";
-    public static final String DEFAULT_CHANNEL_MODE = "0";
+    public static final String DEFAULT_CHANNEL_MODE = "6";
     public static final String DEFAULT_CHANNEL_PSK = new PskHelper().genPsk();
     public static final String DEFAULT_TRACKER_PLI_INTERVAL = "60";
     public static final String DEFAULT_TRACKER_STALE_AFTER_SECS = "75";

@@ -7,9 +7,8 @@ import androidx.annotation.CallSuper;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.geeksville.mesh.ChannelProtos;
+import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
-import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurer;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -22,7 +21,7 @@ import java.util.List;
 public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
     private final MutableLiveData<String> mChannelName = new MutableLiveData<>();
     private final MutableLiveData<String> mPskHash = new MutableLiveData<>();
-    private final MutableLiveData<ChannelProtos.ChannelSettings.ModemConfig> mModemConfig = new MutableLiveData<>();
+    private final MutableLiveData<ConfigProtos.Config.LoRaConfig.ModemPreset> mModemConfig = new MutableLiveData<>();
     private final MutableLiveData<MeshtasticDevice> mCommDevice = new MutableLiveData<>();
 
     private final Gson mGson;
@@ -52,7 +51,7 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
         return mChannelName;
     }
 
-    public LiveData<ChannelProtos.ChannelSettings.ModemConfig> getModemConfig() {
+    public LiveData<ConfigProtos.Config.LoRaConfig.ModemPreset> getModemPreset() {
         return mModemConfig;
     }
 
@@ -82,7 +81,7 @@ public class ChannelStatusViewModel extends DestroyableSharedPrefsListener {
         String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        ChannelProtos.ChannelSettings.ModemConfig modemConfig = ChannelProtos.ChannelSettings.ModemConfig.forNumber(channelMode);
+        ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(channelMode);
         String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
 
         mChannelName.postValue(channelName);

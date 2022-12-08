@@ -31,7 +31,7 @@ public class Logger extends DestroyableSharedPrefsListener {
 
     private boolean mEnableLogging;
 
-    private Set<Listener> mListeners = new CopyOnWriteArraySet<>();
+    private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
     public Logger(List<Destroyable> destroyables, SharedPreferences sharedPreferences, Handler uiThreadHandler) {
         super(destroyables, sharedPreferences,

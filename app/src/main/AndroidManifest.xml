@@ -8,7 +8,8 @@
         android:description="@string/app_desc"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/ATAKPluginTheme">
+        android:theme="@style/ATAKPluginTheme"
+        android:supportsRtl="true">
 
         <meta-data
             android:name="plugin-api"

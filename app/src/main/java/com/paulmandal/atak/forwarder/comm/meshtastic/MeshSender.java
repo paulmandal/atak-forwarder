@@ -21,7 +21,6 @@ import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.sql.Connection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -82,7 +81,7 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
         super(atakContext,
                 logger,
                 new String[]{
-                        MeshServiceConstants.ACTION_MESSAGE_STATUS_CHANGED
+                        MeshServiceConstants.ACTION_MESSAGE_STATUS
                 },
                 destroyables,
                 connectionStateHandler);

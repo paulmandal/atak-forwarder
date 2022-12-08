@@ -15,7 +15,7 @@ public class MeshServiceConstants {
     public static final String ACTION_RECEIVED_NODEINFO_APP = "com.geeksville.mesh.RECEIVED.NODEINFO_APP";
     public static final String ACTION_RECEIVED_POSITION_APP = "com.geeksville.mesh.RECEIVED.POSITION_APP";
     public static final String ACTION_NODE_CHANGE = "com.geeksville.mesh.NODE_CHANGE";
-    public static final String ACTION_MESSAGE_STATUS_CHANGED = "com.geeksville.mesh.MESSAGE_STATUS_CHANGED";
+    public static final String ACTION_MESSAGE_STATUS = "com.geeksville.mesh.MESSAGE_STATUS";
 
     /**
      * Extra data fields from the Meshtastic service

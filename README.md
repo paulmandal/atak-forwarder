@@ -1,4 +1,4 @@
-# ATAK Forwarder 
+# ATAK Forwarder
 
 An ATAK plugin for forwarding CoT messages via a hardware layer. Currently supports [Meshtastic](https://www.meshtastic.org) devices.
 
@@ -54,8 +54,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic App | 2.0.0 alpha |
-| Meshtastic Firmware | 2.0.2.8146e84 |
+| Meshtastic App | 2.0.6 |
+| Meshtastic Firmware | 2.0.6 |
 
 # To Do
 
@@ -79,9 +79,9 @@ workspace/
 
 ## Set Up Meshtastic
 
-* Flash your devices with the lastest [Meshtastic Firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) (The plugin has been tested with 1.1.5 beta, if you have issues try that version)
+* Flash your devices with the supported version of the [Meshtastic Firmware](https://github.com/meshtastic/Meshtastic-device/releases/latest) from the table above
 * Install the [Meshtastic App](https://play.google.com/store/apps/details?id=com.geeksville.mesh) from the Play Store.
-* That's all, you don't need to open the app to continue
+* Open the Meshtastic App, click on the Settings (gear) icon on the right of the screen, then click the `+` icon, the app will ask for Bluetooh permissions, grant them.
 
 ## Build + Install ATAK
 

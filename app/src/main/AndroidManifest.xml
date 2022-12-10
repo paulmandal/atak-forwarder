@@ -18,4 +18,8 @@
             android:name="app_desc"
             android:value="@string/app_desc" />
     </application>
+
+    <queries>
+        <package android:name="com.geeksville.mesh" />
+    </queries>
 </manifest>

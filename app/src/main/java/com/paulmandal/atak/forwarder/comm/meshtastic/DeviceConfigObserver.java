@@ -22,6 +22,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
     public interface Listener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
         void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole);
+        void onWriteToCommDeviceChanged(boolean writeToCommDevice);
     }
 
     private final Logger mLogger;
@@ -53,7 +54,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
 
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
-        // Do nothing
+        notifyWriteToCommDeviceListeners(sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE));
     }
 
     @Override
@@ -97,6 +98,13 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
         mLogger.v(TAG, "Config changed, notifying listeners");
         for (Listener listener : mListeners) {
             listener.onDeviceConfigChanged(regionCode, channelName, channelMode, channelPsk, routingRole);
+        }
+    }
+
+    private void notifyWriteToCommDeviceListeners(boolean writeToCommDevice) {
+        mLogger.v(TAG, "Write to comm device setting changed, notifying listeners");
+        for (Listener listener : mListeners) {
+            listener.onWriteToCommDeviceChanged(writeToCommDevice);
         }
     }
 }

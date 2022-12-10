@@ -54,6 +54,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
     private final ConfigProtos.Config.DeviceConfig.Role mRoutingRole;
 
+    private final boolean mWriteToDevice;
+
     private boolean mStarted;
 
     public MeshDeviceConfigurator(MeshServiceController meshServiceController,
@@ -70,7 +72,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                                   String channelName,
                                   int channelMode,
                                   byte[] channelPsk,
-                                  ConfigProtos.Config.DeviceConfig.Role routingRole) {
+                                  ConfigProtos.Config.DeviceConfig.Role routingRole,
+                                  boolean writeToDevice) {
         mMeshServiceController = meshServiceController;
         mDeviceConnectionHandler = deviceConnectionHandler;
         mMeshtasticDeviceSwitcher = meshtasticDeviceSwitcher;
@@ -86,6 +89,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         mChannelMode = channelMode;
         mChannelPsk = channelPsk;
         mRoutingRole = routingRole;
+        mWriteToDevice = writeToDevice;
     }
 
     @Override
@@ -126,6 +130,11 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
     }
 
     private void maybeWriteConfig() {
+        if (!mWriteToDevice) {
+            sendFinished();
+            return;
+        }
+
         try {
             mLogger.v(TAG, "Checking existing device config.");
             boolean needsWrite;

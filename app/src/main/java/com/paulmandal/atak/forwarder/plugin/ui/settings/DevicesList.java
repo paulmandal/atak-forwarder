@@ -19,7 +19,7 @@ import java.util.Set;
 public class DevicesList {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + DevicesList.class.getSimpleName();
 
-    private static final String MARKER_MESHTASTIC = "Meshtastic";
+    private static final String MESHTASTIC_BLUETOOTH_REGEX = "^\\\\S+\\$";
 
     private final Context mAtakContext;
 
@@ -35,7 +35,8 @@ public class DevicesList {
 
         Set<BluetoothDevice> bluetoothDevices = bluetoothAdapter.getBondedDevices();
         for (BluetoothDevice device : bluetoothDevices) {
-            if (device.getName() != null && device.getName().startsWith(MARKER_MESHTASTIC)) {
+            ;
+            if (device.getName() != null && device.getName().matches(MESHTASTIC_BLUETOOTH_REGEX)) {
                 meshtasticDevices.add(new MeshtasticDevice(device.getName(), device.getAddress(), MeshtasticDevice.DeviceType.BLUETOOTH));
             }
         }

@@ -76,6 +76,11 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
         // do nothing
     }
 
+    @Override
+    public void onWriteToCommDeviceChanged(boolean writeToCommDevice) {
+        // do nothing
+    }
+
     public void addListener(Listener listener) {
         mListeners.add(listener);
     }

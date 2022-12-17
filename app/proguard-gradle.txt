@@ -22,8 +22,7 @@
 }
 
 # For enumeration classes, see http://proguard.sourceforge.net/manual/examples.html#enumerations
--keepclassmembers class * extends java.lang.Enum {
-    <fields>;
+-keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
@@ -46,11 +45,13 @@
     public static ** valueOf(java.lang.String);
 }
 
-# ATAK Plugin API Classes
 -keep class * extends transapps.maps.plugin.tool.Tool {
 }
 -keep class * implements transapps.maps.plugin.lifecycle.Lifecycle {
 }
+
+# overcome an existing bug in the gradle subsystem (3.5.x)
+-keep class module-info
 
 # These classes use Parcelable
 -keep class com.geeksville.mesh.** { *; }

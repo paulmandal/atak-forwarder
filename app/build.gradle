@@ -85,8 +85,8 @@ apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
 
 android {
-    compileSdkVersion 28
-    buildToolsVersion "30.0.3"
+    compileSdkVersion 31
+    buildToolsVersion "33.0.1"
 
     dexOptions {
         jumboMode = true
@@ -134,11 +134,6 @@ android {
         // by a similar customization.
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
-    }
-
-    packagingOptions {
-        exclude 'META-INF/INDEX.LIST'
-        exclude 'META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version'
     }
 
     lintOptions {
@@ -258,7 +253,7 @@ def getVersionCode() {
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     //noinspection GradleDependency
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
+    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
 
     implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.9'
 

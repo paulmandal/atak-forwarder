@@ -1,5 +1,5 @@
 #!/bin/bash -xe
-for filename in DataPacket.kt MyNodeInfo.kt NodeInfo.kt util/LocationUtils.kt
+for filename in DataPacket.kt MyNodeInfo.kt NodeInfo.kt
 do
   cp -v ../Meshtastic-Android/app/src/main/java/com/geeksville/mesh/${filename} app/src/main/java/com/geeksville/mesh/${filename}
 done

@@ -1,8 +1,6 @@
 package com.geeksville.mesh
 
 import android.os.Parcelable
-import com.geeksville.mesh.util.bearing
-import com.geeksville.mesh.util.latLongToMeter
 
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -60,12 +58,6 @@ data class Position(
         p.altitude,
         if (p.time != 0) p.time else defaultTime
     )
-
-    /// @return distance in meters to some other node (or null if unknown)
-    fun distance(o: Position) = latLongToMeter(latitude, longitude, o.latitude, o.longitude)
-
-    /// @return bearing to the other position in degrees
-    fun bearing(o: Position) = bearing(latitude, longitude, o.latitude, o.longitude)
 
     // If GPS gives a crap position don't crash our app
     fun isValid(): Boolean {
@@ -188,27 +180,4 @@ data class NodeInfo(
         get() {
             return position?.takeIf { it.isValid() }
         }
-
-    /// @return distance in meters to some other node (or null if unknown)
-    fun distance(o: NodeInfo?): Int? {
-        val p = validPosition
-        val op = o?.validPosition
-        return if (p != null && op != null) p.distance(op).toInt() else null
-    }
-
-    /// @return bearing to the other position in degrees
-    fun bearing(o: NodeInfo?): Int? {
-        val p = validPosition
-        val op = o?.validPosition
-        return if (p != null && op != null) p.bearing(op).toInt() else null
-    }
-
-    /// @return a nice human readable string for the distance, or null for unknown
-    fun distanceStr(o: NodeInfo?) = distance(o)?.let { dist ->
-        when {
-            dist == 0 -> null // same point
-            dist < 1000 -> "%.0f m".format(dist.toDouble())
-            else -> "%.1f km".format(dist / 1000.0)
-        }
-    }
 }

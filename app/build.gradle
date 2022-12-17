@@ -254,8 +254,6 @@ def getVersionCode() {
 
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    //noinspection GradleDependency
-//    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.9'
 
@@ -266,8 +264,6 @@ dependencies {
     implementation 'eo.view:batterymeter:2.0.0'
 
     implementation 'com.paulmandal.atak:libcotshrink:1.0.3'
-
-    api 'mil.nga.mgrs:mgrs-android:2.2.0'
 
     testImplementation 'junit:junit:4.13.2'
 }

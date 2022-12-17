@@ -9,7 +9,8 @@ buildscript {
         ext.ATAK_VERSION = ENV_ATAK_VERSION
     }
 
-    def takdevVersion = '2.3.1'
+    def takdevVersion = '2.+'
+    def localTakdevVersion = '2.3.1'
 
     ext.getValueFromPropertiesFile = { propFile, key ->
         if(!propFile.isFile() || !propFile.canRead())
@@ -39,7 +40,7 @@ buildscript {
     ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
     ext.takrepoUser = getProperty('takrepo.user', 'invalid')
     ext.takrepoPassword = getProperty('takrepo.password', 'invalid')
-    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-${takdevVersion}.jar")
+    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-${localTakdevVersion}.jar")
 
     repositories {
         google()
@@ -54,6 +55,7 @@ buildscript {
                 username = takrepoUser
                 password = takrepoPassword
             }
+            allowInsecureProtocol = true
         }
     }
     dependencies {
@@ -85,8 +87,8 @@ apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "33.0.1"
+    compileSdkVersion 30
+    buildToolsVersion "30.0.2"
 
     dexOptions {
         jumboMode = true
@@ -253,7 +255,7 @@ def getVersionCode() {
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
     //noinspection GradleDependency
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.1.0'
+//    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.9'
 

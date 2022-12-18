@@ -138,6 +138,10 @@ android {
         release.setRoot('build-types/release')
     }
 
+    packagingOptions {
+        exclude 'META-INF/INDEX.LIST'
+    }
+
     lintOptions {
         checkReleaseBuilds true
         // Or, if you prefer, you can continue to check for errors in release builds,

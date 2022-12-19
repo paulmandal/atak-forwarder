@@ -1,6 +1,6 @@
 buildscript {
 
-    ext.PLUGIN_VERSION = "2.0.0"
+    ext.PLUGIN_VERSION = "2.0.1"
     ext.ATAK_VERSION = "4.4.0"
 
     // Attempt to read ATAK_VERSION from the environment
@@ -9,7 +9,8 @@ buildscript {
         ext.ATAK_VERSION = ENV_ATAK_VERSION
     }
 
-    def takdevVersion = '2.3.1'
+    def takdevVersion = '2.+'
+    def localTakdevVersion = '2.3.1'
 
     ext.getValueFromPropertiesFile = { propFile, key ->
         if(!propFile.isFile() || !propFile.canRead())
@@ -39,7 +40,7 @@ buildscript {
     ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
     ext.takrepoUser = getProperty('takrepo.user', 'invalid')
     ext.takrepoPassword = getProperty('takrepo.password', 'invalid')
-    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-${takdevVersion}.jar")
+    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../AndroidTacticalAssaultKit-CIV/atak-gradle-takdev/build/libs/atak-gradle-takdev-${localTakdevVersion}.jar")
 
     repositories {
         google()
@@ -54,6 +55,7 @@ buildscript {
                 username = takrepoUser
                 password = takrepoPassword
             }
+            allowInsecureProtocol = true
         }
     }
     dependencies {
@@ -85,7 +87,7 @@ apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
     dexOptions {
@@ -138,7 +140,6 @@ android {
 
     packagingOptions {
         exclude 'META-INF/INDEX.LIST'
-        exclude 'META-INF/androidx.localbroadcastmanager_localbroadcastmanager.version'
     }
 
     lintOptions {
@@ -257,8 +258,6 @@ def getVersionCode() {
 
 dependencies {
     implementation "androidx.constraintlayout:constraintlayout:2.1.4"
-    //noinspection GradleDependency
-    implementation 'androidx.localbroadcastmanager:localbroadcastmanager:1.0.0'
 
     implementation 'com.google.protobuf:protobuf-kotlin-lite:3.21.9'
 
@@ -269,8 +268,6 @@ dependencies {
     implementation 'eo.view:batterymeter:2.0.0'
 
     implementation 'com.paulmandal.atak:libcotshrink:1.0.3'
-
-    api 'mil.nga.mgrs:mgrs-android:2.2.0'
 
     testImplementation 'junit:junit:4.13.2'
 }

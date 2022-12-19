@@ -19,7 +19,8 @@ public class MeshDeviceConfiguratorFactory {
                                                                String channelName,
                                                                int channelMode,
                                                                byte[] channelPsk,
-                                                               ConfigProtos.Config.DeviceConfig.Role routingRole) {
+                                                               ConfigProtos.Config.DeviceConfig.Role routingRole,
+                                                               boolean writeToDevice) {
         return new MeshDeviceConfigurator(
                 meshServiceController,
                 deviceConnectionHandler,
@@ -35,6 +36,7 @@ public class MeshDeviceConfiguratorFactory {
                 channelName,
                 channelMode,
                 channelPsk,
-                routingRole);
+                routingRole,
+                writeToDevice);
     }
 }

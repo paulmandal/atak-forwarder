@@ -55,6 +55,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     private String mLongName;
     private String mShortName;
 
+    private boolean mWriteToCommDevice;
     private boolean mSetDeviceAddressCalled;
     private boolean mInitialDeviceWriteStarted;
 
@@ -91,6 +92,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
         mRoutingRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER) ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
+        mWriteToCommDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE);
 
         if (meshtasticDevice != null) {
             updateLongNameAndShortName();
@@ -152,6 +154,15 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mRoutingRole = routingRole;
 
         writeCommDevice();
+    }
+
+    @Override
+    public void onWriteToCommDeviceChanged(boolean writeToCommDevice) {
+        mWriteToCommDevice = writeToCommDevice;
+
+        if (writeToCommDevice) {
+            writeCommDevice();
+        }
     }
 
     @Override
@@ -225,7 +236,8 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 channelName,
                 channelMode,
                 channelPsk,
-                routingRole);
+                routingRole,
+                true);
         meshDeviceConfigurator.addListener(listener);
 
         if (mActiveCommConfigurator != null || mActiveTrackerConfigurator != null) {
@@ -284,7 +296,8 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 mChannelName,
                 mChannelMode,
                 mChannelPsk,
-                mRoutingRole);
+                mRoutingRole,
+                mWriteToCommDevice);
     }
 
     private void maybeCancelAndRemoveActiveCommConfigurator() {

@@ -17,7 +17,7 @@ data class MeshUser(
     val longName: String,
     val shortName: String,
     val hwModel: MeshProtos.HardwareModel,
-    val isLicensed: Boolean,
+    val isLicensed: Boolean = false,
 ) : Parcelable {
 
     override fun toString(): String {
@@ -150,7 +150,7 @@ data class NodeInfo(
     val batteryStr get() = if (batteryLevel in 1..100) String.format("%d%%", batteryLevel) else ""
 
     private fun envFormat(f: String, unit: String, env: Float?): String =
-        if (env != null && env > 0f) String.format(f + unit, env) else ""
+        if (env != null && env != 0f) String.format(f + unit, env) else ""
 
     val envMetricStr
         get() = envFormat("%.1f", "°C ", environmentMetrics?.temperature) +

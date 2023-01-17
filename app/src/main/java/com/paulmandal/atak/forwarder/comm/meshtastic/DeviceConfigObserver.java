@@ -55,7 +55,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
         if (mListeners != null) {
-            notifyWriteToCommDeviceListeners(sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE));
+            notifyWriteToCommDeviceListeners(!sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE));
         }
     }
 

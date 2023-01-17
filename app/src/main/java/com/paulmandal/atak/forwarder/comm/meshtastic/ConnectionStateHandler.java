@@ -77,7 +77,7 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
     }
 
     @Override
-    public void onWriteToCommDeviceChanged(boolean writeToCommDevice) {
+    public void onPluginManagesDeviceChanged(boolean pluginManagesDevice) {
         // do nothing
     }
 

@@ -89,7 +89,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
         mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
         mRoutingRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER) ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
-        mWriteToCommDevice = !sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE);
+        mWriteToCommDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_PLUGIN_MANAGES_DEVICE, PreferencesDefaults.DEFAULT_PLUGIN_MANAGES_DEVICE);
 
         if (meshtasticDevice != null) {
             updateLongNameAndShortName();
@@ -154,10 +154,10 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     }
 
     @Override
-    public void onWriteToCommDeviceChanged(boolean writeToCommDevice) {
-        mWriteToCommDevice = writeToCommDevice;
+    public void onPluginManagesDeviceChanged(boolean pluginManagesDevice) {
+        mWriteToCommDevice = pluginManagesDevice;
 
-        if (writeToCommDevice) {
+        if (pluginManagesDevice) {
             writeCommDevice();
         }
     }

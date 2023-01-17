@@ -14,11 +14,8 @@ import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import kotlinx.serialization.descriptors.StructureKind;
 
 public class MeshDeviceConfigurationController implements DeviceConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurationController.class.getSimpleName();
@@ -281,6 +278,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     }
 
     private MeshDeviceConfigurator createCommDeviceConfigurator() {
+        mLogger.d(TAG, "Creating comm device configurator with writeToCommDevice: " + mWriteToCommDevice);
         return mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
                 mDeviceConnectionHandler,

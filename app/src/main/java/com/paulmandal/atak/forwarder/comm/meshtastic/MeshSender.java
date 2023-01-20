@@ -312,11 +312,9 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
     }
 
     private void handleMessageStatusChange(int id, MessageStatus status) {
-        mUiThreadHandler.post(() -> {
-            for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
-                messageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED || status == MessageStatus.RECEIVED);
-            }
-        });
+        if (status == MessageStatus.DELIVERED || status == MessageStatus.RECEIVED || status == MessageStatus.ERROR) {
+            notifyAckNackListeners(id, status);
+        }
 
         if (id != mPendingMessageId) {
             mLogger.e(TAG, "  handleMessageStatusChange for a msg we don't care about messageId: " + id + " status: " + status + " (wanted: " + mPendingMessageId + ")");
@@ -350,6 +348,14 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
         } else {
             mLogger.i(TAG, "We don't know how to handle status: " + status + " wait until there's a new status and hopefully we can handle that.");
         }
+    }
+
+    private void notifyAckNackListeners(int id, MessageStatus status) {
+        mUiThreadHandler.post(() -> {
+            for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
+                messageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED || status == MessageStatus.RECEIVED);
+            }
+        });
     }
 
     private int getHopLimit(MessageType messageType) {

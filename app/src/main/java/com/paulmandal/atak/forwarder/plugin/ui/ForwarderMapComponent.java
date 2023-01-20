@@ -233,7 +233,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
 
         StatusViewModel statusViewModel = new StatusViewModel(
-                destroyables,
+                deviceConfigObserver,
                 sharedPreferences,
                 userTracker,
                 connectionStateHandler,

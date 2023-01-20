@@ -11,6 +11,7 @@ import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
@@ -42,7 +43,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
 
-    public StatusViewModel(List<Destroyable> destroyables,
+    public StatusViewModel(DeviceConfigObserver deviceConfigObserver,
                            SharedPreferences sharedPreferences,
                            UserTracker userTracker,
                            ConnectionStateHandler connectionStateHandler,
@@ -53,7 +54,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
                            CommandQueue commandQueue,
                            Gson gson,
                            HashHelper hashHelper) {
-        super(destroyables, sharedPreferences, gson, hashHelper);
+        super(deviceConfigObserver, sharedPreferences, gson, hashHelper);
 
         mDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
 

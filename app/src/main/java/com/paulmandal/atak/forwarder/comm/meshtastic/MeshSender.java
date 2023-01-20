@@ -314,7 +314,7 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
     private void handleMessageStatusChange(int id, MessageStatus status) {
         mUiThreadHandler.post(() -> {
             for (MessageAckNackListener messageAckNackListener : mMessageAckNackListeners) {
-                messageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED);
+                messageAckNackListener.onMessageAckNack(id, status == MessageStatus.DELIVERED || status == MessageStatus.RECEIVED);
             }
         });
 
@@ -325,7 +325,7 @@ public class MeshSender extends MeshEventHandler implements ConnectionStateHandl
 
         mLogger.i(TAG, "handleMessageStatusChange, got the message we ACK/NACK we're waiting for id: " + mPendingMessageId + ", status: " + status);
 
-        if (status == MessageStatus.DELIVERED) {
+        if (status == MessageStatus.DELIVERED || status == MessageStatus.RECEIVED) {
             mPendingMessageId = NO_ID;
             mChunkInFlight = null;
             sendNextChunk();

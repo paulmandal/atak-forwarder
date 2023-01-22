@@ -16,8 +16,8 @@ import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
-public class OutbountMessageHandler implements CommsLogger {
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutbountMessageHandler.class.getSimpleName();
+public class OutboundMessageHandler implements CommsLogger {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
 
     private final Handler mMainThreadHandler;
     private final CommsMapComponent mCommsMapComponent;
@@ -28,7 +28,7 @@ public class OutbountMessageHandler implements CommsLogger {
     private final CotShrinker mCotShrinker;
     private final Logger mLogger;
 
-    public OutbountMessageHandler(Handler mainThreadHandler,
+    public OutboundMessageHandler(Handler mainThreadHandler,
                                   CommsMapComponent commsMapComponent,
                                   ConnectionStateHandler connectionStateHandler,
                                   CommandQueue commandQueue,

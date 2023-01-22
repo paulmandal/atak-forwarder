@@ -22,7 +22,7 @@ import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
-import com.paulmandal.atak.forwarder.handlers.OutbountMessageHandler;
+import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
@@ -125,8 +125,6 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(channelMode);
         ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
         boolean pluginManagesDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_PLUGIN_MANAGES_DEVICE, PreferencesDefaults.DEFAULT_PLUGIN_MANAGES_DEVICE);
-        //TODO: pull regionCode and pass into ConnectionStateHandler
-        // TODO: also pull other values used in StatusViewModel or ChannelStatusViewModel and send them through ctor
 
         MeshDeviceConfigurationController meshDeviceConfigurationController = new MeshDeviceConfigurationController(
                 meshServiceController,
@@ -149,11 +147,13 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         ConnectionStateHandler connectionStateHandler = new ConnectionStateHandler(
                 logger,
-                meshtasticDevice,
                 meshDeviceConfigurationController,
                 meshServiceController,
                 deviceConnectionHandler,
-                deviceConfigObserver
+                deviceConfigObserver,
+                meshtasticDevice,
+                regionCode,
+                pluginManagesDevice
         );
 
 
@@ -166,7 +166,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 connectionStateHandler,
                 meshServiceController,
                 atakUid,
-                callsign);
+                callsign
+        );
 
 
         TrackerEventHandler trackerEventHandler = new TrackerEventHandler(
@@ -174,7 +175,8 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 logger,
                 destroyables,
                 uiThreadHandler,
-                connectionStateHandler);
+                connectionStateHandler
+        );
 
 
 
@@ -232,7 +234,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         CommsMapComponent commsMapComponent  = CommsMapComponent.getInstance();
         CotMessageCache cotMessageCache = new CotMessageCache(destroyables, sharedPreferences, cotComparer);
-        CommsLogger outboundMessageHandler = new OutbountMessageHandler(
+        CommsLogger outboundMessageHandler = new OutboundMessageHandler(
                 uiThreadHandler,
                 commsMapComponent,
                 connectionStateHandler,

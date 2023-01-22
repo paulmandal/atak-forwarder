@@ -10,16 +10,16 @@
         android:key="plugin_atak_forwarder_key_refresh_comm_devices"
         android:title="@string/refresh_comm_devices"
         android:summary="@string/refresh_comm_devices_summary" />
-    <com.atakmap.android.gui.PanSwitchPreference
-        android:key="plugin_atak_forwarder_key_plugin_manages_device"
-        android:title="@string/plugin_manages_device"
-        android:summary="@string/plugin_manages_device_summary"
-        android:defaultValue="false" />
     <com.atakmap.android.gui.PanListPreference
         android:key="plugin_atak_forwarder_key_set_region"
         android:title="@string/set_region"
         android:summary="@string/set_region_summary"
         android:dialogTitle="@string/set_region"/>
+    <com.atakmap.android.gui.PanSwitchPreference
+        android:key="plugin_atak_forwarder_key_plugin_manages_device"
+        android:title="@string/plugin_manages_device"
+        android:summary="@string/plugin_manages_device_summary"
+        android:defaultValue="false" />
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="plugin_atak_forwarder_key_pli_max_frequency"
         android:title="@string/pli_max_frequency"

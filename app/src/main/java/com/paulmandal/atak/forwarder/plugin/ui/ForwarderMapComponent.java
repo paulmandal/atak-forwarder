@@ -9,15 +9,20 @@ import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 
 import com.atakmap.android.dropdown.DropDownMapComponent;
 import com.atakmap.android.ipc.AtakBroadcast;
 import com.atakmap.android.maps.MapView;
 import com.atakmap.app.preferences.ToolsPreferenceFragment;
+import com.atakmap.comms.CommsLogger;
+import com.atakmap.comms.CommsMapComponent;
+import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.R;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
+import com.paulmandal.atak.forwarder.handlers.OutbountMessageHandler;
 import com.paulmandal.atak.forwarder.comm.CotMessageCache;
 import com.paulmandal.atak.forwarder.comm.meshtastic.CommandQueueWorker;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
@@ -37,7 +42,6 @@ import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.CotComparer;
 import com.paulmandal.atak.forwarder.factories.MessageHandlerFactory;
 import com.paulmandal.atak.forwarder.handlers.InboundMessageHandler;
-import com.paulmandal.atak.forwarder.handlers.OutboundMessageHandler;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -113,6 +117,17 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         );
         String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
         MeshtasticDevice meshtasticDevice = gson.fromJson(commDeviceStr, MeshtasticDevice.class);
+        ConfigProtos.Config.LoRaConfig.RegionCode regionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
+        String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
+        int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
+        byte[] channelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+        boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
+        ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(channelMode);
+        ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
+        boolean pluginManagesDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_PLUGIN_MANAGES_DEVICE, PreferencesDefaults.DEFAULT_PLUGIN_MANAGES_DEVICE);
+        //TODO: pull regionCode and pass into ConnectionStateHandler
+        // TODO: also pull other values used in StatusViewModel or ChannelStatusViewModel and send them through ctor
+
         MeshDeviceConfigurationController meshDeviceConfigurationController = new MeshDeviceConfigurationController(
                 meshServiceController,
                 deviceConnectionHandler,
@@ -121,8 +136,13 @@ public class ForwarderMapComponent extends DropDownMapComponent {
                 deviceConfigObserver,
                 hashHelper,
                 logger,
-                sharedPreferences,
                 meshtasticDevice,
+                regionCode,
+                channelName,
+                channelMode,
+                channelPsk,
+                routingRole,
+                pluginManagesDevice,
                 callsign
         );
 
@@ -210,14 +230,16 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         InboundMessageHandler inboundMessageHandler = MessageHandlerFactory.getInboundMessageHandler(inboundMeshMessageHandler, cotShrinker, userTracker, logger);
 
 
+        CommsMapComponent commsMapComponent  = CommsMapComponent.getInstance();
         CotMessageCache cotMessageCache = new CotMessageCache(destroyables, sharedPreferences, cotComparer);
-        OutboundMessageHandler outboundMessageHandler = MessageHandlerFactory.getOutboundMessageHandler(
+        CommsLogger outboundMessageHandler = new OutbountMessageHandler(
+                uiThreadHandler,
+                commsMapComponent,
                 connectionStateHandler,
                 commandQueue,
                 queuedCommandFactory,
                 cotMessageCache,
                 cotShrinker,
-                destroyables,
                 logger
         );
 
@@ -234,16 +256,19 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
         StatusViewModel statusViewModel = new StatusViewModel(
                 deviceConfigObserver,
-                sharedPreferences,
+                hashHelper,
+                channelName,
+                channelPsk,
+                modemConfig,
+                meshtasticDevice,
+                pluginManagesDevice,
                 userTracker,
                 connectionStateHandler,
                 discoveryBroadcastEventHandler,
                 meshSender,
                 inboundMeshMessageHandler,
                 trackerEventHandler,
-                commandQueue,
-                gson,
-                hashHelper);
+                commandQueue);
 
         LoggingViewModel loggingViewModel = new LoggingViewModel(destroyables, sharedPreferences, logger);
 

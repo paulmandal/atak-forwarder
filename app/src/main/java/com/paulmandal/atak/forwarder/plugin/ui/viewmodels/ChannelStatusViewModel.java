@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurator;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.plugin.Destroyable;
@@ -29,25 +30,21 @@ public class ChannelStatusViewModel implements DeviceConfigObserver.Listener {
     private final HashHelper mHashHelper;
 
     public ChannelStatusViewModel(DeviceConfigObserver deviceConfigObserver,
-                                  SharedPreferences sharedPreferences,
-                                  Gson gson,
-                                  HashHelper hashHelper) {
+                                  HashHelper hashHelper,
+                                  String channelName,
+                                  byte[] psk,
+                                  ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig,
+                                  MeshtasticDevice meshtasticDevice,
+                                  boolean pluginManagesDevice) {
         mHashHelper = hashHelper;
-
-        deviceConfigObserver.addListener(this);
-
-        String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-        int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-        byte[] psk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(channelMode);
-        String commDeviceStr = sharedPreferences.getString(PreferencesKeys.KEY_SET_COMM_DEVICE, PreferencesDefaults.DEFAULT_COMM_DEVICE);
-        boolean pluginManagesDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_PLUGIN_MANAGES_DEVICE, PreferencesDefaults.DEFAULT_PLUGIN_MANAGES_DEVICE);
 
         mChannelName.postValue(channelName);
         mModemConfig.postValue(modemConfig);
         mPskHash.postValue(mHashHelper.hashFromBytes(psk));
-        mCommDevice.postValue(gson.fromJson(commDeviceStr, MeshtasticDevice.class));
+        mCommDevice.postValue(meshtasticDevice);
         mPluginManagesDevice.postValue(pluginManagesDevice);
+
+        deviceConfigObserver.addListener(this);
     }
 
     public LiveData<String> getChannelName() {

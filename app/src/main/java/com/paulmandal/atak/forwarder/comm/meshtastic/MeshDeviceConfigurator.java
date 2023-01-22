@@ -200,6 +200,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
             ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
             deviceConfigBuilder.setRole(mRoutingRole);
+            deviceConfigBuilder.setSerialEnabled(true);
             configBuilder.setDevice(deviceConfigBuilder);
             meshService.setConfig(configBuilder.build().toByteArray());
 

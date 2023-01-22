@@ -1,27 +1,23 @@
-package com.paulmandal.atak.forwarder.handlers;
+package com.paulmandal.atak.forwarder.comm;
 
-import android.content.Context;
+import android.os.Handler;
 
-import com.atakmap.android.maps.MapView;
+import com.atakmap.comms.CommsLogger;
 import com.atakmap.comms.CommsMapComponent;
 import com.atakmap.coremap.cot.event.CotEvent;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
-import com.paulmandal.atak.forwarder.comm.CotMessageCache;
-import com.paulmandal.atak.forwarder.comm.MessageType;
 import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommand;
 import com.paulmandal.atak.forwarder.comm.queue.commands.QueuedCommandFactory;
 import com.paulmandal.atak.forwarder.cotutils.MeshtasticCotEvent;
 import com.paulmandal.atak.forwarder.helpers.Logger;
-import com.paulmandal.atak.forwarder.plugin.Destroyable;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 
-import java.util.List;
+public class OutbountMessageHandler implements CommsLogger {
+    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutbountMessageHandler.class.getSimpleName();
 
-public class OutboundMessageHandler implements CommsMapComponent.PreSendProcessor, Destroyable  {
-    private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + OutboundMessageHandler.class.getSimpleName();
-
+    private final Handler mMainThreadHandler;
     private final CommsMapComponent mCommsMapComponent;
     private final ConnectionStateHandler mConnectionStateHandler;
     private final CommandQueue mCommandQueue;
@@ -30,14 +26,15 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
     private final CotShrinker mCotShrinker;
     private final Logger mLogger;
 
-    public OutboundMessageHandler(CommsMapComponent commsMapComponent,
+    public OutbountMessageHandler(Handler mainThreadHandler,
+                                  CommsMapComponent commsMapComponent,
                                   ConnectionStateHandler connectionStateHandler,
                                   CommandQueue commandQueue,
                                   QueuedCommandFactory queuedCommandFactory,
                                   CotMessageCache cotMessageCache,
                                   CotShrinker cotShrinker,
-                                  List<Destroyable> destroyables,
                                   Logger logger) {
+        mMainThreadHandler = mainThreadHandler;
         mCommsMapComponent = commsMapComponent;
         mConnectionStateHandler = connectionStateHandler;
         mCommandQueue = commandQueue;
@@ -46,31 +43,50 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         mCotShrinker = cotShrinker;
         mLogger = logger;
 
-        destroyables.add(this);
-        commsMapComponent.registerPreSendProcessor(this);
+        commsMapComponent.registerCommsLogger(this);
     }
 
     @Override
-    public void processCotEvent(CotEvent cotEvent, String[] toUIDs) {
+    public void logSend(CotEvent msg, String destination) {
+        handleSend(msg, null);
+    }
+
+    @Override
+    public void logSend(CotEvent msg, String[] toUIDs) {
+        handleSend(msg, toUIDs);
+    }
+
+    @Override
+    public void logReceive(CotEvent msg, String rxid, String server) {}
+
+    @Override
+    public void dispose() {
+        mCommsMapComponent.unregisterCommsLogger(this);
+    }
+
+    private void handleSend(CotEvent cotEvent, String[] toUIDs) {
         if (cotEvent instanceof MeshtasticCotEvent) {
             // Drop CotEvents that we have retransmitted from Meshtastic
             return;
         }
-        mLogger.v(TAG, "processCotEvent: " + cotEvent);
-        String eventType = cotEvent.getType();
-        boolean isChat = MessageType.fromCotEventType(eventType) == MessageType.CHAT;
-        if (mConnectionStateHandler.getConnectionState() == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED && !isChat) {
-            if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
-                mLogger.v(TAG, "  Discarding recently sent event: " + cotEvent);
-                return;
-            }
-            mCotMessageCache.cacheEvent(cotEvent);
-        }
 
-        byte[] cotAsBytes = mCotShrinker.toByteArrayLossy(cotEvent);
-        MessageType messageType = MessageType.fromCotEventType(eventType);
-        boolean overwriteSimilar = messageType != MessageType.CHAT;
-        mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs, messageType), overwriteSimilar);
+        mMainThreadHandler.post(() -> {
+            mLogger.v(TAG, "processCotEvent: " + cotEvent);
+            String eventType = cotEvent.getType();
+            boolean isChat = MessageType.fromCotEventType(eventType) == MessageType.CHAT;
+            if (mConnectionStateHandler.getConnectionState() == ConnectionStateHandler.ConnectionState.DEVICE_CONNECTED && !isChat) {
+                if (mCotMessageCache.checkIfRecentlySent(cotEvent)) {
+                    mLogger.v(TAG, "  Discarding recently sent event: " + cotEvent);
+                    return;
+                }
+                mCotMessageCache.cacheEvent(cotEvent);
+            }
+
+            byte[] cotAsBytes = mCotShrinker.toByteArrayLossy(cotEvent);
+            MessageType messageType = MessageType.fromCotEventType(eventType);
+            boolean overwriteSimilar = messageType != MessageType.CHAT;
+            mCommandQueue.queueSendMessage(mQueuedCommandFactory.createSendMessageCommand(determineMessagePriority(cotEvent), cotEvent, cotAsBytes, toUIDs, messageType), overwriteSimilar);
+        });
     }
 
     private int determineMessagePriority(CotEvent cotEvent) {
@@ -79,10 +95,5 @@ public class OutboundMessageHandler implements CommsMapComponent.PreSendProcesso
         } else {
             return QueuedCommand.PRIORITY_LOW;
         }
-    }
-
-    @Override
-    public void onDestroy(Context context, MapView mapView) {
-        mCommsMapComponent.registerPreSendProcessor(null);
     }
 }

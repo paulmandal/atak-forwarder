@@ -25,6 +25,7 @@ public class ForwarderConstants {
      * Meshtastic Radio Config
      */
     public static final int POSITION_BROADCAST_INTERVAL_S = 3600;
+    public static final boolean GPS_ENABLED = false;
     public static final int LCD_SCREEN_ON_S = 5;
     public static final int WAIT_BLUETOOTH_S = 86400;
     public static final int PHONE_TIMEOUT_S = 86400;

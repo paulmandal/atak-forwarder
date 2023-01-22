@@ -46,6 +46,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
     private final ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
     private final int mPliUpdateInterval;
+    private final boolean mGpsEnabled;
     private final int mScreenOnSecs;
 
     private final String mChannelName;
@@ -68,6 +69,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                                   String shortName,
                                   ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
                                   int pliUpdateInterval,
+                                  boolean gpsEnabled,
                                   int screenOnSecs,
                                   String channelName,
                                   int channelMode,
@@ -84,6 +86,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         mShortName = shortName;
         mRegionCode = regionCode;
         mPliUpdateInterval = pliUpdateInterval;
+        mGpsEnabled = gpsEnabled;
         mScreenOnSecs = screenOnSecs;
         mChannelName = channelName;
         mChannelMode = channelMode;
@@ -209,6 +212,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             loRaConfigBuilder.setRegion(mRegionCode);
             ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
             loRaConfigBuilder.setModemPreset(modemPreset);
+            loRaConfigBuilder.setUsePreset(true);
+            loRaConfigBuilder.setHopLimit(3);
             loRaConfigBuilder.setTxEnabled(true);
             configBuilder.setLora(loRaConfigBuilder);
             meshService.setConfig(configBuilder.build().toByteArray());
@@ -216,7 +221,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             configBuilder = ConfigProtos.Config.newBuilder();
             ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
             positionConfigBuilder.setPositionBroadcastSecs(mPliUpdateInterval);
-            configBuilder.setPosition(positionConfigBuilder);
+            positionConfigBuilder.setGpsEnabled(mGpsEnabled);
             configBuilder.setPosition(positionConfigBuilder);
             meshService.setConfig(configBuilder.build().toByteArray());
 

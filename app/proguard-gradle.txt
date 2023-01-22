@@ -68,6 +68,10 @@
 -keep class org.xml.** {*;}
 -keep class org.xmlpull.** {*;}
 
+# Protobufs
+-keep public class * extends com.google.protobuf.GeneratedMessage {*;}
+-keep public class * extends com.google.protobuf.GeneratedMessageLite {*;}
+
 # TODO: review all of these and remove unnecessary ones, this is from trying to sign for 4.8 / switching to ProGuard from R8
 -keep class org.jvnet..** {*;}
 -keep class kotlin.jvm.internal.** {*;}

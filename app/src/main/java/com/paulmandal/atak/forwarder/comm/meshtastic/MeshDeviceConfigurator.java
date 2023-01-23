@@ -222,6 +222,10 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
             positionConfigBuilder.setPositionBroadcastSecs(mPliUpdateInterval);
             positionConfigBuilder.setGpsEnabled(mGpsEnabled);
+            positionConfigBuilder.setPositionBroadcastSmartEnabled(false);
+            positionConfigBuilder.setGpsUpdateInterval(mPliUpdateInterval);
+            positionConfigBuilder.setGpsAttemptTime(ForwarderConstants.GPS_ATTEMPT_TIME);
+            positionConfigBuilder.setPositionFlags(ConfigProtos.Config.PositionConfig.PositionFlags.ALTITUDE_VALUE);
             configBuilder.setPosition(positionConfigBuilder);
             meshService.setConfig(configBuilder.build().toByteArray());
 

@@ -13,30 +13,17 @@ public class ForwarderConstants {
     public static final int MAX_LOG_MESSAGES_OUTPUT = 100;
 
     /**
-     * How long to wait for radioConfig to be available when writing to a Tracker device
-     */
-    public static final int RADIO_CONFIG_MISSING_RETRY_TIME_MS = 10000;
-
-    public static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_CHANNEL_CHANGE = 3000;
-
-    public static final int DELAY_BEFORE_RESTARTING_MESH_SENDER_AFTER_TRACKER_WRITE = 3000;
-
-    /**
      * Meshtastic Radio Config
      */
     public static final int POSITION_BROADCAST_INTERVAL_S = 3600;
+    public static final boolean GPS_ENABLED = false;
     public static final int LCD_SCREEN_ON_S = 5;
-    public static final int WAIT_BLUETOOTH_S = 86400;
-    public static final int PHONE_TIMEOUT_S = 86400;
-    public static final int DEVICE_CONNECTION_TIMEOUT = 60000;
-    public static final int GPS_UPDATE_INTERVAL = 0xFFFFFFFF; // MAX_INT for the device
-    public static final int SEND_OWNER_INTERVAL = 0xFFFFFFFF; // MAX_INT for the device
+    public static final int GPS_ATTEMPT_TIME = 900;
 
     /**
      * Tweaks to message handling
      */
     public static final int MESHTASTIC_MESSAGE_CHUNK_LENGTH = 200;
-    public static final int REJECT_STALE_NODE_CHANGE_TIME_MS = 1800000;
 
     /**
      * Discovery Broadcast Marker

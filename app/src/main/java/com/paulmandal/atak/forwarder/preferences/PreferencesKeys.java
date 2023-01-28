@@ -7,6 +7,7 @@ public class PreferencesKeys {
     public static final String KEY_ATAK_FORWARDER_PREFERENCES = "plugin_atak_forwarder_key_atak_forwarder_preferences";
     public static final String KEY_SET_COMM_DEVICE = "plugin_atak_forwarder_key_set_comm_device";
     public static final String KEY_REFRESH_COMM_DEVICES = "plugin_atak_forwarder_key_refresh_comm_devices";
+    public static final String KEY_PLUGIN_MANAGES_DEVICE = "plugin_atak_forwarder_key_plugin_manages_device";
     public static final String KEY_REGION = "plugin_atak_forwarder_key_set_region";
     public static final String KEY_IS_ALWAYS_POWERED_ON = "plugin_atak_forwarder_key_is_always_powered_on";
     public static final String KEY_PLI_MAX_FREQUENCY = "plugin_atak_forwarder_key_pli_max_frequency";
@@ -36,5 +37,4 @@ public class PreferencesKeys {
     public static final String KEY_RESET_TO_DEFAULT_INCLUDING_CHANNEL = "plugin_atak_forwarder_key_reset_to_default_including_channel";
     public static final String KEY_ENABLE_LOGGING = "plugin_atak_forwarder_key_enable_logging";
     public static final String KEY_SET_LOGGING_LEVEL = "plugin_atak_forwarder_key_set_logging_level";
-    public static final String KEY_DISABLE_WRITING_TO_COMM_DEVICE = "plugin_atak_forwarder_key_disable_writing_to_comm_device";
 }

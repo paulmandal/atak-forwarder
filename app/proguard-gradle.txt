@@ -8,7 +8,7 @@
 -keepattributes SourceFile,LineNumberTable
 
 -applymapping <atak.proguard.mapping>
--repackageclasses atakplugin.PluginTemplate
+-repackageclasses atakplugin.AtakForwarder
 
 -keepattributes *Annotation*
 -keepattributes Signature, InnerClasses
@@ -67,6 +67,46 @@
 -keep class org.w3c.** {*;}
 -keep class org.xml.** {*;}
 -keep class org.xmlpull.** {*;}
+
+# Protobufs
+-keep public class * extends com.google.protobuf.GeneratedMessage {*;}
+-keep public class * extends com.google.protobuf.GeneratedMessageLite {*;}
+
+# TODO: review all of these and remove unnecessary ones, this is from trying to sign for 4.8 / switching to ProGuard from R8
+-keep class org.jvnet..** {*;}
+-keep class kotlin.jvm.internal.** {*;}
+-keep class kotlin.coroutines.jvm.internal.** {*;}
+-keep class kotlin.jvm.functions.** {*;}
+-keep class kotlin.coroutines.** {*;}
+-keep class kotlin.collections.** {*;}
+
+-dontwarn module-info
+-dontwarn java.awt.**
+-dontwarn org.xmlpull.**
+-dontwarn org.xml.sax.ContentHandler
+-dontwarn org.xml.sax.XMLReader
+-dontwarn com.sun.activation.viewers.ImageViewer
+-dontwarn com.sun.xml.fastinfoset.stax.StAXDocumentSerializer
+-dontwarn org.jvnet.staxex.XMLStreamWriterEx
+-dontwarn org.jvnet.staxex.XMLStreamReaderEx
+-dontwarn com.sun.xml.fastinfoset.stax.StAXDocumentParser
+-dontwarn java.beans.Introspector
+-dontwarn org.jvnet.fastinfoset.VocabularyApplicationData
+-dontwarn org.jvnet.staxex.Base64Data
+-dontwarn com.sun.activation.viewers.ImageViewerCanvas
+-dontwarn com.sun.activation.viewers.TextEditor
+-dontwarn com.sun.activation.viewers.TextViewer
+-dontwarn java.nio.ByteBuffer
+-dontwarn kotlin.jvm.internal.**
+-dontwarn kotlin.coroutines.jvm.internal.**
+-dontwarn kotlin.jvm.functions.**
+-dontwarn kotlin.coroutines.**
+-dontwarn kotlin.collections.**
+
+-dontwarn java.lang.instrument.ClassFileTransformer
+-dontwarn java.lang.ClassValue
+-dontwarn android.content.res.XmlResourceParser
+
 
 ##---------------Begin: proguard configuration for Gson  ----------
 # Gson uses generic type information stored in a class file when working with fields. Proguard

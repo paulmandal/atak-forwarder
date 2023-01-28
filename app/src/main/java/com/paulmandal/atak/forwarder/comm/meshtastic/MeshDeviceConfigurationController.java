@@ -6,19 +6,16 @@ import android.util.Base64;
 
 import androidx.annotation.Nullable;
 
+import com.ekito.simpleKML.model.GroundOverlay;
 import com.geeksville.mesh.ConfigProtos;
-import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
 import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
 import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
-import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-
-import kotlinx.serialization.descriptors.StructureKind;
 
 public class MeshDeviceConfigurationController implements DeviceConnectionHandler.Listener, DeviceConfigObserver.Listener, MeshServiceController.Listener, MeshDeviceConfigurator.Listener {
     private static final String TAG = ForwarderConstants.DEBUG_TAG_PREFIX + MeshDeviceConfigurationController.class.getSimpleName();
@@ -55,7 +52,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     private String mLongName;
     private String mShortName;
 
-    private boolean mWriteToCommDevice;
+    private boolean mPluginManagesDevice;
     private boolean mSetDeviceAddressCalled;
     private boolean mInitialDeviceWriteStarted;
 
@@ -71,8 +68,13 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                                              DeviceConfigObserver deviceConfigObserver,
                                              HashHelper hashHelper,
                                              Logger logger,
-                                             SharedPreferences sharedPreferences,
                                              @Nullable MeshtasticDevice meshtasticDevice,
+                                             ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
+                                             String channelName,
+                                             int channelMode,
+                                             byte[] psk,
+                                             ConfigProtos.Config.DeviceConfig.Role routingRole,
+                                             boolean pluginManagesDevice,
                                              String callsign) {
         mMeshServiceController = meshServiceController;
         mDeviceConnectionHandler = deviceConnectionHandler;
@@ -81,18 +83,17 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         mHashHelper = hashHelper;
         mLogger = logger;
         mMeshtasticDevice = meshtasticDevice;
+        mRegionCode = regionCode;
+        mChannelName = channelName;
+        mChannelMode = channelMode;
+        mChannelPsk = psk;
+        mRoutingRole = routingRole;
+        mPluginManagesDevice = pluginManagesDevice;
         mCallsign = callsign;
 
         meshServiceController.addListener(this);
         deviceConnectionHandler.addListener(this);
         deviceConfigObserver.addListener(this);
-
-        mRegionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
-        mChannelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
-        mChannelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-        mChannelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
-        mRoutingRole = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER) ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;
-        mWriteToCommDevice = sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE);
 
         if (meshtasticDevice != null) {
             updateLongNameAndShortName();
@@ -157,10 +158,10 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     }
 
     @Override
-    public void onWriteToCommDeviceChanged(boolean writeToCommDevice) {
-        mWriteToCommDevice = writeToCommDevice;
+    public void onPluginManagesDeviceChanged(boolean pluginManagesDevice) {
+        mPluginManagesDevice = pluginManagesDevice;
 
-        if (writeToCommDevice) {
+        if (pluginManagesDevice) {
             writeCommDevice();
         }
     }
@@ -232,6 +233,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 shortName,
                 regionCode,
                 pliUpdateInterval,
+                true,
                 screenOnSecs,
                 channelName,
                 channelMode,
@@ -281,6 +283,7 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     }
 
     private MeshDeviceConfigurator createCommDeviceConfigurator() {
+        mLogger.d(TAG, "Creating comm device configurator with writeToCommDevice: " + mPluginManagesDevice);
         return mMeshDeviceConfiguratorFactory.createMeshDeviceConfigurator(
                 mMeshServiceController,
                 mDeviceConnectionHandler,
@@ -292,12 +295,13 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
                 mShortName,
                 mRegionCode,
                 ForwarderConstants.POSITION_BROADCAST_INTERVAL_S,
+                ForwarderConstants.GPS_ENABLED,
                 ForwarderConstants.LCD_SCREEN_ON_S,
                 mChannelName,
                 mChannelMode,
                 mChannelPsk,
                 mRoutingRole,
-                mWriteToCommDevice);
+                mPluginManagesDevice);
     }
 
     private void maybeCancelAndRemoveActiveCommConfigurator() {

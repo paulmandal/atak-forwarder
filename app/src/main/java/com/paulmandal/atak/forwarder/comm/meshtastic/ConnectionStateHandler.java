@@ -31,15 +31,21 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
     private MeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState;
     private MeshServiceController.ServiceConnectionState mServiceConnectionState;
     private MeshtasticDevice mMeshtasticDevice;
+    private ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
+    private boolean mPluginManagesDevice;
 
     public ConnectionStateHandler(Logger logger,
-                                  @Nullable MeshtasticDevice meshtasticDevice,
                                   MeshDeviceConfigurationController meshDeviceConfigurationController,
                                   MeshServiceController meshServiceController,
                                   DeviceConnectionHandler deviceConnectionHandler,
-                                  DeviceConfigObserver deviceConfigObserver) {
+                                  DeviceConfigObserver deviceConfigObserver,
+                                  @Nullable MeshtasticDevice meshtasticDevice,
+                                  ConfigProtos.Config.LoRaConfig.RegionCode regionCode,
+                                  boolean pluginManagesDevice) {
         mLogger = logger;
         mMeshtasticDevice = meshtasticDevice;
+        mRegionCode = regionCode;
+        mPluginManagesDevice = pluginManagesDevice;
 
         meshDeviceConfigurationController.addListener(this);
         meshServiceController.addListener(this);
@@ -73,12 +79,14 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
 
     @Override
     public void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole) {
-        // do nothing
+        mRegionCode = regionCode;
+        notifyListeners();
     }
 
     @Override
-    public void onWriteToCommDeviceChanged(boolean writeToCommDevice) {
-        // do nothing
+    public void onPluginManagesDeviceChanged(boolean pluginManagesDevice) {
+        mPluginManagesDevice = pluginManagesDevice;
+        notifyListeners();
     }
 
     public void addListener(Listener listener) {
@@ -86,7 +94,7 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
     }
 
     public ConnectionState getConnectionState() {
-        if (mMeshtasticDevice == null) {
+        if (mMeshtasticDevice == null || (mPluginManagesDevice && mRegionCode == ConfigProtos.Config.LoRaConfig.RegionCode.UNSET)) {
             return ConnectionState.NO_DEVICE_CONFIGURED;
         }
 

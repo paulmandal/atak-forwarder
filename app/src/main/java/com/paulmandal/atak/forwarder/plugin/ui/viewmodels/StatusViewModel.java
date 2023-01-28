@@ -6,15 +6,19 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.geeksville.mesh.ConfigProtos;
 import com.google.gson.Gson;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.channel.TrackerUserInfo;
 import com.paulmandal.atak.forwarder.channel.UserInfo;
 import com.paulmandal.atak.forwarder.channel.UserTracker;
+import com.paulmandal.atak.forwarder.comm.meshtastic.DeviceConfigObserver;
 import com.paulmandal.atak.forwarder.comm.meshtastic.DiscoveryBroadcastEventHandler;
 import com.paulmandal.atak.forwarder.comm.meshtastic.InboundMeshMessageHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshDeviceConfigurator;
 import com.paulmandal.atak.forwarder.comm.meshtastic.MeshSender;
 import com.paulmandal.atak.forwarder.comm.meshtastic.ConnectionStateHandler;
+import com.paulmandal.atak.forwarder.comm.meshtastic.MeshtasticDevice;
 import com.paulmandal.atak.forwarder.comm.meshtastic.TrackerEventHandler;
 import com.paulmandal.atak.forwarder.comm.queue.CommandQueue;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
@@ -42,18 +46,21 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
     private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
     private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
 
-    public StatusViewModel(List<Destroyable> destroyables,
-                           SharedPreferences sharedPreferences,
+    public StatusViewModel(DeviceConfigObserver deviceConfigObserver,
+                           HashHelper hashHelper,
+                           String channelName,
+                           byte[] psk,
+                           ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig,
+                           MeshtasticDevice meshtasticDevice,
+                           boolean pluginManagesDevice,
                            UserTracker userTracker,
                            ConnectionStateHandler connectionStateHandler,
                            DiscoveryBroadcastEventHandler discoveryBroadcastEventHandler,
                            MeshSender meshSender,
                            InboundMeshMessageHandler inboundMeshMessageHandler,
                            TrackerEventHandler trackerEventHandler,
-                           CommandQueue commandQueue,
-                           Gson gson,
-                           HashHelper hashHelper) {
-        super(destroyables, sharedPreferences, gson, hashHelper);
+                           CommandQueue commandQueue) {
+        super(deviceConfigObserver, hashHelper, channelName, psk, modemConfig, meshtasticDevice, pluginManagesDevice);
 
         mDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
 

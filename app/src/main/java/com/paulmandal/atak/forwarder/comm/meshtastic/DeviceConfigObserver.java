@@ -22,7 +22,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
     public interface Listener {
         void onSelectedDeviceChanged(MeshtasticDevice meshtasticDevice);
         void onDeviceConfigChanged(ConfigProtos.Config.LoRaConfig.RegionCode regionCode, String channelName, int channelMode, byte[] channelPsk, ConfigProtos.Config.DeviceConfig.Role routingRole);
-        void onWriteToCommDeviceChanged(boolean writeToCommDevice);
+        void onPluginManagesDeviceChanged(boolean pluginManagesDevice);
     }
 
     private final Logger mLogger;
@@ -37,7 +37,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
         super(destroyables,
                 sharedPreferences,
                 new String[]{
-                        PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE
+                        PreferencesKeys.KEY_PLUGIN_MANAGES_DEVICE
                 },
                 new String[]{
                         PreferencesKeys.KEY_SET_COMM_DEVICE,
@@ -55,7 +55,7 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
     @Override
     protected void updateSettings(SharedPreferences sharedPreferences) {
         if (mListeners != null) {
-            notifyWriteToCommDeviceListeners(sharedPreferences.getBoolean(PreferencesKeys.KEY_DISABLE_WRITING_TO_COMM_DEVICE, PreferencesDefaults.DEFAULT_DISABLE_WRITING_TO_COMM_DEVICE));
+            notifyPluginManagesDeviceListeners(sharedPreferences.getBoolean(PreferencesKeys.KEY_PLUGIN_MANAGES_DEVICE, PreferencesDefaults.DEFAULT_PLUGIN_MANAGES_DEVICE));
         }
     }
 
@@ -103,10 +103,10 @@ public class DeviceConfigObserver extends DestroyableSharedPrefsListener {
         }
     }
 
-    private void notifyWriteToCommDeviceListeners(boolean writeToCommDevice) {
-        mLogger.v(TAG, "Write to comm device setting changed, notifying listeners");
+    private void notifyPluginManagesDeviceListeners(boolean pluginManagesDevice) {
+        mLogger.v(TAG, "Plugin manages device setting changed, notifying listeners");
         for (Listener listener : mListeners) {
-            listener.onWriteToCommDeviceChanged(writeToCommDevice);
+            listener.onPluginManagesDeviceChanged(pluginManagesDevice);
         }
     }
 }

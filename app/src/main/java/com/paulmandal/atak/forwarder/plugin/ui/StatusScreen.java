@@ -130,6 +130,12 @@ public class StatusScreen extends ConstraintLayout {
         statusViewModel.getPskHash().observe(lifecycleOwner, mPskHash::setText);
         statusViewModel.getModemPreset().observe(lifecycleOwner, modemConfig -> mModemConfig.setText(modemConfig != null ? String.format("%d", modemConfig.getNumber()) : null));
         statusViewModel.getCommDevice().observe(lifecycleOwner, commDevice -> mDeviceIdTextView.setText(String.format("(%s)", getShortDeviceId(commDevice))));
+        statusViewModel.getPluginManagesDevice().observe(lifecycleOwner, pluginManagesDevice -> {
+            int visibility = pluginManagesDevice ? View.VISIBLE : View.INVISIBLE;
+            mChannelName.setVisibility(visibility);
+            mPskHash.setVisibility(visibility);
+            mModemConfig.setVisibility(visibility);
+        });
     }
 
     private void handleNoServiceConnected() {

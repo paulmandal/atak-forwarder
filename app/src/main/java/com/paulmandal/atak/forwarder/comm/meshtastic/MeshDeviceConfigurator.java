@@ -56,6 +56,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
     private final ConfigProtos.Config.DeviceConfig.Role mRoutingRole;
 
     private final boolean mWriteToDevice;
+    private boolean mChannelsWritten = false;
 
     private boolean mStarted;
 
@@ -140,23 +141,23 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
         try {
             mLogger.v(TAG, "Checking existing device config.");
-            boolean needsWrite;
+            boolean needsMainConfig;
 
             IMeshService meshService = mMeshServiceController.getMeshService();
             LocalOnlyProtos.LocalConfig localConfig = LocalOnlyProtos.LocalConfig.parseFrom(meshService.getConfig());
 
             ConfigProtos.Config.LoRaConfig loRaConfig = localConfig.getLora();
             ConfigProtos.Config.DeviceConfig deviceConfig = localConfig.getDevice();
-            needsWrite = mRegionCode != loRaConfig.getRegion()
+            needsMainConfig = mRegionCode != loRaConfig.getRegion()
                     || mChannelMode != loRaConfig.getModemPresetValue()
                     || !loRaConfig.getTxEnabled()
                     || mRoutingRole != deviceConfig.getRole();
 
-            if (needsWrite) {
+            if (needsMainConfig) {
                 mLogger.d(TAG, "regionCode: " + loRaConfig.getRegion() + " -> " + mRegionCode + ", channelMode: " + loRaConfig.getModemPresetValue() + " -> " + mChannelMode + ", txEnabled: " + loRaConfig.getTxEnabled() + " -> true, routingRole: " + deviceConfig.getRole() + " -> " + mRoutingRole);
             }
 
-            if (!needsWrite) {
+            if (!needsMainConfig) {
                 int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
 
                 NodeInfo localNode = null;
@@ -185,75 +186,94 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
                 if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
                     mLogger.d(TAG, "longName: " + longName + " -> " + mLongName + ", shortName: " + shortName + " -> " + mShortName);
-                    needsWrite = true;
+                    needsMainConfig = true;
                 }
             }
 
-            if (!needsWrite) {
+            if (!needsMainConfig && mChannelsWritten) {
                 mLogger.v(TAG, "Finished writing to device.");
                 sendFinished();
                 return;
             }
 
-            mLogger.d(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
+            mLogger.d(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelName: " + mChannelName + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
 
             meshService.beginEditSettings();
 
-            ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
+            if (needsMainConfig) {
+                writeMainConfig(meshService);
+            }
 
-            ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
-            deviceConfigBuilder.setRole(mRoutingRole);
-            deviceConfigBuilder.setSerialEnabled(true);
-            configBuilder.setDevice(deviceConfigBuilder);
-            meshService.setConfig(configBuilder.build().toByteArray());
-
-            configBuilder = ConfigProtos.Config.newBuilder();
-            ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
-            loRaConfigBuilder.setRegion(mRegionCode);
-            ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
-            loRaConfigBuilder.setModemPreset(modemPreset);
-            loRaConfigBuilder.setUsePreset(true);
-            loRaConfigBuilder.setHopLimit(3);
-            loRaConfigBuilder.setTxEnabled(true);
-            configBuilder.setLora(loRaConfigBuilder);
-            meshService.setConfig(configBuilder.build().toByteArray());
-
-            configBuilder = ConfigProtos.Config.newBuilder();
-            ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
-            positionConfigBuilder.setPositionBroadcastSecs(mPliUpdateInterval);
-            positionConfigBuilder.setGpsEnabled(mGpsEnabled);
-            positionConfigBuilder.setPositionBroadcastSmartEnabled(false);
-            positionConfigBuilder.setGpsUpdateInterval(mPliUpdateInterval);
-            positionConfigBuilder.setGpsAttemptTime(ForwarderConstants.GPS_ATTEMPT_TIME);
-            positionConfigBuilder.setPositionFlags(ConfigProtos.Config.PositionConfig.PositionFlags.ALTITUDE_VALUE);
-            configBuilder.setPosition(positionConfigBuilder);
-            meshService.setConfig(configBuilder.build().toByteArray());
-
-            configBuilder = ConfigProtos.Config.newBuilder();
-            ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
-            displayConfigBuilder.setScreenOnSecs(mScreenOnSecs);
-            configBuilder.setDisplay(displayConfigBuilder);
-            meshService.setConfig(configBuilder.build().toByteArray());
-
-            ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
-
-            ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
-            channelSettingsBuilder.setName(mChannelName);
-            channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
-
-            channelBuilder.setSettings(channelSettingsBuilder);
-            channelBuilder.setRole(ChannelProtos.Channel.Role.PRIMARY);
-
-            ChannelProtos.Channel channel = channelBuilder.build();
-
-            meshService.setOwner(null, mLongName, mShortName, false);
-            meshService.setChannel(channel.toByteArray());
+            if (needsMainConfig || !mChannelsWritten) {
+                writeChannelConfig(meshService);
+                mChannelsWritten = true;
+            }
 
             meshService.commitEditSettings();
+
+            if (!needsMainConfig) {
+                mLogger.v(TAG, "Finished writing to device.");
+                sendFinished();
+            }
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "Error getting/parsing config protocol buffer: " + e.getMessage());
             e.printStackTrace();
         }
+    }
+
+    private void writeMainConfig(IMeshService meshService) throws RemoteException {
+        ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
+
+        ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
+        deviceConfigBuilder.setRole(mRoutingRole);
+        deviceConfigBuilder.setSerialEnabled(true);
+        configBuilder.setDevice(deviceConfigBuilder);
+        meshService.setConfig(configBuilder.build().toByteArray());
+
+        configBuilder = ConfigProtos.Config.newBuilder();
+        ConfigProtos.Config.LoRaConfig.Builder loRaConfigBuilder = ConfigProtos.Config.LoRaConfig.newBuilder();
+        loRaConfigBuilder.setRegion(mRegionCode);
+        ConfigProtos.Config.LoRaConfig.ModemPreset modemPreset = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(mChannelMode);
+        loRaConfigBuilder.setModemPreset(modemPreset);
+        loRaConfigBuilder.setUsePreset(true);
+        loRaConfigBuilder.setHopLimit(3);
+        loRaConfigBuilder.setTxEnabled(true);
+        configBuilder.setLora(loRaConfigBuilder);
+        meshService.setConfig(configBuilder.build().toByteArray());
+
+        configBuilder = ConfigProtos.Config.newBuilder();
+        ConfigProtos.Config.PositionConfig.Builder positionConfigBuilder = ConfigProtos.Config.PositionConfig.newBuilder();
+        positionConfigBuilder.setPositionBroadcastSecs(mPliUpdateInterval);
+        positionConfigBuilder.setGpsEnabled(mGpsEnabled);
+        positionConfigBuilder.setPositionBroadcastSmartEnabled(false);
+        positionConfigBuilder.setGpsUpdateInterval(mPliUpdateInterval);
+        positionConfigBuilder.setGpsAttemptTime(ForwarderConstants.GPS_ATTEMPT_TIME);
+        positionConfigBuilder.setPositionFlags(ConfigProtos.Config.PositionConfig.PositionFlags.ALTITUDE_VALUE);
+        configBuilder.setPosition(positionConfigBuilder);
+        meshService.setConfig(configBuilder.build().toByteArray());
+
+        configBuilder = ConfigProtos.Config.newBuilder();
+        ConfigProtos.Config.DisplayConfig.Builder displayConfigBuilder = ConfigProtos.Config.DisplayConfig.newBuilder();
+        displayConfigBuilder.setScreenOnSecs(mScreenOnSecs);
+        configBuilder.setDisplay(displayConfigBuilder);
+        meshService.setConfig(configBuilder.build().toByteArray());
+
+        meshService.setOwner(null, mLongName, mShortName, false);
+    }
+
+    private void writeChannelConfig(IMeshService meshService) throws RemoteException {
+        ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
+
+        ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();
+        channelSettingsBuilder.setName(mChannelName);
+        channelSettingsBuilder.setPsk(ByteString.copyFrom(mChannelPsk));
+
+        channelBuilder.setSettings(channelSettingsBuilder);
+        channelBuilder.setRole(ChannelProtos.Channel.Role.PRIMARY);
+
+        ChannelProtos.Channel channel = channelBuilder.build();
+
+        meshService.setChannel(channel.toByteArray());
     }
 
     private void sendFinished() {

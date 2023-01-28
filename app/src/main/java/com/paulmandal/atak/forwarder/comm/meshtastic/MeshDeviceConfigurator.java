@@ -196,8 +196,6 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 return;
             }
 
-            mLogger.d(TAG, "Writing to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelName: " + mChannelName + ", channelMode: " + mChannelMode + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
-
             meshService.beginEditSettings();
 
             if (needsMainConfig) {
@@ -210,11 +208,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             }
 
             meshService.commitEditSettings();
-
-            if (!needsMainConfig) {
-                mLogger.v(TAG, "Finished writing to device.");
-                sendFinished();
-            }
+            mLogger.v(TAG, "Finished writing to device.");
+            sendFinished();
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "Error getting/parsing config protocol buffer: " + e.getMessage());
             e.printStackTrace();
@@ -222,6 +217,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
     }
 
     private void writeMainConfig(IMeshService meshService) throws RemoteException {
+        mLogger.d(TAG, "Writing config to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ".");
+
         ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
 
         ConfigProtos.Config.DeviceConfig.Builder deviceConfigBuilder = ConfigProtos.Config.DeviceConfig.newBuilder();
@@ -262,6 +259,8 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
     }
 
     private void writeChannelConfig(IMeshService meshService) throws RemoteException {
+        mLogger.d(TAG, "Writing channel to device: " + mMeshtasticDevice.address + ", channelName: " + mChannelName + ", psk: " + mHashHelper.hashFromBytes(mChannelPsk) + ".");
+
         ChannelProtos.Channel.Builder channelBuilder = ChannelProtos.Channel.newBuilder();
 
         ChannelProtos.ChannelSettings.Builder channelSettingsBuilder = ChannelProtos.ChannelSettings.newBuilder();

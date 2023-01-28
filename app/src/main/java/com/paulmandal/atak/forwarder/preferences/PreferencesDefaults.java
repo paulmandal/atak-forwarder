@@ -6,7 +6,7 @@ import com.paulmandal.atak.forwarder.helpers.PskHelper;
  * These should match the values in preferences.xml
  */
 public class PreferencesDefaults {
-    public static final boolean DEFAULT_PLUGIN_MANAGES_DEVICE = false;
+    public static final boolean DEFAULT_PLUGIN_MANAGES_DEVICE = true;
     public static final String DEFAULT_REGION = "0";
     public static final boolean DEFAULT_IS_ALWAYS_POWERED_ON = false;
     public static final String DEFAULT_PLI_MAX_FREQUENCY = "30";

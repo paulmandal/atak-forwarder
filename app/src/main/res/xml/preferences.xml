@@ -19,7 +19,7 @@
         android:key="plugin_atak_forwarder_key_plugin_manages_device"
         android:title="@string/plugin_manages_device"
         android:summary="@string/plugin_manages_device_summary"
-        android:defaultValue="false" />
+        android:defaultValue="true" />
     <com.atakmap.android.gui.PanEditTextPreference
         android:key="plugin_atak_forwarder_key_pli_max_frequency"
         android:title="@string/pli_max_frequency"

@@ -264,7 +264,10 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
         String meshId = mMeshtasticDevice.address.replace(":", "").toLowerCase();
         String shortMeshId = meshId.replaceAll("!", "").substring(meshId.length() - 4);
         char lastChar = (char) (shortMeshId.charAt(shortMeshId.length() - 1) - 2);
-        shortMeshId = shortMeshId.substring(0, shortMeshId.length() - 1) + lastChar; // TODO: this may be device specific
+        if (lastChar < '0') {
+            lastChar = '0';
+        }
+        shortMeshId = shortMeshId.substring(0, shortMeshId.length() - 1) + lastChar; // TODO: need to find a way to exclude some devices (e.g. RAK)
         mLongName = String.format("%s-MX-%s", mCallsign, shortMeshId);
         mShortName = mCallsign.substring(0, 1);
     }

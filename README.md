@@ -10,29 +10,29 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 
 ## Share Markers and PLI
 
-![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/2.0.2/images/0-markers-and-pli.png)
+![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/2.0.3/images/0-markers-and-pli.png)
 <br>
-![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/2.0.2/images/1-status.png)
+![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/2.0.3/images/1-status.png)
 <br>
 <br>
 
 ## Send Chat Messages
 
-![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/2.0.2/images/2-chat-messages.png)
+![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/2.0.3/images/2-chat-messages.png)
 <br>
 <br>
 
 ## Configurable Channel Settings / Share with QR
 
-![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/2.0.2/images/3-channel-config.png)
+![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/2.0.3/images/3-channel-config.png)
 <br>
-![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/2.0.2/images/4-qr-code-sharing.png)
+![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/2.0.3/images/4-qr-code-sharing.png)
 <br>
 <br>
 
 ## Use standalone Meshtastic devices as Trackers
 
-![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/2.0.2/images/5-write-to-tracker.png)
+![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/2.0.3/images/5-write-to-tracker.png)
 <br>
 <br>
 

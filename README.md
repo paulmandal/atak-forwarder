@@ -54,8 +54,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic App | 2.0.14 |
-| Meshtastic Firmware | 2.0.14 |
+| Meshtastic App | 2.0.17 |
+| Meshtastic Firmware | 2.0.20 |
 
 # To Do
 

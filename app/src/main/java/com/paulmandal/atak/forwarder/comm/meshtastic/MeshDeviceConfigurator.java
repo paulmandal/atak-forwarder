@@ -217,6 +217,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             }
 
             meshService.commitEditSettings();
+            // TODO: maybe drop the next 2 lines depending on if MT devices reconnect every time
             mLogger.v(TAG, "Finished writing to device.");
             sendFinished();
         } catch (RemoteException | InvalidProtocolBufferException e) {

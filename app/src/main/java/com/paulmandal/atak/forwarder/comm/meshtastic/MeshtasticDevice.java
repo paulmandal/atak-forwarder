@@ -41,8 +41,7 @@ public class MeshtasticDevice {
 
         MeshtasticDevice md = (MeshtasticDevice) o;
 
-        return this.name.equals(md.name)
-                && this.address.equals(md.address)
+        return this.address.equals(md.address)
                 && this.deviceType.equals(md.deviceType);
     }
 }

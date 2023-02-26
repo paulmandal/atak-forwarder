@@ -42,9 +42,9 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
                 },
                 new String[] {});
 
-        logger.addListener(this);
-
         mLogMessages.setValue(new ArrayList<>());
+
+        logger.addListener(this);
     }
 
     public LiveData<List<LogMessage>> getLogMessages() {

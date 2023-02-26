@@ -2,6 +2,7 @@ package com.paulmandal.atak.forwarder.comm.meshtastic;
 
 import android.os.RemoteException;
 
+import com.geeksville.mesh.AppOnlyProtos;
 import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
@@ -13,7 +14,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
+import com.paulmandal.atak.forwarder.helpers.PskHelper;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -56,7 +59,6 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
     private final ConfigProtos.Config.DeviceConfig.Role mRoutingRole;
 
     private final boolean mWriteToDevice;
-    private boolean mChannelsWritten = false;
 
     private boolean mStarted;
 
@@ -141,20 +143,28 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
         try {
             mLogger.v(TAG, "Checking existing device config.");
-            boolean needsMainConfig;
-
             IMeshService meshService = mMeshServiceController.getMeshService();
+
             LocalOnlyProtos.LocalConfig localConfig = LocalOnlyProtos.LocalConfig.parseFrom(meshService.getConfig());
+            AppOnlyProtos.ChannelSet channelSet = AppOnlyProtos.ChannelSet.parseFrom(meshService.getChannelSet());
 
             ConfigProtos.Config.LoRaConfig loRaConfig = localConfig.getLora();
             ConfigProtos.Config.DeviceConfig deviceConfig = localConfig.getDevice();
-            needsMainConfig = mRegionCode != loRaConfig.getRegion()
+            boolean needsMainConfig = mRegionCode != loRaConfig.getRegion()
                     || mChannelMode != loRaConfig.getModemPresetValue()
                     || !loRaConfig.getTxEnabled()
                     || mRoutingRole != deviceConfig.getRole();
 
+            ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(0);
+            byte[] currentChannelPsk = channelSettings.getPsk().toByteArray();
+            boolean needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
+
             if (needsMainConfig) {
                 mLogger.d(TAG, "regionCode: " + loRaConfig.getRegion() + " -> " + mRegionCode + ", channelMode: " + loRaConfig.getModemPresetValue() + " -> " + mChannelMode + ", txEnabled: " + loRaConfig.getTxEnabled() + " -> true, routingRole: " + deviceConfig.getRole() + " -> " + mRoutingRole);
+            }
+
+            if (needsChannelConfig) {
+                mLogger.d(TAG, "channelName: " + channelSettings.getName() + " -> " + mChannelName + ", channelPsk: " + mHashHelper.hashFromBytes(currentChannelPsk) + " -> " + mHashHelper.hashFromBytes(mChannelPsk));
             }
 
             if (!needsMainConfig) {
@@ -190,7 +200,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 }
             }
 
-            if (!needsMainConfig && mChannelsWritten) {
+            if (!needsMainConfig && !needsChannelConfig) {
                 mLogger.v(TAG, "Finished writing to device.");
                 sendFinished();
                 return;
@@ -202,14 +212,11 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 writeMainConfig(meshService);
             }
 
-            if (needsMainConfig || !mChannelsWritten) {
+            if (needsChannelConfig) {
                 writeChannelConfig(meshService);
-                mChannelsWritten = true;
             }
 
             meshService.commitEditSettings();
-            mLogger.v(TAG, "Finished writing to device.");
-            sendFinished();
         } catch (RemoteException | InvalidProtocolBufferException e) {
             mLogger.e(TAG, "Error getting/parsing config protocol buffer: " + e.getMessage());
             e.printStackTrace();

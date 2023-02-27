@@ -100,6 +100,10 @@ public class DeviceConnectionHandler extends BroadcastReceiver implements MeshSe
     private DeviceConnectionState connectionStateFromServiceState(String connectionString) {
         DeviceConnectionState connectionState = DeviceConnectionState.DISCONNECTED;
 
+        if (connectionString == null) {
+            return connectionState;
+        }
+
         if (connectionString.equals(MeshServiceConstants.STATE_CONNECTED)
                 || connectionString.equals(MeshServiceConstants.STATE_DEVICE_SLEEP)) {
             connectionState = DeviceConnectionState.CONNECTED;

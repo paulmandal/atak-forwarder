@@ -31,7 +31,7 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
     }
 
     private final List<LogMessage> mUnfilteredLogMessages = new ArrayList<>();
-    private final MutableLiveData<List<LogMessage>> mLogMessages = new MutableLiveData<>();
+    private final MutableLiveData<List<LogMessage>> mLogMessages = new MutableLiveData<>(new ArrayList<>());
 
     private int mLoggingLevel;
 
@@ -41,8 +41,6 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
                         PreferencesKeys.KEY_SET_LOGGING_LEVEL
                 },
                 new String[] {});
-
-        mLogMessages.setValue(new ArrayList<>());
 
         logger.addListener(this);
     }
@@ -59,7 +57,7 @@ public class LoggingViewModel extends DestroyableSharedPrefsListener implements 
         LogMessage logMessage = new LogMessage(level, tag, message);
         mUnfilteredLogMessages.add(logMessage);
 
-        if(level >= mLoggingLevel) {
+        if (level >= mLoggingLevel) {
             List<LogMessage> messages = mLogMessages.getValue();
             messages.add(logMessage);
             mLogMessages.postValue(messages);

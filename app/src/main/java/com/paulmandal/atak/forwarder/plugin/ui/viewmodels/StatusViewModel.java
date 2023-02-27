@@ -37,14 +37,14 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     private final DiscoveryBroadcastEventHandler mDiscoveryBroadcastEventHandler;
 
-    private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>();
-    private final MutableLiveData<ConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>();
-    private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>();
+    private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>(new ArrayList<>());
+    private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>(0);
+    private final MutableLiveData<ConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>(ConnectionStateHandler.ConnectionState.DEVICE_DISCONNECTED);
+    private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> mTimedOutMessages = new MutableLiveData<>(0);
+    private final MutableLiveData<Integer> mReceivedMessages = new MutableLiveData<>(0);
 
     public StatusViewModel(DeviceConfigObserver deviceConfigObserver,
                            HashHelper hashHelper,
@@ -63,13 +63,6 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
         super(deviceConfigObserver, hashHelper, channelName, psk, modemConfig, meshtasticDevice, pluginManagesDevice);
 
         mDiscoveryBroadcastEventHandler = discoveryBroadcastEventHandler;
-
-        mMessageQueueSize.setValue(0);
-        mTotalMessages.setValue(0);
-        mErroredMessages.setValue(0);
-        mDeliveredMessages.setValue(0);
-        mTimedOutMessages.setValue(0);
-        mReceivedMessages.setValue(0);
 
         userTracker.addUpdateListener(this);
         commandQueue.setListener(this);

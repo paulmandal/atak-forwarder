@@ -158,9 +158,11 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
             boolean needsChannelConfig = channelSet.getSettingsCount() < 1;
 
+            ChannelProtos.ChannelSettings channelSettings = null;
+            byte[] currentChannelPsk = null;
             if (channelSet.getSettingsCount() > 0) {
-                ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(0);
-                byte[] currentChannelPsk = channelSettings.getPsk().toByteArray();
+                channelSettings = channelSet.getSettings(0);
+                currentChannelPsk = channelSettings.getPsk().toByteArray();
                 needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
             }
 
@@ -168,8 +170,10 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 mLogger.d(TAG, "regionCode: " + loRaConfig.getRegion() + " -> " + mRegionCode + ", channelMode: " + loRaConfig.getModemPresetValue() + " -> " + mChannelMode + ", txEnabled: " + loRaConfig.getTxEnabled() + " -> true, routingRole: " + deviceConfig.getRole() + " -> " + mRoutingRole);
             }
 
-            if (needsChannelConfig) {
+            if (needsChannelConfig && channelSettings != null) {
                 mLogger.d(TAG, "channelName: " + channelSettings.getName() + " -> " + mChannelName + ", channelPsk: " + mHashHelper.hashFromBytes(currentChannelPsk) + " -> " + mHashHelper.hashFromBytes(mChannelPsk));
+            } else if (needsChannelConfig) {
+                mLogger.d(TAG, "channelName: null -> " + mChannelName + ", channelPsk: null -> " + mHashHelper.hashFromBytes(mChannelPsk));
             }
 
             if (!needsMainConfig) {

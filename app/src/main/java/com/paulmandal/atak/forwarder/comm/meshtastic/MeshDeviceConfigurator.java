@@ -161,7 +161,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             if (channelSet.getSettingsCount() > 0) {
                 ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(0);
                 byte[] currentChannelPsk = channelSettings.getPsk().toByteArray();
-                 needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
+                needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
             }
 
             if (needsMainConfig) {

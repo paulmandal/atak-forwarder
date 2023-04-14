@@ -52,6 +52,8 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     private String mLongName;
     private String mShortName;
 
+    private DeviceConnectionHandler.DeviceConnectionState mDeviceConnectionState = DeviceConnectionHandler.DeviceConnectionState.DISCONNECTED;
+
     private boolean mPluginManagesDevice;
     private boolean mSetDeviceAddressCalled;
     private boolean mInitialDeviceWriteStarted;
@@ -123,6 +125,8 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
 
     @Override
     public void onDeviceConnectionStateChanged(DeviceConnectionHandler.DeviceConnectionState deviceConnectionState) {
+        mDeviceConnectionState = deviceConnectionState;
+
         if (deviceConnectionState != DeviceConnectionHandler.DeviceConnectionState.CONNECTED) {
             return;
         }
@@ -273,6 +277,10 @@ public class MeshDeviceConfigurationController implements DeviceConnectionHandle
     }
 
     private void writeCommDevice() {
+        if (mDeviceConnectionState != DeviceConnectionHandler.DeviceConnectionState.CONNECTED) {
+            return;
+        }
+
         mLogger.v(TAG, "Spawning comm device configurator");
         MeshDeviceConfigurator meshDeviceConfigurator = createCommDeviceConfigurator();
 

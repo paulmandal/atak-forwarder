@@ -113,6 +113,8 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
 
         switch (mConnectionState) {
             case NO_SERVICE_CONNECTION:
+                drawableId = R.drawable.ic_no_service_connection;
+                break;
             case DEVICE_DISCONNECTED:
                 drawableId = R.drawable.ic_disconnected;
                 break;

@@ -7,6 +7,7 @@ import com.geeksville.mesh.ChannelProtos;
 import com.geeksville.mesh.ConfigProtos;
 import com.geeksville.mesh.IMeshService;
 import com.geeksville.mesh.LocalOnlyProtos;
+import com.geeksville.mesh.MeshProtos;
 import com.geeksville.mesh.MeshUser;
 import com.geeksville.mesh.NodeInfo;
 import com.google.protobuf.ByteString;
@@ -262,7 +263,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         configBuilder.setDisplay(displayConfigBuilder);
         meshService.setConfig(configBuilder.build().toByteArray());
 
-        meshService.setOwner(null, mLongName, mShortName, false);
+        meshService.setOwner(new MeshUser(null, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
     }
 
     private void writeChannelConfig(IMeshService meshService) throws RemoteException {

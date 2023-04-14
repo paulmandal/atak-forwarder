@@ -102,12 +102,12 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
             return ConnectionState.NO_SERVICE_CONNECTION;
         }
 
-        if (mDeviceConfigurationState != MeshDeviceConfigurationController.ConfigurationState.READY) {
-            return ConnectionState.WRITING_CONFIG;
-        }
-
         if (mDeviceConnectionState == DeviceConnectionHandler.DeviceConnectionState.DISCONNECTED) {
             return ConnectionState.DEVICE_DISCONNECTED;
+        }
+
+        if (mDeviceConfigurationState != MeshDeviceConfigurationController.ConfigurationState.READY) {
+            return ConnectionState.WRITING_CONFIG;
         }
 
         if (mDeviceConnectionState == DeviceConnectionHandler.DeviceConnectionState.CONNECTED) {

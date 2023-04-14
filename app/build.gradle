@@ -1,6 +1,6 @@
 buildscript {
 
-    ext.PLUGIN_VERSION = "2.0.5"
+    ext.PLUGIN_VERSION = "2.0.6"
     ext.ATAK_VERSION = "4.5.0"
 
     // Attempt to read ATAK_VERSION from the environment
@@ -39,7 +39,7 @@ buildscript {
     ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
     ext.takrepoUser = getProperty('takrepo.user', 'invalid')
     ext.takrepoPassword = getProperty('takrepo.password', 'invalid')
-    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../atak-civ-sdk-4.8.1/atak-gradle-takdev.jar")
+    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../atak-civ-sdk-4.9.0/atak-gradle-takdev.jar")
 
     repositories {
         google()

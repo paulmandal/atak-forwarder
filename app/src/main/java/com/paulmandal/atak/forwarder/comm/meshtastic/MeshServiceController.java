@@ -120,6 +120,7 @@ public class MeshServiceController implements Destroyable {
     }
 
     private void bindToService() {
+        mLogger.v(TAG, "Binding to service");
         mAtakContext.bindService(mServiceIntent, mServiceConnection, Context.BIND_AUTO_CREATE);
     }
 

@@ -39,7 +39,7 @@ public class StatusViewModel extends ChannelStatusViewModel implements UserTrack
 
     private final MutableLiveData<List<UserInfo>> mUserInfoList = new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<Integer> mMessageQueueSize = new MutableLiveData<>(0);
-    private final MutableLiveData<ConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>(ConnectionStateHandler.ConnectionState.DEVICE_DISCONNECTED);
+    private final MutableLiveData<ConnectionStateHandler.ConnectionState> mConnectionState = new MutableLiveData<>(ConnectionStateHandler.ConnectionState.NO_SERVICE_CONNECTION);
     private final MutableLiveData<Integer> mTotalMessages = new MutableLiveData<>(0);
     private final MutableLiveData<Integer> mErroredMessages = new MutableLiveData<>(0);
     private final MutableLiveData<Integer> mDeliveredMessages = new MutableLiveData<>(0);

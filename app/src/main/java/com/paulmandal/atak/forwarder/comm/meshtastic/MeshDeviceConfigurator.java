@@ -156,9 +156,13 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                     || !loRaConfig.getTxEnabled()
                     || mRoutingRole != deviceConfig.getRole();
 
-            ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(0);
-            byte[] currentChannelPsk = channelSettings.getPsk().toByteArray();
-            boolean needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
+            boolean needsChannelConfig = channelSet.getSettingsCount() < 1;
+
+            if (channelSet.getSettingsCount() > 0) {
+                ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(0);
+                byte[] currentChannelPsk = channelSettings.getPsk().toByteArray();
+                 needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
+            }
 
             if (needsMainConfig) {
                 mLogger.d(TAG, "regionCode: " + loRaConfig.getRegion() + " -> " + mRegionCode + ", channelMode: " + loRaConfig.getModemPresetValue() + " -> " + mChannelMode + ", txEnabled: " + loRaConfig.getTxEnabled() + " -> true, routingRole: " + deviceConfig.getRole() + " -> " + mRoutingRole);

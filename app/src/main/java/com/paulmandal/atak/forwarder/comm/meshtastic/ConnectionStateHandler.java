@@ -27,9 +27,9 @@ public class ConnectionStateHandler implements MeshDeviceConfigurationController
     private final Logger mLogger;
     private final Set<Listener> mListeners = new CopyOnWriteArraySet<>();
 
-    private DeviceConnectionHandler.DeviceConnectionState mDeviceConnectionState;
-    private MeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState;
-    private MeshServiceController.ServiceConnectionState mServiceConnectionState;
+    private DeviceConnectionHandler.DeviceConnectionState mDeviceConnectionState = DeviceConnectionHandler.DeviceConnectionState.DISCONNECTED;
+    private MeshDeviceConfigurationController.ConfigurationState mDeviceConfigurationState = MeshDeviceConfigurationController.ConfigurationState.DISCONNECTED;
+    private MeshServiceController.ServiceConnectionState mServiceConnectionState = MeshServiceController.ServiceConnectionState.DISCONNECTED;
     private MeshtasticDevice mMeshtasticDevice;
     private ConfigProtos.Config.LoRaConfig.RegionCode mRegionCode;
     private boolean mPluginManagesDevice;

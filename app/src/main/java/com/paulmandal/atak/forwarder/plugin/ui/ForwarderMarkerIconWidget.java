@@ -82,6 +82,7 @@ public class ForwarderMarkerIconWidget extends MarkerIconWidget implements Destr
         mConnectionState = connectionState;
         updateIcon();
     }
+
     @Override
     public void onDestroy(Context context, MapView mapView) {
         RootLayoutWidget root = (RootLayoutWidget) mapView.getComponentExtra("rootLayoutWidget");

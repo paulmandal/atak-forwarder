@@ -78,7 +78,7 @@ data class DataPacket(
         parcel.readString(),
         parcel.readLong(),
         parcel.readInt(),
-        parcelreadParcelable(MessageStatus::class.java.classLoader),
+        parcel.readParcelable(MessageStatus::class.java.classLoader),
         parcel.readInt(),
         parcel.readInt(),
     )
@@ -139,7 +139,7 @@ data class DataPacket(
         from = parcel.readString()
         time = parcel.readLong()
         id = parcel.readInt()
-        status = parcelreadParcelable(MessageStatus::class.java.classLoader)
+        status = parcel.readParcelable(MessageStatus::class.java.classLoader)
         hopLimit = parcel.readInt()
         channel = parcel.readInt()
     }

@@ -2,7 +2,7 @@ package com.geeksville.mesh
 
 import android.os.Parcel
 import android.os.Parcelable
-import com.geeksville.mesh.util.readParcelableCompat
+
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -78,7 +78,7 @@ data class DataPacket(
         parcel.readString(),
         parcel.readLong(),
         parcel.readInt(),
-        parcel.readParcelableCompat(MessageStatus::class.java.classLoader),
+        parcelreadParcelable(MessageStatus::class.java.classLoader),
         parcel.readInt(),
         parcel.readInt(),
     )
@@ -139,7 +139,7 @@ data class DataPacket(
         from = parcel.readString()
         time = parcel.readLong()
         id = parcel.readInt()
-        status = parcel.readParcelableCompat(MessageStatus::class.java.classLoader)
+        status = parcelreadParcelable(MessageStatus::class.java.classLoader)
         hopLimit = parcel.readInt()
         channel = parcel.readInt()
     }

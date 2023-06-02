@@ -5,7 +5,7 @@ do
 done
 
 sed -i "s/import com\.geeksville\.mesh\.util\.readParcelableCompat//" app/src/main/java/com/geeksville/mesh/DataPacket.kt
-sed -i "s/\.readParcelableCompat/readParcelable/g" app/src/main/java/com/geeksville/mesh/DataPacket.kt
+sed -i "s/\.readParcelableCompat/.readParcelable/g" app/src/main/java/com/geeksville/mesh/DataPacket.kt
 sed -i "s/import com\.geeksville\.mesh\.util\.anonymize//" app/src/main/java/com/geeksville/mesh/NodeInfo.kt
 sed -i "s/\.anonymize//g" app/src/main/java/com/geeksville/mesh/NodeInfo.kt
 

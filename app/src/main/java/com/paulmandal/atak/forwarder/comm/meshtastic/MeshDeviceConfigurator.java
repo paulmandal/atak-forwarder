@@ -161,6 +161,11 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             ChannelProtos.ChannelSettings channelSettings = null;
             byte[] currentChannelPsk = null;
             if (channelSet.getSettingsCount() > 0) {
+                for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+                    channelSettings = channelSet.getSettings(i);
+                    mLogger.v(TAG, "channelSettings[" + i + "]: " + channelSettings.getName() + ", psk: " + mHashHelper.hashFromBytes(channelSettings.getPsk().toByteArray()));
+                }
+
                 channelSettings = channelSet.getSettings(0);
                 currentChannelPsk = channelSettings.getPsk().toByteArray();
                 needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());

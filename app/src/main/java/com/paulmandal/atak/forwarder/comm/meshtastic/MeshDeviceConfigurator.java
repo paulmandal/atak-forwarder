@@ -271,7 +271,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         configBuilder.setDisplay(displayConfigBuilder);
         meshService.setConfig(configBuilder.build().toByteArray());
 
-        meshService.setOwner(new MeshUser(null, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
+        meshService.setOwner(new MeshUser(mLongName, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
     }
 
     private void writeChannelConfig(IMeshService meshService) throws RemoteException {

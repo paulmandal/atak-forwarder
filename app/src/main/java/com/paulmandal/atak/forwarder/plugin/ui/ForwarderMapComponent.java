@@ -55,6 +55,7 @@ import com.paulmandal.atak.libcotshrink.pub.api.CotShrinker;
 import com.paulmandal.atak.libcotshrink.pub.api.CotShrinkerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -68,7 +69,7 @@ public class ForwarderMapComponent extends DropDownMapComponent {
 
     private final List<Destroyable> mDestroyables = new ArrayList<>();
 
-    @SuppressLint("UseCompatLoadingForDrawables")
+    @SuppressLint({"UseCompatLoadingForDrawables", "ApplySharedPref"})
     public void onCreate(final Context pluginContext, Intent intent,
                          final MapView mapView) {
         pluginContext.setTheme(R.style.ATAKPluginTheme);
@@ -120,7 +121,12 @@ public class ForwarderMapComponent extends DropDownMapComponent {
         ConfigProtos.Config.LoRaConfig.RegionCode regionCode = ConfigProtos.Config.LoRaConfig.RegionCode.forNumber(Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_REGION, PreferencesDefaults.DEFAULT_REGION)));
         String channelName = sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_NAME, PreferencesDefaults.DEFAULT_CHANNEL_NAME);
         int channelMode = Integer.parseInt(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_MODE, PreferencesDefaults.DEFAULT_CHANNEL_MODE));
-        byte[] channelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, PreferencesDefaults.DEFAULT_CHANNEL_PSK), Base64.DEFAULT);
+        String defaultChannelPskStr = PreferencesDefaults.DEFAULT_CHANNEL_PSK;
+        byte[] channelPsk = Base64.decode(sharedPreferences.getString(PreferencesKeys.KEY_CHANNEL_PSK, defaultChannelPskStr), Base64.DEFAULT);
+        byte[] defaultChannelPsk = Base64.decode(defaultChannelPskStr, Base64.DEFAULT);
+        if (Arrays.equals(channelPsk, defaultChannelPsk)) {
+            sharedPreferences.edit().putString(PreferencesKeys.KEY_CHANNEL_PSK, defaultChannelPskStr).commit();
+        }
         boolean isRouter = sharedPreferences.getBoolean(PreferencesKeys.KEY_COMM_DEVICE_IS_ROUTER, PreferencesDefaults.DEFAULT_COMM_DEVICE_IS_ROUTER);
         ConfigProtos.Config.LoRaConfig.ModemPreset modemConfig = ConfigProtos.Config.LoRaConfig.ModemPreset.forNumber(channelMode);
         ConfigProtos.Config.DeviceConfig.Role routingRole = isRouter ? ConfigProtos.Config.DeviceConfig.Role.ROUTER_CLIENT : ConfigProtos.Config.DeviceConfig.Role.CLIENT;

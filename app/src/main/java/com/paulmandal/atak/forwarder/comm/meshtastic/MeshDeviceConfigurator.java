@@ -181,37 +181,36 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 mLogger.d(TAG, "channelName: null -> " + mChannelName + ", channelPsk: null -> " + mHashHelper.hashFromBytes(mChannelPsk));
             }
 
-            if (!needsMainConfig) {
-                int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
+            int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
 
-                NodeInfo localNode = null;
-                List<NodeInfo> nodes = meshService.getNodes();
-                for (int i = 0; i < nodes.size(); i++) {
-                    NodeInfo node = nodes.get(i);
-                    if (node.getNum() == nodeNum) {
-                        localNode = node;
-                    }
+            NodeInfo localNode = null;
+            List<NodeInfo> nodes = meshService.getNodes();
+            for (int i = 0; i < nodes.size(); i++) {
+                NodeInfo node = nodes.get(i);
+                if (node.getNum() == nodeNum) {
+                    localNode = node;
                 }
+            }
 
-                if (localNode == null) {
-                    sendFailed();
-                    return;
-                }
+            if (localNode == null) {
+                sendFailed();
+                return;
+            }
 
-                MeshUser meshUser = localNode.getUser();
+            MeshUser meshUser = localNode.getUser();
 
-                if (meshUser == null) {
-                    sendFailed();
-                    return;
-                }
+            if (meshUser == null) {
+                sendFailed();
+                return;
+            }
 
-                String longName = meshUser.getLongName();
-                String shortName = meshUser.getShortName();
+            String longName = meshUser.getLongName();
+            String shortName = meshUser.getShortName();
+            String meshId = meshUser.getId();
 
-                if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
-                    mLogger.d(TAG, "longName: " + longName + " -> " + mLongName + ", shortName: " + shortName + " -> " + mShortName);
-                    needsMainConfig = true;
-                }
+            if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
+                mLogger.d(TAG, "longName: " + longName + " -> " + mLongName + ", shortName: " + shortName + " -> " + mShortName);
+                needsMainConfig = true;
             }
 
             if (!needsMainConfig && !needsChannelConfig) {
@@ -223,7 +222,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             meshService.beginEditSettings();
 
             if (needsMainConfig) {
-                writeMainConfig(meshService);
+                writeMainConfig(meshService, meshId);
             }
 
             if (needsChannelConfig) {
@@ -237,7 +236,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         }
     }
 
-    private void writeMainConfig(IMeshService meshService) throws RemoteException {
+    private void writeMainConfig(IMeshService meshService, String meshId) throws RemoteException {
         mLogger.d(TAG, "Writing config to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ".");
 
         ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
@@ -276,7 +275,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         configBuilder.setDisplay(displayConfigBuilder);
         meshService.setConfig(configBuilder.build().toByteArray());
 
-        meshService.setOwner(new MeshUser(mLongName, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
+        meshService.setOwner(new MeshUser(meshId, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
     }
 
     private void writeChannelConfig(IMeshService meshService) throws RemoteException {

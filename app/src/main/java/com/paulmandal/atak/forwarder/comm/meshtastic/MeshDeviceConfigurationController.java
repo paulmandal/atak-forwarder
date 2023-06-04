@@ -1,18 +1,13 @@
 package com.paulmandal.atak.forwarder.comm.meshtastic;
 
-import android.content.SharedPreferences;
 import android.os.RemoteException;
-import android.util.Base64;
 
 import androidx.annotation.Nullable;
 
-import com.ekito.simpleKML.model.GroundOverlay;
 import com.geeksville.mesh.ConfigProtos;
 import com.paulmandal.atak.forwarder.ForwarderConstants;
 import com.paulmandal.atak.forwarder.helpers.HashHelper;
 import com.paulmandal.atak.forwarder.helpers.Logger;
-import com.paulmandal.atak.forwarder.preferences.PreferencesDefaults;
-import com.paulmandal.atak.forwarder.preferences.PreferencesKeys;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;

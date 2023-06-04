@@ -2,6 +2,7 @@ package com.geeksville.mesh
 
 import android.graphics.Color
 import android.os.Parcelable
+import com.geeksville.mesh.MeshProtos.User
 
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -24,6 +25,9 @@ data class MeshUser(
     override fun toString(): String {
         return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName}, hwModel=${hwModelString}, isLicensed=${isLicensed})"
     }
+
+    fun toProto(): User = User.newBuilder().setId(id).setLongName(longName).setShortName(shortName)
+        .setHwModel(hwModel).setIsLicensed(isLicensed).build()
 
     /** a string version of the hardware model, converted into pretty lowercase and changing _ to -, and p to dot
      * or null if unset

@@ -158,9 +158,16 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
 
             boolean needsChannelConfig = channelSet.getSettingsCount() < 1;
 
+            ChannelProtos.ChannelSettings channelSettings = null;
+            byte[] currentChannelPsk = null;
             if (channelSet.getSettingsCount() > 0) {
-                ChannelProtos.ChannelSettings channelSettings = channelSet.getSettings(0);
-                byte[] currentChannelPsk = channelSettings.getPsk().toByteArray();
+                for (int i = 0 ; i < channelSet.getSettingsCount() ; i++) {
+                    channelSettings = channelSet.getSettings(i);
+                    mLogger.v(TAG, "channelSettings[" + i + "]: " + channelSettings.getName() + ", psk: " + mHashHelper.hashFromBytes(channelSettings.getPsk().toByteArray()));
+                }
+
+                channelSettings = channelSet.getSettings(0);
+                currentChannelPsk = channelSettings.getPsk().toByteArray();
                 needsChannelConfig = !Arrays.equals(mChannelPsk, currentChannelPsk) || !mChannelName.equals(channelSettings.getName());
             }
 
@@ -168,41 +175,42 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
                 mLogger.d(TAG, "regionCode: " + loRaConfig.getRegion() + " -> " + mRegionCode + ", channelMode: " + loRaConfig.getModemPresetValue() + " -> " + mChannelMode + ", txEnabled: " + loRaConfig.getTxEnabled() + " -> true, routingRole: " + deviceConfig.getRole() + " -> " + mRoutingRole);
             }
 
-            if (needsChannelConfig) {
+            if (needsChannelConfig && channelSettings != null) {
                 mLogger.d(TAG, "channelName: " + channelSettings.getName() + " -> " + mChannelName + ", channelPsk: " + mHashHelper.hashFromBytes(currentChannelPsk) + " -> " + mHashHelper.hashFromBytes(mChannelPsk));
+            } else if (needsChannelConfig) {
+                mLogger.d(TAG, "channelName: null -> " + mChannelName + ", channelPsk: null -> " + mHashHelper.hashFromBytes(mChannelPsk));
             }
 
-            if (!needsMainConfig) {
-                int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
+            int nodeNum = meshService.getMyNodeInfo().getMyNodeNum();
 
-                NodeInfo localNode = null;
-                List<NodeInfo> nodes = meshService.getNodes();
-                for (int i = 0; i < nodes.size(); i++) {
-                    NodeInfo node = nodes.get(i);
-                    if (node.getNum() == nodeNum) {
-                        localNode = node;
-                    }
+            NodeInfo localNode = null;
+            List<NodeInfo> nodes = meshService.getNodes();
+            for (int i = 0; i < nodes.size(); i++) {
+                NodeInfo node = nodes.get(i);
+                if (node.getNum() == nodeNum) {
+                    localNode = node;
                 }
+            }
 
-                if (localNode == null) {
-                    sendFailed();
-                    return;
-                }
+            if (localNode == null) {
+                sendFailed();
+                return;
+            }
 
-                MeshUser meshUser = localNode.getUser();
+            MeshUser meshUser = localNode.getUser();
 
-                if (meshUser == null) {
-                    sendFailed();
-                    return;
-                }
+            if (meshUser == null) {
+                sendFailed();
+                return;
+            }
 
-                String longName = meshUser.getLongName();
-                String shortName = meshUser.getShortName();
+            String longName = meshUser.getLongName();
+            String shortName = meshUser.getShortName();
+            String meshId = meshUser.getId();
 
-                if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
-                    mLogger.d(TAG, "longName: " + longName + " -> " + mLongName + ", shortName: " + shortName + " -> " + mShortName);
-                    needsMainConfig = true;
-                }
+            if (!mLongName.equals(longName) || !mShortName.equals(shortName)) {
+                mLogger.d(TAG, "longName: " + longName + " -> " + mLongName + ", shortName: " + shortName + " -> " + mShortName);
+                needsMainConfig = true;
             }
 
             if (!needsMainConfig && !needsChannelConfig) {
@@ -214,7 +222,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
             meshService.beginEditSettings();
 
             if (needsMainConfig) {
-                writeMainConfig(meshService);
+                writeMainConfig(meshService, meshId);
             }
 
             if (needsChannelConfig) {
@@ -228,7 +236,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         }
     }
 
-    private void writeMainConfig(IMeshService meshService) throws RemoteException {
+    private void writeMainConfig(IMeshService meshService, String meshId) throws RemoteException {
         mLogger.d(TAG, "Writing config to device: " + mMeshtasticDevice.address + ", longName: " + mLongName + ", shortName: " + mShortName + ", role: " + mRoutingRole + ", regionCode: " + mRegionCode + ", channelMode: " + mChannelMode + ".");
 
         ConfigProtos.Config.Builder configBuilder = ConfigProtos.Config.newBuilder();
@@ -267,7 +275,7 @@ public class MeshDeviceConfigurator implements DeviceConnectionHandler.Listener 
         configBuilder.setDisplay(displayConfigBuilder);
         meshService.setConfig(configBuilder.build().toByteArray());
 
-        meshService.setOwner(new MeshUser(null, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
+        meshService.setOwner(new MeshUser(meshId, mLongName, mShortName, MeshProtos.HardwareModel.UNSET, false));
     }
 
     private void writeChannelConfig(IMeshService meshService) throws RemoteException {

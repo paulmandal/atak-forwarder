@@ -156,23 +156,12 @@ data class NodeInfo(
             val g = (num and 0x00FF00) shr 8
             val b = num and 0x0000FF
             val brightness = ((r * 0.299) + (g * 0.587) + (b * 0.114)) / 255
-            return Pair(if (brightness > 0.5) Color.BLACK else Color.WHITE, Color.rgb(r, g, b))
+            return (if (brightness > 0.5) Color.BLACK else Color.WHITE) to Color.rgb(r, g, b)
         }
 
     val batteryLevel get() = deviceMetrics?.batteryLevel
     val voltage get() = deviceMetrics?.voltage
     val batteryStr get() = if (batteryLevel in 1..100) String.format("%d%%", batteryLevel) else ""
-
-    private fun envFormat(f: String, unit: String, env: Float?): String =
-        if (env != null && env != 0f) String.format(f + unit, env) else ""
-
-    val envMetricStr
-        get() = envFormat("%.1f", "°C ", environmentMetrics?.temperature) +
-                envFormat("%.0f", "%% ", environmentMetrics?.relativeHumidity) +
-                envFormat("%.1f", "hPa ", environmentMetrics?.barometricPressure) +
-                envFormat("%.0f", "mΩ ", environmentMetrics?.gasResistance) +
-                envFormat("%.2f", "V ", environmentMetrics?.voltage) +
-                envFormat("%.1f", "mA", environmentMetrics?.current)
 
     /**
      * true if the device was heard from recently

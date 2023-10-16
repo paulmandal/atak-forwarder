@@ -1,7 +1,7 @@
 buildscript {
 
     ext.PLUGIN_VERSION = "2.0.8"
-    ext.ATAK_VERSION = "4.5.0"
+    ext.ATAK_VERSION = "4.10.0"
 
     // Attempt to read ATAK_VERSION from the environment
     def ENV_ATAK_VERSION = System.getenv('ATAK_VERSION')
@@ -124,10 +124,6 @@ android {
         jniLibs {
             useLegacyPackaging = true
         }
-    }
-
-    dexOptions {
-        jumboMode = true
     }
 
     lintOptions {

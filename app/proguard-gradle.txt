@@ -45,13 +45,19 @@
     public static ** valueOf(java.lang.String);
 }
 
--keep class * extends transapps.maps.plugin.tool.Tool {
-}
--keep class * implements transapps.maps.plugin.lifecycle.Lifecycle {
+-keep class * implements gov.tak.api.plugin.IPlugin {
 }
 
 # overcome an existing bug in the gradle subsystem (3.5.x)
 -keep class module-info
+
+-keep,allowobfuscation @interface gov.tak.api.annotation.DontObfuscate
+
+# Do not strip any method/class that is annotated with @DontObfuscate
+-keep @gov.tak.api.annotation.DontObfuscate class * {*;}
+-keepclassmembers class * {
+    @gov.tak.api.annotation.DontObfuscate *;
+}
 
 # These classes use Parcelable
 -keep class com.geeksville.mesh.** { *; }

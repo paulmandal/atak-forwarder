@@ -13,10 +13,11 @@ repoDirName=`pwd | sed s#.*/##`
 pushd ..
 if [ "${targetAtakVersion}" != "" ]
 then
-  zip -qr /mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}-atak-${targetAtakVersion}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
+  targetFilename=/mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}-atak-${targetAtakVersion}.zip
 else
-  zip -qr /mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
+  targetFilename=/mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}.zip
 fi
+zip -qr ${targetFilename} "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
 popd
 
 if [ "${targetAtakVersion}" != "" ]

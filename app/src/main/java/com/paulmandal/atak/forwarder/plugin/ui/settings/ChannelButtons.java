@@ -1,15 +1,19 @@
 package com.paulmandal.atak.forwarder.plugin.ui.settings;
 
 import android.app.AlertDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.preference.Preference;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.atakmap.android.gui.PanEditTextPreference;
@@ -57,6 +61,8 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
                           Preference channelPsk,
                           Preference showChannelQr,
                           Preference scanChannelQr,
+                          Preference copyChannelSettings,
+                          Preference pastChannelSettings,
                           Preference saveChannelToFile,
                           Preference readChannelFromFile) {
         super(destroyables,
@@ -92,15 +98,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
         });
 
         showChannelQr.setOnPreferenceClickListener((Preference preference) -> {
-            byte[] channelNameBytes = mChannelName.getBytes();
-            byte modemConfigByte = (byte) mMode;
-
-            byte[] payload = new byte[mPsk.length + 1 + channelNameBytes.length];
-
-            System.arraycopy(mPsk, 0, payload, 0, mPsk.length);
-            payload[mPsk.length] = modemConfigByte;
-            System.arraycopy(channelNameBytes, 0, payload, mPsk.length + 1, channelNameBytes.length);
-
+            String payload = channelSettingsToBase64();
             WindowManager windowManager = (WindowManager) settingsMenuContext.getSystemService(Context.WINDOW_SERVICE);
             DisplayMetrics displayMetrics = new DisplayMetrics();
             windowManager.getDefaultDisplay().getMetrics(displayMetrics);
@@ -112,7 +110,6 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             } catch (WriterException e) {
                 e.printStackTrace();
             }
-
 
             if (bm != null) {
                 ImageView iv = new ImageView(settingsMenuContext);
@@ -146,20 +143,7 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
 
             scannerView.setResultHandler((Result rawResult) -> {
                 String resultText = rawResult.getText();
-                byte[] resultBytes = Base64.decode(resultText, Base64.DEFAULT);
-
-                byte[] psk = new byte[PSK_LENGTH];
-                byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
-
-                System.arraycopy(resultBytes, 0, psk, 0, PSK_LENGTH);
-                int modemConfigValue = resultBytes[PSK_LENGTH];
-                System.arraycopy(resultBytes, PSK_LENGTH + 1, channelNameBytes, 0, resultBytes.length - PSK_LENGTH - 1);
-
-                preference.getEditor()
-                        .putString(PreferencesKeys.KEY_CHANNEL_NAME, new String(channelNameBytes))
-                        .putString(PreferencesKeys.KEY_CHANNEL_MODE, Integer.toString(modemConfigValue))
-                        .putString(PreferencesKeys.KEY_CHANNEL_PSK, Base64.encodeToString(psk, Base64.DEFAULT))
-                        .apply();
+                updateChannelSettingsFromBase64(preference, resultText);
 
                 discoveryBroadcastEventHandler.broadcastDiscoveryMessage(true);
 
@@ -169,6 +153,28 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
             });
             scannerView.startCamera();
 
+            return true;
+        });
+
+        copyChannelSettings.setOnPreferenceClickListener((Preference preference) -> {
+            ClipboardManager clipboardManager = (ClipboardManager) settingsMenuContext.getSystemService(Context.CLIPBOARD_SERVICE);
+            ClipData clipData = ClipData.newPlainText("atak-forwarder-channel", channelSettingsToBase64());
+            clipboardManager.setPrimaryClip(clipData);
+            return true;
+        });
+
+        pastChannelSettings.setOnPreferenceClickListener((Preference preference) -> {
+            final EditText editText = new com.atakmap.android.gui.EditText(settingsMenuContext);
+            final AlertDialog.Builder alertDialog = new AlertDialog.Builder(settingsMenuContext)
+                    .setView(editText)
+                    .setPositiveButton(pluginContext.getResources().getString(R.string.ok), (DialogInterface dialog, int whichButton) -> {
+                        updateChannelSettingsFromBase64(preference, editText.getText().toString());
+                        dialog.cancel();
+                    })
+                    .setNegativeButton(pluginContext.getResources().getString(R.string.cancel), (DialogInterface dialog, int whichButton) -> {
+                        dialog.cancel();
+                    });
+            alertDialog.show();
             return true;
         });
 
@@ -193,5 +199,34 @@ public class ChannelButtons extends DestroyableSharedPrefsListener {
     @Override
     protected void complexUpdate(SharedPreferences sharedPreferences, String key) {
         // Do nothing
+    }
+
+    private String channelSettingsToBase64() {
+        byte[] channelNameBytes = mChannelName.getBytes();
+        byte modemConfigByte = (byte) mMode;
+
+        byte[] payload = new byte[mPsk.length + 1 + channelNameBytes.length];
+
+        System.arraycopy(mPsk, 0, payload, 0, mPsk.length);
+        payload[mPsk.length] = modemConfigByte;
+        System.arraycopy(channelNameBytes, 0, payload, mPsk.length + 1, channelNameBytes.length);
+        return Base64.encodeToString(payload, Base64.DEFAULT);
+    }
+
+    private void updateChannelSettingsFromBase64(Preference preference, String channelSettings) {
+        byte[] resultBytes = Base64.decode(channelSettings, Base64.DEFAULT);
+
+        byte[] psk = new byte[PSK_LENGTH];
+        byte[] channelNameBytes = new byte[resultBytes.length - PSK_LENGTH - 1];
+
+        System.arraycopy(resultBytes, 0, psk, 0, PSK_LENGTH);
+        int modemConfigValue = resultBytes[PSK_LENGTH];
+        System.arraycopy(resultBytes, PSK_LENGTH + 1, channelNameBytes, 0, resultBytes.length - PSK_LENGTH - 1);
+
+        preference.getEditor()
+                .putString(PreferencesKeys.KEY_CHANNEL_NAME, new String(channelNameBytes))
+                .putString(PreferencesKeys.KEY_CHANNEL_MODE, Integer.toString(modemConfigValue))
+                .putString(PreferencesKeys.KEY_CHANNEL_PSK, Base64.encodeToString(psk, Base64.DEFAULT))
+                .apply();
     }
 }

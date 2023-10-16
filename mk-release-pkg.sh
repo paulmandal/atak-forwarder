@@ -13,17 +13,18 @@ repoDirName=`pwd | sed s#.*/##`
 pushd ..
 if [ "${targetAtakVersion}" != "" ]
 then
-  zip -qr /mnt/shared/atak-forwarder-${pluginVersion}-atak-${targetAtakVersion}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
+  targetFilename=/mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}-atak-${targetAtakVersion}.zip
 else
-  zip -qr /mnt/shared/atak-forwarder-${pluginVersion}.zip "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/.git/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
+  targetFilename=/mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}.zip
 fi
+zip -qr ${targetFilename} "${repoDirName}" --exclude "*/build/*" "${repoDirName}/images/*" "${repoDirName}/local.properties" "${repoDirName}/.idea/*"
 popd
 
 if [ "${targetAtakVersion}" != "" ]
 then
   sed -i "s/ext.ATAK_VERSION = \"${targetAtakVersion}\"/ext.ATAK_VERSION = \"${currentAtakVersion}\"/" app/build.gradle
-  echo "wrote: /mnt/shared/atak-forwarder-${pluginVersion}-atak-${targetAtakVersion}.zip"
+  echo "wrote: /mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}-atak-${targetAtakVersion}.zip"
 else
-  echo "wrote: /mnt/shared/atak-forwarder-${pluginVersion}.zip"
+  echo "wrote: /mnt/shared/release-pkgs/atak-forwarder-${pluginVersion}.zip"
 fi
 

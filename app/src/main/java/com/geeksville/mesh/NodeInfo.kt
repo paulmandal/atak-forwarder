@@ -2,17 +2,19 @@ package com.geeksville.mesh
 
 import android.graphics.Color
 import android.os.Parcelable
-import com.geeksville.mesh.MeshProtos.User
 
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
 
+/**
+ * Room [Embedded], [Entity] and [PrimaryKey] annotations and imports, as well as any protobuf
+ * reference [MeshProtos], [TelemetryProtos], [ConfigProtos] can be removed when only using the API.
+ * For details check the AIDL interface in [com.geeksville.mesh.IMeshService]
+ */
 
 //
 // model objects that directly map to the corresponding protobufs
 //
 
-@Serializable
 @Parcelize
 data class MeshUser(
     val id: String,
@@ -26,8 +28,24 @@ data class MeshUser(
         return "MeshUser(id=${id}, longName=${longName}, shortName=${shortName}, hwModel=${hwModelString}, isLicensed=${isLicensed})"
     }
 
-    fun toProto(): User = User.newBuilder().setId(id).setLongName(longName).setShortName(shortName)
-        .setHwModel(hwModel).setIsLicensed(isLicensed).build()
+    /** Create our model object from a protobuf.
+     */
+    constructor(p: MeshProtos.User) : this(
+        p.id,
+        p.longName,
+        p.shortName,
+        p.hwModel,
+        p.isLicensed,
+    )
+
+    fun toProto(): MeshProtos.User =
+        MeshProtos.User.newBuilder()
+            .setId(id)
+            .setLongName(longName)
+            .setShortName(shortName)
+            .setHwModel(hwModel)
+            .setIsLicensed(isLicensed)
+            .build()
 
     /** a string version of the hardware model, converted into pretty lowercase and changing _ to -, and p to dot
      * or null if unset
@@ -38,7 +56,6 @@ data class MeshUser(
             else hwModel.name.replace('_', '-').replace('p', '.').lowercase()
 }
 
-@Serializable
 @Parcelize
 data class Position(
     val latitude: Double,
@@ -77,7 +94,6 @@ data class Position(
 }
 
 
-@Serializable
 @Parcelize
 data class DeviceMetrics(
     val time: Int = currentTime(), // default to current time in secs (NOT MILLISECONDS!)
@@ -105,7 +121,6 @@ data class DeviceMetrics(
     }
 }
 
-@Serializable
 @Parcelize
 data class EnvironmentMetrics(
     val time: Int = currentTime(), // default to current time in secs (NOT MILLISECONDS!)
@@ -137,7 +152,6 @@ data class EnvironmentMetrics(
     }
 }
 
-@Serializable
 @Parcelize
 data class NodeInfo(
     val num: Int, // This is immutable, and used as a key
@@ -147,6 +161,7 @@ data class NodeInfo(
     var rssi: Int = Int.MAX_VALUE,
     var lastHeard: Int = 0, // the last time we've seen this node in secs since 1970
     var deviceMetrics: DeviceMetrics? = null,
+    val channel: Int = 0,
     var environmentMetrics: EnvironmentMetrics? = null,
 ) : Parcelable {
 
@@ -156,23 +171,28 @@ data class NodeInfo(
             val g = (num and 0x00FF00) shr 8
             val b = num and 0x0000FF
             val brightness = ((r * 0.299) + (g * 0.587) + (b * 0.114)) / 255
-            return Pair(if (brightness > 0.5) Color.BLACK else Color.WHITE, Color.rgb(r, g, b))
+            return (if (brightness > 0.5) Color.BLACK else Color.WHITE) to Color.rgb(r, g, b)
         }
 
     val batteryLevel get() = deviceMetrics?.batteryLevel
     val voltage get() = deviceMetrics?.voltage
     val batteryStr get() = if (batteryLevel in 1..100) String.format("%d%%", batteryLevel) else ""
 
-    private fun envFormat(f: String, unit: String, env: Float?): String =
-        if (env != null && env != 0f) String.format(f + unit, env) else ""
+    private fun Float.envFormat(unit: String, decimalPlaces: Int = 1): String =
+        if (this != 0f) String.format("%.${decimalPlaces}f$unit", this) else ""
 
-    val envMetricStr
-        get() = envFormat("%.1f", "°C ", environmentMetrics?.temperature) +
-                envFormat("%.0f", "%% ", environmentMetrics?.relativeHumidity) +
-                envFormat("%.1f", "hPa ", environmentMetrics?.barometricPressure) +
-                envFormat("%.0f", "mΩ ", environmentMetrics?.gasResistance) +
-                envFormat("%.2f", "V ", environmentMetrics?.voltage) +
-                envFormat("%.1f", "mA", environmentMetrics?.current)
+    fun envMetricStr(isFahrenheit: Boolean = false): String = buildString {
+        val env = environmentMetrics ?: return ""
+        if (env.temperature != 0f) append(
+            if (!isFahrenheit) env.temperature.envFormat("°C ")
+            else (env.temperature * 1.8f + 32).envFormat("°F ")
+        )
+        append(env.relativeHumidity.envFormat("%% ", 0))
+        append(env.barometricPressure.envFormat("hPa "))
+        append(env.gasResistance.envFormat("MΩ ", 0))
+        append(env.voltage.envFormat("V ", 2))
+        append(env.current.envFormat("mA"))
+    }
 
     /**
      * true if the device was heard from recently

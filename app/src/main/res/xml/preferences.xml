@@ -86,6 +86,14 @@
         android:key="plugin_atak_forwarder_key_scan_channel_qr"
         android:title="@string/scan_channel_qr"
         android:summary="@string/scan_channel_qr_summary" />
+    <com.atakmap.android.gui.PanPreference
+        android:key="plugin_atak_forwarder_key_copy_channel_settings"
+        android:title="@string/copy_channel_settings"
+        android:summary="@string/copy_channel_settings_summary" />
+    <com.atakmap.android.gui.PanPreference
+        android:key="plugin_atak_forwarder_key_paste_channel_settings"
+        android:title="@string/paste_channel_settings"
+        android:summary="@string/paste_channel_settings_summary" />
 <!--    <com.atakmap.android.gui.PanPreference-->
 <!--        android:key="plugin_atak_forwarder_key_save_channel_to_file"-->
 <!--        android:title="@string/save_channel_to_file"-->

@@ -2,9 +2,6 @@ package com.geeksville.mesh
 
 import android.graphics.Color
 import android.os.Parcelable
-import androidx.room.Embedded
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 import kotlinx.parcelize.Parcelize
 
@@ -156,21 +153,15 @@ data class EnvironmentMetrics(
 }
 
 @Parcelize
-@Entity(tableName = "NodeInfo")
 data class NodeInfo(
-    @PrimaryKey(autoGenerate = false)
     val num: Int, // This is immutable, and used as a key
-    @Embedded(prefix = "user_")
     var user: MeshUser? = null,
-    @Embedded(prefix = "position_")
     var position: Position? = null,
     var snr: Float = Float.MAX_VALUE,
     var rssi: Int = Int.MAX_VALUE,
     var lastHeard: Int = 0, // the last time we've seen this node in secs since 1970
-    @Embedded(prefix = "devMetrics_")
     var deviceMetrics: DeviceMetrics? = null,
     val channel: Int = 0,
-    @Embedded(prefix = "envMetrics_")
     var environmentMetrics: EnvironmentMetrics? = null,
 ) : Parcelable {
 

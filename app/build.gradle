@@ -84,7 +84,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
-apply plugin: 'com.google.devtools.ksp'
 
 def supportedFlavors =
 [
@@ -296,12 +295,6 @@ dependencies {
     implementation 'eo.view:batterymeter:2.0.0'
 
     implementation 'com.paulmandal.atak:libcotshrink:1.0.3'
-
-    // Room from Meshtastic
-    def room_version = '2.5.2'
-    implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
-    ksp "androidx.room:room-compiler:$room_version"
 
     testImplementation 'junit:junit:4.13.2'
 }

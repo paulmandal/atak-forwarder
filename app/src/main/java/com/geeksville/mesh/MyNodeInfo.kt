@@ -1,8 +1,6 @@
 package com.geeksville.mesh
 
 import android.os.Parcelable
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -12,9 +10,7 @@ import kotlinx.parcelize.Parcelize
 
 // MyNodeInfo sent via special protobuf from radio
 @Parcelize
-@Entity(tableName = "MyNodeInfo")
 data class MyNodeInfo(
-    @PrimaryKey(autoGenerate = false)
     val myNodeNum: Int,
     val hasGPS: Boolean,
     val model: String?,

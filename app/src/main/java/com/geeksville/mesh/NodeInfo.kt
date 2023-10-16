@@ -91,14 +91,6 @@ data class Position(
                 (longitude >= -180 && longitude <= 180)
     }
 
-    fun gpsString(gpsFormat: Int): String = when (gpsFormat) {
-        ConfigProtos.Config.DisplayConfig.GpsCoordinateFormat.DEC_VALUE -> GPSFormat.DEC(this)
-        ConfigProtos.Config.DisplayConfig.GpsCoordinateFormat.DMS_VALUE -> GPSFormat.DMS(this)
-        ConfigProtos.Config.DisplayConfig.GpsCoordinateFormat.UTM_VALUE -> GPSFormat.UTM(this)
-        ConfigProtos.Config.DisplayConfig.GpsCoordinateFormat.MGRS_VALUE -> GPSFormat.MGRS(this)
-        else -> GPSFormat.DEC(this)
-    }
-
     override fun toString(): String {
         return "Position(lat=${latitude}, lon=${longitude}, alt=${altitude}, time=${time})"
     }

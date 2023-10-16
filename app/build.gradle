@@ -1,6 +1,6 @@
 buildscript {
 
-    ext.PLUGIN_VERSION = "2.0.7"
+    ext.PLUGIN_VERSION = "2.0.8"
     ext.ATAK_VERSION = "4.5.0"
 
     // Attempt to read ATAK_VERSION from the environment
@@ -11,7 +11,7 @@ buildscript {
 
     def takdevVersion = '2.+'
 
-    ext.getValueFromPropertiesFile = { propFile, key ->
+    def getValueFromPropertiesFile = { propFile, key ->
         if(!propFile.isFile() || !propFile.canRead())
             return null
         def prop = new Properties()
@@ -39,7 +39,7 @@ buildscript {
     ext.takrepoUrl = getProperty(urlKey, 'http://localhost/')
     ext.takrepoUser = getProperty('takrepo.user', 'invalid')
     ext.takrepoPassword = getProperty('takrepo.password', 'invalid')
-    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../atak-civ-sdk-4.9.0/atak-gradle-takdev.jar")
+    ext.takdevPlugin = getProperty('takdev.plugin', "${rootDir}/../atak-civ-sdk-4.10.1/atak-gradle-takdev.jar")
 
     repositories {
         google()
@@ -58,7 +58,7 @@ buildscript {
         }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.2.2'
+        classpath 'com.android.tools.build:gradle:7.4.2'
         if(isDevKitEnabled()) {
             classpath "com.atakmap.gradle:atak-gradle-takdev:${takdevVersion}"
         } else {
@@ -79,34 +79,128 @@ allprojects {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'com.guardsquare.proguard'
 apply plugin: 'com.google.protobuf'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 apply plugin: 'kotlinx-serialization'
 apply plugin: 'atak-takdev-plugin'
+apply plugin: 'com.google.devtools.ksp'
+
+def supportedFlavors =
+[
+    [ name : 'civ', default: true ],
+    [ name : 'mil' /** example: true **/],
+    [ name : 'aus' ],
+    [ name : 'nzl' ],
+    [ name : 'prt' ],
+    [ name : 'nor' ],
+    [ name : 'swe' ],
+    [ name : 'gbr' ],
+    [ name : 'can' ],
+    [ name : 'hun' ],
+    [ name : 'bel' ],
+    [ name : 'est' ],
+    [ name : 'ltu' ],
+    [ name : 'ukr' ],
+    [ name : 'pol' ],
+    [ name : 'nld' ],
+    [ name : 'esp' ],
+    [ name : 'aeronet' ],
+    [ name : 'gov' ],
+    [ name : 'natosof' ],
+]
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 33
     buildToolsVersion "30.0.3"
+
+    bundle {
+        storeArchive {
+            enable = false
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 
     dexOptions {
         jumboMode = true
     }
 
-    defaultConfig {
-        minSdkVersion 21
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+    lintOptions {
+        checkReleaseBuilds true
+        // Or, if you prefer, you can continue to check for errors in release builds,
+        // but continue the build even when errors are found:
+        abortOnError true
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file("${rootDir}/pipeline-signing-key.keystore")
+            storePassword "keyfilepass"
+            keyAlias "pipeline-signing-key"
+            keyPassword "keypass"
+        }
+        release {
+            storeFile file("${rootDir}/pipeline-signing-key.keystore")
+            storePassword "keyfilepass"
+            keyAlias "pipeline-signing-key"
+            keyPassword "keypass"
+        }
+    }
+
+    buildTypes {
+        debug {
+            debuggable true
+            matchingFallbacks = ['sdk']
+        }
+        release {
+            minifyEnabled true
+            proguardFile 'proguard-gradle.txt'
+            signingConfig signingConfigs.release
+            matchingFallbacks = ['odk']
         }
     }
 
     flavorDimensions "application"
+
     productFlavors {
-        civ {
-            dimension "application"
-            manifestPlaceholders = [atakApiVersion: "com.atakmap.app@" + ATAK_VERSION + ".CIV"]
+        supportedFlavors.each { flav ->
+            "${flav.name}" {
+                getIsDefault().set(flav.name.equals("${flav.default}".toString()))
+                dimension "application"
+
+                // retain existing application identifiers for civ and mil
+                if (!flav.name.equals("civ") && !flav.name.equals("mil")) {
+                    applicationIdSuffix = ".${flav.name}"
+                }
+                // resolve CIV dependency if flavor specific dependency is not available
+                matchingFallbacks = ['civ']
+
+                // set the api version information
+                def pluginApiFlavor = flav.name.equals('gov') ? 'CIV' : "${flav.name.toUpperCase()}"
+                manifestPlaceholders = [atakApiVersion: "com.atakmap.app@" + ATAK_VERSION + ".${pluginApiFlavor}"]
+
+                // additional variables associated with the flav can be set here once defined above
+                // buildConfigField 'boolean', 'EXAMPLE', "${flav.example}"
+            }
         }
+        // additional variables associated with all flavors can be set here
+        applicationVariants.all { variant ->
+            variant.resValue "string", "versionName", variant.versionName
+            buildConfigField 'String', 'ATAK_PACKAGE_NAME', '"com.atakmap.app.civ"'
+        }
+    }
+
+    packagingOptions {
+        exclude 'META-INF/INDEX.LIST'
+
+
+        // Extract native libraries from the APK - required for plugin loading
+        jniLibs.useLegacyPackaging true
     }
 
     sourceSets {
@@ -119,34 +213,36 @@ android {
                 srcDir 'src/main/meshtastic-protobuf'
             }
         }
+
+        gov.java.srcDirs 'src/gov/java'
+        gov.assets.srcDir 'src/gov/assets'
+        gov.res.srcDir 'src/gov/res'
+
         test {
             proto {
                 srcDir 'src/main/meshtastic-protobuf'
             }
             java.srcDirs 'src/test/java'
         }
-        // Move the tests to tests/java, tests/res, etc...
-        //instrumentTest.setRoot('tests')
 
-        // Move the build types to build-types/<type>
-        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
-        // This moves them out of them default location under src/<type>/... which would
-        // conflict with src/ being used by the main source set.
-        // Adding new build types or product flavors should be accompanied
-        // by a similar customization.
         debug.setRoot('build-types/debug')
         release.setRoot('build-types/release')
     }
 
-    packagingOptions {
-        exclude 'META-INF/INDEX.LIST'
-    }
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 31
 
-    lintOptions {
-        checkReleaseBuilds true
-        // Or, if you prefer, you can continue to check for errors in release builds,
-        // but continue the build even when errors are found:
-        abortOnError true
+        def runTasks = gradle.startParameter.taskNames
+        if(runTasks.toString().contains('bundle')) {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a"
+            }
+        } else {
+            ndk {
+                abiFilters "armeabi-v7a", "arm64-v8a", "x86"
+            }
+        }
     }
 
     compileOptions {
@@ -158,111 +254,38 @@ android {
         jvmTarget = "1.8"
     }
 
-    signingConfigs {
-        debug {
-            def debugKeyFile = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFile')
-            def debugKeyFilePassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyFilePassword')
-            def debugKeyAlias = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyAlias')
-            def debugKeyPassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takDebugKeyPassword')
-
-            if (debugKeyFile == null) {
-                debugKeyFile = "${rootDir}/pipeline-signing-key.keystore"
-                debugKeyFilePassword = 'keyfilepass'
-                debugKeyAlias = 'pipeline-signing-key'
-                debugKeyPassword = 'keypass'
-            }
-
-            storeFile file(debugKeyFile)
-            if (debugKeyFilePassword != null) storePassword debugKeyFilePassword
-            if (debugKeyAlias != null) keyAlias debugKeyAlias
-            if (debugKeyPassword != null) keyPassword debugKeyPassword
-        }
-        release {
-            def releaseKeyFile = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFile')
-            def releaseKeyFilePassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyFilePassword')
-            def releaseKeyAlias = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyAlias')
-            def releaseKeyPassword = getValueFromPropertiesFile(project.rootProject.file('local.properties'), 'takReleaseKeyPassword')
-
-            if (releaseKeyFile == null) {
-                releaseKeyFile = "${rootDir}/pipeline-signing-key.keystore"
-                releaseKeyFilePassword = 'keyfilepass'
-                releaseKeyAlias = 'pipeline-signing-key'
-                releaseKeyPassword = 'keypass'
-            }
-
-            storeFile file(releaseKeyFile)
-            if (releaseKeyFilePassword != null) storePassword releaseKeyFilePassword
-            if (releaseKeyAlias != null) keyAlias releaseKeyAlias
-            if (releaseKeyPassword != null) keyPassword releaseKeyPassword
-        }
-    }
-
-    buildTypes {
-        debug {
-            debuggable true
-            matchingFallbacks = ['sdk']
-        }
-
-        release {
-            minifyEnabled false
-            proguardFile 'proguard-gradle.txt'
-            signingConfig signingConfigs.release
-            matchingFallbacks = ['odk']
-        }
-    }
 }
 
-proguard {
-    configurations {
-        release {
-            defaultConfiguration 'proguard-android-optimize.txt'
-            configuration 'proguard-gradle.txt'
-        }
-    }
-}
-
-// Attempt to get a suitable version name for the plugin based on
-// either a git or svn repository
-def getVersionName() {
+afterEvaluate {
     try {
-        def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'rev-parse', '--short=8', 'HEAD'
-            standardOutput = stdout
+        tasks.named("compile" + getCommandFlavor() + "ReleaseKotlin") {
+            println "modifying " + getCommandFlavor().toLowerCase() + " kotlin compile options to include: -Xsam-conversions=class"
+            kotlinOptions {
+                freeCompilerArgs += "-Xsam-conversions=class"
+            }
         }
-        def describe = stdout.toString().trim()
-        println("versionName[git]: $describe")
-        return describe
-    } catch (Exception ignored) {
-        println("error occured, using revision of 1")
-        return 1
-    }
+    } catch (Exception ignored) { }
 }
 
+// modified code to find the current flavor in progress
+def getCommandFlavor() {
+    String  tskReqStr = getGradle().getStartParameter().getTaskRequests().toString()
 
-// Attempt to get a suitable version code for the plugin based on
-// either a git or svn repository
-def getVersionCode() {
-    try {
-        new ByteArrayOutputStream().withStream { os ->
-            exec {
-                executable = 'git'
-                args = ['show', '-s', '--format=%ct']
-                standardOutput = os
-                ignoreExitValue = true
-            }
+    java.util.regex.Pattern pattern
+    if( tskReqStr.contains( "assemble" ) )
+        pattern = java.util.regex.Pattern.compile("assemble(\\w+)(Release|Debug)")
+    else if( tskReqStr.contains( "install" ) )
+        pattern = java.util.regex.Pattern.compile("install(\\w+)(Release|Debug)")
+    else
+        pattern = java.util.regex.Pattern.compile("generate(\\w+)(Release|Debug)")
 
-            def outputAsString = os.toString()
-            ext.revision = "$outputAsString".toInteger()
+    java.util.regex.Matcher matcher = pattern.matcher(tskReqStr)
 
-            println("version[git]: $revision")
-        }
-    } catch (Exception ignored) {
-        println("error occured, using revision of 1")
-        ext.revision = 1
+    if( matcher.find() ) {
+        return matcher.group(1)
+    } else {
+        return "Civ"
     }
-
-    return revision
 }
 
 dependencies {

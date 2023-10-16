@@ -75,6 +75,12 @@
     <string name="scan_channel_qr">Scan QR</string>
     <string name="scan_channel_qr_summary">Scan the QR code from another device</string>
 
+    <string name="copy_channel_settings">Copy Channel Settings</string>
+    <string name="copy_channel_settings_summary">Copy channel settings to the clipboard</string>
+
+    <string name="paste_channel_settings">Paste Channel Settings</string>
+    <string name="paste_channel_settings_summary">Paste channel settings</string>
+
     <string name="save_channel_to_file">Save to File</string>
     <string name="save_channel_to_file_summary">Write your channel settings to a file</string>
 

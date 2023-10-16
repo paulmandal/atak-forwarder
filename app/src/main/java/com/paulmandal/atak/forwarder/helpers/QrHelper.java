@@ -22,14 +22,12 @@ public class QrHelper {
 
     private static final ErrorCorrectionLevel DEFAULT_ERROR_CORRECTION_LEVEL = ForwarderConstants.DEFAULT_ERROR_CORRECTION_LEVEL;
 
-    public Bitmap encodeAsBitmap(byte[] input, int width) throws WriterException {
-        String base64 = Base64.encodeToString(input, Base64.DEFAULT);
-
+    public Bitmap encodeAsBitmap(String input, int width) throws WriterException {
         BitMatrix result;
         try {
             Map<EncodeHintType, Object> encodingHints = new HashMap<>();
             encodingHints.put(EncodeHintType.ERROR_CORRECTION, DEFAULT_ERROR_CORRECTION_LEVEL);
-            result = new MultiFormatWriter().encode(base64, BarcodeFormat.QR_CODE, width, width, null);
+            result = new MultiFormatWriter().encode(input, BarcodeFormat.QR_CODE, width, width, null);
         } catch (IllegalArgumentException iae) {
             // Unsupported format
             return null;

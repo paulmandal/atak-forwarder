@@ -21,6 +21,8 @@ public class PreferencesKeys {
     public static final String KEY_CHANNEL_PSK = "plugin_atak_forwarder_key_channel_psk";
     public static final String KEY_SHOW_CHANNEL_QR = "plugin_atak_forwarder_key_show_channel_qr";
     public static final String KEY_SCAN_CHANNEL_QR = "plugin_atak_forwarder_key_scan_channel_qr";
+    public static final String KEY_COPY_CHANNEL_SETTINGS = "plugin_atak_forwarder_key_copy_channel_settings";
+    public static final String KEY_PASTE_CHANNEL_SETTINGS = "plugin_atak_forwarder_key_paste_channel_settings";
     public static final String KEY_SAVE_CHANNEL_TO_FILE = "plugin_atak_forwarder_key_save_channel_to_file";
     public static final String KEY_READ_CHANNEL_FROM_FILE = "plugin_atak_forwarder_key_read_channel_from_file";
     public static final String KEY_TRACKER_PLI_INTERVAL = "plugin_atak_forwarder_key_tracker_pli_interval";

@@ -104,6 +104,8 @@ public class ForwarderPreferencesFragment extends PluginPreferenceFragment imple
                 findPreference(PreferencesKeys.KEY_CHANNEL_PSK),
                 findPreference(PreferencesKeys.KEY_SHOW_CHANNEL_QR),
                 findPreference(PreferencesKeys.KEY_SCAN_CHANNEL_QR),
+                findPreference(PreferencesKeys.KEY_COPY_CHANNEL_SETTINGS),
+                findPreference(PreferencesKeys.KEY_PASTE_CHANNEL_SETTINGS),
                 findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE),
                 findPreference(PreferencesKeys.KEY_SAVE_CHANNEL_TO_FILE));
 

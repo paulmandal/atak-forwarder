@@ -1,6 +1,8 @@
 package com.geeksville.mesh
 
 import android.os.Parcelable
+
+
 import kotlinx.parcelize.Parcelize
 
 /**
@@ -10,7 +12,9 @@ import kotlinx.parcelize.Parcelize
 
 // MyNodeInfo sent via special protobuf from radio
 @Parcelize
+
 data class MyNodeInfo(
+
     val myNodeNum: Int,
     val hasGPS: Boolean,
     val model: String?,

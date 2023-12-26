@@ -54,8 +54,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic App | 2.2.11 |
-| Meshtastic Firmware | 2.2.11 |
+| Meshtastic App | 2.2.16 |
+| Meshtastic Firmware | 2.2.16 |
 
 # To Do
 
@@ -122,6 +122,9 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 * The red line through the icon in the lower right corner of the screen should disappear within about a minute
 
 ## Setting up your Channel
+
+We recommend using the Meshtastic App to manage channel settings, if you would like to use the Plugin to manage channel settings be sure to enable the "Plugin Manages Device" option at the bottom of the settings screen.
+If you are using Meshtastic to manage the device you do not need to follow the steps below.
 
 * In ATAK tap on the three dots menu in the upper right corner of the screen
 * Tap on Settings

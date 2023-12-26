@@ -10,29 +10,29 @@ Binaries signed for the Play Store version of ATAK are available here: [Binaries
 
 ## Share Markers and PLI
 
-![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/2.0.8/images/0-markers-and-pli.png)
+![Share Markers and PLI](https://github.com/paulmandal/atak-forwarder/raw/2.0.9/images/0-markers-and-pli.png)
 <br>
-![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/2.0.8/images/1-status.png)
+![Plugin Status Screen](https://github.com/paulmandal/atak-forwarder/raw/2.0.9/images/1-status.png)
 <br>
 <br>
 
 ## Send Chat Messages
 
-![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/2.0.8/images/2-chat-messages.png)
+![Chat Messages](https://github.com/paulmandal/atak-forwarder/raw/2.0.9/images/2-chat-messages.png)
 <br>
 <br>
 
 ## Configurable Channel Settings / Share with QR
 
-![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/2.0.8/images/3-channel-config.png)
+![Channel Mode Selection](https://github.com/paulmandal/atak-forwarder/raw/2.0.9/images/3-channel-config.png)
 <br>
-![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/2.0.8/images/4-qr-code-sharing.png)
+![QR Channel Sharing](https://github.com/paulmandal/atak-forwarder/raw/2.0.9/images/4-qr-code-sharing.png)
 <br>
 <br>
 
 ## Use standalone Meshtastic devices as Trackers
 
-![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/2.0.8/images/5-write-to-tracker.png)
+![Write to Tracker](https://github.com/paulmandal/atak-forwarder/raw/2.0.9/images/5-write-to-tracker.png)
 <br>
 <br>
 
@@ -54,8 +54,8 @@ The plugin has been tested with these versions of the Meshtastic dependencies. I
 
 | Dependency | Version |
 |--|--|
-| Meshtastic App | 2.2.11 |
-| Meshtastic Firmware | 2.2.11 |
+| Meshtastic App | 2.2.16 |
+| Meshtastic Firmware | 2.2.16 |
 
 # To Do
 
@@ -122,6 +122,9 @@ ATAK requires that plugins be signed with a whitelisted signature. In order to r
 * The red line through the icon in the lower right corner of the screen should disappear within about a minute
 
 ## Setting up your Channel
+
+We recommend using the Meshtastic App to manage channel settings, if you would like to use the Plugin to manage channel settings be sure to enable the "Plugin Manages Device" option at the bottom of the settings screen.
+If you are using Meshtastic to manage the device you do not need to follow the steps below.
 
 * In ATAK tap on the three dots menu in the upper right corner of the screen
 * Tap on Settings
